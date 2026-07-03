@@ -221,9 +221,25 @@ body.pc-mode .mob-layout{display:none!important}
 .sw.on{background:#1D9E75}
 .sw::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
 .sw.on::after{left:18px}
+body.pre-interact .mn{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
+body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
+@keyframes fadeOutFlash{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
+.method-flash{animation:fadeOutFlash 2.5s forwards}
+.act-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.act-btn-pri{border:1px solid #1D9E75;background:#1D9E75;color:#fff;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.act-btn-sec{border:1px solid #d0cdc8;background:#fff;color:#1a1a1a;font-weight:500}
+.act-btn-sec:hover{background:#f5f4f0}
+.act-group-lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
 </style>
 </head>
-<body>
+<body class="pre-interact">
+<div id="deiger-banner" style="display:none;background:#E1F5EE;border-bottom:1px solid #9FE1CB;padding:.6rem 1rem;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="jumpToDeiger()">
+  <div style="display:flex;align-items:center;gap:8px;min-width:0">
+    <span style="font-size:16px;flex-shrink:0">🍕</span>
+    <span id="deiger-banner-text" style="font-size:13px;color:#085041"></span>
+  </div>
+  <button style="flex-shrink:0;padding:6px 12px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Se deigene</button>
+</div>
 <div class="app">
 <div class="sb">
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -235,6 +251,14 @@ body.pc-mode .mob-layout{display:none!important}
   </div>
   <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
 </div>
+
+<button id="active-deiger-btn" onclick="jumpToDeiger()" style="display:none;align-items:center;justify-content:space-between;width:100%;padding:8px 10px;border:1px solid #1D9E75;border-radius:8px;background:#E1F5EE;cursor:pointer;margin-top:2px;font-family:inherit">
+  <span style="display:flex;align-items:center;gap:7px">
+    <span style="font-size:14px">🍽️</span>
+    <span style="font-size:12px;font-weight:600;color:#085041">Mine deiger</span>
+  </span>
+  <span id="active-deiger-count" style="font-size:11px;font-weight:700;color:#fff;background:#1D9E75;border-radius:10px;padding:1px 7px">0</span>
+</button>
 
   <div><div class="lbl">Pizzatype</div>
     <div class="pills" id="gtype">
@@ -473,6 +497,7 @@ function setMode(m){
 function doReset(){
   Object.assign(S,DEF);
   window._activeDeigId=null;window._activeDeigName=null;
+  syncSaveBakeLabel();
   document.getElementById('msl').value=500;uMel(500);
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
   document.getElementById('csl').value=3;uCold(3);
@@ -905,12 +930,12 @@ function gen(){
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Stretch &amp; fold (alternativ til Ankarsrum)</div><div class="sdesc">Hvis du ikke bruker Ankarsrum for elting: strekk deigen opp og brett over, roter 90°, gjenta 4–6 ganger. 3–4 runder med 30 min mellomrom. Bygger glutenstruktur uten maskin — særlig nyttig ved høy hydrering.</div></div>`;
   window._steps=steps;
   document.getElementById('main').innerHTML=`
-    <h2>${r.name}</h2>
-    <div class="sub"><span class="badge bg">${mN(S.method)}</span><span class="badge ba">${S.cold} dag${S.cold>1?'er':''} i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
+    <h2>${r.name} <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>${methodFlashHTML()}</h2>
+    <div class="sub"><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${mln?`<div class="ibox"><b>${mlN()}:</b>${mln}</div>`:''}
     ${nextStepHTML(steps,false)}
     ${sBar(steps)}
-    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics) — åpne på iPhone for å legge alle steg i Kalender med varsling">📅 Til kalender</div><div class="cbtn" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen slik at du eller andre kan hente den frem igjen senere">💾 Lagre deig</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</div></div>
+    ${actionGroupHTML()}
     ${pcBar()}
     <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Deiger</div></div>
     <div id="p-plan">${stepH(steps)}</div>
@@ -934,11 +959,11 @@ function hurtigRes(){
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>`;
   document.getElementById('main').innerHTML=`
-    <h2>Hurtigdeig — ${o.h} timer</h2>
+    <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${nextStepHTML(steps,false)}
     ${sBar(steps)}
-    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics)">📅 Til kalender</div><div class="cbtn" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen">💾 Lagre deig</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</div></div>
+    ${actionGroupHTML()}
     ${pcBar()}
     <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Deiger</div></div>
     <div id="p-plan">${stepH(steps)}</div>
@@ -1240,7 +1265,7 @@ function mobGen(){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
     const sumH=`<div class="mob-sumbar"><div class="mob-sc"><div class="sl">Start</div><div class="sv">${fDT(steps[0].at).split('kl.')[0].trim()}</div><div class="st">kl. ${fT(steps[0].at)}</div></div><div class="mob-sc"><div class="sl">Pizzaer</div><div class="sv">${p.count} stk</div><div class="st">${p.perPizza}g/emne</div></div><div class="mob-sc"><div class="sl">Stekes</div><div class="sv">${fDT(steps[steps.length-1].at).split('kl.')[0].trim()}</div><div class="st">kl. ${fT(steps[steps.length-1].at)}</div></div></div>`;
-    document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content">${nextStepHTML(steps,true)}${sumH}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${nextStepHTML(steps,true)}${sumH}${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">pizzaer</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel (${mlN()})</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
     return;
@@ -1261,7 +1286,7 @@ function mobGen(){
     <div class="mob-sc"><div class="sl">Stekes</div><div class="sv">${dp(sk.at)}</div><div class="st">kl. ${fT(sk.at)}</div></div>
   </div>`;
 
-  document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content">${nextStepHTML(steps,true)}${mln?`<div class="ibox" style="margin-bottom:.5rem"><b>${mlN()}:</b>${mln}</div>`:''}${sumH}${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${nextStepHTML(steps,true)}${mln?`<div class="ibox" style="margin-bottom:.5rem"><b>${mlN()}:</b>${mln}</div>`:''}${sumH}${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[{k:`Mel (${mlN()})`,v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall pizzaer</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
@@ -1371,35 +1396,163 @@ function refreshBaksterPanels(){
 }
 
 async function saveBake(){
-  const name = prompt('Navn på deigen (f.eks. "Rune — fredagspizza"):');
-  if(!name || !name.trim()) return;
   const mobEl=document.getElementById('mob-layout');
   const isMob = !!(mobEl && mobEl.classList.contains('active'));
+  const activeId = window._activeDeigId;
+  let name;
+  if(activeId){
+    name = window._activeDeigName || 'Deig';
+  }else{
+    const typed = prompt('Navn på deigen (f.eks. "Rune — fredagspizza"):');
+    if(!typed || !typed.trim()) return;
+    name = typed.trim();
+  }
   let anchorISO;
   try{
     anchorISO = (isMob ? mobGetAnchor(S.mode==='end'?'e':'s') : anc(S.mode==='end'?'e':'s')).toISOString();
   }catch(e){ anchorISO = new Date().toISOString(); }
-  const body = { name: name.trim(), config: {...S}, anchorMode: S.mode, anchorISO };
   const btn = isMob ? document.getElementById('mob-savebake-btn') : document.getElementById('savebake-btn');
   const origHTML = btn ? btn.innerHTML : null;
   try{
-    const res = await fetch('/api/bakes', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body)
-    });
+    let res;
+    if(activeId){
+      res = await fetch('/api/bakes/'+activeId, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ config: {...S}, anchorMode: S.mode, anchorISO })
+      });
+    }else{
+      res = await fetch('/api/bakes', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO })
+      });
+    }
     if(!res.ok) throw new Error('HTTP '+res.status);
     const saved = await res.json();
     window._activeDeigId = saved.id;
-    window._activeDeigName = name.trim();
+    window._activeDeigName = saved.name;
     if(btn){
       btn.innerHTML = isMob ? '<i>✓</i>Lagret' : '✓ Lagret!';
       setTimeout(()=>{ if(btn) btn.innerHTML = origHTML; }, 2000);
     }
+    syncSaveBakeLabel();
+    refreshDeigerBanner();
   }catch(e){
     alert('Kunne ikke lagre deig. Sjekk nettforbindelsen og at Netlify-funksjonen er koblet til.\n('+e.message+')');
   }
 }
+
+function saveBakeLabel(){
+  return window._activeDeigId ? '💾 Oppdater lagring' : '💾 Lagre deig';
+}
+
+function syncSaveBakeLabel(){
+  const mobBtn=document.getElementById('mob-savebake-btn');
+  if(mobBtn) mobBtn.innerHTML = window._activeDeigId ? '<i>💾</i>Oppdater' : '<i>💾</i>Lagre';
+}
+
+function activeDeigIndicatorHTML(){
+  if(window._activeDeigId){
+    return '<span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span>'
+      +'<span style="color:#5f5e5a">Du redigerer</span>'
+      +'<span style="font-weight:600;color:#085041">'+escH(window._activeDeigName||'')+'</span>'
+      +'<button onclick="closeActiveDeig()" style="margin-left:auto;font-size:11px;color:#993C1D;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">Lukk</button>';
+  }
+  return '<span style="width:8px;height:8px;border-radius:50%;background:#d0cdc8;flex-shrink:0"></span>'
+    +'<span style="color:#999">Ulagret oppsett — endringer lagres ikke automatisk</span>';
+}
+
+function closeActiveDeig(){
+  window._activeDeigId=null; window._activeDeigName=null;
+  syncSaveBakeLabel();
+  const isMob=document.getElementById('mob-layout')&&document.getElementById('mob-layout').classList.contains('active');
+  if(isMob){ mobGen(); } else { gen(); }
+}
+
+function jumpToDeiger(){
+  const mobEl=document.getElementById('mob-layout');
+  const isMob=!!(mobEl && mobEl.classList.contains('active'));
+  if(isMob){ mobShowTab('bakster'); }
+  else{
+    const tabs=[...document.querySelectorAll('.tabs .tab')];
+    const t=tabs.find(x=>x.textContent.trim()==='Deiger');
+    if(t) showTab('bakster', t);
+  }
+}
+
+async function refreshDeigerBanner(){
+  const bakes = await fetchBakes();
+  const banner=document.getElementById('deiger-banner');
+  const bannerText=document.getElementById('deiger-banner-text');
+  const sideBtn=document.getElementById('active-deiger-btn');
+  const sideCount=document.getElementById('active-deiger-count');
+  const mobBtn=document.getElementById('mob-active-deiger-btn');
+  const mobCount=document.getElementById('mob-active-deiger-count');
+  if(bakes===null){
+    if(banner)banner.style.display='none';
+    if(sideBtn)sideBtn.style.display='none';
+    if(mobBtn)mobBtn.style.display='none';
+    return;
+  }
+  const active=bakes.filter(b=>b.status==='active');
+  if(sideBtn){
+    if(active.length>0){ sideBtn.style.display='flex'; if(sideCount)sideCount.textContent=String(active.length); }
+    else sideBtn.style.display='none';
+  }
+  if(mobBtn){
+    if(active.length>0){ mobBtn.style.display='inline-flex'; if(mobCount)mobCount.textContent=String(active.length); }
+    else mobBtn.style.display='none';
+  }
+  if(banner){
+    if(active.length===0){ banner.style.display='none'; return; }
+    let soonest=null;
+    active.forEach(b=>{ try{ const d=new Date(b.anchorISO); if(!soonest||d<soonest) soonest=d; }catch(e){} });
+    let timeTxt='';
+    if(soonest){
+      const diffH=Math.round((soonest.getTime()-Date.now())/3600000);
+      if(diffH<0) timeTxt=' — en steketid har passert';
+      else if(diffH<1) timeTxt=' — steking snart';
+      else if(diffH<=36) timeTxt=' — nærmeste steking om '+diffH+' timer';
+      else timeTxt=' — nærmeste steking om '+Math.round(diffH/24)+' dager';
+    }
+    if(bannerText) bannerText.textContent = active.length+(active.length===1?' aktiv deig':' aktive deiger')+timeTxt;
+    banner.style.display='flex';
+  }
+}
+
+function methodMetaLabel(){
+  const c=S.cold+' dag'+(S.cold>1?'er':'')+' kjøl';
+  if(S.method==='poolish') return 'Poolish 12–16t + '+c;
+  if(S.method==='biga') return 'Biga 16–24t + '+c;
+  if(S.method==='standard') return c;
+  return '';
+}
+
+function methodFlashHTML(){
+  const changed = window._lastMethod!==undefined && window._lastMethod!==S.method;
+  window._lastMethod = S.method;
+  return changed ? ' <span class="method-flash" style="margin-left:4px;font-size:10px;font-weight:600;color:#fff;background:#1D9E75;padding:2px 8px;border-radius:6px;vertical-align:2px">endret</span>' : '';
+}
+
+function actionGroupHTML(){
+  return `<div style="background:#fff;border:1px solid #e0ddd8;border-radius:10px;padding:.75rem .9rem;margin-bottom:1rem">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid #f0ede8;font-size:12px">${activeDeigIndicatorHTML()}</div>
+    <div class="act-group-lbl">Denne deigen</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.6rem">
+      <button class="act-btn act-btn-pri" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen slik at du eller andre kan hente den frem igjen senere">${saveBakeLabel()}</button>
+      <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="Se alle lagrede deiger">🍽️ Mine deiger</button>
+    </div>
+    <div style="height:1px;background:#e8e5e0;margin:.6rem 0"></div>
+    <div class="act-group-lbl">Del tidsplan</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</button>
+      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics)">📅 Til kalender</button>
+      <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</button>
+    </div>
+  </div>`;
+}
+
 
 function syncDesktopControls(){
   const msl=document.getElementById('msl');if(msl)msl.value=S.mel;
@@ -1423,6 +1576,8 @@ function openBake(id){
   if(!b) return;
   window._activeDeigId = id;
   window._activeDeigName = b.name;
+  syncSaveBakeLabel();
+  document.body.classList.remove('pre-interact');
   Object.assign(S, b.config);
   S.mode = b.anchorMode==='end' ? 'end' : 'start';
   let dt;
@@ -1460,6 +1615,7 @@ async function finishBakePrompt(id){
     if(!res.ok) throw new Error('HTTP '+res.status);
     refreshBaksterPanels();
     refreshNotesPanels();
+    refreshDeigerBanner();
   }catch(e){
     alert('Kunne ikke merke deigen som ferdig. ('+e.message+')');
   }
@@ -1470,9 +1626,10 @@ async function deleteBakeConfirm(id){
   try{
     const res = await fetch('/api/bakes/'+id, { method: 'DELETE' });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; }
+    if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; syncSaveBakeLabel(); }
     refreshBaksterPanels();
     refreshNotesPanels();
+    refreshDeigerBanner();
   }catch(e){
     alert('Kunne ikke slette deigen. ('+e.message+')');
   }
@@ -1485,6 +1642,16 @@ document.addEventListener('DOMContentLoaded',function(){
 if(document.readyState==='complete'||document.readyState==='interactive'){
   initLayout();
 }
+refreshDeigerBanner();
+function firstInteractionCheck(e){
+  if(!document.body.classList.contains('pre-interact')) return;
+  if(e.target && e.target.closest && (e.target.closest('.sb') || e.target.closest('#mob-settings'))){
+    document.body.classList.remove('pre-interact');
+  }
+}
+document.addEventListener('click', firstInteractionCheck, true);
+document.addEventListener('input', firstInteractionCheck, true);
+document.addEventListener('change', firstInteractionCheck, true);
 </script>
 <!-- ===== MOBILE LAYOUT ===== -->
 <div class="mob-layout" id="mob-layout">
@@ -1495,6 +1662,7 @@ if(document.readyState==='complete'||document.readyState==='interactive'){
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
+      <button class="mob-icon-btn" id="mob-active-deiger-btn" onclick="jumpToDeiger()" title="Mine deiger" style="display:none;position:relative">🍽️<span id="mob-active-deiger-count" style="position:absolute;top:-4px;right:-4px;background:#1D9E75;color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;line-height:14px;min-width:14px;text-align:center">0</span></button>
       <button class="mob-icon-btn" onclick="doReset()" title="Nullstill">↺</button>
       <button class="layout-toggle mob-style" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
     </div>
