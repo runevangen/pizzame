@@ -472,6 +472,7 @@ function setMode(m){
 }
 function doReset(){
   Object.assign(S,DEF);
+  window._activeDeigId=null;window._activeDeigName=null;
   document.getElementById('msl').value=500;uMel(500);
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
   document.getElementById('csl').value=3;uCold(3);
@@ -882,6 +883,7 @@ function showTab(n,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   if(el)el.classList.add('on');
   if(n==='bakster')renderBaksterPanel('bakster-list');
+  if(n==='notes')renderNotesPanel('notes-panel');
 }
 
 function gen(){
@@ -902,23 +904,20 @@ function gen(){
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor 4 timer ute av kjøleskapet?</div><div class="sdesc">${WHY.tu}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Stretch &amp; fold (alternativ til Ankarsrum)</div><div class="sdesc">Hvis du ikke bruker Ankarsrum for elting: strekk deigen opp og brett over, roter 90°, gjenta 4–6 ganger. 3–4 runder med 30 min mellomrom. Bygger glutenstruktur uten maskin — særlig nyttig ved høy hydrering.</div></div>`;
   window._steps=steps;
-  const _draftEl=document.getElementById('note-input-pc');
-  window._noteDraft=_draftEl?_draftEl.value:(window._noteDraft||'');
   document.getElementById('main').innerHTML=`
     <h2>${r.name}</h2>
     <div class="sub"><span class="badge bg">${mN(S.method)}</span><span class="badge ba">${S.cold} dag${S.cold>1?'er':''} i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${mln?`<div class="ibox"><b>${mlN()}:</b>${mln}</div>`:''}
     ${nextStepHTML(steps,false)}
     ${sBar(steps)}
-    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics) — åpne på iPhone for å legge alle steg i Kalender med varsling">📅 Til kalender</div><div class="cbtn" id="savebake-btn" onclick="saveBake()" title="Lagre denne baksten slik at du eller andre kan hente den frem igjen senere">💾 Lagre bakst</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</div></div>
+    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics) — åpne på iPhone for å legge alle steg i Kalender med varsling">📅 Til kalender</div><div class="cbtn" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen slik at du eller andre kan hente den frem igjen senere">💾 Lagre deig</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</div></div>
     ${pcBar()}
-    <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Bakster</div></div>
+    <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Deiger</div></div>
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
     <div id="p-tips" style="display:none">${tH}</div>
-    <div id="p-notes" style="display:none">${notesPanelHTML('note-input-pc')}</div>
-    <div id="p-bakster" style="display:none"><div id="bakster-list"><p style="color:#999;font-size:13px;padding:.5rem 0">Laster bakster…</p></div></div>`;
-  const _ni=document.getElementById('note-input-pc');if(_ni&&window._noteDraft)_ni.value=window._noteDraft;
+    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
+    <div id="p-bakster" style="display:none"><div id="bakster-list"><p style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p></div></div>`;
   updatePcountDisp();
   startCountdown();
 }
@@ -928,8 +927,6 @@ function hurtigRes(){
   const {o,w,ya,tmp,steps}=hurtigSteps(a);
   const r=R();
   window._steps=steps;
-  const _draftEl=document.getElementById('note-input-pc');
-  window._noteDraft=_draftEl?_draftEl.value:(window._noteDraft||'');
   const rr=[{k:`Mel (${mlN()})`,v:`${S.mel}g`},{k:'Vann',v:`${w}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
   const tH=`
     <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>
@@ -941,15 +938,14 @@ function hurtigRes(){
     <div class="sub"><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${nextStepHTML(steps,false)}
     ${sBar(steps)}
-    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics)">📅 Til kalender</div><div class="cbtn" id="savebake-btn" onclick="saveBake()" title="Lagre denne baksten">💾 Lagre bakst</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</div></div>
+    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics)">📅 Til kalender</div><div class="cbtn" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen">💾 Lagre deig</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</div></div>
     ${pcBar()}
-    <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Bakster</div></div>
+    <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Deiger</div></div>
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
     <div id="p-tips" style="display:none">${tH}</div>
-    <div id="p-notes" style="display:none">${notesPanelHTML('note-input-pc')}</div>
-    <div id="p-bakster" style="display:none"><div id="bakster-list"><p style="color:#999;font-size:13px;padding:.5rem 0">Laster bakster…</p></div></div>`;
-  const _ni=document.getElementById('note-input-pc');if(_ni&&window._noteDraft)_ni.value=window._noteDraft;
+    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
+    <div id="p-bakster" style="display:none"><div id="bakster-list"><p style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p></div></div>`;
   updatePcountDisp();
   startCountdown();
 }
@@ -1009,50 +1005,73 @@ function updatePcountDisp(){
   });
 }
 
-// ===== BAKSTLOGG (lagres i nettleseren) =====
+// ===== NOTATER (koblet til aktiv deig, lagres via Netlify Blobs) =====
 function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function getNotes(){try{return JSON.parse(localStorage.getItem('pizzaNotes')||'[]');}catch(e){return[];}}
-function saveNotesArr(n){try{localStorage.setItem('pizzaNotes',JSON.stringify(n));}catch(e){}}
-function addNote(inputId){
-  const el=document.getElementById(inputId);
-  if(!el||!el.value.trim())return;
-  const r=R();
-  const cfg=r.name+' \u00b7 '+mN(S.method)+' \u00b7 '+S.mel+'g \u00b7 '+S.hydro+'%'+(S.method!=='hurtig'?' \u00b7 '+S.cold+' d kj\u00f8leskap':'')+' \u00b7 '+S.temp+'\u00b0C';
-  const notes=getNotes();
-  notes.unshift({d:new Date().toISOString(),cfg:cfg,txt:el.value.trim()});
-  saveNotesArr(notes);
-  el.value='';
-  refreshNotesPanels();
+
+function noNoteDeigHTML(){
+  return `<div style="padding:1.5rem 0;text-align:center;color:#999;font-size:13px;line-height:1.6">
+    <p>Ingen aktiv deig valgt.</p>
+    <p style="margin-top:.4rem">Trykk <b>💾 Lagre deig</b> på en tidsplan, eller åpne en fra <b>Deiger</b>-fanen, for å skrive notater.</p>
+  </div>`;
 }
-function delNote(i){
-  if(!confirm('Slette dette notatet?'))return;
-  const n=getNotes();n.splice(i,1);saveNotesArr(n);refreshNotesPanels();
+
+async function renderNotesPanel(targetId){
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  const isMob = targetId.startsWith('mob-');
+  const inputId = isMob ? 'mob-deig-note-input' : 'deig-note-input';
+  const statusId = isMob ? 'mob-note-save-status' : 'note-save-status';
+  const id = window._activeDeigId;
+  if(!id){ el.innerHTML = noNoteDeigHTML(); return; }
+  el.innerHTML = '<p style="color:#999;font-size:13px;padding:.5rem 0">Laster notat…</p>';
+  const bakes = await fetchBakes();
+  if(bakes===null){
+    el.innerHTML = '<p style="color:#993C1D;font-size:12px;padding:.5rem 0">Kunne ikke hente notatet. Sjekk nettforbindelsen.</p>';
+    return;
+  }
+  window._bakesCache = bakes;
+  const b = bakes.find(x=>x.id===id);
+  if(!b){
+    window._activeDeigId=null; window._activeDeigName=null;
+    el.innerHTML = noNoteDeigHTML();
+    return;
+  }
+  const statusTxt = b.status==='finished' ? 'Ferdig' : 'Aktiv';
+  el.innerHTML = `
+    <div style="font-size:12px;color:#888;margin-bottom:.5rem">Notater for: <b style="color:#1a1a1a">${escH(b.name)}</b> <span style="color:#1D9E75">· ${statusTxt}</span></div>
+    <textarea id="${inputId}" rows="6" placeholder="Hvordan gikk det? Smak, heving, justeringer til neste gang..." style="width:100%;border:1px solid #d0cdc8;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box">${escH(b.note||'')}</textarea>
+    <div style="margin-top:.5rem;display:flex;gap:10px;align-items:center">
+      <button onclick="saveDeigNote('${inputId}','${statusId}')" style="padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">💾 Lagre notat</button>
+      <span id="${statusId}" style="font-size:12px;color:#1D9E75"></span>
+    </div>
+    <div style="font-size:11px;color:#999;margin-top:6px">Lagres sammen med deigen — synlig for alle som åpner den, uansett enhet.</div>`;
 }
-function notesListHTML(){
-  const n=getNotes();
-  if(!n.length)return '<p style="font-size:12px;color:#999;padding:.5rem 0">Ingen notater enn\u00e5. Skriv hvordan baksten ble \u2014 smak, heving, justeringer til neste gang.</p>';
-  return n.map((x,i)=>{
-    const d=new Date(x.d);
-    return '<div class="step" style="margin-bottom:.5rem"><div class="step-body">'
-     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
-     +'<div style="min-width:0"><div style="font-size:11px;color:#888">'+fDT(d)+'</div>'
-     +'<div style="font-size:11px;color:#1D9E75;font-weight:600">'+escH(x.cfg)+'</div></div>'
-     +'<button onclick="delNote('+i+')" style="border:1px solid #e0ddd8;background:#fff;border-radius:6px;padding:3px 8px;font-size:11px;color:#993C1D;cursor:pointer;flex-shrink:0">Slett</button></div>'
-     +'<div style="font-size:13px;color:#1a1a1a;margin-top:.4rem;line-height:1.6;white-space:pre-wrap">'+escH(x.txt)+'</div>'
-     +'</div></div>';
-  }).join('');
+
+async function saveDeigNote(inputId, statusId){
+  const id = window._activeDeigId;
+  if(!id) return;
+  const ta = document.getElementById(inputId);
+  const val = ta ? ta.value : '';
+  const statusEl = document.getElementById(statusId);
+  try{
+    const res = await fetch('/api/bakes/'+id, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({note: val})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(window._bakesCache){ const b=window._bakesCache.find(x=>x.id===id); if(b) b.note=val; }
+    if(statusEl){ statusEl.textContent='✓ Lagret'; setTimeout(()=>{ if(statusEl) statusEl.textContent=''; }, 2000); }
+  }catch(e){
+    alert('Kunne ikke lagre notat. Sjekk nettforbindelsen. ('+e.message+')');
+  }
 }
-function notesPanelHTML(inputId){
-  return '<div style="margin-bottom:.75rem"><textarea id="'+inputId+'" rows="3" placeholder="Hvordan ble baksten? F.eks: Perfekte kanter etter 100 sek, litt mer salt neste gang..." style="width:100%;border:1px solid #d0cdc8;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>'
-   +'<button onclick="addNote(\''+inputId+'\')" style="margin-top:6px;padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">\ud83d\udcbe Lagre notat</button>'
-   +'<div style="font-size:11px;color:#999;margin-top:4px">Notatet lagres med dagens oppsett (type, metode, mengder) \u2014 kun i denne nettleseren.</div></div>'
-   +'<div id="'+inputId+'-list">'+notesListHTML()+'</div>';
-}
+
 function refreshNotesPanels(){
-  ['note-input-pc','note-input-mob'].forEach(id=>{
-    const list=document.getElementById(id+'-list');
-    if(list)list.innerHTML=notesListHTML();
-  });
+  const pc = document.getElementById('notes-panel');
+  if(pc) renderNotesPanel('notes-panel');
+  const mob = document.getElementById('mob-notes-content');
+  if(mob) renderNotesPanel('mob-notes-content');
 }
 
 // ===== LAYOUT SWITCHING =====
@@ -1106,8 +1125,6 @@ function syncMobControls(){
     const el=g(id);
     if(el&&!el.dataset.lst){el.addEventListener('input',mobGen);el.addEventListener('change',mobGen);el.dataset.lst='1';}
   });
-  const mnc=g('mob-notes-content');
-  if(mnc&&!mnc.dataset.init){mnc.innerHTML=notesPanelHTML('note-input-mob');mnc.dataset.init='1';}
   updatePcountDisp();
   syncHelpUI();
 }
@@ -1200,6 +1217,7 @@ function mobShowTab(t){
     if(tab)tab.classList.toggle('on',id===t);
   });
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
+  if(t==='notes')renderNotesPanel('mob-notes-content');
 }
 
 function mobGetAnchor(p){
@@ -1270,7 +1288,7 @@ const _months=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov'
 const _stamp=`v2.1 · ${_days[_now.getDay()]} ${_now.getDate()}. ${_months[_now.getMonth()]} ${_now.getFullYear()} kl. ${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
 document.getElementById('build-stamp').textContent=_stamp;
 
-// ===== BAKSTER (delt liste via Netlify Blobs) =====
+// ===== DEIGER (delt liste via Netlify Blobs) =====
 window._bakesCache = [];
 
 async function fetchBakes(){
@@ -1280,7 +1298,7 @@ async function fetchBakes(){
     const data = await res.json();
     return data.bakes || [];
   }catch(e){
-    console.error('Henting av bakster feilet:', e);
+    console.error('Henting av deiger feilet:', e);
     return null;
   }
 }
@@ -1332,16 +1350,16 @@ async function renderBaksterPanel(targetId){
   const mob = targetId.startsWith('mob-');
   const bakes = await fetchBakes();
   if(bakes===null){
-    el.innerHTML = '<p style="color:#993C1D;font-size:12px;padding:.5rem 0">Kunne ikke hente bakster. Sjekk at appen kjører på Netlify med bakes-funksjonen koblet til.</p>';
+    el.innerHTML = '<p style="color:#993C1D;font-size:12px;padding:.5rem 0">Kunne ikke hente deiger. Sjekk at appen kjører på Netlify med bakes-funksjonen koblet til.</p>';
     return;
   }
   window._bakesCache = bakes;
   const active = bakes.filter(b=>b.status==='active');
   const finished = bakes.filter(b=>b.status==='finished');
   let html = `<div class="lbl" style="margin-bottom:.4rem">Aktive</div>`;
-  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : '<p style="color:#999;font-size:12px;padding:.2rem 0 .8rem">Ingen aktive bakster. Sett opp en oppskrift og trykk "Lagre bakst".</p>';
+  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : '<p style="color:#999;font-size:12px;padding:.2rem 0 .8rem">Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".</p>';
   html += `<div class="lbl" style="margin:.8rem 0 .4rem">Ferdige</div>`;
-  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : '<p style="color:#999;font-size:12px;padding:.2rem 0">Ingen ferdige bakster ennå.</p>';
+  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : '<p style="color:#999;font-size:12px;padding:.2rem 0">Ingen ferdige deiger ennå.</p>';
   el.innerHTML = html;
 }
 
@@ -1353,7 +1371,7 @@ function refreshBaksterPanels(){
 }
 
 async function saveBake(){
-  const name = prompt('Navn på baksten (f.eks. "Rune — fredagspizza"):');
+  const name = prompt('Navn på deigen (f.eks. "Rune — fredagspizza"):');
   if(!name || !name.trim()) return;
   const mobEl=document.getElementById('mob-layout');
   const isMob = !!(mobEl && mobEl.classList.contains('active'));
@@ -1371,12 +1389,15 @@ async function saveBake(){
       body: JSON.stringify(body)
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
+    const saved = await res.json();
+    window._activeDeigId = saved.id;
+    window._activeDeigName = name.trim();
     if(btn){
       btn.innerHTML = isMob ? '<i>✓</i>Lagret' : '✓ Lagret!';
       setTimeout(()=>{ if(btn) btn.innerHTML = origHTML; }, 2000);
     }
   }catch(e){
-    alert('Kunne ikke lagre bakst. Sjekk nettforbindelsen og at Netlify-funksjonen er koblet til.\n('+e.message+')');
+    alert('Kunne ikke lagre deig. Sjekk nettforbindelsen og at Netlify-funksjonen er koblet til.\n('+e.message+')');
   }
 }
 
@@ -1400,6 +1421,8 @@ function syncDesktopControls(){
 function openBake(id){
   const b = (window._bakesCache||[]).find(x=>x.id===id);
   if(!b) return;
+  window._activeDeigId = id;
+  window._activeDeigName = b.name;
   Object.assign(S, b.config);
   S.mode = b.anchorMode==='end' ? 'end' : 'start';
   let dt;
@@ -1413,6 +1436,7 @@ function openBake(id){
     syncMobControls();
     mobSetMode(S.mode);
     mobShowTab('plan');
+    mobGen();
   }else{
     const p = S.mode==='end' ? 'e' : 's';
     const dEl=document.getElementById(p+'d'), tEl=document.getElementById(p+'t');
@@ -1420,33 +1444,37 @@ function openBake(id){
     syncDesktopControls();
     setMode(S.mode);
     showTab('plan', document.querySelector('.tabs .tab'));
+    clearTimeout(AT);
+    gen();
   }
-  gen();
 }
 
 async function finishBakePrompt(id){
-  const note = prompt('Hvordan gikk baksten? (kan stå tomt)') || '';
+  if(!confirm('Merk denne deigen som ferdig? Du kan fortsatt skrive notater om den i Notater-fanen etterpå.')) return;
   try{
     const res = await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({status:'finished', note})
+      body: JSON.stringify({status:'finished'})
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     refreshBaksterPanels();
+    refreshNotesPanels();
   }catch(e){
-    alert('Kunne ikke merke baksten som ferdig. ('+e.message+')');
+    alert('Kunne ikke merke deigen som ferdig. ('+e.message+')');
   }
 }
 
 async function deleteBakeConfirm(id){
-  if(!confirm('Slette denne baksten permanent? Dette kan ikke angres.')) return;
+  if(!confirm('Slette denne deigen permanent? Dette kan ikke angres.')) return;
   try{
     const res = await fetch('/api/bakes/'+id, { method: 'DELETE' });
     if(!res.ok) throw new Error('HTTP '+res.status);
+    if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; }
     refreshBaksterPanels();
+    refreshNotesPanels();
   }catch(e){
-    alert('Kunne ikke slette baksten. ('+e.message+')');
+    alert('Kunne ikke slette deigen. ('+e.message+')');
   }
 }
 
@@ -1482,7 +1510,7 @@ if(document.readyState==='complete'||document.readyState==='interactive'){
     <div class="mob-action-bar">
       <div class="mob-abtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan"><i>📋</i>Kopier</div>
       <div class="mob-abtn" onclick="downloadIcs(window._steps||[])" title="Last ned til kalender"><i>📅</i>Kalender</div>
-      <div class="mob-abtn pri" id="mob-savebake-btn" onclick="saveBake()" title="Lagre denne baksten"><i>💾</i>Lagre</div>
+      <div class="mob-abtn pri" id="mob-savebake-btn" onclick="saveBake()" title="Lagre denne deigen"><i>💾</i>Lagre</div>
     </div>
   </div>
 
@@ -1572,10 +1600,10 @@ if(document.readyState==='complete'||document.readyState==='interactive'){
     </div>
   </div>
 
-  <!-- TAB: BAKSTER -->
+  <!-- TAB: DEIGER -->
   <div class="mob-screen" id="mob-bakster">
     <div class="mob-content" id="mob-bakster-content">
-      <p style="color:#999;font-size:13px;padding:.5rem 0">Laster bakster…</p>
+      <p style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p>
     </div>
   </div>
 
@@ -1606,7 +1634,7 @@ if(document.readyState==='complete'||document.readyState==='interactive'){
       <span aria-hidden="true">📝</span>Notater
     </div>
     <div class="mob-tab" id="mob-tab-bakster" onclick="mobShowTab('bakster')">
-      <span aria-hidden="true">🍽️</span>Bakster
+      <span aria-hidden="true">🍽️</span>Deiger
     </div>
     <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
       <span aria-hidden="true">💡</span>Teknikk
