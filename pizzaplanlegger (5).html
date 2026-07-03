@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizzaplanlegger</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;font-size:16px}
+.app{display:grid;grid-template-columns:295px 1fr;min-height:100vh}
+.sb{background:#f0ede8;border-right:1px solid #e0ddd8;padding:1rem;display:flex;flex-direction:column;gap:.8rem;overflow-y:auto;position:sticky;top:0;height:100vh}
+.mn{background:#fff;padding:1.5rem;overflow-y:auto}
+.logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:7px;color:#1a1a1a}
+.logo span{font-size:20px}
+.lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.pills{display:flex;flex-wrap:wrap;gap:4px}
+.pill{padding:4px 10px;border-radius:20px;border:1px solid #d0cdc8;font-size:12px;cursor:pointer;background:#fff;color:#555;transition:all .15s;white-space:nowrap;user-select:none}
+.pill.on{background:#1D9E75;border-color:#1D9E75;color:#fff;font-weight:600}
+.pill:hover:not(.on){background:#e8e5e0}
+.mcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.mc{border:1px solid #d0cdc8;border-radius:8px;padding:.5rem .65rem;cursor:pointer;transition:all .15s;background:#fff}
+.mc.on{border-color:#1D9E75;border-width:2px;background:#e8f7f1}
+.mc.hc{border-color:#BA7517}
+.mc.hc.on{background:#fef3e2;border-color:#BA7517}
+.mc-t{font-size:12px;font-weight:600;color:#1a1a1a}
+.mc.on .mc-t{color:#085041}
+.mc.hc.on .mc-t{color:#633806}
+.mc-s{font-size:11px;color:#888;margin-top:1px}
+.mc.on .mc-s{color:#0F6E56}
+.mc.hc.on .mc-s{color:#854F0B}
+.hsub{border:1px solid #d0cdc8;border-radius:8px;margin-top:4px;overflow:hidden}
+.hsub-body{background:#fff;padding:.5rem .65rem;display:flex;flex-direction:column;gap:2px}
+.hrow{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:#555;transition:background .1s}
+.hrow:hover{background:#f0ede8}
+.hrow.on{background:#e8f7f1;color:#085041;font-weight:600}
+.hd{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.hrow.on .hd{background:#1D9E75}
+.gcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.gc{border:1px solid #d0cdc8;border-radius:8px;padding:.5rem .65rem;cursor:pointer;transition:all .15s;background:#fff}
+.gc.on{border-color:#1D9E75;border-width:2px;background:#e8f7f1}
+.gc-t{font-size:12px;font-weight:600;color:#1a1a1a}
+.gc.on .gc-t{color:#085041}
+.gc-s{font-size:11px;color:#888;margin-top:1px}
+.gc.on .gc-s{color:#0F6E56}
+.divl{height:1px;background:#e0ddd8;flex-shrink:0}
+.tbox{background:#fff;border:1px solid #d0cdc8;border-radius:8px;padding:.75rem}
+.tbox-t{font-size:12px;font-weight:600;margin-bottom:.55rem;display:flex;align-items:center;gap:5px;color:#1a1a1a}
+.mbtns{display:flex;gap:5px;margin-bottom:.6rem}
+.mb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:8px;border:2px solid #d0cdc8;cursor:pointer;background:#fff;color:#888;transition:all .15s;font-size:11px;text-align:center;line-height:1.3;user-select:none}
+.mb.on{border-color:#1D9E75;background:#e8f7f1;color:#085041;font-weight:600}
+.mb:hover:not(.on){background:#f0ede8}
+.dtg{display:grid;grid-template-columns:1fr 110px;gap:5px;margin-bottom:3px}
+input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #d0cdc8;border-radius:6px;font-size:12px;background:#fff;color:#1a1a1a;outline:none;min-width:0;font-family:inherit}
+input[type=date]:focus,input[type=time]:focus{border-color:#1D9E75;outline:2px solid #1D9E7530}
+.hint{font-size:11px;color:#999;line-height:1.4;margin-top:3px}
+.sr{display:flex;align-items:center;gap:8px}
+.sr input[type=range]{flex:1;min-width:0;accent-color:#1D9E75}
+.sv{font-size:12px;font-weight:600;color:#1D9E75;white-space:nowrap;min-width:44px;text-align:right}
+.hb{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:7px;margin-left:3px;vertical-align:middle}
+.brow{display:grid;grid-template-columns:1fr auto;gap:5px;margin-top:auto;padding-top:.5rem}
+.bgo{width:100%;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.bgo:hover{background:#178a65}
+.brst{padding:10px 13px;background:#fff;color:#888;border:1px solid #d0cdc8;border-radius:8px;cursor:pointer;font-size:13px}
+.brst:hover{background:#f0ede8}
+h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
+.sub{font-size:12px;color:#888;margin-bottom:.75rem;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.bg{background:#e8f7f1;color:#085041}.ba{background:#fef3e2;color:#633806}.bc{background:#feece8;color:#712B13}.bw{background:#f0ede8;color:#666}
+.sbar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1rem}
+.scard{background:#f5f4f0;border-radius:8px;padding:.65rem .85rem}
+.scard .sl{font-size:11px;color:#888;margin-bottom:2px}
+.scard .sv2{font-size:13px;font-weight:600;color:#1a1a1a}
+.scard .st{font-size:12px;color:#1D9E75;margin-top:2px}
+.crow{display:flex;gap:6px;margin-bottom:1rem}
+.cbtn{flex:1;padding:7px 10px;border:1px solid #d0cdc8;border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px;background:#fff;color:#555;cursor:pointer}
+.cbtn:hover{background:#f5f4f0}
+.pcbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1rem}
+.pcc{background:#f5f4f0;border-radius:8px;padding:.55rem .7rem;text-align:center}
+.pcc .pl{font-size:11px;color:#888;margin-bottom:2px}
+.pcc .pv{font-size:15px;font-weight:600;color:#1a1a1a}
+.pcc .ps{font-size:10px;color:#999;margin-top:1px}
+.tabs{display:flex;border-bottom:1px solid #e8e5e0;margin-bottom:1rem}
+.tab{padding:7px 14px;font-size:13px;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:#1D9E75;border-bottom-color:#1D9E75;font-weight:600}
+.tab:hover:not(.on){color:#444}
+.step{border:1px solid #e8e5e0;border-radius:10px;overflow:hidden;margin-bottom:.6rem;background:#fff}
+.step.now{border-color:#1D9E75;border-width:2px}
+.step.shifted{border-color:#BA7517;border-style:dashed}
+.step-body{padding:.75rem 1rem}
+.sh2{display:flex;align-items:flex-start;gap:9px}
+.sn{width:24px;height:24px;border-radius:50%;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sn.d{background:#e8e5e0;color:#888;border:1px solid #d0cdc8}
+.stit{font-size:13px;font-weight:600;color:#1a1a1a}
+.smeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px}
+.stim{font-size:11px;color:#888}
+.stim.late{color:#BA7517;font-weight:600}
+.sloc{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
+.sloc.k{color:#185FA5}.sloc.r{color:#0F6E56}.sloc.o{color:#993C1D}
+.sdesc{font-size:12px;color:#555;margin-top:.45rem;line-height:1.65}
+.swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#085041;margin-top:.45rem;line-height:1.5}
+.stip{background:#f5f4f0;border-left:3px solid #ccc;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#555;margin-top:.4rem;line-height:1.5}
+.snote{background:#fef3e2;border-left:3px solid #BA7517;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#633806;margin-top:.4rem;line-height:1.5}
+.swait{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;background:#f5f4f0;border-top:1px solid #e8e5e0}
+.swait i{font-size:14px;color:#999}
+.swait-txt{font-size:12px;color:#666}
+.swait-val{font-size:12px;font-weight:600;color:#1a1a1a}
+.rec{background:#f5f4f0;border-radius:10px;padding:.85rem 1rem;margin-bottom:.9rem}
+.rrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #e8e5e0}
+.rrow:last-child{border-bottom:none}
+.rval{font-weight:600;color:#1D9E75}
+.wbox{background:#fef3e2;border-left:3px solid #BA7517;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#633806;margin-bottom:.75rem;line-height:1.5}
+.ibox{background:#e8f1fb;border-left:3px solid #185FA5;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#0C447C;margin-bottom:.75rem;line-height:1.5}
+.future-dim{opacity:.45}
+.daylbl{font-size:11px;font-weight:600;color:#888;margin:.6rem 0 .2rem;display:flex;align-items:center;gap:6px}
+.daylbl.today{color:#085041}
+.daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
+.daylbl.today .ddot{background:#1D9E75}
+/* ===== MOBILE LAYOUT ===== */
+.mob-layout{display:none;flex-direction:column;min-height:100vh;background:#f5f4f0}
+.mob-layout.active{display:flex}
+.app.pc-active{display:grid}
+
+/* top bar */
+.mob-topbar{background:#fff;border-bottom:1px solid #e0ddd8;padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50}
+.mob-topbar-title{display:flex;flex-direction:column;gap:1px}
+.mob-topbar-title span{font-size:15px;font-weight:600}
+.mob-topbar-title small{font-size:10px;color:#aaa;font-weight:400}
+.mob-topbar-actions{display:flex;align-items:center;gap:8px}
+.mob-icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e0ddd8;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#555}
+.mob-icon-btn:hover{background:#f0ede8}
+
+/* bottom tab bar */
+.mob-tabbar{background:#fff;border-top:1px solid #e0ddd8;display:flex;position:sticky;bottom:0;z-index:50}
+.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:#888;cursor:pointer;gap:2px;border-top:2px solid transparent}
+.mob-tab i{font-size:20px}
+.mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
+
+/* mob screens */
+.mob-screen{display:none;flex:1;overflow-y:auto;padding-bottom:4px}
+.mob-screen.active{display:block}
+
+/* mob plan */
+.mob-content{padding:.75rem 1rem}
+.mob-sumbar{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:.65rem}
+.mob-sc{background:#fff;border:1px solid #e8e5e0;border-radius:8px;padding:.45rem .55rem}
+.mob-sc .sl{font-size:9px;color:#888;margin-bottom:1px}
+.mob-sc .sv{font-size:12px;font-weight:600;color:#1a1a1a}
+.mob-sc .st{font-size:10px;color:#1D9E75;margin-top:1px}
+
+/* mob steps — compact */
+.mob-step{border:1px solid #e8e5e0;border-radius:10px;overflow:hidden;margin-bottom:.5rem;background:#fff}
+.mob-step.now{border-color:#1D9E75;border-width:2px}
+.mob-step.shifted{border-color:#BA7517;border-style:dashed}
+.mob-step.dim{opacity:.4}
+.mob-step-body{padding:.55rem .75rem}
+.mob-sh{display:flex;align-items:flex-start;gap:8px}
+.mob-sn{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.mob-sn.d{background:#e8e5e0;color:#888;border:1px solid #d0cdc8}
+.mob-stit{font-size:13px;font-weight:600;color:#1a1a1a;line-height:1.3}
+.mob-smeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
+.mob-stim{font-size:11px;color:#888}
+.mob-stim.late{color:#BA7517;font-weight:600}
+.mob-sloc{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
+.mob-sloc.k{color:#185FA5}.mob-sloc.r{color:#0F6E56}.mob-sloc.o{color:#993C1D}
+.mob-swait{display:flex;align-items:center;gap:6px;padding:.35rem .75rem;background:#f5f4f0;border-top:1px solid #e8e5e0;font-size:11px;color:#666}
+.mob-swait b{color:#1a1a1a}
+.mob-snote{background:#fef3e2;border-left:3px solid #BA7517;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#633806;margin-top:.35rem;line-height:1.5}
+.mob-sdesc{font-size:12px;color:#555;margin-top:.4rem;line-height:1.6}
+.mob-swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#085041;margin-top:.35rem;line-height:1.5}
+.mob-stip{background:#f5f4f0;border-left:3px solid #ccc;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#555;margin-top:.3rem;line-height:1.5}
+.mob-daylbl{font-size:11px;font-weight:600;color:#888;margin:.5rem 0 .15rem;display:flex;align-items:center;gap:5px}
+.mob-daylbl.today{color:#085041}
+.mob-daylbl .ddot{width:6px;height:6px;border-radius:50%;background:#ccc;flex-shrink:0}
+.mob-daylbl.today .ddot{background:#1D9E75}
+.mob-action-bar{display:flex;gap:6px;padding:.6rem 1rem;background:#fff;border-top:1px solid #e0ddd8;position:sticky;bottom:56px;z-index:40}
+.mob-abtn{flex:1;padding:8px 4px;border:1px solid #d0cdc8;border-radius:8px;font-size:11px;text-align:center;background:#fff;color:#555;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mob-abtn i{font-size:16px}
+.mob-abtn.pri{background:#1D9E75;border-color:#1D9E75;color:#fff;font-weight:600}
+.mob-abtn:hover:not(.pri){background:#f0ede8}
+
+/* mob settings */
+.mob-section-lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
+.mob-setting-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;background:#fff;border-bottom:1px solid #f0ede8}
+.mob-setting-row:first-of-type{border-top:1px solid #e0ddd8}
+.mob-slabel{font-size:13px;color:#1a1a1a}
+.mob-sval{font-size:13px;color:#888}
+.mob-slider-wrap{background:#fff;padding:.1rem 1rem .55rem;border-bottom:1px solid #e0ddd8}
+.mob-slider-wrap input[type=range]{width:100%;accent-color:#1D9E75}
+.mob-pill-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8}
+.mob-mcard-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8}
+
+/* mob recipe */
+.mob-pcbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:.5rem 0 .75rem}
+.mob-pcc{background:#f5f4f0;border-radius:8px;padding:.5rem .65rem}
+.mob-pcc .pl{font-size:10px;color:#888;margin-bottom:2px}
+.mob-pcc .pv{font-size:18px;font-weight:600;color:#1a1a1a}
+.mob-pcc .ps{font-size:10px;color:#999;margin-top:1px}
+.mob-rec{border-radius:10px;overflow:hidden;margin-bottom:.75rem;border:1px solid #e8e5e0}
+.mob-rrow{display:flex;justify-content:space-between;padding:9px 12px;font-size:13px;border-bottom:1px solid #f0ede8;background:#fff}
+.mob-rrow:last-child{border-bottom:none}
+.mob-rval{font-weight:600;color:#1D9E75}
+
+/* layout toggle btn */
+
+.help-icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid #e0ddd8;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;color:#888;flex-shrink:0}
+.help-icon-btn.on{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.help-icon-btn:hover:not(.on){background:#f0ede8}
+.layout-toggle{display:flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid #e0ddd8;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;color:#555}
+.layout-toggle:hover{background:#f0ede8}
+.layout-toggle.mob-style{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+@media(max-width:767px){
+  body:not(.pc-mode) .app{display:none}
+  body:not(.pc-mode) .mob-layout{display:flex}
+}
+body.mob-mode .app{display:none}
+body.mob-mode .mob-layout{display:flex}
+body.pc-mode .app{display:grid!important}
+body.pc-mode .mob-layout{display:none!important}
+@media(max-width:767px){body{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sb">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between">
+  <div class="logo"><span>🍕</span>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <span>Pizzaplanlegger</span>
+      <span id="build-stamp" style="font-size:10px;color:#aaa;font-weight:400;letter-spacing:.03em"></span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:5px"><button class="help-icon-btn on" id="pc-help-btn" onclick="toggleHelp()" title="Skjul forklaringer og tips"><i class="ti ti-bulb" aria-hidden="true"></i></button><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
+</div>
+
+  <div><div class="lbl">Pizzatype</div>
+    <div class="pills" id="gtype">
+      <span class="pill on" data-v="napoletana" title="Tynn, luftig. Anbefalt hydrering 60–68%.">Napoletansk</span>
+      <span class="pill" data-v="langpanne" title="Myk langpannepizza. 68–75%.">Langpanne</span>
+      <span class="pill" data-v="newyork" title="Tynn, foldbar. Anbefalt hydrering 60–67%. Med sukker og olje.">New York</span>
+      <span class="pill" data-v="chicago" title="Deep dish. 55–62%.">Chicago</span>
+    </div>
+  </div>
+
+  <div><div class="lbl">Metode</div>
+    <div class="mcards" id="gmet">
+      <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Standard</div><div class="mc-s">Direkte + kjøl</div></div>
+      <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
+      <div class="mc" data-v="biga" title="Fast fordeig 16–24t."><div class="mc-t">Biga</div><div class="mc-s">Fast fordeig, 16–24t</div></div>
+      <div class="mc hc" data-v="hurtig" title="2–10 timer, uten kjøleskapsheving."><div class="mc-t">Hurtigdeig</div><div class="mc-s">2–10 timer, uten kjøleskapsheving</div></div>
+    </div>
+    <div class="hsub" id="hsub" style="display:none"><div class="hsub-body" id="hrows"></div></div>
+  </div>
+
+  <div><div class="lbl">Melmengde</div>
+    <div class="sr"><input type="range" id="msl" min="300" max="1500" step="100" value="500" title="Skalerer alle ingredienser automatisk." oninput="uMel(this.value)"><span class="sv" id="mdisp">500g</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>300g</span><span>1500g</span></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+      <span style="font-size:11px;color:#888">eller antall pizzaer:</span>
+      <button onclick="stepPizzas(-1)" title="Én pizza mindre" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">−</button>
+      <span id="pcount-disp" style="font-size:14px;font-weight:600;color:#1D9E75;min-width:20px;text-align:center">4</span>
+      <button onclick="stepPizzas(1)" title="Én pizza mer" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">+</button>
+    </div>
+  </div>
+
+  <div><div class="lbl">Hydrering — <span id="hlbl">65%</span><span id="hcat" class="hb"></span></div>
+    <div class="sr"><input type="range" id="hsl" min="55" max="80" step="1" value="65" title="Vann som % av mel." oninput="uHydro(this.value)"><span class="sv" id="hdisp">65%</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>55% fast</span><span>80% flytende</span></div>
+    <div id="hhint" class="hint"></div>
+  </div>
+
+  <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">3 dager</span></div>
+    <div class="sr"><input type="range" id="csl" min="1" max="6" step="1" value="3" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">3 dager</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>1 dag</span><span>6 dager</span></div>
+  </div>
+
+  <div><div class="lbl">Romtemperatur — <span id="tlbl">22°C</span></div>
+    <div class="sr"><input type="range" id="tsl" min="18" max="28" step="2" value="22" title="Påvirker hevingstid." oninput="uTemp(this.value)"><span class="sv" id="tdisp">22°C</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>18°C kjølig</span><span>28°C sommer</span></div>
+    <div id="thint" class="hint"></div>
+  </div>
+
+  <div><div class="lbl">Gjærtype</div>
+    <div class="gcards" id="ggj">
+      <div class="gc on" data-v="torr" title="1g tørrgjær = 3g fersk."><div class="gc-t">Tørrgjær</div><div class="gc-s">Direkte i mel</div></div>
+      <div class="gc" data-v="fersk" title="Mer aroma. 3× mengden."><div class="gc-t">Fersk gjær</div><div class="gc-s">3× mer enn tørrgjær</div></div>
+    </div>
+  </div>
+
+  <div><div class="lbl">Meltype</div>
+    <div class="pills" id="gmel">
+      <span class="pill on" data-v="tipo00" title="Finmalt italiensk. Best for napoletansk.">Tipo 00</span>
+      <span class="pill" data-v="siktet" title="Norsk siktet. +5–10% vann.">Siktet hvete</span>
+      <span class="pill" data-v="sammalt" title="Bland 20–30% med tipo 00.">Sammalt (20–30%)</span>
+    </div>
+  </div>
+
+  <div><div class="lbl">Ovntype</div>
+    <div class="pills" id="govn">
+      <span class="pill on" data-v="pizza" title="430–450°C. Leopardmønster.">Pizzaovn (430–450°C)</span>
+      <span class="pill" data-v="vanlig" title="Maks 250°C med pizzastein.">Vanlig ovn (maks 250°C)</span>
+    </div>
+  </div>
+
+  <div class="divl"></div>
+
+  <div class="tbox">
+    <div class="tbox-t">📅 Planlegging</div>
+    <div class="mbtns">
+      <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br>Starter nå</div>
+      <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br>Planlagt steketid</div>
+    </div>
+    <div id="bs">
+      <div class="lbl" style="margin-bottom:4px">Når begynner du?</div>
+      <div class="dtg"><input type="date" id="sd"><input type="time" id="st" value="07:30"></div>
+      <div class="hint">Steg i arbeidstid (07–16) flyttes til 16:00. Etter 22:30 til neste morgen 07:00.</div>
+    </div>
+    <div id="be" style="display:none">
+      <div class="lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+      <div class="dtg"><input type="date" id="ed"><input type="time" id="et" value="18:00"></div>
+      <div class="hint">Appen regner bakover og viser når du må starte.</div>
+      <div id="earliest-hint" style="font-size:11px;color:#1D9E75;margin-top:3px"></div>
+    </div>
+  </div>
+
+  <div class="brow">
+    <button class="bgo" onclick="doReset()" title="Nullstill alle innstillinger">↺ Nullstill</button>
+    <button class="brst" onclick="doReset()" title="Nullstill alle valg">↺</button>
+  </div>
+</div>
+
+<div class="mn" id="main">
+  <div style="display:flex;align-items:center;justify-content:center;height:80vh;flex-direction:column;gap:12px;color:#aaa">
+    <div style="font-size:60px">🍕</div>
+    <p style="font-size:15px;color:#888">Tidsplanen oppdateres automatisk når du gjør endringer</p>
+  </div>
+</div>
+</div>
+
+<script>
+const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',meltype:'tipo00',hurtigH:5,showHelp:true};
+const S={...DEF};let AT=null;
+const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'}];
+const HREC={napoletana:65,newyork:63,langpanne:70,chicago:59};
+const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:54,mx:65}};
+const BSALT={napoletana:2.5,newyork:2.0,langpanne:2.0,chicago:2.0};
+const BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0};
+const BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2};
+const COLDMULT={1:2.0,2:1.4,3:1.0,4:0.78,5:0.6,6:0.5};
+const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0};
+function tf(){
+  const pts=[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]];
+  const t=S.temp;
+  if(t<=pts[0][0])return pts[0][1];
+  if(t>=pts[pts.length-1][0])return pts[pts.length-1][1];
+  for(let i=0;i<pts.length-1;i++){
+    const [t0,f0]=pts[i],[t1,f1]=pts[i+1];
+    if(t>=t0&&t<=t1)return Math.round((f0+(f1-f0)*(t-t0)/(t1-t0))*100)/100;
+  }
+  return 1.0;
+}
+function rtM(b){return Math.round(b*tf());}
+function fd(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function initD(){
+  const n=new Date();
+  document.getElementById('sd').value=fd(n);
+  document.getElementById('st').value=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  const l=new Date(n.getTime()+S.cold*86400000+14400000);
+  document.getElementById('ed').value=fd(l);
+  document.getElementById('et').value='18:00';
+}
+initD();
+function sched(){
+  clearTimeout(AT);
+  AT=setTimeout(()=>{
+    updateEarliestHint();
+    const mobEl=document.getElementById('mob-layout');
+    const isMob=mobEl&&mobEl.classList.contains('active');
+    if(isMob){mobGen();}else{gen();}
+  },200);
+}
+function updateEarliestHint(){
+  const el=document.getElementById('earliest-hint');
+  if(!el||S.mode!=='end')return;
+  const now=new Date();
+  const earliest=new Date(now.getTime()+minBakeMins()*60000);
+  el.textContent='Tidligst mulig: '+fDT(earliest);
+}
+['sd','st','ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',sched);el.addEventListener('change',sched);}});
+
+function buildHrows(){
+  const b=document.getElementById('hrows');if(!b)return;
+  b.innerHTML=HOPTS.map(o=>`<div class="hrow ${o.h===S.hurtigH?'on':''}" onclick="setH(${o.h})"><div class="hd"></div>${o.h} timer — <b>${o.b}</b></div>`).join('');
+}
+function setH(h){S.hurtigH=h;buildHrows();sched();}
+
+function pgrp(id,key,cb){
+  document.getElementById(id).querySelectorAll('.pill').forEach(p=>{
+    p.classList.toggle('on',p.dataset.v===String(S[key]));
+    p.onclick=()=>{S[key]=p.dataset.v;pgrp(id,key,cb);if(cb)cb();sched();};
+  });
+}
+function mCards(){
+  document.getElementById('gmet').querySelectorAll('.mc').forEach(c=>{
+    c.classList.toggle('on',c.dataset.v===S.method);
+    c.onclick=()=>{
+      S.method=c.dataset.v;mCards();
+      document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
+      document.getElementById('cwrap').style.display=S.method==='hurtig'?'none':'block';
+      sched();
+    };
+  });
+}
+function gCards(){
+  document.getElementById('ggj').querySelectorAll('.gc').forEach(c=>{
+    c.classList.toggle('on',c.dataset.v===S.gjaer);
+    c.onclick=()=>{S.gjaer=c.dataset.v;gCards();sched();};
+  });
+}
+pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();});
+pgrp('gmel','meltype');
+pgrp('govn','oven');
+mCards();gCards();buildHrows();
+
+function uMel(v){S.mel=parseInt(v);document.getElementById('mdisp').textContent=v+'g';sched();}
+function uHydro(v){S.hydro=parseInt(v);uHydroUI();sched();}
+function uCold(v){S.cold=parseInt(v);const t=v+' dag'+(v>1?'er':'');document.getElementById('clbl').textContent=t;document.getElementById('cdisp').textContent=t;sched();}
+function uTemp(v){S.temp=parseInt(v);uTempUI();sched();}
+
+function uHydroUI(){
+  const p=S.hydro,r=HRANGE[S.type];
+  document.getElementById('hlbl').textContent=p+'%';
+  document.getElementById('hdisp').textContent=p+'%';
+  const b=document.getElementById('hcat');
+  let tx,bg,co;
+  if(p<r.mn){tx='veldig fast';bg='#E6F1FB';co='#0C447C';}
+  else if(p<=HREC[S.type]-3){tx='fast';bg='#EAF3DE';co='#27500A';}
+  else if(p<=HREC[S.type]+3){tx='anbefalt';bg='#E1F5EE';co='#085041';}
+  else if(p<=r.mx){tx='høy';bg='#FAEEDA';co='#633806';}
+  else{tx='veldig høy';bg='#FAECE7';co='#712B13';}
+  b.textContent=tx;b.style.background=bg;b.style.color=co;
+  document.getElementById('hhint').textContent=p<r.mn?'Svært fast. Krever kraftig elting.':p<=HREC[S.type]-3?'Fast og lett å jobbe med.':p<=HREC[S.type]+3?'Anbefalt nivå. God balanse.':p<=r.mx?'Luftig. Krever litt øvelse.':'Veldig høy. Krever erfaring.';
+}
+function uTempUI(){
+  const t=S.temp;
+  document.getElementById('tlbl').textContent=t+'°C';
+  document.getElementById('tdisp').textContent=t+'°C';
+  document.getElementById('thint').textContent={18:'Kjølig. Ca. 60% lengre hevingstid.',20:'Litt kjølig. Ca. 30% lengre.',22:'Standard romtemperatur.',24:'Litt varmt. Ca. 20% raskere.',26:'Varmt kjøkken. Nesten dobbelt så raskt!',28:'Sommerkjøkken. Følg godt med!'}[t]||'';
+}
+uHydroUI();uTempUI();
+
+function setMode(m){
+  S.mode=m;
+  updateEarliestHint();
+  const ms=document.getElementById('ms');const me=document.getElementById('me');
+  if(ms)ms.classList.toggle('on',m==='start');
+  if(me)me.classList.toggle('on',m==='end');
+  const bs=document.getElementById('bs');const be=document.getElementById('be');
+  if(bs)bs.style.display=m==='start'?'block':'none';
+  if(be)be.style.display=m==='end'?'block':'none';
+  sched();
+}
+function doReset(){
+  Object.assign(S,DEF);
+  document.getElementById('msl').value=500;uMel(500);
+  document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
+  document.getElementById('csl').value=3;uCold(3);
+  document.getElementById('tsl').value=22;S.temp=22;uTempUI();
+  pgrp('gtype','type');pgrp('gmel','meltype');pgrp('govn','oven');
+  mCards();gCards();
+  document.getElementById('hsub').style.display='none';
+  document.getElementById('cwrap').style.display='block';
+  setMode('start');initD();sched();
+}
+function toggleHelp(){
+  S.showHelp=!S.showHelp;
+  ['pc-help-btn','mob-help-btn'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.classList.toggle('on',S.showHelp);
+    el.title=S.showHelp?'Skjul forklaringer og tips':'Vis forklaringer og tips';
+    el.querySelector('i').className=S.showHelp?'ti ti-bulb':'ti ti-bulb-off';
+  });
+  const mobEl=document.getElementById('mob-layout');
+  const isMob=mobEl&&mobEl.classList.contains('active');
+  if(isMob){mobGen();}else{gen();}
+}
+
+
+function minBakeMins(){
+  const rt=rtM(60),cM=S.cold*24*60;
+  if(S.method==='standard') return 45+rt+cM;
+  if(S.method==='poolish')  return 14*60+20+rt+cM;
+  if(S.method==='biga')     return 18*60+20+Math.round(rt*1.5)+cM;
+  if(S.method==='hurtig')   return 30+Math.round(S.hurtigH*0.6*60*tf())+Math.round((S.hurtigH-S.hurtigH*0.6-0.25)*60);
+  return 0;
+}
+
+function anc(p){
+  const d=document.getElementById(p==='s'?'sd':'ed').value;
+  const t=document.getElementById(p==='s'?'st':'et').value||'08:00';
+  return d?new Date(d+'T'+t):new Date();
+}
+function aM(d,m){return new Date(d.getTime()+m*60000);}
+function sM(d,m){return new Date(d.getTime()-m*60000);}
+function fDT(d){
+  const dy=['søn','man','tir','ons','tor','fre','lør'];
+  const mo=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+  return`${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]} kl. ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+
+function R(){
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*(S.method==='hurtig'?1:(COLDMULT[S.cold]||1))*100)/100,yf=Math.round(yd*3*10)/10;
+  const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish'};
+  return{name:ns[S.type],flour:m,water:w,salt:sa,oil:oi,sugar:su,yDry:yd,yFresh:yf};
+}
+function yA(r){return S.gjaer==='torr'?`${r.yDry}g tørrgjær`:`${r.yFresh}g fersk gjær`;}
+function pc(){
+  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:S.type==='langpanne'?400:500,r=R();
+  const td=Math.round(r.flour+r.water+r.salt+r.oil+(r.sugar||0)),cnt=Math.max(1,Math.round(td/eg));
+  return{count:cnt,perPizza:Math.round(td/cnt),totalDough:td,melPer:Math.round(r.flour/cnt)};
+}
+function oD(t){
+  const p=S.oven==='pizza';
+  if(t==='napoletana')return p?'Pizzaovn: 430–450°C, 90–120 sek. Leopardmønster og sprø kanter.':'Vanlig ovn: 250°C, pizzastein/stål varmes 45 min. Stek 6–9 min øverste rille.';
+  if(t==='newyork')return p?'Pizzaovn: 300–340°C, 4–6 min. Lavere temperatur enn napoletansk — sukkeret i deigen brunes raskt og kan brenne over 350°C.':'Vanlig ovn: 250°C på pizzastein/stål (varmes 45 min). Stek 6–8 min til gyllen og sprø bunn.';
+  if(t==='langpanne')return p?'Pizzaovn: 300–350°C, 8–12 min.':'Vanlig ovn: 230–250°C, oljet langpanne, 12–16 min.';
+  return p?'Pizzaovn: 250–280°C i jernpanne, 20–25 min.':'Vanlig ovn: 200–220°C, smørsmurt form, 28–35 min.';
+}
+function oT(t){
+  const p=S.oven==='pizza';
+  if(t==='napoletana')return p?'Pizzastein/-stål MÅ varmes minst 45 min.':'Sett rist øverst. 250°C varmluft gir best resultat.';
+  if(t==='newyork')return p?'Strekk tynt og bredt — kantene skal kunne brettes. Ikke over 350°C.':'Pizzastål gir den klassiske sprø, foldbare NY-bunnen.';
+  if(t==='langpanne')return p?'Tykkbunnet form tåler høy varme.':'Olje i formen. Forhåndstek 5 min uten fyll.';
+  return p?'Jernpanne gir best varmeoverføring.':'Ost UNDER sausen — Chicago-tradisjonen.';
+}
+function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
+function mN(m){return{standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig'}[m]||m;}
+function mlN(){return{tipo00:'Tipo 00',siktet:'Siktet hvete',sammalt:'Sammalt blanding'}[S.meltype]||'Tipo 00';}
+
+const LOC={
+  kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
+  rom:'<span class="sloc r">🏠 Romtemperatur</span>',
+  ovn:'<span class="sloc o">🔥 Ovn</span>',
+  benk:'<span class="sloc r">🔧 Kjøkkenbenk</span>'
+};
+const WHY={
+  au:'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting. I Ankarsrum: autolyse er ekstra effektiv fordi rullekniven allerede har fordelt vannet jevnt i melet.',
+  sg:'Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I Ankarsrum: tilsett salt etter ca. 5 min elting — da er gluten allerede i gang og tåler saltet bedre. Gjær løses i vannet på forhånd.',
+  fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
+  tu:'Kald deig er stiv — gluten er seig ved 4°C. 3–4 timer romtemperatur lar gluten slappe av slik at deigen strekkes uten å rive.',
+  st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
+  pl:'Poolish fermenterer lenge med lite gjær. Enzymer og melkesyrebakterier bygger smak og fordøyelighet.',
+  bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
+};
+function rtW(){return`Gjæren er mest aktiv 25–35°C. Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min.`;}
+
+function rawSteps(a){
+  const r=R(),c=S.cold,ie=S.mode==='end',cM2=c*24*60,rt=rtM(60),tp=S.type;
+  // Felles hjelper: bygger de fire siste stegene (form, kjøleskapsheving, ta ut, stek)
+  // slik at fremover og bakover ALLTID gir identisk timing.
+  // Ankerpunkt: form-tid. Stek = form + cM2. Ta ut = stek - 240. Kald tid = cM2 - 240 - 15.
+  function tailSteps(formAt){
+    const bake=aM(formAt,cM2),taUt=sM(bake,240);
+    return[
+      {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:15,
+        desc:`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,
+        why:WHY.fk,
+        tip:'Bruk bokser med lokk — klede tørker ut overflaten og lager skorpe.'},
+      {title:'Kjøleskapsheiving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,
+        desc:`La emnene stå urørt i kjøleskapet i ca. ${c} dag${c>1?'er':''}. Ikke åpne boksene.`,
+        why:WHY.fk},
+      {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
+        desc:'Ta deigemnene ut. La stå dekket ved romtemperatur i 4 timer. Ikke åpne boksene ennå.',
+        why:WHY.tu,
+        tip:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen.'},
+      {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),why:WHY.st,tip:oT(tp)}
+    ];
+  }
+  if(S.method==='standard'){
+    // Fremover: t0 gitt. Bakover: form = stek - cM2, og regn bakover derfra.
+    const t0=ie?sM(sM(sM(a,cM2),rt),45):a;
+    return[
+      {title:'Ankarsrum — bland og autolyse',loc:'benk',at:t0,dur:30,
+        desc:`Hell ${r.water}g kaldt vann i Ankarsrum-bollen. Start maskinen på trinn 1 og tilsett ${r.flour}g mel gradvis i 3–4 omganger. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,
+        why:WHY.au,
+        tip:'Ankarsrum liker væske i bunnen — melet trekkes jevnt inn under rullekniven. Ikke overfyll på én gang.'},
+      {title:'Tilsett gjær og salt — elt ferdig',loc:'benk',at:aM(t0,30),dur:15,
+        desc:`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i litt vann og tilsett. Start maskinen på trinn 2–3 og elt i 3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}. Øk gradvis til trinn 3–4. Elt totalt 12–15 min til deigen er glatt og smidig og slipper bollen. Mål deigtemperaturen — den skal vise 22–24°C.`,
+        why:WHY.sg,
+        tip:'Ankarsrum jobber best på lav-til-middels hastighet i lang tid. Unngå trinn 5–6 for pizzadeig — det overvarmer og bryter ned gluten.'},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(t0,45),dur:rt,
+        desc:`Løft deigen ut av bollen. Legg i lett oljet bolle, dekk tett med plastfolie. La stå ved ${S.temp}°C i ca. ${rt} min. Deigen skal heve synlig.`,
+        why:rtW(),
+        tip:'Bruk "windowpane test" for å sjekke glutenstruktur: strekk en bit deig tynt — skal bli gjennomsiktig uten å rive.'},
+      ...tailSteps(aM(t0,45+rt))
+    ];
+  }
+  if(S.method==='poolish'){
+    const r2=R();
+    // Fremover: poolish starter ved a. Bakover: form = stek - cM2, deigmiks = form - (20+rt), poolish = miks - 14t.
+    const pa=ie?sM(sM(sM(a,cM2),20+rt),14*60):a;
+    const rdy=aM(pa,14*60);
+    return[
+      {title:'Lag poolish i Ankarsrum-bollen',loc:'benk',at:pa,dur:10,
+        desc:`Ta av rullekniv og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,
+        why:WHY.pl,
+        tip:'Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'},
+      {title:'Ankarsrum — bland ferdig deig',loc:'benk',at:rdy,dur:20,
+        desc:`Sett rullekniv og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g kaldt vann. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær etter 5 min. Øk til trinn 3–4. Elt totalt 10–12 min.`,
+        why:'Poolishen har allerede fermentert mesteparten av deigen — Ankarsrum inkorporerer resten effektivt.',
+        tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gir løsere glutenstruktur. Deigtemperatur: 22–24°C.'},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,why:rtW()},
+      ...tailSteps(aM(rdy,20+rt))
+    ];
+  }
+  if(S.method==='biga'){
+    const r3=R(),bm=Math.round(r3.flour*0.6),bv=Math.round(bm*0.44),rtB=Math.round(rt*1.5);
+    const ba2=ie?sM(sM(sM(a,cM2),20+rtB),18*60):a;
+    const rdy=aM(ba2,18*60);
+    return[
+      {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
+        desc:`Biga lages for hånd — ikke i Ankarsrum. Bland ${bm}g mel, ${bv}g vann og ${Math.round(r3.yDry*0.1*100)/100}g tørrgjær til klumpete, tørr konsistens. Ikke bland for mye.`,
+        why:WHY.bi,
+        tip:'La stå 16–24 timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.'},
+      {title:'Ankarsrum — bland ferdig deig',loc:'benk',at:rdy,dur:20,
+        desc:`Legg bigaen i Ankarsrum-bollen. Tilsett ${Math.round(r3.water-bv)}g kaldt vann. Start trinn 1–2. Tilsett ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?` og ${r3.oil}g olje etter halvparten av melet`:''}. Tilsett ${r3.salt}g salt etter 5 min. Øk til trinn 3–4. Elt totalt 12–15 min til deigen er smidig og slipper bollen.`,
+        why:'Bigaen er stiv — Ankarsrum løser den opp gradvis. Deigen kan virke tung i starten, det er normalt.',
+        tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW()},
+      ...tailSteps(aM(rdy,20+rtB))
+    ];
+  }
+  return[];
+}
+
+// Hurtigdeig-steg — delt mellom desktop (hurtigRes) og mobil (mobGen) slik at de aldri divergerer.
+// Fremover og bakover bruker samme tf()-justerte varigheter.
+function hurtigSteps(anchor){
+  const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3],r=R(),ie=S.mode==='end';
+  const w=Math.round(S.mel*S.hydro/100),f=S.mel/500;
+  const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
+  const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+  const tmp=S.oven==='pizza'?o.tp:o.tv;
+  const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60),p=pc();
+  const t0=ie?sM(anchor,30+ba+afm):anchor;
+  return{o,w,ya,tmp,ba,afm,p,steps:[
+    {title:'Ankarsrum — bland deig raskt',loc:'benk',at:t0,dur:15,
+      desc:`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min.`,
+      why:'Lunkent vann (35–38°C) aktiverer gjæren raskt. Ankarsrum inkorporerer melet effektivt uten klumper.',
+      tip:'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'},
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(t0,15),dur:ba,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,why:rtW()},
+    {title:'Form emner',loc:'benk',at:aM(t0,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,tip:'Ikke kjevle — strekk for hånd.'},
+    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}.`,why:'Gluten slapper av etter forming.'},
+    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(t0,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,tip:oT(S.type)}
+  ]};
+}
+
+function renderSteps(steps, mode='desktop'){
+  const isMob = mode === 'mobile';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dayKey = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const todayKey = dayKey(today);
+  const dayName = d => {
+    const dy=['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
+    const mo=['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
+    return `${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]}`;
+  };
+
+  const C = isMob ? {
+    daylbl: 'mob-daylbl',
+    today: 'today',
+    step: 'mob-step',
+    now: 'now',
+    shifted: 'shifted',
+    dim: 'dim',
+    body: 'mob-step-body',
+    head: 'mob-sh',
+    num: 'mob-sn',
+    numDim: 'd',
+    title: 'mob-stit',
+    meta: 'mob-smeta',
+    time: 'mob-stim',
+    timeLate: 'late',
+    note: 'mob-snote',
+    desc: 'mob-sdesc',
+    why: 'mob-swhy',
+    tip: 'mob-stip',
+    locReplaceFrom: /class="sloc/g,
+    locReplaceTo: 'class="mob-sloc'
+  } : {
+    daylbl: 'daylbl',
+    today: 'today',
+    step: 'step',
+    now: 'now',
+    shifted: 'shifted',
+    dim: 'future-dim',
+    body: 'step-body',
+    head: 'sh2',
+    num: 'sn',
+    numDim: 'd',
+    title: 'stit',
+    meta: 'smeta',
+    time: 'stim',
+    timeLate: 'late',
+    note: 'snote',
+    desc: 'sdesc',
+    why: 'swhy',
+    tip: 'stip',
+  };
+
+  let html = '';
+  let lastDay = null;
+
+  steps.forEach((s, i) => {
+    const k = dayKey(s.at);
+    if (k !== lastDay) {
+      const isToday = k === todayKey;
+      html += `<div class="${C.daylbl} ${isToday ? C.today : ''}"><span class="ddot"></span>${isToday ? 'I dag — ' : ''}${dayName(s.at)}</div>`;
+      lastDay = k;
+    }
+
+    const isDimmed = k !== todayKey;
+    let wait = waitRow(s, steps[i+1]);
+    if (isMob && wait) {
+      wait = wait
+        .replace(/class="swait"/g, 'class="mob-swait"')
+        .replace(/class="swait-txt"/g, 'class="mob-swait-txt"')
+        .replace(/class="swait-val"/g, 'class="mob-swait-val"');
+    }
+
+    const locHtml = isMob ? (LOC[s.loc] || '').replace(C.locReplaceFrom, C.locReplaceTo) : (LOC[s.loc] || '');
+
+    html += `<div class="${C.step} ${i===0 ? C.now : ''} ${isDimmed ? C.dim : ''}">
+      <div class="${C.body}">
+        <div class="${C.head}">
+          <div class="${C.num} ${i===0 ? '' : C.numDim}">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div class="${C.title}">${s.title}</div>
+            <div class="${C.meta}">
+              <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + s.dur + (isMob ? ' min' : ' min aktivt') : ''}</div>
+              ${locHtml}
+            </div>
+          </div>
+        </div>
+        ${s.desc ? `<div class="${C.desc}">${s.desc}</div>` : ''}
+        ${S.showHelp && s.why ? `<div class="${C.why}"><b>Hvorfor:</b> ${s.why}</div>` : ''}
+        ${S.showHelp && s.tip ? `<div class="${C.tip}"><b>Tips:</b> ${s.tip}</div>` : ''}
+      </div>
+      ${wait}
+    </div>`;
+  });
+
+  return html;
+}
+
+function stepH(steps){
+  return renderSteps(steps, 'desktop');
+}
+
+function waitRow(s,next){
+  if(!next) return '';
+  const diffMs=next.at.getTime()-s.at.getTime()-(s.dur||0)*60000;
+  if(diffMs<60000) return '';
+  const mins=Math.round(diffMs/60000);
+  let icon,txt,val;
+  if(s.loc==='kjol'||next.loc==='kjol'){
+    const days=Math.round(mins/60/24);
+    const hrs=Math.round(mins/60);
+    icon='❄️';
+    txt='La stå i kjøleskap';
+    val=days>=1?`${days} dag${days>1?'er':''}`:hrs>=1?`${hrs} time${hrs>1?'r':''}`:mins+' min';
+  } else if(s.title.toLowerCase().includes('autolyse')||s.title.toLowerCase().includes('hvil')){
+    icon='⏱';txt='Hvil ved romtemperatur';val=mins+' min';
+  } else if(next.loc==='ovn'||s.title.toLowerCase().includes('ta ut')){
+    const hrs=Math.round(mins/60);
+    icon='🌡';txt='La temperere på benken';val=hrs>=1?`${hrs} time${hrs>1?'r':''}`:mins+' min';
+  } else {
+    const hrs=Math.round(mins/60);
+    icon='⏱';txt='La hvile / heve';val=hrs>=1?`${hrs} time${hrs>1?'r':''}`:mins+' min';
+  }
+  return`<div class="swait"><span style="font-size:14px">${icon}</span><span class="swait-txt">${txt}</span><span class="swait-val">${val}</span></div>`;
+}
+
+function sBar(steps){
+  const s0=steps[0],tu=steps.find(s=>s.title.includes('Ta ut')),sk=steps[steps.length-1];
+  const dp=d=>fDT(d).split('kl.')[0].trim();
+  return`<div class="sbar">
+    <div class="scard"><div class="sl">Start deig</div><div class="sv2">${dp(s0.at)}</div><div class="st">kl. ${fT(s0.at)}</div></div>
+    ${tu?`<div class="scard"><div class="sl">Ta ut av kjøleskap</div><div class="sv2">${dp(tu.at)}</div><div class="st">kl. ${fT(tu.at)}</div></div>`:'<div class="scard"></div>'}
+    <div class="scard"><div class="sl">Stekes</div><div class="sv2">${dp(sk.at)}</div><div class="st">kl. ${fT(sk.at)}</div></div>
+  </div>`;
+}
+
+function pcBar(){
+  const p=pc();
+  return`<div class="pcbar">
+    <div class="pcc"><div class="pl">Antall pizzaer</div><div class="pv">${p.count}</div><div class="ps">stk</div></div>
+    <div class="pcc"><div class="pl">Mel per pizza</div><div class="pv">${p.melPer}g</div><div class="ps">mel</div></div>
+    <div class="pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div>
+    <div class="pcc"><div class="pl">Total deig</div><div class="pv">${p.totalDough}g</div><div class="ps">ca.</div></div>
+  </div>`;
+}
+
+function toggleHelpFromPlan(){
+  S.showHelp=!S.showHelp;
+  const pcBtn=document.getElementById('help-toggle');
+  if(pcBtn)pcBtn.textContent=S.showHelp?'⊖ Skjul forklaringer':'⊕ Vis forklaringer';
+  const mobBtn=document.getElementById('mob-help-toggle');
+  if(mobBtn)mobBtn.textContent=S.showHelp?'− Skjul':'+ Forklaringer';
+  gen();
+}
+
+function copyP(steps){
+  const r=R(),p=pc();
+  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g ${mlN()} · Hydrering: ${S.hydro}%`,`Kjøleskapsheving: ${S.cold} dager · Ovn: ${oN()}`,`Romtemperatur: ${S.temp}°C`,'',`Antall pizzaer: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel (${mlN()}): ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${yA(r)}`,'','TIDSPLAN','--------'];
+  steps.forEach((s,i)=>{
+    const locMap={kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'};
+    const loc=locMap[s.loc]||s.loc;
+    lines.push('');
+    lines.push(`${i+1}. ${s.title}`);
+    lines.push(`   Tid: ${fDT(s.at)}${s.dur?' · Varighet: '+s.dur+' min':''}${loc?' · Lokasjon: '+loc:''}`);
+    if(s.desc)lines.push(`   ${s.desc}`);
+    if(s.why)lines.push(`   Hvorfor: ${s.why}`);
+    if(s.tip)lines.push(`   Tips: ${s.tip}`);
+  });
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const b=document.getElementById('cbtn');
+    if(b){b.textContent='✓ Kopiert!';setTimeout(()=>{b.textContent='📋 Kopier tidsplan';},2000);}
+  }).catch(()=>alert('Kopi feilet — prøv manuelt.'));
+}
+
+function planText(steps){
+  const r=R(),p=pc();
+  const lines=[`PIZZAPLAN ${r.name}`,`${mN(S.method)} · ${S.mel}g · ${S.hydro}%`,`${p.count} pizzaer à ${p.perPizza}g`,''];
+  steps.forEach((s,i)=>lines.push(`${i+1}. ${s.title} — ${fDT(s.at)}`));
+  return lines.join('\n');
+}
+
+
+function icsStamp(d){
+  return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
+}
+function downloadIcs(steps){
+  const r=R();
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pizzaplanlegger//NO\r\nCALSCALE:GREGORIAN\r\n';
+  steps.forEach((s,i)=>{
+    const start=s.at;
+    const end=aM(s.at,Math.max(s.dur||15,15));
+    const title=s.title.replace(/🔥/g,'').trim();
+    ics+='BEGIN:VEVENT\r\n';
+    ics+='UID:pizza-'+Date.now()+'-'+i+'@pizzaplanlegger\r\n';
+    ics+='DTSTART:'+icsStamp(start)+'\r\n';
+    ics+='DTEND:'+icsStamp(end)+'\r\n';
+    ics+='SUMMARY:🍕 '+title+'\r\n';
+    if(s.desc)ics+='DESCRIPTION:'+s.desc.replace(/\n/g,' ').substring(0,200)+'\r\n';
+    ics+='BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:'+title+'\r\nTRIGGER:-PT10M\r\nEND:VALARM\r\n';
+    ics+='END:VEVENT\r\n';
+  });
+  ics+='END:VCALENDAR\r\n';
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='pizzaplan.ics';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+
+function showTab(n,el){
+  ['plan','recipe','tips','notes'].forEach(id=>{const e=document.getElementById('p-'+id);if(e)e.style.display=id===n?'block':'none';});
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  if(el)el.classList.add('on');
+}
+
+function gen(){
+  if(S.method==='hurtig'){hurtigRes();return;}
+  const a=anc(S.mode==='end'?'e':'s');
+  const rs=rawSteps(a),steps=rs,r=R();
+  const mln={tipo00:'',siktet:' Siktet hvete: tilsett 5–10% mer vann.',sammalt:' Sammalt: bland 20–30% med tipo 00.'}[S.meltype]||'';
+  const rr=[{k:`Mel (${mlN()})`,v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:oN()}];
+  const tH=`
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 5 min — aldri i vannet direkte. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Total eltetid: 12–15 min. Sjekk deigtemperatur med termometer — skal lande på 22–24°C. Bruk kaldt vann for å kontrollere temperaturen.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar. Reiver den med én gang trenger den mer elting.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Autolyse</div><div class="sdesc">Mel og vann hviler 20–30 min uten gjær og salt. I Ankarsrum: start maskinen på trinn 1, tilsett melet gradvis og stopp. La hvile i bollen — glutennettverket bygges naturlig. Gir smidigere deig med langt kortere eltetid.</div></div>
+    ${S.method==='poolish'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Poolish</div><div class="sdesc">${WHY.pl} Med Ankarsrum: ta av kniv og skraper, rør poolishen for hånd med slikkepott direkte i maskinen, dekk med lokk. Neste dag setter du inn kniv og skraper igjen og elter ferdig deig rett i bollen — ingen overføring, én bolle å vaske.</div></div>`:''}
+    ${S.method==='biga'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Biga</div><div class="sdesc">${WHY.bi} Biga lages for hånd — konsistensen er for tørr og klumpete for Ankarsrum. Legg ferdig biga i Ankarsrum-bollen og tilsett resten av ingrediensene.</div></div>`:''}
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Romtemperatur og hevingstid</div><div class="sdesc">Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min. Deigen skal doble seg — ikke mer. Overheving gir flat, sur pizza.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. I Ankarsrum: løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Holdbarhet: 2–3 uker i kjøleskap. Bruk 3× mengden av tørrgjær.'}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltype: ${mlN()}</div><div class="sdesc">${{tipo00:'Tipo 00 er finmalt italiensk hvete (11–12% protein). Gir elastisk, smidig deig. Ideelt for Ankarsrum — absorberer vann jevnt.',siktet:'Siktet norsk hvete har noe lavere glutenstyrke. Tilsett 5–10% mer vann og elt litt lenger i Ankarsrum.',sammalt:'Bland 20–30% sammalt med tipo 00 for nøtteaktig smak. Tilsett sammalt gradvis mot slutten av eltingen.'}[S.meltype]||''}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor 4 timer ute av kjøleskapet?</div><div class="sdesc">${WHY.tu}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Stretch &amp; fold (alternativ til Ankarsrum)</div><div class="sdesc">Hvis du ikke bruker Ankarsrum for elting: strekk deigen opp og brett over, roter 90°, gjenta 4–6 ganger. 3–4 runder med 30 min mellomrom. Bygger glutenstruktur uten maskin — særlig nyttig ved høy hydrering.</div></div>`;
+  window._steps=steps;
+  const _draftEl=document.getElementById('note-input-pc');
+  window._noteDraft=_draftEl?_draftEl.value:(window._noteDraft||'');
+  document.getElementById('main').innerHTML=`
+    <h2>${r.name}</h2>
+    <div class="sub"><span class="badge bg">${mN(S.method)}</span><span class="badge ba">${S.cold} dag${S.cold>1?'er':''} i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
+    ${mln?`<div class="ibox"><b>${mlN()}:</b>${mln}</div>`:''}
+    ${nextStepHTML(steps,false)}
+    ${sBar(steps)}
+    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics) — åpne på iPhone for å legge alle steg i Kalender med varsling">📅 Til kalender</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'⊖ Skjul forklaringer':'⊕ Vis forklaringer'}</div></div>
+    ${pcBar()}
+    <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div id="p-plan">${stepH(steps)}</div>
+    <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
+    <div id="p-tips" style="display:none">${tH}</div>
+    <div id="p-notes" style="display:none">${notesPanelHTML('note-input-pc')}</div>`;
+  const _ni=document.getElementById('note-input-pc');if(_ni&&window._noteDraft)_ni.value=window._noteDraft;
+  updatePcountDisp();
+  startCountdown();
+}
+
+function hurtigRes(){
+  const a=anc(S.mode==='end'?'e':'s');
+  const {o,w,ya,tmp,steps}=hurtigSteps(a);
+  const r=R();
+  window._steps=steps;
+  const _draftEl=document.getElementById('note-input-pc');
+  window._noteDraft=_draftEl?_draftEl.value:(window._noteDraft||'');
+  const rr=[{k:`Mel (${mlN()})`,v:`${S.mel}g`},{k:'Vann',v:`${w}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
+  const tH=`
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>`;
+  document.getElementById('main').innerHTML=`
+    <h2>Hurtigdeig — ${o.h} timer</h2>
+    <div class="sub"><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
+    ${nextStepHTML(steps,false)}
+    ${sBar(steps)}
+    <div class="crow"><div class="cbtn" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</div><div class="cbtn" onclick="downloadIcs(window._steps||[])" title="Last ned kalenderfil (.ics)">📅 Til kalender</div><div class="cbtn" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'⊖ Skjul forklaringer':'⊕ Vis forklaringer'}</div></div>
+    ${pcBar()}
+    <div class="tabs"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div id="p-plan">${stepH(steps)}</div>
+    <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
+    <div id="p-tips" style="display:none">${tH}</div>
+    <div id="p-notes" style="display:none">${notesPanelHTML('note-input-pc')}</div>`;
+  const _ni=document.getElementById('note-input-pc');if(_ni&&window._noteDraft)_ni.value=window._noteDraft;
+  updatePcountDisp();
+  startCountdown();
+}
+
+
+// ===== NESTE STEG-BOKS MED NEDTELLING =====
+function fmtCountdown(ms){
+  if(ms<60000)return 'n\u00e5';
+  const m=Math.round(ms/60000);
+  if(m<60)return 'om '+m+' min';
+  const h=Math.floor(m/60);
+  if(h<24)return 'om '+h+' t '+(m%60)+' min';
+  const d=Math.floor(h/24);
+  return 'om '+d+' d '+(h%24)+' t';
+}
+function nextStepHTML(steps,mob){
+  const now=Date.now();
+  const next=steps.find(s=>s.at.getTime()>now-60000);
+  if(!next)return '';
+  const idx=steps.indexOf(next)+1;
+  return '<div style="background:#085041;color:#fff;border-radius:10px;padding:'+(mob?'.6rem .8rem':'.75rem 1rem')+';margin-bottom:'+(mob?'.6rem':'.75rem')+';display:flex;align-items:center;gap:10px">'
+   +'<div style="font-size:'+(mob?'18px':'20px')+'">\u23ed</div>'
+   +'<div style="flex:1;min-width:0"><div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em">Neste steg ('+idx+' av '+steps.length+')</div>'
+   +'<div style="font-size:'+(mob?'13px':'14px')+';font-weight:600">'+next.title+'</div>'
+   +'<div style="font-size:12px;opacity:.9">'+fDT(next.at)+' \u00b7 <span class="cd-txt" data-at="'+next.at.getTime()+'">'+fmtCountdown(next.at.getTime()-now)+'</span></div></div></div>';
+}
+function startCountdown(){
+  if(window._cdT)clearInterval(window._cdT);
+  window._cdT=setInterval(()=>{
+    document.querySelectorAll('.cd-txt').forEach(el=>{
+      el.textContent=fmtCountdown(parseInt(el.dataset.at)-Date.now());
+    });
+  },30000);
+}
+
+// ===== ANTALL PIZZAER -> MELMENGDE =====
+function flourForCount(n){
+  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:S.type==='langpanne'?400:500;
+  const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+(BSUGAR[S.type]||0)/100;
+  return Math.max(200,Math.round(n*eg/frac/10)*10);
+}
+function stepPizzas(d){
+  const n=Math.max(1,pc().count+d);
+  S.mel=Math.min(3000,flourForCount(n));
+  const pairs=[['msl','mdisp'],['mob-msl','mob-mdisp']];
+  pairs.forEach(([sl,disp])=>{
+    const e=document.getElementById(sl);if(e)e.value=S.mel;
+    const t=document.getElementById(disp);if(t)t.textContent=S.mel+'g';
+  });
+  updatePcountDisp();
+  sched();
+}
+function updatePcountDisp(){
+  const c=pc().count;
+  ['pcount-disp','mob-pcount-disp'].forEach(id=>{
+    const e=document.getElementById(id);if(e)e.textContent=c;
+  });
+}
+
+// ===== BAKSTLOGG (lagres i nettleseren) =====
+function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getNotes(){try{return JSON.parse(localStorage.getItem('pizzaNotes')||'[]');}catch(e){return[];}}
+function saveNotesArr(n){try{localStorage.setItem('pizzaNotes',JSON.stringify(n));}catch(e){}}
+function addNote(inputId){
+  const el=document.getElementById(inputId);
+  if(!el||!el.value.trim())return;
+  const r=R();
+  const cfg=r.name+' \u00b7 '+mN(S.method)+' \u00b7 '+S.mel+'g \u00b7 '+S.hydro+'%'+(S.method!=='hurtig'?' \u00b7 '+S.cold+' d kj\u00f8leskap':'')+' \u00b7 '+S.temp+'\u00b0C';
+  const notes=getNotes();
+  notes.unshift({d:new Date().toISOString(),cfg:cfg,txt:el.value.trim()});
+  saveNotesArr(notes);
+  el.value='';
+  refreshNotesPanels();
+}
+function delNote(i){
+  if(!confirm('Slette dette notatet?'))return;
+  const n=getNotes();n.splice(i,1);saveNotesArr(n);refreshNotesPanels();
+}
+function notesListHTML(){
+  const n=getNotes();
+  if(!n.length)return '<p style="font-size:12px;color:#999;padding:.5rem 0">Ingen notater enn\u00e5. Skriv hvordan baksten ble \u2014 smak, heving, justeringer til neste gang.</p>';
+  return n.map((x,i)=>{
+    const d=new Date(x.d);
+    return '<div class="step" style="margin-bottom:.5rem"><div class="step-body">'
+     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+     +'<div style="min-width:0"><div style="font-size:11px;color:#888">'+fDT(d)+'</div>'
+     +'<div style="font-size:11px;color:#1D9E75;font-weight:600">'+escH(x.cfg)+'</div></div>'
+     +'<button onclick="delNote('+i+')" style="border:1px solid #e0ddd8;background:#fff;border-radius:6px;padding:3px 8px;font-size:11px;color:#993C1D;cursor:pointer;flex-shrink:0">Slett</button></div>'
+     +'<div style="font-size:13px;color:#1a1a1a;margin-top:.4rem;line-height:1.6;white-space:pre-wrap">'+escH(x.txt)+'</div>'
+     +'</div></div>';
+  }).join('');
+}
+function notesPanelHTML(inputId){
+  return '<div style="margin-bottom:.75rem"><textarea id="'+inputId+'" rows="3" placeholder="Hvordan ble baksten? F.eks: Perfekte kanter etter 100 sek, litt mer salt neste gang..." style="width:100%;border:1px solid #d0cdc8;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>'
+   +'<button onclick="addNote(\''+inputId+'\')" style="margin-top:6px;padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">\ud83d\udcbe Lagre notat</button>'
+   +'<div style="font-size:11px;color:#999;margin-top:4px">Notatet lagres med dagens oppsett (type, metode, mengder) \u2014 kun i denne nettleseren.</div></div>'
+   +'<div id="'+inputId+'-list">'+notesListHTML()+'</div>';
+}
+function refreshNotesPanels(){
+  ['note-input-pc','note-input-mob'].forEach(id=>{
+    const list=document.getElementById(id+'-list');
+    if(list)list.innerHTML=notesListHTML();
+  });
+}
+
+// ===== LAYOUT SWITCHING =====
+function setLayout(mode){
+  const isMob=mode==='mob';
+  document.body.classList.toggle('mob-mode',isMob);
+  document.body.classList.toggle('pc-mode',!isMob);
+  const mobEl=document.getElementById('mob-layout');
+  if(mobEl){mobEl.classList.toggle('active',isMob);}
+  try{localStorage.setItem('pizzaLayout',mode);}catch(e){}
+  if(isMob){syncMobControls();mobGen();}
+  else{gen();}
+}
+
+function initLayout(){
+  if(window._layoutInit)return;window._layoutInit=true;
+  let saved=null;try{saved=localStorage.getItem('pizzaLayout');}catch(e){}
+  const auto=window.innerWidth<768?'mob':'pc';
+  const mode=saved||auto;
+  if(mode==='mob') setLayout('mob');
+}
+
+// ===== MOBILE CONTROL SYNC =====
+function syncMobControls(){
+  const g=id=>document.getElementById(id);
+  const s=(id,val)=>{const el=g(id);if(el)el.value=val;};
+  const t=(id,val)=>{const el=g(id);if(el)el.textContent=val;};
+  s('mob-msl',S.mel);t('mob-mdisp',S.mel+'g');
+  s('mob-hsl',S.hydro);
+  s('mob-csl',S.cold);t('mob-clbl',S.cold+' dag'+(S.cold>1?'er':''));
+  s('mob-tsl',S.temp);t('mob-tlbl',S.temp+'°C');
+  mobHydroUI();
+  mobPillGroup('mob-gtype','type');
+  mobPillGroup('mob-ggj','gjaer');
+  mobPillGroup('mob-gmel','meltype');
+  mobPillGroup('mob-govn','oven');
+  mobMethodCards();
+  mobBuildHrows();
+  const now=new Date();
+  s('mob-sd',fd(now));
+  s('mob-st',String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
+  const later=new Date(now.getTime()+S.cold*86400000+14400000);
+  s('mob-ed',fd(later));
+  s('mob-et','18:00');
+  const cwrap=g('mob-cwrap');if(cwrap)cwrap.style.display=S.method==='hurtig'?'none':'block';
+  const hsub=g('mob-hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
+  mobSetMode(S.mode);
+  const stamp=g('build-stamp'),mobStamp=g('mob-stamp');
+  if(stamp&&mobStamp)mobStamp.textContent=stamp.textContent;
+  ['mob-sd','mob-st','mob-ed','mob-et'].forEach(id=>{
+    const el=g(id);
+    if(el&&!el.dataset.lst){el.addEventListener('input',mobGen);el.addEventListener('change',mobGen);el.dataset.lst='1';}
+  });
+  const mnc=g('mob-notes-content');
+  if(mnc&&!mnc.dataset.init){mnc.innerHTML=notesPanelHTML('note-input-mob');mnc.dataset.init='1';}
+  updatePcountDisp();
+  const mhb=g('mob-help-btn');
+  if(mhb){mhb.classList.toggle('on',S.showHelp);const ic=mhb.querySelector('i');if(ic)ic.className=S.showHelp?'ti ti-bulb':'ti ti-bulb-off';mhb.style.background=S.showHelp?'#1D9E75':'#fff';mhb.style.borderColor=S.showHelp?'#1D9E75':'#e0ddd8';mhb.style.color=S.showHelp?'#fff':'#888';}
+}
+
+function mobPillGroup(id,key){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  wrap.innerHTML='';
+  const vals={
+    type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'}],
+    gjaer:[{v:'torr',t:'Tørrgjær'},{v:'fersk',t:'Fersk gjær'}],
+    meltype:[{v:'tipo00',t:'Tipo 00'},{v:'siktet',t:'Siktet hvete'},{v:'sammalt',t:'Sammalt'}],
+    oven:[{v:'pizza',t:'Pizzaovn'},{v:'vanlig',t:'Vanlig ovn'}]
+  }[key]||[];
+  vals.forEach(({v,t})=>{
+    const el=document.createElement('span');
+    el.className='pill'+(S[key]===v?' on':'');
+    el.textContent=t;
+    el.style.cssText='padding:5px 10px;border-radius:20px;border:1px solid;font-size:12px;cursor:pointer;white-space:nowrap;user-select:none;border-color:'+(S[key]===v?'#1D9E75':'#d0cdc8')+';background:'+(S[key]===v?'#1D9E75':'#fff')+';color:'+(S[key]===v?'#fff':'#555')+';font-weight:'+(S[key]===v?'600':'400');
+    el.onclick=()=>{S[key]=v;mobPillGroup(id,key);if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();}mobGen();};
+    wrap.appendChild(el);
+  });
+}
+
+function mobMethodCards(){
+  const wrap=document.getElementById('mob-gmet');if(!wrap)return;
+  wrap.innerHTML='';
+  [{v:'standard',t:'Standard',s:'Direkte + kjøleskapsheving',hc:false},
+   {v:'poolish',t:'Poolish',s:'Løs fordeig, 12–16t',hc:false},
+   {v:'biga',t:'Biga',s:'Fast fordeig, 16–24t',hc:false},
+   {v:'hurtig',t:'Hurtigdeig',s:'2–10 timer, uten kjøleskapsheving',hc:true}
+  ].forEach(({v,t,s,hc})=>{
+    const el=document.createElement('div');
+    const isOn=S.method===v;
+    el.style.cssText=`border-radius:8px;padding:.5rem .65rem;cursor:pointer;border:${isOn?'2px':'1px'} solid ${isOn?(hc?'#BA7517':'#1D9E75'):(hc?'#BA7517':'#d0cdc8')};background:${isOn?(hc?'#fef3e2':'#e8f7f1'):'#fff'}`;
+    el.innerHTML=`<div style="font-size:12px;font-weight:600;color:${isOn?(hc?'#633806':'#085041'):'#1a1a1a'}">${t}</div><div style="font-size:11px;color:${isOn?(hc?'#854F0B':'#0F6E56'):'#888'};margin-top:1px">${s}</div>`;
+    el.onclick=()=>{S.method=v;mobMethodCards();document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';document.getElementById('mob-cwrap').style.display=v==='hurtig'?'none':'block';mobGen();};
+    wrap.appendChild(el);
+  });
+}
+
+function mobBuildHrows(){
+  const b=document.getElementById('mob-hrows');if(!b)return;
+  b.innerHTML=HOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.hurtigH?'#085041':'#555'};background:${o.h===S.hurtigH?'#e8f7f1':'transparent'};font-weight:${o.h===S.hurtigH?600:400}" onclick="mobSetH(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.hurtigH?'#1D9E75':'#ccc'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+}
+function mobSetH(h){S.hurtigH=h;mobBuildHrows();mobGen();}
+
+function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=v+'g';const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=v+'g';mobGen();}
+function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
+function mobUCold(v){S.cold=parseInt(v);const t=v+' dag'+(v>1?'er':'');document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;mobGen();}
+function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=v+'°C';const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
+
+function mobHydroUI(){
+  const p=S.hydro,r=HRANGE[S.type];
+  document.getElementById('mob-hlbl').textContent=p+'%';
+  const b=document.getElementById('mob-hcat');
+  let tx,bg,co;
+  if(p<r.mn){tx='veldig fast';bg='#E6F1FB';co='#0C447C';}
+  else if(p<=HREC[S.type]-3){tx='fast';bg='#EAF3DE';co='#27500A';}
+  else if(p<=HREC[S.type]+3){tx='anbefalt';bg='#E1F5EE';co='#085041';}
+  else if(p<=r.mx){tx='høy';bg='#FAEEDA';co='#633806';}
+  else{tx='veldig høy';bg='#FAECE7';co='#712B13';}
+  b.textContent=tx;b.style.background=bg;b.style.color=co;
+}
+
+function mobSetMode(m){
+  S.mode=m;
+  const ms=document.getElementById('mob-ms'),me=document.getElementById('mob-me');
+  if(ms&&me){
+    ms.style.border=m==='start'?'2px solid #1D9E75':'1px solid #d0cdc8';
+    ms.style.background=m==='start'?'#e8f7f1':'#fff';
+    ms.style.color=m==='start'?'#085041':'#888';
+    ms.style.fontWeight=m==='start'?'600':'400';
+    me.style.border=m==='end'?'2px solid #1D9E75':'1px solid #d0cdc8';
+    me.style.background=m==='end'?'#e8f7f1':'#fff';
+    me.style.color=m==='end'?'#085041':'#888';
+    me.style.fontWeight=m==='end'?'600':'400';
+  }
+  document.getElementById('mob-bs').style.display=m==='start'?'block':'none';
+  document.getElementById('mob-be').style.display=m==='end'?'block':'none';
+  const meh=document.getElementById('mob-earliest-hint');
+  if(meh){meh.style.display=m==='end'?'block':'none';if(m==='end'){const earliest=new Date(new Date().getTime()+minBakeMins()*60000);meh.textContent='Tidligst mulig: '+fDT(earliest);}}
+  mobGen();
+}
+
+function mobShowTab(t){
+  ['plan','settings','recipe','tips','notes'].forEach(id=>{
+    const scr=document.getElementById('mob-'+id);
+    if(scr)scr.classList.toggle('active',id===t);
+    const tab=document.getElementById('mob-tab-'+id);
+    if(tab)tab.classList.toggle('on',id===t);
+  });
+}
+
+function mobGetAnchor(p){
+  const d=document.getElementById('mob-'+p+'d').value;
+  const t=document.getElementById('mob-'+p+'t').value||'08:00';
+  return d?new Date(d+'T'+t):new Date();
+}
+
+
+function mobStepH(steps){
+  return renderSteps(steps, 'mobile');
+}
+
+function mobGen(){
+  const mobEl=document.getElementById('mob-layout');
+  if(!mobEl||!mobEl.classList.contains('active'))return;
+  const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
+
+  if(S.method==='hurtig'){
+    const {tmp,ya,p,steps}=hurtigSteps(anchor);
+    window._steps=steps;
+    const sumH=`<div class="mob-sumbar"><div class="mob-sc"><div class="sl">Start</div><div class="sv">${fDT(steps[0].at).split('kl.')[0].trim()}</div><div class="st">kl. ${fT(steps[0].at)}</div></div><div class="mob-sc"><div class="sl">Pizzaer</div><div class="sv">${p.count} stk</div><div class="st">${p.perPizza}g/emne</div></div><div class="mob-sc"><div class="sl">Stekes</div><div class="sv">${fDT(steps[steps.length-1].at).split('kl.')[0].trim()}</div><div class="st">kl. ${fT(steps[steps.length-1].at)}</div></div></div>`;
+    document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content">${nextStepHTML(steps,true)}${sumH}${mobStepH(steps)}</div>`;
+    const r2=R(),w2=Math.round(S.mel*S.hydro/100);
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">pizzaer</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel (${mlN()})</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
+    return;
+  }
+
+  const rs=rawSteps(anchor),steps=rs;
+  window._steps=steps;
+  const r=R();
+  const p=pc();
+  const taUt=steps.find(s=>s.title.includes('Ta ut'));
+  const sk=steps[steps.length-1];
+  const dp=d=>fDT(d).split('kl.')[0].trim();
+  const mln={tipo00:'',siktet:' Siktet hvete: +5–10% vann.',sammalt:' Sammalt: bland 20–30% med tipo 00.'}[S.meltype]||'';
+
+  const sumH=`<div class="mob-sumbar">
+    <div class="mob-sc"><div class="sl">Start deig</div><div class="sv">${dp(steps[0].at)}</div><div class="st">kl. ${fT(steps[0].at)}</div></div>
+    ${taUt?`<div class="mob-sc"><div class="sl">Ta ut av kjøleskap</div><div class="sv">${dp(taUt.at)}</div><div class="st">kl. ${fT(taUt.at)}</div></div>`:'<div class="mob-sc"></div>'}
+    <div class="mob-sc"><div class="sl">Stekes</div><div class="sv">${dp(sk.at)}</div><div class="st">kl. ${fT(sk.at)}</div></div>
+  </div>`;
+
+  document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content">${nextStepHTML(steps,true)}${mln?`<div class="ibox" style="margin-bottom:.5rem"><b>${mlN()}:</b>${mln}</div>`:''}${sumH}${mobStepH(steps)}</div>`;
+  // recipe tab
+  const rr=[{k:`Mel (${mlN()})`,v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:oN()}];
+  document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall pizzaer</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
+
+  // tips tab
+  document.getElementById('mob-tips-content').innerHTML=`<div class="mob-content">${[
+    {t:'Ankarsrum — sekvens',d:'Alltid væske først. Gjær løst i vann. Mel gradvis trinn 1–2 over 3–4 min. Salt etter 5 min. Opp til trinn 3–4. Aldri over 4 for pizza. Total eltetid 12–15 min. Deigtemp 22–24°C.'},
+    {t:'Autolyse',d:'Mel og vann hviler 20–30 min uten gjær og salt. Glutennettverket dannes naturlig — smidigere deig med langt kortere eltetid.'},
+    {t:'Windowpane-test',d:'Strekk en liten bit deig. Blir den tynn og gjennomsiktig som et vindu uten å rive — er deigen ferdig eltet.'},
+    {t:'Hvorfor 4 timer ute av kjøleskapet?',d:'Kald deig er stiv — gluten er seig ved 4°C. 3–4 timer romtemperatur lar gluten slappe av slik at deigen strekkes uten å rive.'},
+    {t:'Romtemperatur og heving',d:`Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min. Deigen skal doble seg — ikke mer. Overheving gir flat, sur pizza.`},
+    S.method==='poolish'?{t:'Poolish i Ankarsrum-bollen',d:'Ta av kniv og skraper. Rør poolishen med slikkepott, dekk med lokk. Neste dag: sett inn kniv og skraper igjen og elt ferdig. Én bolle, ingen overføring.'}:null,
+    S.method==='biga'?{t:'Biga',d:'Lages for hånd — for tørr og klumpete for Ankarsrum. Legg ferdig biga i Ankarsrum-bollen og tilsett resten.'}:null,
+  ].filter(Boolean).map(item=>`<div class="mob-step" style="margin-bottom:.5rem"><div class="mob-step-body"><div class="mob-stit" style="margin-bottom:.35rem">${item.t}</div><div class="mob-sdesc">${item.d}</div></div></div>`).join('')}</div>`;
+  updatePcountDisp();
+  startCountdown();
+}
+
+// Lyttere for mobil-datofelter kobles i syncMobControls — feltene finnes ikke i DOM ennå her.
+
+const _now=new Date();
+const _days=['søn','man','tir','ons','tor','fre','lør'];
+const _months=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+const _stamp=`v2.1 · ${_days[_now.getDay()]} ${_now.getDate()}. ${_months[_now.getMonth()]} ${_now.getFullYear()} kl. ${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+document.getElementById('build-stamp').textContent=_stamp;
+
+gen();
+document.addEventListener('DOMContentLoaded',function(){
+  initLayout();
+});
+if(document.readyState==='complete'||document.readyState==='interactive'){
+  initLayout();
+}
+</script>
+<!-- ===== MOBILE LAYOUT ===== -->
+<div class="mob-layout" id="mob-layout">
+
+  <div class="mob-topbar">
+    <div class="mob-topbar-title">
+      <span>🍕 Pizzaplanlegger</span>
+      <small id="mob-stamp"></small>
+    </div>
+    <div class="mob-topbar-actions">
+      <button class="mob-icon-btn" onclick="doReset()" title="Nullstill">↺</button>
+      <button class="help-icon-btn on" id="mob-help-btn" onclick="toggleHelp()" title="Skjul forklaringer og tips" style="border-color:#1D9E75;background:#1D9E75;color:#fff"><i class="ti ti-bulb" aria-hidden="true"></i></button>
+      <button class="layout-toggle mob-style" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
+    </div>
+  </div>
+
+  <!-- TAB: TIDSPLAN -->
+  <div class="mob-screen" id="mob-plan">
+    <div id="mob-plan-content">
+      <div class="mob-content" style="padding-top:.75rem;text-align:center;color:#aaa;font-size:13px">
+        <p>Tilpass innstillingene og se tidsplanen her</p>
+      </div>
+    </div>
+    <div class="mob-action-bar">
+      <div class="mob-abtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan"><i>📋</i>Kopier</div>
+      <div class="mob-abtn pri" onclick="downloadIcs(window._steps||[])" title="Last ned til kalender"><i>📅</i>Kalender</div>
+      
+    </div>
+  </div>
+
+  <!-- TAB: INNSTILLINGER -->
+  <div class="mob-screen active" id="mob-settings">
+    <div class="mob-section-lbl">Pizzatype</div>
+    <div class="mob-pill-wrap" id="mob-gtype"></div>
+
+    <div class="mob-section-lbl">Metode</div>
+    <div class="mob-mcard-wrap" id="mob-gmet"></div>
+    <div id="mob-hsub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div id="mob-hrows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+    </div>
+
+    <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
+    <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)">
+      <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+        <span style="font-size:12px;color:#888">eller antall pizzaer:</span>
+        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">−</button>
+        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:#1D9E75;min-width:22px;text-align:center">4</span>
+        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">+</button>
+      </div>
+    </div>
+
+    <div class="mob-section-lbl">Hydrering — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>
+    <div class="mob-slider-wrap"><input type="range" id="mob-hsl" min="55" max="80" step="1" value="65" oninput="mobUHydro(this.value)"></div>
+
+    <div id="mob-cwrap">
+      <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">3 dager</span></div>
+      <div class="mob-slider-wrap"><input type="range" id="mob-csl" min="1" max="6" step="1" value="3" oninput="mobUCold(this.value)"></div>
+    </div>
+
+    <div class="mob-section-lbl">Romtemperatur — <span id="mob-tlbl">22°C</span></div>
+    <div class="mob-slider-wrap"><input type="range" id="mob-tsl" min="18" max="28" step="2" value="22" oninput="mobUTemp(this.value)"></div>
+
+    <div class="mob-section-lbl">Gjærtype</div>
+    <div class="mob-pill-wrap" id="mob-ggj"></div>
+
+    <div class="mob-section-lbl">Meltype</div>
+    <div class="mob-pill-wrap" id="mob-gmel"></div>
+
+    <div class="mob-section-lbl">Ovntype</div>
+    <div class="mob-pill-wrap" id="mob-govn"></div>
+
+    <div class="mob-section-lbl">Planlegg fra</div>
+    <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
+      <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;color:#888;font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
+    </div>
+    <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
+      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+        <input type="date" id="mob-sd">
+        <input type="time" id="mob-st" value="07:30">
+      </div>
+    </div>
+    <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+        <input type="date" id="mob-ed">
+        <input type="time" id="mob-et" value="18:00">
+      </div>
+    </div>
+    <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:#1D9E75;background:#fff;display:none"></div>
+    <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
+    <div style="height:80px"></div>
+  </div>
+
+  <!-- TAB: TIDSPLAN -->
+  <div class="mob-screen" id="mob-plan">
+    <div id="mob-plan-content">
+    </div>
+  </div>
+
+  <!-- TAB: OPPSKRIFT -->
+  <div class="mob-screen" id="mob-recipe">
+    <div class="mob-content" id="mob-recipe-content">
+      <p style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se oppskriften</p>
+    </div>
+  </div>
+
+  <!-- TAB: TEKNIKK -->
+  <div class="mob-screen" id="mob-tips">
+    <div class="mob-content" id="mob-tips-content">
+      <p style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se teknikktips</p>
+    </div>
+  </div>
+
+  <!-- TAB: NOTATER -->
+  <div class="mob-screen" id="mob-notes">
+    <div class="mob-content" id="mob-notes-content"></div>
+  </div>
+
+  <!-- BOTTOM TAB BAR -->
+  <div class="mob-tabbar">
+    <div class="mob-tab on" id="mob-tab-settings" onclick="mobShowTab('settings')">
+      <i class="ti ti-settings" aria-hidden="true"></i>Pizzaplanlegger
+    </div>
+    <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')">
+      <i class="ti ti-calendar-time" aria-hidden="true"></i>Tidsplan
+    </div>
+    <div class="mob-tab" id="mob-tab-recipe" onclick="mobShowTab('recipe')">
+      <i class="ti ti-pizza" aria-hidden="true"></i>Oppskrift
+    </div>
+    <div class="mob-tab" id="mob-tab-notes" onclick="mobShowTab('notes')">
+      <i class="ti ti-notes" aria-hidden="true"></i>Notater
+    </div>
+    <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
+      <i class="ti ti-bulb" aria-hidden="true"></i>Teknikk
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
