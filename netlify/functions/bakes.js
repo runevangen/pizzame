@@ -68,13 +68,15 @@ export default async (req, context) => {
       if (body.status === 'finished') {
         updated.status = 'finished';
         updated.finishedAt = new Date().toISOString();
-        if (typeof body.note === 'string') updated.note = body.note.slice(0, 2000);
       } else if (body.status === 'active') {
         updated.status = 'active';
         updated.finishedAt = null;
-      } else if (typeof body.note === 'string') {
-        updated.note = body.note.slice(0, 2000);
       }
+      if (typeof body.note === 'string') updated.note = body.note.slice(0, 2000);
+      if (typeof body.name === 'string' && body.name.trim()) updated.name = body.name.trim().slice(0, 60);
+      if (body.config) updated.config = body.config;
+      if (body.anchorMode) updated.anchorMode = body.anchorMode === 'end' ? 'end' : 'start';
+      if (typeof body.anchorISO === 'string') updated.anchorISO = body.anchorISO;
       await store.setJSON(id, updated);
       return json(200, updated);
     }
