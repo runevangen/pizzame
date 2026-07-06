@@ -1305,8 +1305,9 @@ function syncMobControls(){
   const cwrap=g('mob-cwrap');if(cwrap)cwrap.style.display=S.method==='hurtig'?'none':'block';
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
   mobSetMode(S.mode);
-  const stamp=g('build-stamp'),mobStamp=g('mob-stamp');
-  if(stamp&&mobStamp)mobStamp.textContent=stamp.textContent;
+  const mobStamp=g('mob-stamp');
+  if(mobStamp)mobStamp.textContent=_dateStr;
+  const mnv=g('mob-name-version');if(mnv)mnv.textContent='v'+CHANGELOG[0].v;
   const mfv=g('mob-footer-version');if(mfv)mfv.textContent='v'+CHANGELOG[0].v;
   ['mob-sd','mob-st','mob-ed','mob-et'].forEach(id=>{
     const el=g(id);
@@ -1459,7 +1460,8 @@ function mobGen(){
 const _now=new Date();
 const _days=['søn','man','tir','ons','tor','fre','lør'];
 const _months=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
-const _stamp=`v2.1 · ${_days[_now.getDay()]} ${_now.getDate()}. ${_months[_now.getMonth()]} ${_now.getFullYear()} kl. ${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+const _dateStr=`${_days[_now.getDay()]} ${_now.getDate()}. ${_months[_now.getMonth()]} ${_now.getFullYear()} kl. ${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+const _stamp=`v${CHANGELOG[0].v} · ${_dateStr}`;
 document.getElementById('build-stamp').textContent=_stamp;
 const _fv=document.getElementById('footer-version');if(_fv)_fv.textContent='v'+CHANGELOG[0].v;
 
@@ -1811,7 +1813,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <div class="mob-topbar">
     <div class="mob-topbar-title">
-      <span>🍕 Pizzaplanlegger</span>
+      <span>🍕 Pizzaplanlegger <b id="mob-name-version" style="font-size:12px;font-weight:600;color:#1D9E75"></b></span>
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
