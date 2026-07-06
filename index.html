@@ -220,10 +220,17 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .act-btn-sec{border:1px solid #d0cdc8;background:#fff;color:#1a1a1a;font-weight:500}
 .act-btn-sec:hover{background:#f5f4f0}
 .act-group-lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
-.sidenav{display:flex;flex-direction:column;gap:3px;background:#e5e2dc;border-radius:10px;padding:5px;margin-bottom:.9rem}
-.sidenav-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:12px;font-weight:500;color:#555;border-radius:7px;cursor:pointer}
-.sidenav-item:hover{background:#fff}
-.sidenav-item.on{background:#085041;color:#fff;font-weight:600}
+.sidenav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.9rem}
+.sidenav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11px;font-weight:600;color:#555;background:#fff;border:1px solid #d0cdc8;border-radius:20px;cursor:pointer}
+.sidenav-item:hover{border-color:#1D9E75;color:#085041}
+.sidenav-item .cnt{background:#1D9E75;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:85vh;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);display:flex;flex-direction:column}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.1rem;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.modal-head b{font-size:15px}
+.modal-x{width:26px;height:26px;border-radius:50%;background:#f0ede8;border:none;font-size:14px;color:#888;cursor:pointer;flex-shrink:0}
+.modal-x:hover{background:#e5e2dc}
+.modal-body{padding:1rem 1.1rem;overflow-y:auto}
 .snum-btn{cursor:pointer;transition:background .15s,transform .1s;user-select:none}
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
@@ -239,6 +246,18 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
   </div>
   <button style="flex-shrink:0;padding:6px 12px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Se deigene</button>
 </div>
+<div id="tech-modal" class="modal-overlay" onclick="if(event.target===this)closeTechModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>💡 Teknikk</b><button class="modal-x" onclick="closeTechModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="tech-modal-body"></div>
+  </div>
+</div>
+<div id="deiger-modal" class="modal-overlay" onclick="if(event.target===this)closeDeigerModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>🍽️ Deiger</b><button class="modal-x" onclick="closeDeigerModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="deiger-modal-body"></div>
+  </div>
+</div>
 <div class="app">
 <div class="sb">
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -252,12 +271,10 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 </div>
 
 <div class="sidenav">
-  <div class="sidenav-item" onclick="showTab('tips',this)">
-    <span>💡 Teknikk</span>
-  </div>
-  <div class="sidenav-item" onclick="showTab('bakster',this)">
+  <div class="sidenav-item" onclick="openTechModal()">💡 Teknikk</div>
+  <div class="sidenav-item" onclick="openDeigerModal()">
     <span>🍽️ Deiger</span>
-    <span id="active-deiger-count" style="display:none;font-size:10px;font-weight:700;color:#fff;background:#1D9E75;border-radius:8px;padding:1px 6px">0</span>
+    <span id="active-deiger-count" class="cnt" style="display:none">0</span>
   </div>
 </div>
 
@@ -912,20 +929,22 @@ function downloadIcs(steps){
 
 
 function showTab(n,el){
-  ['plan','recipe','tips','notes','bakster'].forEach(id=>{const e=document.getElementById('p-'+id);if(e)e.style.display=id===n?'block':'none';});
+  ['plan','recipe','notes'].forEach(id=>{const e=document.getElementById('p-'+id);if(e)e.style.display=id===n?'block':'none';});
   document.querySelectorAll('.topnav .tab').forEach(t=>t.classList.remove('on'));
-  document.querySelectorAll('.sidenav-item').forEach(t=>t.classList.remove('on'));
   if(el)el.classList.add('on');
-  if(n==='bakster')renderBaksterPanel('bakster-list');
   if(n==='notes')renderNotesPanel('notes-panel');
 }
 
-function gen(){
-  if(S.method==='hurtig'){hurtigRes();return;}
-  const a=anc(S.mode==='end'?'e':'s');
-  const rs=rawSteps(a),steps=rs,r=R();
-  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:oN()}];
-  const tH=`
+function buildTechHTML(){
+  if(S.method==='hurtig'){
+    return `
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt, ideelt for Ankarsrum. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>`;
+  }
+  return `
     <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 5 min — aldri i vannet direkte. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Total eltetid: 12–15 min. Sjekk deigtemperatur med termometer — skal lande på 22–24°C. Bruk kaldt vann for å kontrollere temperaturen.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar. Reiver den med én gang trenger den mer elting.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Autolyse</div><div class="sdesc">Mel og vann hviler 20–30 min uten gjær og salt. I Ankarsrum: start maskinen på trinn 1, tilsett melet gradvis og stopp. La hvile i bollen — glutennettverket bygges naturlig. Gir smidigere deig med langt kortere eltetid.</div></div>
@@ -936,6 +955,28 @@ function gen(){
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt, ideelt for Ankarsrum. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet — legg til ekstra vann gradvis mot slutten av eltingen til deigen kjennes riktig. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor 4 timer ute av kjøleskapet?</div><div class="sdesc">${WHY.tu}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Stretch &amp; fold (alternativ til Ankarsrum)</div><div class="sdesc">Hvis du ikke bruker Ankarsrum for elting: strekk deigen opp og brett over, roter 90°, gjenta 4–6 ganger. 3–4 runder med 30 min mellomrom. Bygger glutenstruktur uten maskin — særlig nyttig ved høy hydrering.</div></div>`;
+}
+
+function openTechModal(){
+  document.getElementById('tech-modal-body').innerHTML = buildTechHTML();
+  document.getElementById('tech-modal').style.display = 'flex';
+}
+function closeTechModal(){
+  document.getElementById('tech-modal').style.display = 'none';
+}
+function openDeigerModal(){
+  document.getElementById('deiger-modal').style.display = 'flex';
+  renderBaksterPanel('deiger-modal-body');
+}
+function closeDeigerModal(){
+  document.getElementById('deiger-modal').style.display = 'none';
+}
+
+function gen(){
+  if(S.method==='hurtig'){hurtigRes();return;}
+  const a=anc(S.mode==='end'?'e':'s');
+  const rs=rawSteps(a),steps=rs,r=R();
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:oN()}];
   window._steps=steps;
   document.getElementById('main').innerHTML=`
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
@@ -945,9 +986,7 @@ function gen(){
     ${pcBar()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
-    <div id="p-tips" style="display:none">${tH}</div>
-    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
-    <div id="p-bakster" style="display:none"><div id="bakster-list"><p style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p></div></div>`;
+    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>`;
   updatePcountDisp();
 }
 
@@ -957,11 +996,6 @@ function hurtigRes(){
   const r=R();
   window._steps=steps;
   const rr=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${w}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
-  const tH=`
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>`;
   document.getElementById('main').innerHTML=`
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
@@ -970,9 +1004,7 @@ function hurtigRes(){
     ${pcBar()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
-    <div id="p-tips" style="display:none">${tH}</div>
-    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
-    <div id="p-bakster" style="display:none"><div id="bakster-list"><p style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p></div></div>`;
+    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>`;
   updatePcountDisp();
 }
 
@@ -1346,8 +1378,8 @@ async function renderBaksterPanel(targetId){
 }
 
 function refreshBaksterPanels(){
-  const pc = document.getElementById('bakster-list');
-  if(pc) renderBaksterPanel('bakster-list');
+  const modal = document.getElementById('deiger-modal');
+  if(modal && modal.style.display==='flex') renderBaksterPanel('deiger-modal-body');
   const mob = document.getElementById('mob-bakster-content');
   if(mob) renderBaksterPanel('mob-bakster-content');
 }
@@ -1432,10 +1464,7 @@ function jumpToDeiger(){
   const mobEl=document.getElementById('mob-layout');
   const isMob=!!(mobEl && mobEl.classList.contains('active'));
   if(isMob){ mobShowTab('bakster'); }
-  else{
-    const t=[...document.querySelectorAll('.sidenav-item')].find(x=>x.textContent.includes('Deiger'));
-    if(t) showTab('bakster', t);
-  }
+  else{ openDeigerModal(); }
 }
 
 async function refreshDeigerBanner(){
@@ -1559,6 +1588,7 @@ function openBake(id){
     showTab('plan', document.querySelector('.topnav .tab'));
     clearTimeout(AT);
     gen();
+    closeDeigerModal();
   }
 }
 
