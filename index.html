@@ -192,7 +192,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 
 /* layout toggle btn */
 
-.layout-toggle{display:flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid #e0ddd8;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;color:#555}
+.layout-toggle{display:flex;align-items:center;gap:4px;padding:4px 8px;border:1px solid #d0cdc8;border-radius:14px;background:#fff;cursor:pointer;font-size:10px;color:#666}
 .layout-toggle:hover{background:#f0ede8}
 .layout-toggle.mob-style{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 
@@ -236,6 +236,22 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .step-done{opacity:.55}
 .step-done .stit,.step-done .mob-stit{text-decoration:line-through;color:#888}
 .snum-done{background:#1D9E75!important;color:#fff!important}
+.version-footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e0ddd8;padding:.35rem 1rem;font-size:11px;color:#999;display:flex;align-items:center;justify-content:center;gap:8px;z-index:60}
+.version-footer b{color:#555;font-weight:600}
+.version-footer .lnk{color:#1D9E75;font-weight:600;cursor:pointer;text-decoration:underline}
+.app{padding-bottom:28px}
+.clog-ver{margin-bottom:1.1rem}
+.clog-ver:last-child{margin-bottom:0}
+.clog-ver .vh{display:flex;align-items:baseline;gap:8px;margin-bottom:.4rem}
+.clog-ver .vh b{font-size:14px;color:#1a1a1a}
+.clog-ver .vh span{font-size:11px;color:#999}
+.clog-ver ul{margin:0;padding-left:1.1rem}
+.clog-ver li{font-size:12px;color:#444;margin-bottom:.3rem;line-height:1.5}
+.fs-seg{display:flex;background:#f0ede8;border-radius:8px;padding:3px;gap:2px}
+.fs-seg .o{flex:1;text-align:center;padding:6px 4px;font-size:11px;font-weight:600;color:#666;border-radius:6px;cursor:pointer}
+.fs-seg .o.on{background:#fff;color:#085041;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+body.fs-large{zoom:1.15}
+body.fs-xlarge{zoom:1.3}
 </style>
 </head>
 <body class="pre-interact">
@@ -257,6 +273,16 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
     <div class="modal-head"><b>🍽️ Deiger</b><button class="modal-x" onclick="closeDeigerModal()" aria-label="Lukk">✕</button></div>
     <div class="modal-body" id="deiger-modal-body"></div>
   </div>
+</div>
+<div id="changelog-modal" class="modal-overlay" onclick="if(event.target===this)closeChangelogModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>🕓 Hva er nytt</b><button class="modal-x" onclick="closeChangelogModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="changelog-modal-body"></div>
+  </div>
+</div>
+<div class="version-footer">
+  <span>Pizzaplanlegger <b id="footer-version"></b></span>
+  <span class="lnk" onclick="openChangelogModal()">Hva er nytt?</span>
 </div>
 <div class="app">
 <div class="sb">
@@ -343,6 +369,14 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
     <div class="swrow" onclick="toggleHelp()" title="Vis eller skjul forklaringer og tips i tidsplanen">
       <span class="swlbl">Forklaringer og tips</span>
       <span class="sw on" id="help-sw"></span>
+    </div>
+    <div style="margin-top:.5rem">
+      <div style="font-size:11px;color:#888;margin-bottom:4px">Skriftstørrelse</div>
+      <div class="fs-seg" id="fs-seg">
+        <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
+        <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
+        <div class="o" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
+      </div>
     </div>
   </div>
 
@@ -532,6 +566,23 @@ function syncHelpUI(){
   });
   const pcBtn=document.getElementById('help-toggle');
   if(pcBtn)pcBtn.textContent=S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer';
+}
+
+function setFontSize(level){
+  document.body.classList.remove('fs-large','fs-xlarge');
+  if(level==='large')document.body.classList.add('fs-large');
+  if(level==='xlarge')document.body.classList.add('fs-xlarge');
+  try{localStorage.setItem('pizzaFontSize',level);}catch(e){}
+  ['fs-seg','mob-fs-seg'].forEach(id=>{
+    const seg=document.getElementById(id);
+    if(!seg)return;
+    seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===level));
+  });
+}
+function initFontSize(){
+  let saved='normal';
+  try{ saved=localStorage.getItem('pizzaFontSize')||'normal'; }catch(e){}
+  setFontSize(saved);
 }
 
 
@@ -962,6 +1013,39 @@ function closeDeigerModal(){
   document.getElementById('deiger-modal').style.display = 'none';
 }
 
+// ===== VERSJON OG ENDRINGSLOGG =====
+const CHANGELOG = [
+  {
+    v: '2.1',
+    d: 'juli 2026',
+    changes: [
+      'Deiger kan lagres delt (Netlify Blobs) — lagre, åpne og fullfør samme deig fra flere enheter, sammen med familie/venner.',
+      'Notater er nå knyttet direkte til hver deig i stedet for en generell logg i nettleseren.',
+      'Steg i tidsplanen kan hakes av, og fremdriften lagres sammen med deigen.',
+      'Ny "Deiger"-oversikt viser aktive og ferdige bakster, med varselbjelke og telling som viser hvor mange som er aktive.',
+      'Teknikk og Deiger åpnes nå som popup-vinduer i stedet for faner, og forstyrrer ikke tidsplanen du står i.',
+      'Alle handlingsknapper (Lagre, Mine deiger, Kopier, Vis/skjul forklaringer) samlet i én gruppe.',
+      'Meltype er fjernet som eget valg — informasjon om meltyper og vannmengde ligger nå i Teknikk.',
+      'Overskriften viser nå metode og antall pizzaer tydelig, og hovedvinduet er tonet ned til du gjør ditt første valg.'
+    ]
+  }
+];
+
+function buildChangelogHTML(){
+  return CHANGELOG.map(entry => `
+    <div class="clog-ver">
+      <div class="vh"><b>v${entry.v}</b><span>${entry.d}</span></div>
+      <ul>${entry.changes.map(c => `<li>${c}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+function openChangelogModal(){
+  document.getElementById('changelog-modal-body').innerHTML = buildChangelogHTML();
+  document.getElementById('changelog-modal').style.display = 'flex';
+}
+function closeChangelogModal(){
+  document.getElementById('changelog-modal').style.display = 'none';
+}
+
 function gen(){
   if(S.method==='hurtig'){hurtigRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
@@ -1109,6 +1193,7 @@ function initLayout(){
   const auto=window.innerWidth<768?'mob':'pc';
   const mode=saved||auto;
   if(mode==='mob') setLayout('mob');
+  initFontSize();
 }
 
 // ===== MOBILE CONTROL SYNC =====
@@ -1137,6 +1222,7 @@ function syncMobControls(){
   mobSetMode(S.mode);
   const stamp=g('build-stamp'),mobStamp=g('mob-stamp');
   if(stamp&&mobStamp)mobStamp.textContent=stamp.textContent;
+  const mfv=g('mob-footer-version');if(mfv)mfv.textContent='v'+CHANGELOG[0].v;
   ['mob-sd','mob-st','mob-ed','mob-et'].forEach(id=>{
     const el=g(id);
     if(el&&!el.dataset.lst){el.addEventListener('input',mobGen);el.addEventListener('change',mobGen);el.dataset.lst='1';}
@@ -1289,6 +1375,7 @@ const _days=['søn','man','tir','ons','tor','fre','lør'];
 const _months=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
 const _stamp=`v2.1 · ${_days[_now.getDay()]} ${_now.getDate()}. ${_months[_now.getMonth()]} ${_now.getFullYear()} kl. ${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
 document.getElementById('build-stamp').textContent=_stamp;
+const _fv=document.getElementById('footer-version');if(_fv)_fv.textContent='v'+CHANGELOG[0].v;
 
 // ===== DEIGER (delt liste via Netlify Blobs) =====
 window._bakesCache = [];
@@ -1697,6 +1784,19 @@ document.addEventListener('change', firstInteractionCheck, true);
         <span class="swlbl">Forklaringer og tips</span>
         <span class="sw on" id="mob-help-sw"></span>
       </div>
+      <div style="margin-top:.6rem">
+        <div style="font-size:11px;color:#888;margin-bottom:4px">Skriftstørrelse</div>
+        <div class="fs-seg" id="mob-fs-seg">
+          <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
+          <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
+          <div class="o" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:#888">Pizzaplanlegger <b id="mob-footer-version" style="color:#555"></b></span>
+      <span style="font-size:12px;color:#1D9E75;font-weight:600" onclick="openChangelogModal()">Hva er nytt?</span>
     </div>
 
     <div class="mob-section-lbl">Planlegg fra</div>
