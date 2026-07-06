@@ -220,6 +220,10 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .act-btn-sec{border:1px solid #d0cdc8;background:#fff;color:#1a1a1a;font-weight:500}
 .act-btn-sec:hover{background:#f5f4f0}
 .act-group-lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+.sidenav{display:flex;flex-direction:column;gap:3px;background:#e5e2dc;border-radius:10px;padding:5px;margin-bottom:.9rem}
+.sidenav-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:12px;font-weight:500;color:#555;border-radius:7px;cursor:pointer}
+.sidenav-item:hover{background:#fff}
+.sidenav-item.on{background:#085041;color:#fff;font-weight:600}
 .snum-btn{cursor:pointer;transition:background .15s,transform .1s;user-select:none}
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
@@ -247,13 +251,15 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
   <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
 </div>
 
-<button id="active-deiger-btn" onclick="jumpToDeiger()" style="display:none;align-items:center;justify-content:space-between;width:100%;padding:8px 10px;border:1px solid #1D9E75;border-radius:8px;background:#E1F5EE;cursor:pointer;margin-top:2px;font-family:inherit">
-  <span style="display:flex;align-items:center;gap:7px">
-    <span style="font-size:14px">🍽️</span>
-    <span style="font-size:12px;font-weight:600;color:#085041">Mine deiger</span>
-  </span>
-  <span id="active-deiger-count" style="font-size:11px;font-weight:700;color:#fff;background:#1D9E75;border-radius:10px;padding:1px 7px">0</span>
-</button>
+<div class="sidenav">
+  <div class="sidenav-item" onclick="showTab('tips',this)">
+    <span>💡 Teknikk</span>
+  </div>
+  <div class="sidenav-item" onclick="showTab('bakster',this)">
+    <span>🍽️ Deiger</span>
+    <span id="active-deiger-count" style="display:none;font-size:10px;font-weight:700;color:#fff;background:#1D9E75;border-radius:8px;padding:1px 6px">0</span>
+  </div>
+</div>
 
   <div><div class="lbl">Pizzatype</div>
     <div class="pills" id="gtype">
@@ -309,14 +315,6 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
     </div>
   </div>
 
-  <div><div class="lbl">Meltype</div>
-    <div class="pills" id="gmel">
-      <span class="pill on" data-v="tipo00" title="Finmalt italiensk. Best for napoletansk.">Tipo 00</span>
-      <span class="pill" data-v="siktet" title="Norsk siktet. +5–10% vann.">Siktet hvete</span>
-      <span class="pill" data-v="sammalt" title="Bland 20–30% med tipo 00.">Sammalt (20–30%)</span>
-    </div>
-  </div>
-
   <div><div class="lbl">Ovntype</div>
     <div class="pills" id="govn">
       <span class="pill on" data-v="pizza" title="430–450°C. Leopardmønster.">Pizzaovn (430–450°C)</span>
@@ -367,7 +365,7 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 </div>
 
 <script>
-const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',meltype:'tipo00',hurtigH:5,showHelp:true};
+const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',hurtigH:5,showHelp:true};
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'}];
 const HREC={napoletana:65,newyork:63,langpanne:70,chicago:59};
@@ -447,7 +445,6 @@ function gCards(){
   });
 }
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();});
-pgrp('gmel','meltype');
 pgrp('govn','oven');
 mCards();gCards();buildHrows();
 
@@ -498,7 +495,7 @@ function doReset(){
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
   document.getElementById('csl').value=3;uCold(3);
   document.getElementById('tsl').value=22;S.temp=22;uTempUI();
-  pgrp('gtype','type');pgrp('gmel','meltype');pgrp('govn','oven');
+  pgrp('gtype','type');pgrp('govn','oven');
   mCards();gCards();
   document.getElementById('hsub').style.display='none';
   document.getElementById('cwrap').style.display='block';
@@ -571,7 +568,6 @@ function oT(t){
 }
 function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
 function mN(m){return{standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig'}[m]||m;}
-function mlN(){return{tipo00:'Tipo 00',siktet:'Siktet hvete',sammalt:'Sammalt blanding'}[S.meltype]||'Tipo 00';}
 
 const LOC={
   kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
@@ -861,7 +857,7 @@ function toggleHelpFromPlan(){
 
 function copyP(steps){
   const r=R(),p=pc();
-  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g ${mlN()} · Hydrering: ${S.hydro}%`,`Kjøleskapsheving: ${S.cold} dager · Ovn: ${oN()}`,`Romtemperatur: ${S.temp}°C`,'',`Antall pizzaer: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel (${mlN()}): ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${yA(r)}`,'','TIDSPLAN','--------'];
+  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,`Kjøleskapsheving: ${S.cold} dager · Ovn: ${oN()}`,`Romtemperatur: ${S.temp}°C`,'',`Antall pizzaer: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${yA(r)}`,'','TIDSPLAN','--------'];
   steps.forEach((s,i)=>{
     const locMap={kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'};
     const loc=locMap[s.loc]||s.loc;
@@ -917,7 +913,8 @@ function downloadIcs(steps){
 
 function showTab(n,el){
   ['plan','recipe','tips','notes','bakster'].forEach(id=>{const e=document.getElementById('p-'+id);if(e)e.style.display=id===n?'block':'none';});
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.topnav .tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.sidenav-item').forEach(t=>t.classList.remove('on'));
   if(el)el.classList.add('on');
   if(n==='bakster')renderBaksterPanel('bakster-list');
   if(n==='notes')renderNotesPanel('notes-panel');
@@ -927,8 +924,7 @@ function gen(){
   if(S.method==='hurtig'){hurtigRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
   const rs=rawSteps(a),steps=rs,r=R();
-  const mln={tipo00:'',siktet:' Siktet hvete: tilsett 5–10% mer vann.',sammalt:' Sammalt: bland 20–30% med tipo 00.'}[S.meltype]||'';
-  const rr=[{k:`Mel (${mlN()})`,v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:oN()}];
   const tH=`
     <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 5 min — aldri i vannet direkte. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Total eltetid: 12–15 min. Sjekk deigtemperatur med termometer — skal lande på 22–24°C. Bruk kaldt vann for å kontrollere temperaturen.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar. Reiver den med én gang trenger den mer elting.</div></div>
@@ -937,15 +933,14 @@ function gen(){
     ${S.method==='biga'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Biga</div><div class="sdesc">${WHY.bi} Biga lages for hånd — konsistensen er for tørr og klumpete for Ankarsrum. Legg ferdig biga i Ankarsrum-bollen og tilsett resten av ingrediensene.</div></div>`:''}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Romtemperatur og hevingstid</div><div class="sdesc">Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min. Deigen skal doble seg — ikke mer. Overheving gir flat, sur pizza.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. I Ankarsrum: løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Holdbarhet: 2–3 uker i kjøleskap. Bruk 3× mengden av tørrgjær.'}</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltype: ${mlN()}</div><div class="sdesc">${{tipo00:'Tipo 00 er finmalt italiensk hvete (11–12% protein). Gir elastisk, smidig deig. Ideelt for Ankarsrum — absorberer vann jevnt.',siktet:'Siktet norsk hvete har noe lavere glutenstyrke. Tilsett 5–10% mer vann og elt litt lenger i Ankarsrum.',sammalt:'Bland 20–30% sammalt med tipo 00 for nøtteaktig smak. Tilsett sammalt gradvis mot slutten av eltingen.'}[S.meltype]||''}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt, ideelt for Ankarsrum. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet — legg til ekstra vann gradvis mot slutten av eltingen til deigen kjennes riktig. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor 4 timer ute av kjøleskapet?</div><div class="sdesc">${WHY.tu}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Stretch &amp; fold (alternativ til Ankarsrum)</div><div class="sdesc">Hvis du ikke bruker Ankarsrum for elting: strekk deigen opp og brett over, roter 90°, gjenta 4–6 ganger. 3–4 runder med 30 min mellomrom. Bygger glutenstruktur uten maskin — særlig nyttig ved høy hydrering.</div></div>`;
   window._steps=steps;
   document.getElementById('main').innerHTML=`
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Deiger</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>${r.name} <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
-    ${mln?`<div class="ibox"><b>${mlN()}:</b>${mln}</div>`:''}
     ${actionGroupHTML()}
     ${pcBar()}
     <div id="p-plan">${stepH(steps)}</div>
@@ -961,14 +956,14 @@ function hurtigRes(){
   const {o,w,ya,tmp,steps}=hurtigSteps(a);
   const r=R();
   window._steps=steps;
-  const rr=[{k:`Mel (${mlN()})`,v:`${S.mel}g`},{k:'Vann',v:`${w}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
+  const rr=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${w}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
   const tH=`
     <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>`;
   document.getElementById('main').innerHTML=`
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('tips',this)">Teknikk</div><div class="tab" onclick="showTab('notes',this)">Notater</div><div class="tab" onclick="showTab('bakster',this)">Deiger</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
@@ -1108,7 +1103,6 @@ function syncMobControls(){
   mobHydroUI();
   mobPillGroup('mob-gtype','type');
   mobPillGroup('mob-ggj','gjaer');
-  mobPillGroup('mob-gmel','meltype');
   mobPillGroup('mob-govn','oven');
   mobMethodCards();
   mobBuildHrows();
@@ -1137,7 +1131,6 @@ function mobPillGroup(id,key){
   const vals={
     type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'}],
     gjaer:[{v:'torr',t:'Tørrgjær'},{v:'fersk',t:'Fersk gjær'}],
-    meltype:[{v:'tipo00',t:'Tipo 00'},{v:'siktet',t:'Siktet hvete'},{v:'sammalt',t:'Sammalt'}],
     oven:[{v:'pizza',t:'Pizzaovn'},{v:'vanlig',t:'Vanlig ovn'}]
   }[key]||[];
   vals.forEach(({v,t})=>{
@@ -1243,7 +1236,7 @@ function mobGen(){
     window._steps=steps;
     document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
-    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">pizzaer</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel (${mlN()})</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">pizzaer</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
     return;
   }
 
@@ -1251,10 +1244,9 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  const mln={tipo00:'',siktet:' Siktet hvete: tilsett 5–10% mer vann.',sammalt:' Sammalt: bland 20–30% med tipo 00.'}[S.meltype]||'';
-  document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mln?`<div class="ibox" style="margin-bottom:.5rem"><b>${mlN()}:</b>${mln}</div>`:''}${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
-  const rr=[{k:`Mel (${mlN()})`,v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall pizzaer</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
 
   // tips tab
@@ -1441,8 +1433,7 @@ function jumpToDeiger(){
   const isMob=!!(mobEl && mobEl.classList.contains('active'));
   if(isMob){ mobShowTab('bakster'); }
   else{
-    const tabs=[...document.querySelectorAll('.topnav .tab')];
-    const t=tabs.find(x=>x.textContent.trim()==='Deiger');
+    const t=[...document.querySelectorAll('.sidenav-item')].find(x=>x.textContent.includes('Deiger'));
     if(t) showTab('bakster', t);
   }
 }
@@ -1451,20 +1442,19 @@ async function refreshDeigerBanner(){
   const bakes = await fetchBakes();
   const banner=document.getElementById('deiger-banner');
   const bannerText=document.getElementById('deiger-banner-text');
-  const sideBtn=document.getElementById('active-deiger-btn');
   const sideCount=document.getElementById('active-deiger-count');
   const mobBtn=document.getElementById('mob-active-deiger-btn');
   const mobCount=document.getElementById('mob-active-deiger-count');
   if(bakes===null){
     if(banner)banner.style.display='none';
-    if(sideBtn)sideBtn.style.display='none';
+    if(sideCount)sideCount.style.display='none';
     if(mobBtn)mobBtn.style.display='none';
     return;
   }
   const active=bakes.filter(b=>b.status==='active');
-  if(sideBtn){
-    if(active.length>0){ sideBtn.style.display='flex'; if(sideCount)sideCount.textContent=String(active.length); }
-    else sideBtn.style.display='none';
+  if(sideCount){
+    if(active.length>0){ sideCount.style.display='inline-block'; sideCount.textContent=String(active.length); }
+    else sideCount.style.display='none';
   }
   if(mobBtn){
     if(active.length>0){ mobBtn.style.display='inline-flex'; if(mobCount)mobCount.textContent=String(active.length); }
@@ -1532,7 +1522,7 @@ function syncDesktopControls(){
   const cdisp=document.getElementById('cdisp');if(cdisp)cdisp.textContent=ct;
   const tsl=document.getElementById('tsl');if(tsl)tsl.value=S.temp;
   uTempUI();
-  pgrp('gtype','type');pgrp('gmel','meltype');pgrp('govn','oven');
+  pgrp('gtype','type');pgrp('govn','oven');
   mCards();gCards();buildHrows();
   const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
   const cwrap=document.getElementById('cwrap');if(cwrap)cwrap.style.display=S.method==='hurtig'?'none':'block';
@@ -1684,9 +1674,6 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div class="mob-section-lbl">Gjærtype</div>
     <div class="mob-pill-wrap" id="mob-ggj"></div>
-
-    <div class="mob-section-lbl">Meltype</div>
-    <div class="mob-pill-wrap" id="mob-gmel"></div>
 
     <div class="mob-section-lbl">Ovntype</div>
     <div class="mob-pill-wrap" id="mob-govn"></div>
