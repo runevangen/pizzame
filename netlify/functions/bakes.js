@@ -52,7 +52,8 @@ export default async (req, context) => {
         anchorISO: body.anchorISO,
         savedAt: new Date().toISOString(),
         finishedAt: null,
-        note: ''
+        note: '',
+        checkedSteps: Array.isArray(body.checkedSteps) ? body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50) : []
       };
       await store.setJSON(id, bake);
       return json(201, bake);
@@ -77,6 +78,7 @@ export default async (req, context) => {
       if (body.config) updated.config = body.config;
       if (body.anchorMode) updated.anchorMode = body.anchorMode === 'end' ? 'end' : 'start';
       if (typeof body.anchorISO === 'string') updated.anchorISO = body.anchorISO;
+      if (Array.isArray(body.checkedSteps)) updated.checkedSteps = body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50);
       await store.setJSON(id, updated);
       return json(200, updated);
     }
