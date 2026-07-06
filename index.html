@@ -36,12 +36,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hd{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
 .hrow.on .hd{background:#1D9E75}
 .gcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.gc{border:1px solid #d0cdc8;border-radius:8px;padding:.5rem .65rem;cursor:pointer;transition:all .15s;background:#fff}
-.gc.on{border-color:#1D9E75;border-width:2px;background:#e8f7f1}
-.gc-t{font-size:12px;font-weight:600;color:#1a1a1a}
-.gc.on .gc-t{color:#085041}
-.gc-s{font-size:11px;color:#888;margin-top:1px}
-.gc.on .gc-s{color:#0F6E56}
 .divl{height:1px;background:#e0ddd8;flex-shrink:0}
 .tbox{background:#fff;border:1px solid #d0cdc8;border-radius:8px;padding:.75rem}
 .tbox-t{font-size:12px;font-weight:600;margin-bottom:.55rem;display:flex;align-items:center;gap:5px;color:#1a1a1a}
@@ -211,7 +205,7 @@ body.pc-mode .mob-layout{display:none!important}
 .sw.on{background:#1D9E75}
 .sw::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
 .sw.on::after{left:18px}
-body.pre-interact .mn{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
+body.pre-interact #main-content{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
 body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
 @keyframes fadeOutFlash{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .method-flash{animation:fadeOutFlash 2.5s forwards}
@@ -252,6 +246,9 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .fs-seg .o.on{background:#fff;color:#085041;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 body.fs-large{zoom:1.15}
 body.fs-xlarge{zoom:1.3}
+.start-hint{display:flex;align-items:center;gap:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.7rem .9rem;margin-bottom:1rem;font-size:13px;color:#633806}
+.start-hint b{color:#4a2a05}
+.start-hint button{flex-shrink:0;padding:6px 12px;border:1px solid #EF9F27;border-radius:8px;background:#fff;color:#633806;font-size:12px;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body class="pre-interact">
@@ -352,9 +349,17 @@ body.fs-xlarge{zoom:1.3}
   </div>
 
   <div><div class="lbl">Gjærtype</div>
-    <div class="gcards" id="ggj">
-      <div class="gc on" data-v="torr" title="1g tørrgjær = 3g fersk."><div class="gc-t">Tørrgjær</div><div class="gc-s">Direkte i mel</div></div>
-      <div class="gc" data-v="fersk" title="Mer aroma. 3× mengden."><div class="gc-t">Fersk gjær</div><div class="gc-s">3× mer enn tørrgjær</div></div>
+    <div class="pills" id="ggj">
+      <span class="pill on" data-v="torr" title="1g tørrgjær = 3g fersk.">Tørrgjær</span>
+      <span class="pill" data-v="fersk" title="Mer aroma. 3× mengden.">Fersk gjær</span>
+    </div>
+  </div>
+
+  <div><div class="lbl">Kjøkkenmaskin</div>
+    <div class="pills" id="gkm">
+      <span class="pill on" data-v="ankarsrum" title="Ruller bollen, lite friksjonsvarme.">Ankarsrum</span>
+      <span class="pill" data-v="manuell" title="For hånd. Teknikk avhenger av hydrering.">Manuell elting</span>
+      <span class="pill" data-v="annen" title="Eltekrok, f.eks. KitchenAid. Mer friksjonsvarme.">Annen maskin</span>
     </div>
   </div>
 
@@ -416,7 +421,7 @@ body.fs-xlarge{zoom:1.3}
 </div>
 
 <script>
-const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',hurtigH:5,showHelp:true};
+const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,showHelp:true};
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'}];
 const HREC={napoletana:65,newyork:63,langpanne:70,chicago:59};
@@ -489,15 +494,11 @@ function mCards(){
     };
   });
 }
-function gCards(){
-  document.getElementById('ggj').querySelectorAll('.gc').forEach(c=>{
-    c.classList.toggle('on',c.dataset.v===S.gjaer);
-    c.onclick=()=>{S.gjaer=c.dataset.v;gCards();sched();};
-  });
-}
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();});
+pgrp('ggj','gjaer');
+pgrp('gkm','kjokkenmaskin');
 pgrp('govn','oven');
-mCards();gCards();buildHrows();
+mCards();buildHrows();
 
 function uMel(v){S.mel=parseInt(v);document.getElementById('mdisp').textContent=v+'g';sched();}
 function uHydro(v){S.hydro=parseInt(v);uHydroUI();sched();}
@@ -546,8 +547,8 @@ function doReset(){
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
   document.getElementById('csl').value=3;uCold(3);
   document.getElementById('tsl').value=22;S.temp=22;uTempUI();
-  pgrp('gtype','type');pgrp('govn','oven');
-  mCards();gCards();
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
+  mCards();
   document.getElementById('hsub').style.display='none';
   document.getElementById('cwrap').style.display='block';
   setMode('start');initD();sched();
@@ -644,8 +645,6 @@ const LOC={
   benk:'<span class="sloc r">🔧 Kjøkkenbenk</span>'
 };
 const WHY={
-  au:'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting. I Ankarsrum: autolyse er ekstra effektiv fordi rullekniven allerede har fordelt vannet jevnt i melet.',
-  sg:'Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I Ankarsrum: tilsett salt etter ca. 5 min elting — da er gluten allerede i gang og tåler saltet bedre. Gjær løses i vannet på forhånd.',
   fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
   tu:'Kald deig er stiv — gluten er seig ved 4°C. 3–4 timer romtemperatur lar gluten slappe av slik at deigen strekkes uten å rive.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
@@ -653,6 +652,30 @@ const WHY={
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
 };
 function rtW(){return`Gjæren er mest aktiv 25–35°C. Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min.`;}
+
+// ===== KJØKKENMASKIN: felles tekst-hjelpere =====
+// Ankarsrum og manuell elting tilfører lite friksjonsvarme (nær hverandre) — trenger varmere vann
+// for å nå samme sluttemperatur. Vanlige kjøkkenmaskiner (eltekrok) tilfører mye friksjonsvarme —
+// trenger kaldere vann. Kilde: King Arthur Baking friksjonsfaktor-data (stand mixer ~22–24°F,
+// håndelting ~0–4°F) og uavhengige Ankarsrum-sammenligninger (nær håndelting i friksjon).
+function waterTempPhrase(){
+  return S.kjokkenmaskin==='annen'
+    ? 'kaldt vann, gjerne rett fra kjøleskapet'
+    : 'kjølig eller romtemperert vann (ikke iskaldt)';
+}
+function machineLabel(){
+  return {ankarsrum:'Ankarsrum',manuell:'For hånd',annen:'kjøkkenmaskinen'}[S.kjokkenmaskin]||'Ankarsrum';
+}
+function whyAu(){
+  if(S.kjokkenmaskin==='manuell') return 'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting — spesielt nyttig ved håndelting, siden autolysen gjør mye av jobben før du i det hele tatt begynner.';
+  if(S.kjokkenmaskin==='annen') return 'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting, og kortere eltetid i maskinen — nyttig siden kjøkkenmaskiner lett overvarmer deigen ved lang eltetid.';
+  return 'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting. I Ankarsrum: autolyse er ekstra effektiv fordi rullekniven allerede har fordelt vannet jevnt i melet.';
+}
+function whySg(){
+  if(S.kjokkenmaskin==='manuell') return 'Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. Ved håndelting: bland saltet inn sammen med gjæren fra start — du styrer selv tempoet, så det er ikke samme fare for at saltet møter uutviklet gluten som i en maskin.';
+  if(S.kjokkenmaskin==='annen') return 'Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I kjøkkenmaskinen: tilsett salt etter 2–3 min elting — gluten er da så vidt i gang og tåler saltet bedre. Gjær løses i vannet på forhånd.';
+  return 'Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I Ankarsrum: tilsett salt etter ca. 5 min elting — da er gluten allerede i gang og tåler saltet bedre. Gjær løses i vannet på forhånd.';
+}
 
 function rawSteps(a){
   const r=R(),c=S.cold,ie=S.mode==='end',cM2=c*24*60,rt=rtM(60),tp=S.type;
@@ -680,14 +703,30 @@ function rawSteps(a){
     // Fremover: t0 gitt. Bakover: form = stek - cM2, og regn bakover derfra.
     const t0=ie?sM(sM(sM(a,cM2),rt),45):a;
     return[
-      {title:'Ankarsrum — bland og autolyse',loc:'benk',at:t0,dur:30,
-        desc:`Hell ${r.water}g kaldt vann i Ankarsrum-bollen. Start maskinen på trinn 1 og tilsett ${r.flour}g mel gradvis i 3–4 omganger. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,
-        why:WHY.au,
-        tip:'Ankarsrum liker væske i bunnen — melet trekkes jevnt inn under rullekniven. Ikke overfyll på én gang.'},
+      {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland og autolyse':S.kjokkenmaskin==='manuell'?'Bland for hånd og autolyse':'Kjøkkenmaskin — bland og autolyse',loc:'benk',at:t0,dur:30,
+        desc:S.kjokkenmaskin==='ankarsrum'
+          ?`Hell ${r.water}g ${waterTempPhrase()} i Ankarsrum-bollen. Start maskinen på trinn 1 og tilsett ${r.flour}g mel gradvis i 3–4 omganger. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`
+          :S.kjokkenmaskin==='manuell'
+          ?`Hell ${r.water}g ${waterTempPhrase()} i en bolle. Rør inn ${r.flour}g mel gradvis med en slikkepott eller hånden til alt melet er fuktet — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`
+          :`Hell ${r.water}g ${waterTempPhrase()} i bollen på kjøkkenmaskinen. Sett i eltekroken, kjør på laveste hastighet og tilsett ${r.flour}g mel gradvis. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,
+        why:whyAu(),
+        tip:S.kjokkenmaskin==='ankarsrum'
+          ?'Ankarsrum liker væske i bunnen — melet trekkes jevnt inn under rullekniven. Ikke overfyll på én gang.'
+          :S.kjokkenmaskin==='manuell'
+          ?'Ingen grunn til å skynde seg her — bare bland til det ikke er tørt mel igjen. Autolysen gjør mye av arbeidet for deg.'
+          :'Kjør kun på laveste hastighet i denne fasen — høyere hastighet før autolysen varmer opp deigen unødvendig mye.'},
       {title:'Tilsett gjær og salt — elt ferdig',loc:'benk',at:aM(t0,30),dur:15,
-        desc:`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i litt vann og tilsett. Start maskinen på trinn 2–3 og elt i 3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}. Øk gradvis til trinn 3–4. Elt totalt 12–15 min til deigen er glatt og smidig og slipper bollen. Mål deigtemperaturen — den skal vise 22–24°C.`,
-        why:WHY.sg,
-        tip:'Ankarsrum jobber best på lav-til-middels hastighet i lang tid. Unngå trinn 5–6 for pizzadeig — det overvarmer og bryter ned gluten.'},
+        desc:S.kjokkenmaskin==='ankarsrum'
+          ?`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i litt vann og tilsett. Start maskinen på trinn 2–3 og elt i 3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}. Øk gradvis til trinn 3–4. Elt totalt 12–15 min til deigen er glatt og smidig og slipper bollen. Mål deigtemperaturen — den skal vise 22–24°C.`
+          :S.kjokkenmaskin==='manuell'
+          ?`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i litt vann og bland inn i bollen sammen med ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}. ${S.hydro>68?'Deigen er for våt for vanlig håndelting ved denne hydreringen. Bruk fransk elting (slap-and-fold): løft deigen med begge hender, dra den ut til sidene, og «slå» den ned mot benken i et fast, rytmisk tempo. Gjenta i 10–15 min — deigen strammer seg gradvis og blir mindre klissete.':'Vend ut på lett melet benk. Press deigen ut med håndbaken, brett den tilbake over seg selv, drei en kvart omgang — «press, brett, drei». Gjenta i 8–12 min til deigen er glatt, smidig og bare lett klissete. Mål gjerne deigtemperaturen — sikt mot 22–24°C.'}`
+          :`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i litt vann og tilsett. Kjør eltekroken på lav hastighet i 2–3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}. Øk til middels lav hastighet. Elt totalt 6–10 min til deigen slipper bollen og er glatt — kjøkkenmaskiner overelter lett, så sjekk windowpane-testen tidlig og ofte.`,
+        why:whySg(),
+        tip:S.kjokkenmaskin==='ankarsrum'
+          ?'Ankarsrum jobber best på lav-til-middels hastighet i lang tid. Unngå trinn 5–6 for pizzadeig — det overvarmer og bryter ned gluten.'
+          :S.kjokkenmaskin==='manuell'
+          ?'Windowpane-testen er din venn her — stopp når en liten bit deig kan strekkes tynt uten å rive.'
+          :'De fleste kjøkkenmaskiner takler pizzadeig godt på trinn 2 (av typisk 1–10). Høyere hastighet enn det er sjelden nødvendig og øker faren for overoppheting.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(t0,45),dur:rt,
         desc:`Løft deigen ut av bollen. Legg i lett oljet bolle, dekk tett med plastfolie. La stå ved ${S.temp}°C i ca. ${rt} min. Deigen skal heve synlig.`,
         why:rtW(),
@@ -701,13 +740,21 @@ function rawSteps(a){
     const pa=ie?sM(sM(sM(a,cM2),20+rt),14*60):a;
     const rdy=aM(pa,14*60);
     return[
-      {title:'Lag poolish i Ankarsrum-bollen',loc:'benk',at:pa,dur:10,
-        desc:`Ta av rullekniv og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,
+      {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
+        desc:S.kjokkenmaskin==='ankarsrum'
+          ?`Ta av rullekniv og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
+          :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,
         why:WHY.pl,
-        tip:'Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'},
-      {title:'Ankarsrum — bland ferdig deig',loc:'benk',at:rdy,dur:20,
-        desc:`Sett rullekniv og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g kaldt vann. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær etter 5 min. Øk til trinn 3–4. Elt totalt 10–12 min.`,
-        why:'Poolishen har allerede fermentert mesteparten av deigen — Ankarsrum inkorporerer resten effektivt.',
+        tip:S.kjokkenmaskin==='ankarsrum'
+          ?'Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'
+          :'La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'},
+      {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
+        desc:S.kjokkenmaskin==='ankarsrum'
+          ?`Sett rullekniv og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær etter 5 min. Øk til trinn 3–4. Elt totalt 10–12 min.`
+          :S.kjokkenmaskin==='manuell'
+          ?`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}, ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`
+          :`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}. Tilsett ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær etter 2–3 min. Øk til middels lav hastighet. Elt totalt 6–9 min.`,
+        why:'Poolishen har allerede fermentert mesteparten av deigen — resten inkorporeres effektivt uansett metode.',
         tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gir løsere glutenstruktur. Deigtemperatur: 22–24°C.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,why:rtW()},
       ...tailSteps(aM(rdy,20+rt))
@@ -719,12 +766,16 @@ function rawSteps(a){
     const rdy=aM(ba2,18*60);
     return[
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
-        desc:`Biga lages for hånd — ikke i Ankarsrum. Bland ${bm}g mel, ${bv}g vann og ${Math.round(r3.yDry*0.1*100)/100}g tørrgjær til klumpete, tørr konsistens. Ikke bland for mye.`,
+        desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${Math.round(r3.yDry*0.1*100)/100}g tørrgjær til klumpete, tørr konsistens. Ikke bland for mye.`,
         why:WHY.bi,
         tip:'La stå 16–24 timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.'},
-      {title:'Ankarsrum — bland ferdig deig',loc:'benk',at:rdy,dur:20,
-        desc:`Legg bigaen i Ankarsrum-bollen. Tilsett ${Math.round(r3.water-bv)}g kaldt vann. Start trinn 1–2. Tilsett ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?` og ${r3.oil}g olje etter halvparten av melet`:''}. Tilsett ${r3.salt}g salt etter 5 min. Øk til trinn 3–4. Elt totalt 12–15 min til deigen er smidig og slipper bollen.`,
-        why:'Bigaen er stiv — Ankarsrum løser den opp gradvis. Deigen kan virke tung i starten, det er normalt.',
+      {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
+        desc:S.kjokkenmaskin==='ankarsrum'
+          ?`Legg bigaen i Ankarsrum-bollen. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Start trinn 1–2. Tilsett ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?` og ${r3.oil}g olje etter halvparten av melet`:''}. Tilsett ${r3.salt}g salt etter 5 min. Øk til trinn 3–4. Elt totalt 12–15 min til deigen er smidig og slipper bollen.`
+          :S.kjokkenmaskin==='manuell'
+          ?`Legg bigaen i en bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()} og bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''} og ${r3.salt}g salt. Vend ut på benk. Bigaen er stiv i starten — bruk «press, brett, drei»-teknikk og regn med at det tar litt lengre tid enn vanlig håndelting, 12–15 min, før den løsner og blir smidig.`
+          :`Legg bigaen i kjøkkenmaskinens bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}. Tilsett ${r3.salt}g salt etter 2–3 min. Øk til middels lav hastighet. Elt 8–10 min — bigaen er stiv og kan belaste maskinen, så gå ned i hastighet om den strever.`,
+        why:'Bigaen er stiv — den løses opp gradvis uansett metode. Deigen kan virke tung i starten, det er normalt.',
         tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW()},
       ...tailSteps(aM(rdy,20+rtB))
@@ -744,10 +795,18 @@ function hurtigSteps(anchor){
   const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60),p=pc();
   const t0=ie?sM(anchor,30+ba+afm):anchor;
   return{o,w,ya,tmp,ba,afm,p,steps:[
-    {title:'Ankarsrum — bland deig raskt',loc:'benk',at:t0,dur:15,
-      desc:`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min.`,
-      why:'Lunkent vann (35–38°C) aktiverer gjæren raskt. Ankarsrum inkorporerer melet effektivt uten klumper.',
-      tip:'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'},
+    {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:t0,dur:15,
+      desc:S.kjokkenmaskin==='ankarsrum'
+        ?`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min.`
+        :S.kjokkenmaskin==='manuell'
+        ?`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
+        :`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min.`,
+      why:'Lunkent vann (35–38°C) aktiverer gjæren raskt uansett eltemetode.',
+      tip:S.kjokkenmaskin==='ankarsrum'
+        ?'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'
+        :S.kjokkenmaskin==='manuell'
+        ?'Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.'
+        :'Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.'},
     {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(t0,15),dur:ba,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,why:rtW()},
     {title:'Form emner',loc:'benk',at:aM(t0,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,tip:'Ikke kjevle — strekk for hånd.'},
     {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}.`,why:'Gluten slapper av etter forming.'},
@@ -976,26 +1035,35 @@ function showTab(n,el){
   if(n==='notes')renderNotesPanel('notes-panel');
 }
 
+function machineSeqHTML(){
+  if(S.kjokkenmaskin==='manuell') return `<div class="step"><div class="stit" style="margin-bottom:.3rem">🖐️ Manuell elting — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen, mel gradvis oppi. Bland til en grov deig for hånd før du vender ut på benk. Under ca. 68% hydrering: «press, brett, drei»-teknikk. Over ca. 68%: fransk elting (slap-and-fold) — deigen er for våt til vanlig elting. Windowpane-testen avgjør når du er ferdig, ikke klokken.</div></div>`;
+  if(S.kjokkenmaskin==='annen') return `<div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Kjøkkenmaskin — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Bruk eltekroken, start på lav hastighet og tilsett mel gradvis. Salt tilsettes etter 2–3 min. Øk til middels lav hastighet — sjelden nødvendig med mer. Elt 6–10 min. Kjøkkenmaskiner utvikler gluten raskere enn Ankarsrum, men tilfører også mer friksjonsvarme, så sjekk windowpane-testen tidlig.</div></div>`;
+  return `<div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>`;
+}
+function waterTempTechHTML(){
+  return `<div class="step"><div class="stit" style="margin-bottom:.3rem">Vanntemperatur — tilpasset kjøkkenmaskin</div><div class="sdesc">Ulike maskiner tilfører ulik mengde friksjonsvarme under elting. Vanlige kjøkkenmaskiner med eltekrok (f.eks. KitchenAid) kan tilføre <b>10–13°C</b> gjennom selve eltingen — bruk derfor kaldt vann, gjerne rett fra kjøleskapet. Ankarsrum og håndelting tilfører mye mindre varme (nær hverandre i friksjon), så bruk kjølig eller romtemperert vann for å nå samme sluttemperatur på 22–24°C. Mål deigtemperaturen med termometer til du kjenner din egen maskin/teknikk godt.</div></div>`;
+}
+
 function buildTechHTML(){
   if(S.method==='hurtig'){
     return `
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>
+    ${machineSeqHTML()}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt, ideelt for Ankarsrum. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>`;
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>`;
   }
   return `
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 5 min — aldri i vannet direkte. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Total eltetid: 12–15 min. Sjekk deigtemperatur med termometer — skal lande på 22–24°C. Bruk kaldt vann for å kontrollere temperaturen.</div></div>
+    ${machineSeqHTML()}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar. Reiver den med én gang trenger den mer elting.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Autolyse</div><div class="sdesc">Mel og vann hviler 20–30 min uten gjær og salt. I Ankarsrum: start maskinen på trinn 1, tilsett melet gradvis og stopp. La hvile i bollen — glutennettverket bygges naturlig. Gir smidigere deig med langt kortere eltetid.</div></div>
-    ${S.method==='poolish'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Poolish</div><div class="sdesc">${WHY.pl} Med Ankarsrum: ta av kniv og skraper, rør poolishen for hånd med slikkepott direkte i maskinen, dekk med lokk. Neste dag setter du inn kniv og skraper igjen og elter ferdig deig rett i bollen — ingen overføring, én bolle å vaske.</div></div>`:''}
-    ${S.method==='biga'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Biga</div><div class="sdesc">${WHY.bi} Biga lages for hånd — konsistensen er for tørr og klumpete for Ankarsrum. Legg ferdig biga i Ankarsrum-bollen og tilsett resten av ingrediensene.</div></div>`:''}
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Autolyse</div><div class="sdesc">Mel og vann hviler 20–30 min uten gjær og salt. Melet får trekke til seg vannet og glutennettverket bygges naturlig, uansett om du bruker maskin eller hånd. Gir smidigere deig med langt kortere eltetid etterpå.</div></div>
+    ${waterTempTechHTML()}
+    ${S.method==='poolish'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Poolish</div><div class="sdesc">${WHY.pl} Poolishen fermenterer i egen bolle uansett kjøkkenmaskin — det er først når du blander ferdig deig at maskinvalget spiller inn.</div></div>`:''}
+    ${S.method==='biga'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Biga</div><div class="sdesc">${WHY.bi} Biga lages alltid for hånd — konsistensen er for tørr og klumpete for maskinelting, uansett hvilken maskin du ellers bruker. Legg ferdig biga i bollen og tilsett resten av ingrediensene.</div></div>`:''}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Romtemperatur og hevingstid</div><div class="sdesc">Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min. Deigen skal doble seg — ikke mer. Overheving gir flat, sur pizza.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. I Ankarsrum: løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Holdbarhet: 2–3 uker i kjøleskap. Bruk 3× mengden av tørrgjær.'}</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt, ideelt for Ankarsrum. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet — legg til ekstra vann gradvis mot slutten av eltingen til deigen kjennes riktig. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor 4 timer ute av kjøleskapet?</div><div class="sdesc">${WHY.tu}</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Stretch &amp; fold (alternativ til Ankarsrum)</div><div class="sdesc">Hvis du ikke bruker Ankarsrum for elting: strekk deigen opp og brett over, roter 90°, gjenta 4–6 ganger. 3–4 runder med 30 min mellomrom. Bygger glutenstruktur uten maskin — særlig nyttig ved høy hydrering.</div></div>`;
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Holdbarhet: 2–3 uker i kjøleskap. Bruk 3× mengden av tørrgjær.'}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet — legg til ekstra vann gradvis mot slutten av eltingen til deigen kjennes riktig. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor 4 timer ute av kjøleskapet?</div><div class="sdesc">${WHY.tu}</div></div>`;
 }
 
 function openTechModal(){
@@ -1015,6 +1083,16 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '2.2',
+    d: 'juli 2026',
+    changes: [
+      'Nytt valg: Kjøkkenmaskin (Ankarsrum / Manuell elting / Annen maskin) — instruksjonene i tidsplanen og Teknikk-fanen tilpasser seg faktisk til valget, ikke bare tekst/etiketter.',
+      'Manuell elting skiller mellom vanlig "press, brett, drei"-teknikk og fransk elting (slap-and-fold) ved høy hydrering, siden våt deig ikke lar seg elte for hånd på vanlig vis.',
+      'Ny forklaring i Teknikk om vanntemperatur tilpasset kjøkkenmaskin — vanlige kjøkkenmaskiner tilfører mye mer friksjonsvarme enn Ankarsrum/håndelting, og trenger derfor kaldere vann for å nå samme deigtemperatur.',
+      'Gjærtype, Kjøkkenmaskin og Ovntype bruker nå samme visuelle stil (piller) i sidepanelet, i stedet for to ulike stiler som før.'
+    ]
+  },
   {
     v: '2.1',
     d: 'juli 2026',
@@ -1053,13 +1131,16 @@ function gen(){
   const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:oN()}];
   window._steps=steps;
   document.getElementById('main').innerHTML=`
+    ${startHintHTML()}
+    <div id="main-content">
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>${r.name} <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pc().count} pizza${pc().count===1?'':'er'}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
-    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>`;
+    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
+    </div>`;
   updatePcountDisp();
 }
 
@@ -1070,13 +1151,16 @@ function hurtigRes(){
   window._steps=steps;
   const rr=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${w}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
   document.getElementById('main').innerHTML=`
+    ${startHintHTML()}
+    <div id="main-content">
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pc().count} pizza${pc().count===1?'':'er'}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
-    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>`;
+    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
+    </div>`;
   updatePcountDisp();
 }
 
@@ -1208,6 +1292,7 @@ function syncMobControls(){
   mobHydroUI();
   mobPillGroup('mob-gtype','type');
   mobPillGroup('mob-ggj','gjaer');
+  mobPillGroup('mob-gkm','kjokkenmaskin');
   mobPillGroup('mob-govn','oven');
   mobMethodCards();
   mobBuildHrows();
@@ -1237,6 +1322,7 @@ function mobPillGroup(id,key){
   const vals={
     type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'}],
     gjaer:[{v:'torr',t:'Tørrgjær'},{v:'fersk',t:'Fersk gjær'}],
+    kjokkenmaskin:[{v:'ankarsrum',t:'Ankarsrum'},{v:'manuell',t:'Manuell elting'},{v:'annen',t:'Annen maskin'}],
     oven:[{v:'pizza',t:'Pizzaovn'},{v:'vanlig',t:'Vanlig ovn'}]
   }[key]||[];
   vals.forEach(({v,t})=>{
@@ -1340,7 +1426,7 @@ function mobGen(){
   if(S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">pizzaer</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
     return;
@@ -1350,7 +1436,7 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  document.getElementById('mob-plan-content').innerHTML=`<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`},{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall pizzaer</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
@@ -1596,6 +1682,15 @@ function methodFlashHTML(){
   return changed ? ' <span class="method-flash" style="margin-left:4px;font-size:10px;font-weight:600;color:#fff;background:#1D9E75;padding:2px 8px;border-radius:6px;vertical-align:2px">endret</span>' : '';
 }
 
+function startHintHTML(){
+  if(!document.body.classList.contains('pre-interact')) return '';
+  return `<div class="start-hint">
+    <span>👈</span>
+    <span>Velg pizzatype i sidepanelet, eller <b>åpne en lagret deig</b>, for å komme i gang. Dette er bare et startoppsett.</span>
+    <button onclick="jumpToDeiger()">🍽️ Mine deiger</button>
+  </div>`;
+}
+
 function actionGroupHTML(){
   return `<div style="background:#fff;border:1px solid #e0ddd8;border-radius:10px;padding:.75rem .9rem;margin-bottom:1rem">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid #f0ede8;font-size:12px">${activeDeigIndicatorHTML()}</div>
@@ -1621,8 +1716,8 @@ function syncDesktopControls(){
   const cdisp=document.getElementById('cdisp');if(cdisp)cdisp.textContent=ct;
   const tsl=document.getElementById('tsl');if(tsl)tsl.value=S.temp;
   uTempUI();
-  pgrp('gtype','type');pgrp('govn','oven');
-  mCards();gCards();buildHrows();
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
+  mCards();buildHrows();
   const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
   const cwrap=document.getElementById('cwrap');if(cwrap)cwrap.style.display=S.method==='hurtig'?'none':'block';
 }
@@ -1774,6 +1869,9 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div class="mob-section-lbl">Gjærtype</div>
     <div class="mob-pill-wrap" id="mob-ggj"></div>
+
+    <div class="mob-section-lbl">Kjøkkenmaskin</div>
+    <div class="mob-pill-wrap" id="mob-gkm"></div>
 
     <div class="mob-section-lbl">Ovntype</div>
     <div class="mob-pill-wrap" id="mob-govn"></div>
