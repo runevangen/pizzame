@@ -245,6 +245,9 @@ body.fs-xlarge{zoom:1.3}
 .start-hint{display:flex;align-items:center;gap:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.7rem .9rem;margin-bottom:1rem;font-size:13px;color:#633806}
 .start-hint b{color:#4a2a05}
 .start-hint button{flex-shrink:0;padding:6px 12px;border:1px solid #EF9F27;border-radius:8px;background:#fff;color:#633806;font-size:12px;font-weight:600;cursor:pointer}
+.step-missed{border-left:3px solid #EF9F27}
+.mob-step.step-missed{border-left:3px solid #EF9F27}
+.missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 </style>
 </head>
 <body class="pre-interact">
@@ -367,14 +370,6 @@ body.fs-xlarge{zoom:1.3}
       <span class="swlbl">Forklaringer og tips</span>
       <span class="sw on" id="help-sw"></span>
     </div>
-    <div style="margin-top:.5rem">
-      <div style="font-size:11px;color:#888;margin-bottom:4px">Skriftstørrelse</div>
-      <div class="fs-seg" id="fs-seg">
-        <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
-        <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
-        <div class="o" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
-      </div>
-    </div>
   </div>
 
   <div class="divl"></div>
@@ -400,7 +395,6 @@ body.fs-xlarge{zoom:1.3}
 
   <div class="brow">
     <button class="bgo" onclick="doReset()" title="Nullstill alle innstillinger">↺ Nullstill</button>
-    <button class="brst" onclick="doReset()" title="Nullstill alle valg">↺</button>
   </div>
 </div>
 
@@ -534,6 +528,7 @@ function doReset(){
   Object.assign(S,DEF);
   window._activeDeigId=null;window._activeDeigName=null;
   window._checked=new Set();
+  document.body.classList.add('pre-interact');
   syncSaveBakeLabel();
   document.getElementById('msl').value=500;uMel(500);
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
@@ -566,16 +561,37 @@ function setFontSize(level){
   if(level==='large')document.body.classList.add('fs-large');
   if(level==='xlarge')document.body.classList.add('fs-xlarge');
   try{localStorage.setItem('pizzaFontSize',level);}catch(e){}
-  ['fs-seg','mob-fs-seg'].forEach(id=>{
-    const seg=document.getElementById(id);
-    if(!seg)return;
-    seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===level));
-  });
+  const seg=document.getElementById('mob-fs-seg');
+  if(seg)seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===level));
 }
 function initFontSize(){
   let saved='normal';
   try{ saved=localStorage.getItem('pizzaFontSize')||'normal'; }catch(e){}
   setFontSize(saved);
+}
+const FS_LEVELS=['normal','large','xlarge'];
+const FS_LABELS={normal:'Normal',large:'Stor',xlarge:'Ekstra stor'};
+function currentFontLevel(){
+  if(document.body.classList.contains('fs-xlarge'))return 'xlarge';
+  if(document.body.classList.contains('fs-large'))return 'large';
+  return 'normal';
+}
+function fontSizeStepperHTML(){
+  const cur=currentFontLevel();
+  return `<div style="display:flex;align-items:center;gap:8px;margin-top:.6rem;padding-top:.6rem;border-top:1px solid #f0ede8">
+    <span style="font-size:11px;color:#888">Skriftstørrelse</span>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+      <button onclick="stepFontSize(-1)" title="Mindre skrift" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">−</button>
+      <span style="font-size:12px;font-weight:600;color:#1a1a1a;min-width:74px;text-align:center">${FS_LABELS[cur]}</span>
+      <button onclick="stepFontSize(1)" title="Større skrift" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">+</button>
+    </div>
+  </div>`;
+}
+function stepFontSize(dir){
+  const idx=Math.min(FS_LEVELS.length-1,Math.max(0,FS_LEVELS.indexOf(currentFontLevel())+dir));
+  setFontSize(FS_LEVELS[idx]);
+  const isMob=document.body.classList.contains('mob-mode');
+  if(isMob){mobGen();}else{gen();}
 }
 
 
@@ -890,12 +906,13 @@ function renderSteps(steps, mode='desktop'){
     const locHtml = isMob ? (LOC[s.loc] || '').replace(C.locReplaceFrom, C.locReplaceTo) : (LOC[s.loc] || '');
 
     const done = window._checked && window._checked.has(i);
-    html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${isDimmed ? C.dim : ''} ${done ? 'step-done' : ''}">
+    const missed = i < curIdx && !done;
+    html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${isDimmed ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''}">
       <div class="${C.body}">
         <div class="${C.head}">
           <div class="${C.num} snum-btn ${done ? 'snum-done' : (i===curIdx ? '' : C.numDim)}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">${done ? '✓' : i+1}</div>
           <div style="flex:1;min-width:0">
-            <div class="${C.title}">${s.title}</div>
+            <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}</div>
             <div class="${C.meta}">
               <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + s.dur + (isMob ? ' min' : ' min aktivt') : ''}</div>
               ${locHtml}
@@ -1697,11 +1714,12 @@ function actionGroupHTML(){
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid #f0ede8;font-size:12px">${activeDeigIndicatorHTML()}</div>
     <div class="act-group-lbl">Denne deigen</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="act-btn act-btn-pri" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen slik at du eller andre kan hente den frem igjen senere">${saveBakeLabel()}</button>
+      <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen slik at du eller andre kan hente den frem igjen senere">${saveBakeLabel()}</button>
       <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="Se alle lagrede deiger">🍽️ Mine deiger</button>
       <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</button>
       <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</button>
     </div>
+    ${fontSizeStepperHTML()}
   </div>`;
 }
 
