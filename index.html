@@ -248,16 +248,19 @@ body.fs-xlarge{zoom:1.3}
 .step-missed{border-left:3px solid #EF9F27}
 .mob-step.step-missed{border-left:3px solid #EF9F27}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.pizza-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;background:#fff;border:1px solid #e0ddd8;border-radius:12px;padding:.7rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;z-index:300;transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:min(90vw,360px)}
+.pizza-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.pizza-toast-emoji{font-size:30px;line-height:1;flex-shrink:0;display:inline-block}
+.pizza-toast-text{font-size:13px;font-weight:600;color:#1a1a1a;line-height:1.35}
+@keyframes toastWiggle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@keyframes toastBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes toastKnead{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+.toast-anim-wiggle{animation:toastWiggle .5s ease-in-out infinite}
+.toast-anim-bounce{animation:toastBounce .6s ease-in-out infinite}
+.toast-anim-knead{animation:toastKnead .45s ease-in-out infinite}
 </style>
 </head>
 <body class="pre-interact">
-<div id="deiger-banner" style="display:none;background:#E1F5EE;border-bottom:1px solid #9FE1CB;padding:.6rem 1rem;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="jumpToDeiger()">
-  <div style="display:flex;align-items:center;gap:8px;min-width:0">
-    <span style="font-size:16px;flex-shrink:0">🍕</span>
-    <span id="deiger-banner-text" style="font-size:13px;color:#085041"></span>
-  </div>
-  <button style="flex-shrink:0;padding:6px 12px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Se deigene</button>
-</div>
 <div id="tech-modal" class="modal-overlay" onclick="if(event.target===this)closeTechModal()">
   <div class="modal-box">
     <div class="modal-head"><b>💡 Teknikk</b><button class="modal-x" onclick="closeTechModal()" aria-label="Lukk">✕</button></div>
@@ -466,7 +469,14 @@ function setH(h){S.hurtigH=h;buildHrows();sched();}
 function pgrp(id,key,cb){
   document.getElementById(id).querySelectorAll('.pill').forEach(p=>{
     p.classList.toggle('on',p.dataset.v===String(S[key]));
-    p.onclick=()=>{S[key]=p.dataset.v;pgrp(id,key,cb);if(cb)cb();sched();};
+    p.onclick=()=>{
+      const changed = S[key] !== p.dataset.v;
+      S[key]=p.dataset.v;
+      pgrp(id,key,cb);
+      if(cb)cb();
+      if(key==='type' && changed) showPizzaToast(S.type);
+      sched();
+    };
   });
 }
 function mCards(){
@@ -1353,7 +1363,14 @@ function mobPillGroup(id,key){
     el.className='pill'+(S[key]===v?' on':'');
     el.textContent=t;
     el.style.cssText='padding:5px 10px;border-radius:20px;border:1px solid;font-size:12px;cursor:pointer;white-space:nowrap;user-select:none;border-color:'+(S[key]===v?'#1D9E75':'#d0cdc8')+';background:'+(S[key]===v?'#1D9E75':'#fff')+';color:'+(S[key]===v?'#fff':'#555')+';font-weight:'+(S[key]===v?'600':'400');
-    el.onclick=()=>{S[key]=v;mobPillGroup(id,key);if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();}mobGen();};
+    el.onclick=()=>{
+      const changed = S[key] !== v;
+      S[key]=v;
+      mobPillGroup(id,key);
+      if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();}
+      if(key==='type' && changed) showPizzaToast(S.type);
+      mobGen();
+    };
     wrap.appendChild(el);
   });
 }
@@ -1653,13 +1670,10 @@ function jumpToDeiger(){
 
 async function refreshDeigerBanner(){
   const bakes = await fetchBakes();
-  const banner=document.getElementById('deiger-banner');
-  const bannerText=document.getElementById('deiger-banner-text');
   const sideCount=document.getElementById('active-deiger-count');
   const mobBtn=document.getElementById('mob-active-deiger-btn');
   const mobCount=document.getElementById('mob-active-deiger-count');
   if(bakes===null){
-    if(banner)banner.style.display='none';
     if(sideCount)sideCount.style.display='none';
     if(mobBtn)mobBtn.style.display='none';
     return;
@@ -1673,21 +1687,6 @@ async function refreshDeigerBanner(){
     if(active.length>0){ mobBtn.style.display='inline-flex'; if(mobCount)mobCount.textContent=String(active.length); }
     else mobBtn.style.display='none';
   }
-  if(banner){
-    if(active.length===0){ banner.style.display='none'; return; }
-    let soonest=null;
-    active.forEach(b=>{ try{ const d=new Date(b.anchorISO); if(!soonest||d<soonest) soonest=d; }catch(e){} });
-    let timeTxt='';
-    if(soonest){
-      const diffH=Math.round((soonest.getTime()-Date.now())/3600000);
-      if(diffH<0) timeTxt=' — en steketid har passert';
-      else if(diffH<1) timeTxt=' — steking snart';
-      else if(diffH<=36) timeTxt=' — nærmeste steking om '+diffH+' timer';
-      else timeTxt=' — nærmeste steking om '+Math.round(diffH/24)+' dager';
-    }
-    if(bannerText) bannerText.textContent = active.length+(active.length===1?' aktiv deig':' aktive deiger')+timeTxt;
-    banner.style.display='flex';
-  }
 }
 
 function methodMetaLabel(){
@@ -1696,6 +1695,33 @@ function methodMetaLabel(){
   if(S.method==='biga') return 'Biga 16–24t + '+c;
   if(S.method==='standard') return c;
   return '';
+}
+
+const PIZZA_TOAST = {
+  napoletana: {emoji:'🤌', anim:'toast-anim-wiggle', text:'Mamma mia! Nå blir det ekte vare.'},
+  newyork:    {emoji:'🗽', anim:'toast-anim-knead',  text:'Frihetsgudinnen godkjenner — husk å brette skiva!'},
+  chicago:    {emoji:'🍴', anim:'toast-anim-bounce', text:'Glem hendene — dette spises med kniv og gaffel.'},
+  langpanne:  {emoji:'🟥', anim:'toast-anim-bounce', text:'Hele gjengen spiser seg mette — ingen krangling om siste biten.'}
+};
+function showPizzaToast(type){
+  const cfg = PIZZA_TOAST[type];
+  if(!cfg) return;
+  const existing = document.getElementById('pizza-toast');
+  if(existing){ clearTimeout(existing._hideTimer); existing.remove(); }
+  const el = document.createElement('div');
+  el.id = 'pizza-toast';
+  el.className = 'pizza-toast';
+  el.innerHTML = `<span class="pizza-toast-emoji ${cfg.anim}">${cfg.emoji}</span><span class="pizza-toast-text">${cfg.text}</span>`;
+  document.body.appendChild(el);
+  if(typeof requestAnimationFrame === 'function'){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  }else{
+    setTimeout(()=>el.classList.add('show'), 20);
+  }
+  el._hideTimer = setTimeout(()=>{
+    el.classList.remove('show');
+    setTimeout(()=>el.remove(), 300);
+  }, 2500);
 }
 
 function methodFlashHTML(){
