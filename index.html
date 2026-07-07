@@ -573,6 +573,12 @@ function setFontSize(level){
   try{localStorage.setItem('pizzaFontSize',level);}catch(e){}
   const seg=document.getElementById('mob-fs-seg');
   if(seg)seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===level));
+  const btn=document.getElementById('mob-fontsize-btn');
+  if(btn){
+    btn.style.background = level==='normal' ? '#fff' : '#E1F5EE';
+    btn.style.borderColor = level==='normal' ? '#e0ddd8' : '#1D9E75';
+    btn.style.color = level==='normal' ? '#555' : '#085041';
+  }
 }
 function initFontSize(){
   let saved='normal';
@@ -603,6 +609,38 @@ function stepFontSize(dir){
   const isMob=document.body.classList.contains('mob-mode');
   if(isMob){mobGen();}else{gen();}
 }
+function cycleFontSize(){
+  const idx=(FS_LEVELS.indexOf(currentFontLevel())+1)%FS_LEVELS.length;
+  setFontSize(FS_LEVELS[idx]);
+  const isMob=document.body.classList.contains('mob-mode');
+  if(isMob){mobGen();}else{gen();}
+}
+
+// ===== TO-FINGERS-GEST FOR SKRIFTSTØRRELSE (kun mobilvisning) =====
+// Sveip to fingre opp = større skrift, ned = mindre. Nyttig når telefonen ligger
+// på benken og hendene er fulle av deig — ingen behov for å treffe en liten knapp.
+(function(){
+  let startAvgY=null, gestureTriggered=false;
+  function mobActive(){ return document.body.classList.contains('mob-mode'); }
+  document.addEventListener('touchstart', e=>{
+    if(!mobActive() || e.touches.length!==2){ startAvgY=null; return; }
+    startAvgY=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    gestureTriggered=false;
+  }, {passive:true});
+  document.addEventListener('touchmove', e=>{
+    if(!mobActive() || startAvgY===null || gestureTriggered || e.touches.length!==2) return;
+    const avg=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    const delta=avg-startAvgY;
+    const THRESH=70;
+    if(Math.abs(delta)>THRESH){
+      gestureTriggered=true;
+      if(delta<0) stepFontSize(1); else stepFontSize(-1);
+    }
+  }, {passive:true});
+  document.addEventListener('touchend', e=>{
+    if(e.touches.length<2){ startAvgY=null; gestureTriggered=false; }
+  }, {passive:true});
+})();
 
 
 function minBakeMins(){
@@ -1865,6 +1903,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
+      <button class="mob-icon-btn" id="mob-fontsize-btn" onclick="cycleFontSize()" title="Endre skriftstørrelse" style="font-weight:700">Aa</button>
       <button class="mob-icon-btn" id="mob-active-deiger-btn" onclick="jumpToDeiger()" title="Mine deiger" style="display:none;position:relative">🍽️<span id="mob-active-deiger-count" style="position:absolute;top:-4px;right:-4px;background:#1D9E75;color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;line-height:14px;min-width:14px;text-align:center">0</span></button>
       <button class="mob-icon-btn" onclick="doReset()" title="Nullstill">↺</button>
       <button class="layout-toggle mob-style" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
