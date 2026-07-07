@@ -697,7 +697,7 @@ function rawSteps(a){
         desc:`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,
         why:WHY.fk,
         tip:'Bruk bokser med lokk — klede tørker ut overflaten og lager skorpe.'},
-      {title:'Kjøleskapsheiving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,
+      {title:'Kjøleskapsheiving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
         desc:`La emnene stå urørt i kjøleskapet i ca. ${c} dag${c>1?'er':''}. Ikke åpne boksene.`,
         why:WHY.fk},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
@@ -735,7 +735,7 @@ function rawSteps(a){
           :S.kjokkenmaskin==='manuell'
           ?'Windowpane-testen er din venn her — stopp når en liten bit deig kan strekkes tynt uten å rive.'
           :'De fleste kjøkkenmaskiner takler pizzadeig godt på trinn 2 (av typisk 1–10). Høyere hastighet enn det er sjelden nødvendig og øker faren for overoppheting.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(t0,45),dur:rt,
+      {title:'Romtemperaturheving',loc:'rom',at:aM(t0,45),dur:rt,passive:true,
         desc:`Løft deigen ut av bollen. Legg i lett oljet bolle, dekk tett med plastfolie. La stå ved ${S.temp}°C i ca. ${rt} min. Deigen skal heve synlig.`,
         why:rtW(),
         tip:'Bruk "windowpane test" for å sjekke glutenstruktur: strekk en bit deig tynt — skal bli gjennomsiktig uten å rive.'},
@@ -764,7 +764,7 @@ function rawSteps(a){
           :`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}. Tilsett ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær etter 2–3 min. Øk til middels lav hastighet. Elt totalt 6–9 min.`,
         why:'Poolishen har allerede fermentert mesteparten av deigen — resten inkorporeres effektivt uansett metode.',
         tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gir løsere glutenstruktur. Deigtemperatur: 22–24°C.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,why:rtW()},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,why:rtW()},
       ...tailSteps(aM(rdy,20+rt))
     ];
   }
@@ -785,7 +785,7 @@ function rawSteps(a){
           :`Legg bigaen i kjøkkenmaskinens bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}. Tilsett ${r3.salt}g salt etter 2–3 min. Øk til middels lav hastighet. Elt 8–10 min — bigaen er stiv og kan belaste maskinen, så gå ned i hastighet om den strever.`,
         why:'Bigaen er stiv — den løses opp gradvis uansett metode. Deigen kan virke tung i starten, det er normalt.',
         tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW()},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW()},
       ...tailSteps(aM(rdy,20+rtB))
     ];
   }
@@ -815,13 +815,18 @@ function hurtigSteps(anchor){
         :S.kjokkenmaskin==='manuell'
         ?'Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.'
         :'Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.'},
-    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(t0,15),dur:ba,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,why:rtW()},
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(t0,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,why:rtW()},
     {title:'Form emner',loc:'benk',at:aM(t0,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,tip:'Ikke kjevle — strekk for hånd.'},
-    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}.`,why:'Gluten slapper av etter forming.'},
+    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}.`,why:'Gluten slapper av etter forming.'},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(t0,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,tip:oT(S.type)}
   ]};
 }
 
+function fmtDur(mins){
+  if(mins>=1440){ return (Math.round(mins/144)/10).toString().replace('.',',')+' døgn'; }
+  if(mins>=60){ return (Math.round(mins/6)/10).toString().replace('.',',')+' timer'; }
+  return mins+' min';
+}
 function renderSteps(steps, mode='desktop'){
   const isMob = mode === 'mobile';
   const today = new Date(); today.setHours(0,0,0,0);
@@ -914,7 +919,7 @@ function renderSteps(steps, mode='desktop'){
           <div style="flex:1;min-width:0">
             <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}</div>
             <div class="${C.meta}">
-              <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + s.dur + (isMob ? ' min' : ' min aktivt') : ''}</div>
+              <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + (s.passive ? fmtDur(s.dur)+' venting' : s.dur+(isMob ? ' min' : ' min aktivt')) : ''}</div>
               ${locHtml}
             </div>
           </div>
