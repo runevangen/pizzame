@@ -817,6 +817,14 @@ function renderSteps(steps, mode='desktop'){
     return `${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]}`;
   };
 
+  // Nåværende steg = det siste steget hvis starttidspunkt allerede har passert.
+  // Har ingen steg startet ennå, forblir steg 0 "nåværende" (det er tross alt det neste som skal gjøres).
+  const now = new Date();
+  let curIdx = 0;
+  for(let i=0;i<steps.length;i++){
+    if(steps[i].at <= now) curIdx = i; else break;
+  }
+
   const C = isMob ? {
     daylbl: 'mob-daylbl',
     today: 'today',
@@ -870,7 +878,7 @@ function renderSteps(steps, mode='desktop'){
       lastDay = k;
     }
 
-    const isDimmed = k !== todayKey;
+    const isDimmed = s.at > now;
     let wait = waitRow(s, steps[i+1]);
     if (isMob && wait) {
       wait = wait
@@ -882,10 +890,10 @@ function renderSteps(steps, mode='desktop'){
     const locHtml = isMob ? (LOC[s.loc] || '').replace(C.locReplaceFrom, C.locReplaceTo) : (LOC[s.loc] || '');
 
     const done = window._checked && window._checked.has(i);
-    html += `<div class="${C.step} ${i===0 ? C.now : ''} ${isDimmed ? C.dim : ''} ${done ? 'step-done' : ''}">
+    html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${isDimmed ? C.dim : ''} ${done ? 'step-done' : ''}">
       <div class="${C.body}">
         <div class="${C.head}">
-          <div class="${C.num} snum-btn ${done ? 'snum-done' : (i===0 ? '' : C.numDim)}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">${done ? '✓' : i+1}</div>
+          <div class="${C.num} snum-btn ${done ? 'snum-done' : (i===curIdx ? '' : C.numDim)}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">${done ? '✓' : i+1}</div>
           <div style="flex:1;min-width:0">
             <div class="${C.title}">${s.title}</div>
             <div class="${C.meta}">
