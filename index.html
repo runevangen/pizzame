@@ -362,7 +362,7 @@ body.fs-xlarge{zoom:1.3}
     </div>
   </div>
 
-  <div><div class="lbl">Ovntype</div>
+  <div id="govn-wrap"><div class="lbl">Ovntype</div>
     <div class="pills" id="govn">
       <span class="pill on" data-v="pizza" title="430–450°C. Leopardmønster.">Pizzaovn (430–450°C)</span>
       <span class="pill" data-v="vanlig" title="Maks 250°C med pizzastein.">Vanlig ovn (maks 250°C)</span>
@@ -488,6 +488,7 @@ function mCards(){
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
       document.getElementById('cwrap').style.display=(S.method==='hurtig'||S.method==='ingenelting')?'none':'block';
       const gkw=document.getElementById('gkm-wrap');if(gkw)gkw.style.display=S.method==='ingenelting'?'none':'block';
+      const gow=document.getElementById('govn-wrap');if(gow)gow.style.display=S.method==='ingenelting'?'none':'block';
       sched();
     };
   });
@@ -551,6 +552,7 @@ function doReset(){
   document.getElementById('hsub').style.display='none';
   document.getElementById('cwrap').style.display='block';
   const gkwR=document.getElementById('gkm-wrap');if(gkwR)gkwR.style.display='block';
+  const gowR=document.getElementById('govn-wrap');if(gowR)gowR.style.display='block';
   setMode('start');initD();sched();
 }
 function toggleHelp(){
@@ -866,8 +868,9 @@ function rawSteps(a){
         desc:`Dekk formen løst og la etterheve ${PROOF_DUR} min mens ovnen varmes til høyest mulig temperatur (${oN()}).`,
         why:'Gluten slapper av etter forming, og deigen får en siste, kort heving før steking.'},
       {title:'Press ut hjørnene, topp og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
-        desc:`Press fingertuppene ned i deigen over hele flaten (som focaccia) rett før steking. Ha på saus, ost og topping. ${oD(tp)}`,
-        why:WHY.st,tip:oT(tp)}
+        desc:`Press fingertuppene ned i deigen over hele flaten (som focaccia) rett før steking. Ha på saus, ost og topping. Stek på 250°C (vanlig ovn, midterste rille) i 20–25 min til gyllenbrun og sprø i kantene.`,
+        why:WHY.st,
+        tip:'Denne deigen er for løs og våt til pizzaovn-stil på 430–450°C i 90 sekunder — den trenger lengre tid på lavere varme for å bli gjennomstekt uten å brenne toppen.'}
     ];
   }
   return[];
@@ -1259,7 +1262,7 @@ function gen(){
   if(S.method==='hurtig'){hurtigRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
   const rs=rawSteps(a),steps=rs,r=R();
-  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.method==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.method==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.method==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   window._steps=steps;
   document.getElementById('main').innerHTML=`
     ${startHintHTML()}
@@ -1436,6 +1439,7 @@ function syncMobControls(){
   const cwrap=g('mob-cwrap');if(cwrap)cwrap.style.display=(S.method==='hurtig'||S.method==='ingenelting')?'none':'block';
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
   const gkwM=g('mob-gkm-wrap');if(gkwM)gkwM.style.display=S.method==='ingenelting'?'none':'block';
+  const gowM=g('mob-govn-wrap');if(gowM)gowM.style.display=S.method==='ingenelting'?'none':'block';
   mobSetMode(S.mode);
   const mobStamp=g('mob-stamp');
   if(mobStamp)mobStamp.textContent=_dateStr;
@@ -1488,7 +1492,7 @@ function mobMethodCards(){
     const isOn=S.method===v;
     el.style.cssText=`border-radius:8px;padding:.5rem .65rem;cursor:pointer;border:${isOn?'2px':'1px'} solid ${isOn?(hc?'#BA7517':'#1D9E75'):(hc?'#BA7517':'#d0cdc8')};background:${isOn?(hc?'#fef3e2':'#e8f7f1'):'#fff'}`;
     el.innerHTML=`<div style="font-size:12px;font-weight:600;color:${isOn?(hc?'#633806':'#085041'):'#1a1a1a'}">${t}</div><div style="font-size:11px;color:${isOn?(hc?'#854F0B':'#0F6E56'):'#888'};margin-top:1px">${s}</div>`;
-    el.onclick=()=>{S.method=v;mobMethodCards();document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='ingenelting')?'none':'block';const gkwB=document.getElementById('mob-gkm-wrap');if(gkwB)gkwB.style.display=v==='ingenelting'?'none':'block';mobGen();};
+    el.onclick=()=>{S.method=v;mobMethodCards();document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='ingenelting')?'none':'block';const gkwB=document.getElementById('mob-gkm-wrap');if(gkwB)gkwB.style.display=v==='ingenelting'?'none':'block';const gowB=document.getElementById('mob-govn-wrap');if(gowB)gowB.style.display=v==='ingenelting'?'none':'block';mobGen();};
     wrap.appendChild(el);
   });
 }
@@ -1579,7 +1583,7 @@ function mobGen(){
   const p=pc();
   document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
-  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.method==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.method==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.method==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall pizzaer</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
 
   // tips tab
@@ -1865,6 +1869,7 @@ function syncDesktopControls(){
   const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
   const cwrap=document.getElementById('cwrap');if(cwrap)cwrap.style.display=(S.method==='hurtig'||S.method==='ingenelting')?'none':'block';
   const gkwS=document.getElementById('gkm-wrap');if(gkwS)gkwS.style.display=S.method==='ingenelting'?'none':'block';
+  const gowS=document.getElementById('govn-wrap');if(gowS)gowS.style.display=S.method==='ingenelting'?'none':'block';
 }
 
 function openBake(id){
@@ -2021,8 +2026,10 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div class="mob-pill-wrap" id="mob-gkm"></div>
     </div>
 
-    <div class="mob-section-lbl">Ovntype</div>
-    <div class="mob-pill-wrap" id="mob-govn"></div>
+    <div id="mob-govn-wrap">
+      <div class="mob-section-lbl">Ovntype</div>
+      <div class="mob-pill-wrap" id="mob-govn"></div>
+    </div>
 
     <div class="mob-section-lbl">Visning</div>
     <div style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
