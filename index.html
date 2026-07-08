@@ -305,16 +305,16 @@ body.fs-xlarge{zoom:1.3}
       <span class="pill" data-v="langpanne" title="Myk langpannepizza. 68–75%.">Langpanne</span>
       <span class="pill" data-v="newyork" title="Tynn, foldbar. Anbefalt hydrering 60–67%. Med sukker og olje.">New York</span>
       <span class="pill" data-v="chicago" title="Deep dish. 55–62%.">Chicago</span>
+      <span class="pill" data-v="ingenelting" title="Ingen elting, ingen kjøkkenmaskin. Bland med skje, la stå natten over.">IngenElting</span>
     </div>
   </div>
 
-  <div><div class="lbl">Metode</div>
+  <div id="gmet-wrap"><div class="lbl">Metode</div>
     <div class="mcards" id="gmet">
       <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Standard</div><div class="mc-s">Direkte + kjøl</div></div>
       <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
       <div class="mc" data-v="biga" title="Fast fordeig 16–24t."><div class="mc-t">Biga</div><div class="mc-s">Fast fordeig, 16–24t</div></div>
       <div class="mc hc" data-v="hurtig" title="2–10 timer, uten kjøleskapsheving."><div class="mc-t">Hurtigdeig</div><div class="mc-s">2–10 timer, uten kjøleskapsheving</div></div>
-      <div class="mc" data-v="ingenelting" title="Bland med skje, ingen elting. ~16 timer romtemperatur."><div class="mc-t">IngenElting</div><div class="mc-s">Ingen elting, ~16t rom</div></div>
     </div>
     <div class="hsub" id="hsub" style="display:none"><div class="hsub-body" id="hrows"></div></div>
   </div>
@@ -414,13 +414,13 @@ body.fs-xlarge{zoom:1.3}
 const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,showHelp:true};
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'}];
-const HREC={napoletana:65,newyork:63,langpanne:70,chicago:59};
-const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:54,mx:65}};
-const BSALT={napoletana:2.5,newyork:2.0,langpanne:2.0,chicago:2.0};
-const BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0};
-const BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2};
+const HREC={napoletana:65,newyork:63,langpanne:70,chicago:59,ingenelting:75};
+const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:54,mx:65},ingenelting:{mn:70,mx:82}};
+const BSALT={napoletana:2.5,newyork:2.0,langpanne:2.0,chicago:2.0,ingenelting:2.0};
+const BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0,ingenelting:6.0};
+const BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:0.2};
 const COLDMULT={1:2.0,2:1.4,3:1.0,4:0.78,5:0.6,6:0.5};
-const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0};
+const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 function tf(){
   const pts=[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]];
   const t=S.temp;
@@ -486,14 +486,29 @@ function mCards(){
     c.onclick=()=>{
       S.method=c.dataset.v;mCards();
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
-      document.getElementById('cwrap').style.display=(S.method==='hurtig'||S.method==='ingenelting')?'none':'block';
-      const gkw=document.getElementById('gkm-wrap');if(gkw)gkw.style.display=S.method==='ingenelting'?'none':'block';
-      const gow=document.getElementById('govn-wrap');if(gow)gow.style.display=S.method==='ingenelting'?'none':'block';
+      document.getElementById('cwrap').style.display=S.method==='hurtig'?'none':'block';
       sched();
     };
   });
 }
-pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();});
+function applyTypeUI(){
+  const isIE = S.type==='ingenelting';
+  const gmw=document.getElementById('gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
+  const cw=document.getElementById('cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig')?'none':'block';
+  const gkw=document.getElementById('gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
+  const gow=document.getElementById('govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
+  const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
+}
+function applyMobTypeUI(){
+  const isIE = S.type==='ingenelting';
+  const g=id=>document.getElementById(id);
+  const gmw=g('mob-gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
+  const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig')?'none':'block';
+  const gkw=g('mob-gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
+  const gow=g('mob-govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
+  const hsub=g('mob-hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
+}
+pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
 pgrp('ggj','gjaer');
 pgrp('gkm','kjokkenmaskin');
 pgrp('govn','oven');
@@ -551,8 +566,7 @@ function doReset(){
   mCards();
   document.getElementById('hsub').style.display='none';
   document.getElementById('cwrap').style.display='block';
-  const gkwR=document.getElementById('gkm-wrap');if(gkwR)gkwR.style.display='block';
-  const gowR=document.getElementById('govn-wrap');if(gowR)gowR.style.display='block';
+  applyTypeUI();
   setMode('start');initD();sched();
 }
 function toggleHelp(){
@@ -672,8 +686,8 @@ function fDT(d){
 function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
 function R(){
-  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='ingenelting')?1:(COLDMULT[S.cold]||1))*100)/100,yf=Math.round(yd*3*10)/10;
-  const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish'};
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.type==='ingenelting')?1:(COLDMULT[S.cold]||1))*100)/100,yf=Math.round(yd*3*10)/10;
+  const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'IngenElting-pizza'};
   return{name:ns[S.type],flour:m,water:w,salt:sa,oil:oi,sugar:su,yDry:yd,yFresh:yf};
 }
 function yA(r){return S.gjaer==='torr'?`${r.yDry}g tørrgjær`:`${r.yFresh}g fersk gjær`;}
@@ -740,6 +754,38 @@ function whySg(){
 
 function rawSteps(a){
   const r=R(),c=S.cold,ie=S.mode==='end',cM2=c*24*60,rt=rtM(60),tp=S.type;
+  if(S.type==='ingenelting'){
+    // Verdens enkleste pizzadeig: bland med skje, ingen elting, én lang romtemperert heving.
+    // Ingen kjøleskapsdager, ingen kjøkkenmaskin, ingen ovntype-valg — dette er en fast prosess
+    // uavhengig av hvilken Metode som tilfeldigvis står valgt.
+    const MIX_DUR=10, REST_MIN=900, SHAPE_DUR=15, PROOF_DUR=35;
+    const totalOffset=MIX_DUR+REST_MIN+SHAPE_DUR+PROOF_DUR;
+    const t0=ie?sM(a,totalOffset):a;
+    const restAt=aM(t0,MIX_DUR);
+    const shapeAt=aM(restAt,REST_MIN);
+    const proofAt=aM(shapeAt,SHAPE_DUR);
+    const bakeAt=aM(proofAt,PROOF_DUR);
+    return[
+      {title:'Bland alt i bollen',loc:'benk',at:t0,dur:MIX_DUR,
+        desc:`Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle. Tilsett ${r.water}g ${waterTempPhrase()} og rør sammen med en skje til alt melet er fuktet. Klumpete og grovt er helt greit — ingen elting.`,
+        why:'Lang, langsom heving bygger opp glutenstrukturen av seg selv — helt uten mekanisk arbeid.',
+        tip:'Ingen kjøkkenmaskin eller håndelting nødvendig i det hele tatt — bare rør sammen med en skje.'},
+      {title:'La stå (natt over)',loc:'rom',at:restAt,dur:REST_MIN,passive:true,
+        desc:`Dekk bollen med plastfolie eller lokk. La stå i romtemperatur i ca. ${Math.round(REST_MIN/60)} timer, til overflaten er full av bobler og deigen har mer enn doblet seg.`,
+        why:'Enzymer og gjær jobber sakte over lang tid og bygger smak og glutenstruktur uten at du trenger å gjøre noe.'},
+      {title:'Press ut i oljet form',loc:'benk',at:shapeAt,dur:SHAPE_DUR,
+        desc:`Fordel ${r.oil||30}g olivenolje godt i en langpanne. Vend deigen forsiktig ut i formen — ikke elt, bare press den utover med fingertuppene til den dekker bunnen.`,
+        why:'Minimal håndtering bevarer luftboblene som har bygget seg opp under hevingen.',
+        tip:'Er deigen for elastisk til å nå hjørnene med én gang: la den hvile 10 min og press videre — den gir lettere etter en kort pause.'},
+      {title:'Etterheving + forvarm ovn',loc:'rom',at:proofAt,dur:PROOF_DUR,passive:true,
+        desc:`Dekk formen løst og la etterheve ${PROOF_DUR} min mens ovnen varmes til 250°C.`,
+        why:'Gluten slapper av etter forming, og deigen får en siste, kort heving før steking.'},
+      {title:'Press ut hjørnene, topp og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
+        desc:`Press fingertuppene ned i deigen over hele flaten (som focaccia) rett før steking. Ha på saus, ost og topping. Stek på 250°C (vanlig ovn, midterste rille) i 20–25 min til gyllenbrun og sprø i kantene.`,
+        why:WHY.st,
+        tip:'Denne deigen er for løs og våt til pizzaovn-stil på 430–450°C i 90 sekunder — den trenger lengre tid på lavere varme for å bli gjennomstekt uten å brenne toppen.'}
+    ];
+  }
   // Felles hjelper: bygger de fire siste stegene (form, kjøleskapsheving, ta ut, stek)
   // slik at fremover og bakover ALLTID gir identisk timing.
   // Ankerpunkt: form-tid. Stek = form + cM2. Ta ut = stek - 240. Kald tid = cM2 - 240 - 15.
@@ -840,37 +886,6 @@ function rawSteps(a){
         tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW()},
       ...tailSteps(aM(rdy,20+rtB))
-    ];
-  }
-  if(S.method==='ingenelting'){
-    // Verdens enkleste pizzadeig: bland med skje, ingen elting, én lang romtemperert heving.
-    // Ingen kjøleskapsdager involvert i det hele tatt — samme prinsipp som klassisk no-knead-brød.
-    const MIX_DUR=10, REST_MIN=900, SHAPE_DUR=15, PROOF_DUR=35;
-    const totalOffset=MIX_DUR+REST_MIN+SHAPE_DUR+PROOF_DUR;
-    const t0=ie?sM(a,totalOffset):a;
-    const restAt=aM(t0,MIX_DUR);
-    const shapeAt=aM(restAt,REST_MIN);
-    const proofAt=aM(shapeAt,SHAPE_DUR);
-    const bakeAt=aM(proofAt,PROOF_DUR);
-    return[
-      {title:'Bland alt i bollen',loc:'benk',at:t0,dur:MIX_DUR,
-        desc:`Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle. Tilsett ${r.water}g ${waterTempPhrase()} og rør sammen med en skje til alt melet er fuktet. Klumpete og grovt er helt greit — ingen elting.`,
-        why:'Lang, langsom heving bygger opp glutenstrukturen av seg selv — helt uten mekanisk arbeid.',
-        tip:'Ingen kjøkkenmaskin eller håndelting nødvendig i det hele tatt — bare rør sammen med en skje.'},
-      {title:'La stå (natt over)',loc:'rom',at:restAt,dur:REST_MIN,passive:true,
-        desc:`Dekk bollen med plastfolie eller lokk. La stå i romtemperatur i ca. ${Math.round(REST_MIN/60)} timer, til overflaten er full av bobler og deigen har mer enn doblet seg.`,
-        why:'Enzymer og gjær jobber sakte over lang tid og bygger smak og glutenstruktur uten at du trenger å gjøre noe.'},
-      {title:'Press ut i oljet form',loc:'benk',at:shapeAt,dur:SHAPE_DUR,
-        desc:`Fordel ${r.oil||30}g olivenolje godt i en langpanne. Vend deigen forsiktig ut i formen — ikke elt, bare press den utover med fingertuppene til den dekker bunnen.`,
-        why:'Minimal håndtering bevarer luftboblene som har bygget seg opp under hevingen.',
-        tip:'Er deigen for elastisk til å nå hjørnene med én gang: la den hvile 10 min og press videre — den gir lettere etter en kort pause.'},
-      {title:'Etterheving + forvarm ovn',loc:'rom',at:proofAt,dur:PROOF_DUR,passive:true,
-        desc:`Dekk formen løst og la etterheve ${PROOF_DUR} min mens ovnen varmes til høyest mulig temperatur (${oN()}).`,
-        why:'Gluten slapper av etter forming, og deigen får en siste, kort heving før steking.'},
-      {title:'Press ut hjørnene, topp og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
-        desc:`Press fingertuppene ned i deigen over hele flaten (som focaccia) rett før steking. Ha på saus, ost og topping. Stek på 250°C (vanlig ovn, midterste rille) i 20–25 min til gyllenbrun og sprø i kantene.`,
-        why:WHY.st,
-        tip:'Denne deigen er for løs og våt til pizzaovn-stil på 430–450°C i 90 sekunder — den trenger lengre tid på lavere varme for å bli gjennomstekt uten å brenne toppen.'}
     ];
   }
   return[];
@@ -1151,7 +1166,7 @@ function waterTempTechHTML(){
 }
 
 function overfermentWarningHTML(){
-  if(S.method==='hurtig') return '';
+  if(S.method==='hurtig' || S.type==='ingenelting') return '';
   // Forgjæring legges til kjøleskapsdagene for å få total EFFEKTIV gjæringstid —
   // poolish/biga har allerede gjæret lenge før kjøleskapsfasen i det hele tatt starter.
   const preferHours = {poolish:14, biga:20}[S.method] || 0;
@@ -1170,6 +1185,14 @@ function overfermentWarningHTML(){
 }
 
 function buildTechHTML(){
+  if(S.type==='ingenelting'){
+    return `
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">🥣 Ingen elting — hele poenget</div><div class="sdesc">Samme prinsipp som klassisk no-knead-brød: lang, langsom heving ved romtemperatur bygger opp glutennettverket helt av seg selv. Ingen kjøkkenmaskin, ingen håndelting, ingen windowpane-test underveis — bare tid.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor ingen kjøleskapsdager?</div><div class="sdesc">Denne metoden bruker kun én lang romtemperert heving (~15 timer) i stedet for dager i kjøleskap. Vil du ha mer kompleks smak, kan du sette bollen i kjøleskapet i stedet for på benken og heller la den stå 24–36 timer kaldt — men da mister du noe av "sett det og glem det"-enkelheten.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvordan vet jeg at den er klar?</div><div class="sdesc">Se etter bobler i overflaten og at deigen har mer enn doblet seg — ikke stol blindt på klokken. Er den ikke klar etter 15 timer, gi den et par timer til. Romtemperatur styrer farten mer enn for andre metoder siden det ikke er noen elting som kompenserer.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel — dryss rett i de tørre ingrediensene.':'Fersk gjær gir mer aroma. Løs den opp i litt av vannet før du blander alt sammen. Bruk 3× mengden av tørrgjær.'}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor blir resultatet fokaccia-aktig?</div><div class="sdesc">Uten elting og med en våt, ublandet deig som presses rett i en oljet form, blir bunnen luftigere og mer uregelmessig enn en tynn, hånd-strukket napoletansk bunn. Det er en bevisst avveining — du bytter presisjon og tynnhet mot enkelhet.</div></div>`;
+  }
   if(S.method==='hurtig'){
     return `
     ${machineSeqHTML()}
@@ -1177,14 +1200,6 @@ function buildTechHTML(){
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>`;
-  }
-  if(S.method==='ingenelting'){
-    return `
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">🥣 Ingen elting — hele poenget</div><div class="sdesc">Samme prinsipp som klassisk no-knead-brød: lang, langsom heving ved romtemperatur bygger opp glutennettverket helt av seg selv. Ingen kjøkkenmaskin, ingen håndelting, ingen windowpane-test underveis — bare tid.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor ingen kjøleskapsdager?</div><div class="sdesc">Denne metoden bruker kun én lang romtemperert heving (~15 timer) i stedet for dager i kjøleskap. Vil du ha mer kompleks smak, kan du sette bollen i kjøleskapet i stedet for på benken og heller la den stå 24–36 timer kaldt — men da mister du noe av "sett det og glem det"-enkelheten.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvordan vet jeg at den er klar?</div><div class="sdesc">Se etter bobler i overflaten og at deigen har mer enn doblet seg — ikke stol blindt på klokken. Er den ikke klar etter 15 timer, gi den et par timer til. Romtemperatur styrer farten mer enn for andre metoder siden det ikke er noen elting som kompenserer.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel — dryss rett i de tørre ingrediensene.':'Fersk gjær gir mer aroma. Løs den opp i litt av vannet før du blander alt sammen. Bruk 3× mengden av tørrgjær.'}</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor blir resultatet fokaccia-aktig?</div><div class="sdesc">Uten elting og med en våt, ublandet deig som presses rett i en oljet form, blir bunnen luftigere og mer uregelmessig enn en tynn, hånd-strukket napoletansk bunn. Det er en bevisst avveining — du bytter presisjon og tynnhet mot enkelhet.</div></div>`;
   }
   return `
     ${overfermentWarningHTML()}
@@ -1259,16 +1274,16 @@ function closeChangelogModal(){
 }
 
 function gen(){
-  if(S.method==='hurtig'){hurtigRes();return;}
+  if(S.type!=='ingenelting' && S.method==='hurtig'){hurtigRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
   const rs=rawSteps(a),steps=rs,r=R();
-  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.method==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.method==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   window._steps=steps;
   document.getElementById('main').innerHTML=`
     ${startHintHTML()}
     <div id="main-content">
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
-    <h2>${r.name} <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>${methodFlashHTML()}</h2>
+    <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pc().count} pizza${pc().count===1?'':'er'}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
@@ -1436,10 +1451,7 @@ function syncMobControls(){
   const later=new Date(now.getTime()+S.cold*86400000+14400000);
   s('mob-ed',fd(later));
   s('mob-et','18:00');
-  const cwrap=g('mob-cwrap');if(cwrap)cwrap.style.display=(S.method==='hurtig'||S.method==='ingenelting')?'none':'block';
-  const hsub=g('mob-hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
-  const gkwM=g('mob-gkm-wrap');if(gkwM)gkwM.style.display=S.method==='ingenelting'?'none':'block';
-  const gowM=g('mob-govn-wrap');if(gowM)gowM.style.display=S.method==='ingenelting'?'none':'block';
+  applyMobTypeUI();
   mobSetMode(S.mode);
   const mobStamp=g('mob-stamp');
   if(mobStamp)mobStamp.textContent=_dateStr;
@@ -1457,7 +1469,7 @@ function mobPillGroup(id,key){
   const wrap=document.getElementById(id);if(!wrap)return;
   wrap.innerHTML='';
   const vals={
-    type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'}],
+    type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'},{v:'ingenelting',t:'IngenElting'}],
     gjaer:[{v:'torr',t:'Tørrgjær'},{v:'fersk',t:'Fersk gjær'}],
     kjokkenmaskin:[{v:'ankarsrum',t:'Ankarsrum'},{v:'manuell',t:'Manuell elting'},{v:'annen',t:'Annen maskin'}],
     oven:[{v:'pizza',t:'Pizzaovn'},{v:'vanlig',t:'Vanlig ovn'}]
@@ -1471,7 +1483,7 @@ function mobPillGroup(id,key){
       const changed = S[key] !== v;
       S[key]=v;
       mobPillGroup(id,key);
-      if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();}
+      if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
       if(key==='type' && changed) showPizzaToast(S.type);
       mobGen();
     };
@@ -1485,14 +1497,13 @@ function mobMethodCards(){
   [{v:'standard',t:'Standard',s:'Direkte + kjøleskapsheving',hc:false},
    {v:'poolish',t:'Poolish',s:'Løs fordeig, 12–16t',hc:false},
    {v:'biga',t:'Biga',s:'Fast fordeig, 16–24t',hc:false},
-   {v:'hurtig',t:'Hurtigdeig',s:'2–10 timer, uten kjøleskapsheving',hc:true},
-   {v:'ingenelting',t:'IngenElting',s:'Ingen elting, ~16t rom',hc:false}
+   {v:'hurtig',t:'Hurtigdeig',s:'2–10 timer, uten kjøleskapsheving',hc:true}
   ].forEach(({v,t,s,hc})=>{
     const el=document.createElement('div');
     const isOn=S.method===v;
     el.style.cssText=`border-radius:8px;padding:.5rem .65rem;cursor:pointer;border:${isOn?'2px':'1px'} solid ${isOn?(hc?'#BA7517':'#1D9E75'):(hc?'#BA7517':'#d0cdc8')};background:${isOn?(hc?'#fef3e2':'#e8f7f1'):'#fff'}`;
     el.innerHTML=`<div style="font-size:12px;font-weight:600;color:${isOn?(hc?'#633806':'#085041'):'#1a1a1a'}">${t}</div><div style="font-size:11px;color:${isOn?(hc?'#854F0B':'#0F6E56'):'#888'};margin-top:1px">${s}</div>`;
-    el.onclick=()=>{S.method=v;mobMethodCards();document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='ingenelting')?'none':'block';const gkwB=document.getElementById('mob-gkm-wrap');if(gkwB)gkwB.style.display=v==='ingenelting'?'none':'block';const gowB=document.getElementById('mob-govn-wrap');if(gowB)gowB.style.display=v==='ingenelting'?'none':'block';mobGen();};
+    el.onclick=()=>{S.method=v;mobMethodCards();document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';document.getElementById('mob-cwrap').style.display=v==='hurtig'?'none':'block';mobGen();};
     wrap.appendChild(el);
   });
 }
@@ -1568,7 +1579,7 @@ function mobGen(){
   if(!mobEl||!mobEl.classList.contains('active'))return;
   const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
 
-  if(S.method==='hurtig'){
+  if(S.type!=='ingenelting' && S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
@@ -1583,7 +1594,7 @@ function mobGen(){
   const p=pc();
   document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
-  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.method==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.method==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall pizzaer</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
 
   // tips tab
@@ -1787,11 +1798,11 @@ async function refreshDeigerBanner(){
 }
 
 function methodMetaLabel(){
+  if(S.type==='ingenelting') return 'Ingen elting, ~16t rom';
   const c=S.cold+' dag'+(S.cold>1?'er':'')+' kjøl';
   if(S.method==='poolish') return 'Poolish 12–16t + '+c;
   if(S.method==='biga') return 'Biga 16–24t + '+c;
   if(S.method==='standard') return c;
-  if(S.method==='ingenelting') return 'Ingen elting, ~16t rom';
   return '';
 }
 
@@ -1866,10 +1877,7 @@ function syncDesktopControls(){
   uTempUI();
   pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
   mCards();buildHrows();
-  const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=S.method==='hurtig'?'block':'none';
-  const cwrap=document.getElementById('cwrap');if(cwrap)cwrap.style.display=(S.method==='hurtig'||S.method==='ingenelting')?'none':'block';
-  const gkwS=document.getElementById('gkm-wrap');if(gkwS)gkwS.style.display=S.method==='ingenelting'?'none':'block';
-  const gowS=document.getElementById('govn-wrap');if(gowS)gowS.style.display=S.method==='ingenelting'?'none':'block';
+  applyTypeUI();
 }
 
 function openBake(id){
@@ -1991,8 +1999,10 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-section-lbl">Pizzatype</div>
     <div class="mob-pill-wrap" id="mob-gtype"></div>
 
-    <div class="mob-section-lbl">Metode</div>
-    <div class="mob-mcard-wrap" id="mob-gmet"></div>
+    <div id="mob-gmet-wrap">
+      <div class="mob-section-lbl">Metode</div>
+      <div class="mob-mcard-wrap" id="mob-gmet"></div>
+    </div>
     <div id="mob-hsub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
       <div id="mob-hrows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
     </div>
