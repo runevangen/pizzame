@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Pizzaplanlegger</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -119,8 +119,8 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .mob-icon-btn:hover{background:#f0ede8}
 
 /* bottom tab bar */
-.mob-tabbar{background:#fff;border-top:1px solid #e0ddd8;display:flex;position:sticky;bottom:0;z-index:50}
-.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:#888;cursor:pointer;gap:2px;border-top:2px solid transparent}
+.mob-tabbar{background:#fff;border-top:1px solid #e0ddd8;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:#888;cursor:pointer;gap:2px;border-top:2px solid transparent}
 .mob-tab span[aria-hidden]{font-size:18px;line-height:1}
 .mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
 
@@ -156,7 +156,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .mob-daylbl.today{color:#085041}
 .mob-daylbl .ddot{width:6px;height:6px;border-radius:50%;background:#ccc;flex-shrink:0}
 .mob-daylbl.today .ddot{background:#1D9E75}
-.mob-action-bar{display:flex;gap:6px;padding:.6rem 1rem;background:#fff;border-top:1px solid #e0ddd8;position:sticky;bottom:56px;z-index:40}
+.mob-action-bar{display:flex;gap:6px;padding:.6rem 1rem;background:#fff;border-top:1px solid #e0ddd8;position:sticky;bottom:calc(56px + env(safe-area-inset-bottom,0px));z-index:40}
 .mob-abtn{flex:1;padding:8px 4px;border:1px solid #d0cdc8;border-radius:8px;font-size:11px;text-align:center;background:#fff;color:#555;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
 .mob-abtn i{font-size:16px}
 .mob-abtn.pri{background:#1D9E75;border-color:#1D9E75;color:#fff;font-weight:600}
@@ -323,7 +323,7 @@ body.fs-xlarge{zoom:1.3}
     <div class="sr"><input type="range" id="msl" min="300" max="1500" step="100" value="500" title="Skalerer alle ingredienser automatisk." oninput="uMel(this.value)"><span class="sv" id="mdisp">500g</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>300g</span><span>1500g</span></div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-      <span style="font-size:11px;color:#888">eller antall pizzaer:</span>
+      <span style="font-size:11px;color:#888" id="pcount-lbl">eller antall pizzaer:</span>
       <button onclick="stepPizzas(-1)" title="Én pizza mindre" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">−</button>
       <span id="pcount-disp" style="font-size:14px;font-weight:600;color:#1D9E75;min-width:20px;text-align:center">4</span>
       <button onclick="stepPizzas(1)" title="Én pizza mer" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">+</button>
@@ -692,9 +692,20 @@ function R(){
 }
 function yA(r){return S.gjaer==='torr'?`${r.yDry}g tørrgjær`:`${r.yFresh}g fersk gjær`;}
 function pc(){
-  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:S.type==='langpanne'?400:500,r=R();
+  // Langpanne/IngenElting: 0,7g deig per cm² formflate (standard focaccia-tommelfingerregel),
+  // 30×40cm langpanne = 1200cm² => ca. 840g fyller én panne godt.
+  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:(S.type==='langpanne'||S.type==='ingenelting')?840:500,r=R();
   const td=Math.round(r.flour+r.water+r.salt+r.oil+(r.sugar||0)),cnt=Math.max(1,Math.round(td/eg));
   return{count:cnt,perPizza:Math.round(td/cnt),totalDough:td,melPer:Math.round(r.flour/cnt)};
+}
+function pcUnitLabel(plural){
+  const isPan = S.type==='langpanne' || S.type==='ingenelting';
+  if(isPan) return plural?'langpanner':'langpanne';
+  return plural?'pizzaer':'pizza';
+}
+function pcCountBadge(){
+  const n=pc().count;
+  return `${n} ${pcUnitLabel(n!==1)}`;
 }
 function oD(t){
   const p=S.oven==='pizza';
@@ -773,15 +784,17 @@ function rawSteps(a){
       {title:'La stå (natt over)',loc:'rom',at:restAt,dur:REST_MIN,passive:true,
         desc:`Dekk bollen med plastfolie eller lokk. La stå i romtemperatur i ca. ${Math.round(REST_MIN/60)} timer, til overflaten er full av bobler og deigen har mer enn doblet seg.`,
         why:'Enzymer og gjær jobber sakte over lang tid og bygger smak og glutenstruktur uten at du trenger å gjøre noe.'},
-      {title:'Press ut i oljet form',loc:'benk',at:shapeAt,dur:SHAPE_DUR,
-        desc:`Fordel ${r.oil||30}g olivenolje godt i en langpanne. Vend deigen forsiktig ut i formen — ikke elt, bare press den utover med fingertuppene til den dekker bunnen.`,
+      {title:pc().count>1?'Del i langpanner, press ut':'Press ut i oljet form',loc:'benk',at:shapeAt,dur:SHAPE_DUR,
+        desc:pc().count>1
+          ?`Del deigen i ${pc().count} deler à ca. ${pc().perPizza}g. Fordel ${r.oil||30}g olivenolje totalt utover langpannene. Vend hver del forsiktig ut i sin egen form — ikke elt, bare press utover med fingertuppene til den dekker bunnen.`
+          :`Fordel ${r.oil||30}g olivenolje godt i en langpanne. Vend deigen forsiktig ut i formen — ikke elt, bare press den utover med fingertuppene til den dekker bunnen.`,
         why:'Minimal håndtering bevarer luftboblene som har bygget seg opp under hevingen.',
         tip:'Er deigen for elastisk til å nå hjørnene med én gang: la den hvile 10 min og press videre — den gir lettere etter en kort pause.'},
       {title:'Etterheving + forvarm ovn',loc:'rom',at:proofAt,dur:PROOF_DUR,passive:true,
-        desc:`Dekk formen løst og la etterheve ${PROOF_DUR} min mens ovnen varmes til 250°C.`,
+        desc:`Dekk formen${pc().count>1?'e':''} løst og la etterheve ${PROOF_DUR} min mens ovnen varmes til 250°C.`,
         why:'Gluten slapper av etter forming, og deigen får en siste, kort heving før steking.'},
       {title:'Press ut hjørnene, topp og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
-        desc:`Press fingertuppene ned i deigen over hele flaten (som focaccia) rett før steking. Ha på saus, ost og topping. Stek på 250°C (vanlig ovn, midterste rille) i 20–25 min til gyllenbrun og sprø i kantene.`,
+        desc:`Press fingertuppene ned i deigen${pc().count>1?' på hver panne':''} over hele flaten (som focaccia) rett før steking. Ha på saus, ost og topping. Stek på 250°C (vanlig ovn, midterste rille) i 20–25 min til gyllenbrun og sprø i kantene${pc().count>1?' — stek én panne om gangen om de ikke får plass samtidig i ovnen':''}.`,
         why:WHY.st,
         tip:'Denne deigen er for løs og våt til pizzaovn-stil på 430–450°C i 90 sekunder — den trenger lengre tid på lavere varme for å bli gjennomstekt uten å brenne toppen.'}
     ];
@@ -792,8 +805,10 @@ function rawSteps(a){
   function tailSteps(formAt){
     const bake=aM(formAt,cM2),taUt=sM(bake,240);
     return[
-      {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:15,
-        desc:`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,
+      {title:S.type==='langpanne'?'Del i langpanner → kjøleskap':'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:15,
+        desc:S.type==='langpanne'
+          ?`Del deigen i ${pc().count} del${pc().count>1?'er':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per langpanne). Rund hver del løst sammen — du strekker den ut i formen senere. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`
+          :`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,
         why:WHY.fk,
         tip:'Bruk bokser med lokk — klede tørker ut overflaten og lager skorpe.'},
       {title:'Kjøleskapsheiving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
@@ -1233,6 +1248,21 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '2.3',
+    d: 'juli 2026',
+    changes: [
+      'Varsel ved fare for overfermentering — dukker opp i Teknikk ved lang gjæringstid, og regner med forgjæringen i poolish/biga (ikke bare kjøleskapsdager alene).',
+      'Steg som er passert i tid uten å være avhaket, får nå en tydelig "ikke avhaket"-markering.',
+      'Skriftstørrelse flyttet til "Denne deigen" som en enkel +/− -knapp, med en snarveiknapp ("Aa") og et to-fingers sveip opp/ned for rask justering på mobil.',
+      'Kun én Nullstill-knapp igjen (var to) — den viser nå "velg pizzatype"-hintet på nytt, som om appen er helt fersk.',
+      '"IngenElting" er flyttet fra Metode til Pizzatype, siden den alltid gir samme resultat (fokaccia-aktig pannepizza) uansett hvilken metode som var valgt før.',
+      'Antall "pizzaer" for Langpanne og IngenElting viser nå riktig antall langpanner (beregnet fra formstørrelse), i stedet for å late som de er runde enkeltpizzaer.',
+      'Bytter du pizzatype, dukker det opp en kort, corny animasjon som bekrefter valget.',
+      'Varselbjelken for aktive deiger øverst i vinduet er fjernet — telling ligger fortsatt i sidepanelet og mobiltoppfeltet.',
+      '"Lagre deig"-knappen har samme nøytrale stil som resten av knapperaden, i stedet for å skille seg ut i grønt.'
+    ]
+  },
+  {
     v: '2.2',
     d: 'juli 2026',
     changes: [
@@ -1284,7 +1314,7 @@ function gen(){
     <div id="main-content">
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${methodFlashHTML()}</h2>
-    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pc().count} pizza${pc().count===1?'':'er'}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
+    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
@@ -1304,7 +1334,7 @@ function hurtigRes(){
     <div id="main-content">
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
-    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pc().count} pizza${pc().count===1?'':'er'}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
+    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
@@ -1317,7 +1347,7 @@ function hurtigRes(){
 // ===== NESTE STEG-BOKS MED NEDTELLING =====
 // ===== ANTALL PIZZAER -> MELMENGDE =====
 function flourForCount(n){
-  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:S.type==='langpanne'?400:500;
+  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:(S.type==='langpanne'||S.type==='ingenelting')?840:500;
   const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+(BSUGAR[S.type]||0)/100;
   return Math.max(200,Math.round(n*eg/frac/10)*10);
 }
@@ -1336,6 +1366,10 @@ function updatePcountDisp(){
   const c=pc().count;
   ['pcount-disp','mob-pcount-disp'].forEach(id=>{
     const e=document.getElementById(id);if(e)e.textContent=c;
+  });
+  const lblTxt='eller antall '+pcUnitLabel(true)+':';
+  ['pcount-lbl','mob-pcount-lbl'].forEach(id=>{
+    const e=document.getElementById(id);if(e)e.textContent=lblTxt;
   });
 }
 
@@ -2010,7 +2044,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)">
       <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
-        <span style="font-size:12px;color:#888">eller antall pizzaer:</span>
+        <span style="font-size:12px;color:#888" id="mob-pcount-lbl">eller antall pizzaer:</span>
         <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">−</button>
         <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:#1D9E75;min-width:22px;text-align:center">4</span>
         <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">+</button>
