@@ -328,6 +328,10 @@ body.fs-xlarge{zoom:1.3}
       <span id="pcount-disp" style="font-size:14px;font-weight:600;color:#1D9E75;min-width:20px;text-align:center">4</span>
       <button onclick="stepPizzas(1)" title="Én pizza mer" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">+</button>
     </div>
+    <div id="roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:6px 8px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px">
+      <span class="roundup-txt" style="font-size:11px;color:#633806"></span>
+      <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:4px 9px;border:1px solid #EF9F27;border-radius:6px;background:#fff;color:#633806;font-size:11px;font-weight:600;cursor:pointer"></button>
+    </div>
   </div>
 
   <div><div class="lbl">Hydrering — <span id="hlbl">65%</span><span id="hcat" class="hb"></span></div>
@@ -1255,6 +1259,13 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '2.4',
+    d: 'juli 2026',
+    changes: [
+      'Ny "rund opp"-knapp for Langpanne/IngenElting — dukker kun opp når melmengden din gir en ujevnt fylt langpanne, og foreslår nøyaktig hvor mye ekstra mel som trengs for å fylle den helt. Endrer aldri noe automatisk — du må selv trykke.'
+    ]
+  },
+  {
     v: '2.3',
     d: 'juli 2026',
     changes: [
@@ -1378,6 +1389,43 @@ function updatePcountDisp(){
   ['pcount-lbl','mob-pcount-lbl'].forEach(id=>{
     const e=document.getElementById(id);if(e)e.textContent=lblTxt;
   });
+  updateRoundupNotice();
+}
+
+// ===== RUND OPP TIL HEL LANGPANNE =====
+// Foreslår aldri en automatisk endring — bruker må selv trykke knappen.
+function langpanneRoundupInfo(){
+  if(S.type!=='langpanne' && S.type!=='ingenelting') return null;
+  const IDEAL=840;
+  const p=pc();
+  const shortfall=IDEAL*p.count-p.totalDough;
+  if(shortfall<=15) return null; // nærme nok — ikke bry brukeren med en ubetydelig forskjell
+  const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+(BSUGAR[S.type]||0)/100;
+  const extraFlour=Math.round(shortfall/frac/5)*5;
+  if(extraFlour<=0) return null;
+  return {count:p.count, extraFlour, currentPerPan:p.perPizza};
+}
+function updateRoundupNotice(){
+  const info=langpanneRoundupInfo();
+  ['roundup-notice','mob-roundup-notice'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(!info){ el.style.display='none'; return; }
+    el.style.display='flex';
+    const txt=el.querySelector('.roundup-txt');
+    if(txt) txt.textContent=`${info.currentPerPan}g/panne — rund opp til fulle ${info.count} langpanne${info.count>1?'r':''}?`;
+    const btn=el.querySelector('.roundup-btn');
+    if(btn) btn.textContent=`+${info.extraFlour}g mel`;
+  });
+}
+function roundUpToFullLangpanne(){
+  const info=langpanneRoundupInfo();
+  if(!info) return;
+  const newMel=S.mel+info.extraFlour;
+  const isMob=document.body.classList.contains('mob-mode');
+  const msl=document.getElementById('msl');if(msl)msl.value=newMel;
+  const mmsl=document.getElementById('mob-msl');if(mmsl)mmsl.value=newMel;
+  if(isMob){ mobUMel(newMel); } else { uMel(newMel); }
 }
 
 // ===== NOTATER (koblet til aktiv deig, lagres via Netlify Blobs) =====
@@ -2055,6 +2103,10 @@ document.addEventListener('change', firstInteractionCheck, true);
         <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">−</button>
         <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:#1D9E75;min-width:22px;text-align:center">4</span>
         <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">+</button>
+      </div>
+      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:7px 9px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px">
+        <span class="roundup-txt" style="font-size:11px;color:#633806"></span>
+        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #EF9F27;border-radius:6px;background:#fff;color:#633806;font-size:11px;font-weight:600;cursor:pointer"></button>
       </div>
     </div>
 
