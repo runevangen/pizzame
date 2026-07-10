@@ -1413,7 +1413,7 @@ function updateRoundupNotice(){
     if(!info){ el.style.display='none'; return; }
     el.style.display='flex';
     const txt=el.querySelector('.roundup-txt');
-    if(txt) txt.textContent=`${info.currentPerPan}g/panne — rund opp til fulle ${info.count} langpanne${info.count>1?'r':''}?`;
+    if(txt) txt.textContent=`${info.currentPerPan}g deig/panne — rund opp til ${info.count===1?'1 hel langpanne':info.count+' fulle langpanner'}?`;
     const btn=el.querySelector('.roundup-btn');
     if(btn) btn.textContent=`+${info.extraFlour}g mel`;
   });
