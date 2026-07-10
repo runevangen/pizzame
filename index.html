@@ -315,8 +315,10 @@ body.fs-xlarge{zoom:1.3}
       <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
       <div class="mc" data-v="biga" title="Fast fordeig 16–24t."><div class="mc-t">Biga</div><div class="mc-s">Fast fordeig, 16–24t</div></div>
       <div class="mc hc" data-v="hurtig" title="2–10 timer, uten kjøleskapsheving."><div class="mc-t">Hurtigdeig</div><div class="mc-s">2–10 timer, uten kjøleskapsheving</div></div>
+      <div class="mc" data-v="kveld" title="5–15 timer i kjøleskap. Kaldt vann, ingen dagers planlegging."><div class="mc-t">Kveldsdeig</div><div class="mc-s">5–15t kjøleskap</div></div>
     </div>
     <div class="hsub" id="hsub" style="display:none"><div class="hsub-body" id="hrows"></div></div>
+    <div class="hsub" id="ksub" style="display:none"><div class="hsub-body" id="krows"></div></div>
   </div>
 
   <div><div class="lbl">Melmengde</div>
@@ -415,9 +417,14 @@ body.fs-xlarge{zoom:1.3}
 </div>
 
 <script>
-const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,showHelp:true};
+const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,showHelp:true};
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'}];
+// Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
+// (som er kalibrert for 1–6 DAGER). Reell usikkerhet i kilder (2–3× vs. opptil 6× tregere enn
+// romtemp) — disse tallene er et fornuftig midtpunkt, ikke en eksakt fasit. Juster ved behov.
+const KOPTS=[{h:5,b:'Kveld til morgen'},{h:8,b:'Anbefalt'},{h:10,b:'Over natta'},{h:12,b:'Lang natt'},{h:15,b:'Kveld til sen kveld'}];
+const KCOLDMULT={5:3.0,8:2.5,10:2.2,12:2.0,15:1.8};
 const HREC={napoletana:65,newyork:63,langpanne:70,chicago:59,ingenelting:75};
 const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:54,mx:65},ingenelting:{mn:70,mx:82}};
 const BSALT={napoletana:2.5,newyork:2.0,langpanne:2.0,chicago:2.0,ingenelting:2.0};
@@ -470,6 +477,11 @@ function buildHrows(){
   b.innerHTML=HOPTS.map(o=>`<div class="hrow ${o.h===S.hurtigH?'on':''}" onclick="setH(${o.h})"><div class="hd"></div>${o.h} timer — <b>${o.b}</b></div>`).join('');
 }
 function setH(h){S.hurtigH=h;buildHrows();sched();}
+function buildKrows(){
+  const b=document.getElementById('krows');if(!b)return;
+  b.innerHTML=KOPTS.map(o=>`<div class="hrow ${o.h===S.kveldH?'on':''}" onclick="setK(${o.h})"><div class="hd"></div>${o.h} timer — <b>${o.b}</b></div>`).join('');
+}
+function setK(h){S.kveldH=h;buildKrows();sched();}
 
 function pgrp(id,key,cb){
   document.getElementById(id).querySelectorAll('.pill').forEach(p=>{
@@ -490,7 +502,8 @@ function mCards(){
     c.onclick=()=>{
       S.method=c.dataset.v;mCards();
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
-      document.getElementById('cwrap').style.display=S.method==='hurtig'?'none':'block';
+      document.getElementById('ksub').style.display=S.method==='kveld'?'block':'none';
+      document.getElementById('cwrap').style.display=(S.method==='hurtig'||S.method==='kveld')?'none':'block';
       sched();
     };
   });
@@ -498,25 +511,27 @@ function mCards(){
 function applyTypeUI(){
   const isIE = S.type==='ingenelting';
   const gmw=document.getElementById('gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
-  const cw=document.getElementById('cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig')?'none':'block';
+  const cw=document.getElementById('cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig'||S.method==='kveld')?'none':'block';
   const gkw=document.getElementById('gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
   const gow=document.getElementById('govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
+  const ksub=document.getElementById('ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
 }
 function applyMobTypeUI(){
   const isIE = S.type==='ingenelting';
   const g=id=>document.getElementById(id);
   const gmw=g('mob-gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
-  const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig')?'none':'block';
+  const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig'||S.method==='kveld')?'none':'block';
   const gkw=g('mob-gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
   const gow=g('mob-govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
+  const ksub=g('mob-ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
 }
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
 pgrp('ggj','gjaer');
 pgrp('gkm','kjokkenmaskin');
 pgrp('govn','oven');
-mCards();buildHrows();
+mCards();buildHrows();buildKrows();
 
 function uMel(v){S.mel=parseInt(v);document.getElementById('mdisp').textContent=v+'g';sched();}
 function uHydro(v){S.hydro=parseInt(v);uHydroUI();sched();}
@@ -691,7 +706,7 @@ function fDT(d){
 function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
 function R(){
-  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.type==='ingenelting')?1:(COLDMULT[S.cold]||1))*100)/100,yf=Math.round(yd*3*10)/10;
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:(COLDMULT[S.cold]||1))*100)/100,yf=Math.round(yd*3*10)/10;
   const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'IngenElting-pizza'};
   return{name:ns[S.type],flour:m,water:w,salt:sa,oil:oi,sugar:su,yDry:yd,yFresh:yf};
 }
@@ -727,7 +742,7 @@ function oT(t){
   return p?'Jernpanne gir best varmeoverføring.':'Ost UNDER sausen — Chicago-tradisjonen.';
 }
 function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
-function mN(m){return{standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'IngenElting'}[m]||m;}
+function mN(m){return{standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'IngenElting',kveld:'Kveldsdeig'}[m]||m;}
 
 const LOC={
   kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
@@ -945,6 +960,39 @@ function hurtigSteps(anchor){
     {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}.`,why:'Gluten slapper av etter forming.'},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(t0,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,tip:oT(S.type)}
   ]};
+}
+
+function kveldSteps(anchor){
+  const kh=S.kveldH, mult=KCOLDMULT[kh]||2.0, r=R(), ie=S.mode==='end';
+  const yd=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100, yf=Math.round(yd*3*10)/10;
+  const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+  const MIX_DUR=15, FORM_DUR=15, KVELD_MIN=kh*60, TEMPER_MIN=90;
+  const total=MIX_DUR+FORM_DUR+KVELD_MIN+TEMPER_MIN;
+  const t0=ie?sM(anchor,total):anchor;
+  const formAt=aM(t0,MIX_DUR), coldAt=aM(formAt,FORM_DUR), temperAt=aM(coldAt,KVELD_MIN), bakeAt=aM(temperAt,TEMPER_MIN);
+  const p=pc();
+  const steps=[
+    {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd':'Kjøkkenmaskin — bland deig',loc:'benk',at:t0,dur:MIX_DUR,
+      desc:(S.kjokkenmaskin==='ankarsrum'
+        ?`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min.`
+        :S.kjokkenmaskin==='manuell'
+        ?`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'}`
+        :`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min.`)+langpanneHintText(),
+      why:'Kaldt vann holder deigen rolig til den kommer i kjøleskapet — lunkent vann ville gitt en ukontrollert romtemperatur-gjæring før kjøleskapet i det hele tatt tar over.',
+      tip:'Deigtemperatur etter elting bør ligge på 20–22°C — litt kaldere enn standardmetoden er helt greit her, siden kjøleskapet uansett overtar snart.'},
+    {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:FORM_DUR,
+      desc:`Del i ${p.count} emner à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett rett i kjøleskap.`,
+      why:'Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.',
+      tip:'Bruk bokser med lokk — klede tørker ut overflaten og lager skorpe.'},
+    {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
+      desc:`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,
+      why:'Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.'},
+    {title:'Ta ut og temperer',loc:'rom',at:temperAt,dur:TEMPER_MIN,passive:true,
+      desc:`Ta emnene ut av kjøleskapet. La stå tildekket ved romtemperatur i ${Math.round(TEMPER_MIN/60*10)/10} time før du strekker og steker.`,
+      why:'Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.'},
+    {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),why:WHY.st,tip:oT(S.type)}
+  ];
+  return {ya,steps};
 }
 
 function fmtDur(mins){
@@ -1227,6 +1275,15 @@ function buildTechHTML(){
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>`;
   }
+  if(S.method==='kveld'){
+    return `
+    ${machineSeqHTML()}
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor kaldt vann, ikke lunkent?</div><div class="sdesc">I motsetning til Hurtigdeig skal denne varianten roe seg ned i kjøleskapet, ikke få full fart før den kommer dit. Lunkent vann ville gitt en ukontrollert romtemperatur-gjæring i minuttene før kjøling, som gjør resultatet mindre forutsigbart. Kaldt vann holder deigen rolig helt til kjøleskapet tar over.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Om gjærmengden</div><div class="sdesc">Gjærkurven for 5–15 timer i kjøleskap er anslått ut fra at kald gjæring er 4–8× tregere enn romtemperatur — kildene spriker noe her, så tallene er et fornuftig utgangspunkt, ikke en eksakt fasit. Virker deigen for aktiv eller for treg i forhold til valgt tid, juster gjerne timeantallet neste gang.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Kortere temperering enn Standard</div><div class="sdesc">Standardmetoden bruker 4 timer temperering fordi deigen har vært kald i flere dager og bygget opp en isolerende gjæringsvarme. Kveldsdeig har vært kald i timer, ikke dager, så 90 minutter er nok til å gjøre den strekkbar igjen.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først, adskilt fra resten av det kalde vannet. Bruk 3× mengden av tørrgjær.'}</div></div>`;
+  }
   return `
     ${overfermentWarningHTML()}
     ${machineSeqHTML()}
@@ -1258,6 +1315,15 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '2.5',
+    d: 'juli 2026',
+    changes: [
+      'Ny metode: Kveldsdeig — 5–15 timer i kjøleskapet, mellom Hurtigdeig (samme dag, romtemperatur) og Standard (flere dagers planlegging). Bland om kvelden, stek neste dag.',
+      'Bruker kaldt vann i blandefasen (ikke lunkent som Hurtigdeig), for å unngå ukontrollert romtemperatur-gjæring før kjøleskapet tar over.',
+      'Egen gjærkurve for kort kaldheving, og kortere temperering (90 min) enn Standard-metodens 4 timer siden deigen ikke har vært kald like lenge.'
+    ]
+  },
   {
     v: '2.4',
     d: 'juli 2026',
@@ -1323,6 +1389,7 @@ function closeChangelogModal(){
 
 function gen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){hurtigRes();return;}
+  if(S.type!=='ingenelting' && S.method==='kveld'){kveldRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
   const rs=rawSteps(a),steps=rs,r=R();
   const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
@@ -1353,6 +1420,26 @@ function hurtigRes(){
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
+    ${actionGroupHTML()}
+    <div id="p-plan">${stepH(steps)}</div>
+    <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
+    <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
+    </div>`;
+  updatePcountDisp();
+}
+
+function kveldRes(){
+  const a=anc(S.mode==='end'?'e':'s');
+  const {ya,steps}=kveldSteps(a);
+  const r=R();
+  window._steps=steps;
+  const rr=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Kjøleskapsheving',v:`${S.kveldH} timer`},{k:'Ovntype',v:oN()}];
+  document.getElementById('main').innerHTML=`
+    ${startHintHTML()}
+    <div id="main-content">
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <h2>Kveldsdeig <span style="color:#1D9E75;font-weight:500">· ${S.kveldH} timer kjøl</span>${methodFlashHTML()}</h2>
+    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
@@ -1534,6 +1621,7 @@ function syncMobControls(){
   mobPillGroup('mob-govn','oven');
   mobMethodCards();
   mobBuildHrows();
+  mobBuildKrows();
   const now=new Date();
   s('mob-sd',fd(now));
   s('mob-st',String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
@@ -1586,13 +1674,20 @@ function mobMethodCards(){
   [{v:'standard',t:'Standard',s:'Direkte + kjøleskapsheving',hc:false},
    {v:'poolish',t:'Poolish',s:'Løs fordeig, 12–16t',hc:false},
    {v:'biga',t:'Biga',s:'Fast fordeig, 16–24t',hc:false},
-   {v:'hurtig',t:'Hurtigdeig',s:'2–10 timer, uten kjøleskapsheving',hc:true}
+   {v:'hurtig',t:'Hurtigdeig',s:'2–10 timer, uten kjøleskapsheving',hc:true},
+   {v:'kveld',t:'Kveldsdeig',s:'5–15 timer i kjøleskap',hc:true}
   ].forEach(({v,t,s,hc})=>{
     const el=document.createElement('div');
     const isOn=S.method===v;
     el.style.cssText=`border-radius:8px;padding:.5rem .65rem;cursor:pointer;border:${isOn?'2px':'1px'} solid ${isOn?(hc?'#BA7517':'#1D9E75'):(hc?'#BA7517':'#d0cdc8')};background:${isOn?(hc?'#fef3e2':'#e8f7f1'):'#fff'}`;
     el.innerHTML=`<div style="font-size:12px;font-weight:600;color:${isOn?(hc?'#633806':'#085041'):'#1a1a1a'}">${t}</div><div style="font-size:11px;color:${isOn?(hc?'#854F0B':'#0F6E56'):'#888'};margin-top:1px">${s}</div>`;
-    el.onclick=()=>{S.method=v;mobMethodCards();document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';document.getElementById('mob-cwrap').style.display=v==='hurtig'?'none':'block';mobGen();};
+    el.onclick=()=>{
+      S.method=v;mobMethodCards();
+      document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';
+      document.getElementById('mob-ksub').style.display=v==='kveld'?'block':'none';
+      document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='kveld')?'none':'block';
+      mobGen();
+    };
     wrap.appendChild(el);
   });
 }
@@ -1602,6 +1697,11 @@ function mobBuildHrows(){
   b.innerHTML=HOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.hurtigH?'#085041':'#555'};background:${o.h===S.hurtigH?'#e8f7f1':'transparent'};font-weight:${o.h===S.hurtigH?600:400}" onclick="mobSetH(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.hurtigH?'#1D9E75':'#ccc'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
 }
 function mobSetH(h){S.hurtigH=h;mobBuildHrows();mobGen();}
+function mobBuildKrows(){
+  const b=document.getElementById('mob-krows');if(!b)return;
+  b.innerHTML=KOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.kveldH?'#085041':'#555'};background:${o.h===S.kveldH?'#e8f7f1':'transparent'};font-weight:${o.h===S.kveldH?600:400}" onclick="mobSetK(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.kveldH?'#1D9E75':'#ccc'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+}
+function mobSetK(h){S.kveldH=h;mobBuildKrows();mobGen();}
 
 function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=v+'g';const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=v+'g';mobGen();}
 function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
@@ -1674,6 +1774,15 @@ function mobGen(){
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
+    return;
+  }
+
+  if(S.type!=='ingenelting' && S.method==='kveld'){
+    const {ya,steps}=kveldSteps(anchor);
+    window._steps=steps;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    const r2=R(),p=pc();
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${r2.water}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Kjøleskap</span><span class="mob-rval">${S.kveldH}t</span></div></div></div>`;
     return;
   }
 
@@ -1965,7 +2074,7 @@ function syncDesktopControls(){
   const tsl=document.getElementById('tsl');if(tsl)tsl.value=S.temp;
   uTempUI();
   pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
-  mCards();buildHrows();
+  mCards();buildHrows();buildKrows();
   applyTypeUI();
 }
 
@@ -2094,6 +2203,9 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
     <div id="mob-hsub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
       <div id="mob-hrows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+    </div>
+    <div id="mob-ksub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
     </div>
 
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
