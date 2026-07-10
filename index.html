@@ -1169,7 +1169,12 @@ function toggleHelpFromPlan(){
 
 function copyP(steps){
   const r=R(),p=pc();
-  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,`Kjøleskapsheving: ${S.cold} dager · Ovn: ${oN()}`,`Romtemperatur: ${S.temp}°C`,'',`Antall pizzaer: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${yA(r)}`,'','TIDSPLAN','--------'];
+  const coldLine = S.type==='ingenelting' ? null
+    : S.method==='kveld' ? `Kjøleskapsheving: ${S.kveldH} timer · Ovn: ${oN()}`
+    : S.method==='hurtig' ? `Ovn: ${oN()}`
+    : `Kjøleskapsheving: ${S.cold} dager · Ovn: ${oN()}`;
+  const ovnLine = S.type==='ingenelting' ? `Ovn: Vanlig ovn, 250°C` : null;
+  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${yA(r)}`,'','TIDSPLAN','--------'];
   steps.forEach((s,i)=>{
     const locMap={kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'};
     const loc=locMap[s.loc]||s.loc;
@@ -1184,13 +1189,6 @@ function copyP(steps){
     const b=document.getElementById('cbtn');
     if(b){b.textContent='✓ Kopiert!';setTimeout(()=>{b.textContent='📋 Kopier tidsplan';},2000);}
   }).catch(()=>alert('Kopi feilet — prøv manuelt.'));
-}
-
-function planText(steps){
-  const r=R(),p=pc();
-  const lines=[`PIZZAPLAN ${r.name}`,`${mN(S.method)} · ${S.mel}g · ${S.hydro}%`,`${p.count} pizzaer à ${p.perPizza}g`,''];
-  steps.forEach((s,i)=>lines.push(`${i+1}. ${s.title} — ${fDT(s.at)}`));
-  return lines.join('\n');
 }
 
 
