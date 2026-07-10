@@ -764,6 +764,12 @@ function whySg(){
   return 'Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I Ankarsrum: tilsett salt etter ca. 5 min elting — da er gluten allerede i gang og tåler saltet bedre. Gjær løses i vannet på forhånd.';
 }
 
+function langpanneHintText(){
+  if(S.type!=='langpanne' && S.type!=='ingenelting') return '';
+  const p=pc();
+  return ` Denne mengden gir ${p.count} langpanne${p.count>1?'r':''} (ca. ${p.melPer}g mel per langpanne).`;
+}
+
 function rawSteps(a){
   const r=R(),c=S.cold,ie=S.mode==='end',cM2=c*24*60,rt=rtM(60),tp=S.type;
   if(S.type==='ingenelting'){
@@ -779,7 +785,7 @@ function rawSteps(a){
     const bakeAt=aM(proofAt,PROOF_DUR);
     return[
       {title:'Bland alt i bollen',loc:'benk',at:t0,dur:MIX_DUR,
-        desc:`Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle. Tilsett ${r.water}g ${waterTempPhrase()} og rør sammen med en skje til alt melet er fuktet. Klumpete og grovt er helt greit — ingen elting.`,
+        desc:`Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle. Tilsett ${r.water}g ${waterTempPhrase()} og rør sammen med en skje til alt melet er fuktet. Klumpete og grovt er helt greit — ingen elting.${langpanneHintText()}`,
         why:'Lang, langsom heving bygger opp glutenstrukturen av seg selv — helt uten mekanisk arbeid.',
         tip:'Ingen kjøkkenmaskin eller håndelting nødvendig i det hele tatt — bare rør sammen med en skje.'},
       {title:'La stå (natt over)',loc:'rom',at:restAt,dur:REST_MIN,passive:true,
@@ -827,11 +833,11 @@ function rawSteps(a){
     const t0=ie?sM(sM(sM(a,cM2),rt),45):a;
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland og autolyse':S.kjokkenmaskin==='manuell'?'Bland for hånd og autolyse':'Kjøkkenmaskin — bland og autolyse',loc:'benk',at:t0,dur:30,
-        desc:S.kjokkenmaskin==='ankarsrum'
+        desc:(S.kjokkenmaskin==='ankarsrum'
           ?`Hell ${r.water}g ${waterTempPhrase()} i Ankarsrum-bollen. Start maskinen på trinn 1 og tilsett ${r.flour}g mel gradvis i 3–4 omganger. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`
           :S.kjokkenmaskin==='manuell'
           ?`Hell ${r.water}g ${waterTempPhrase()} i en bolle. Rør inn ${r.flour}g mel gradvis med en slikkepott eller hånden til alt melet er fuktet — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`
-          :`Hell ${r.water}g ${waterTempPhrase()} i bollen på kjøkkenmaskinen. Sett i eltekroken, kjør på laveste hastighet og tilsett ${r.flour}g mel gradvis. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,
+          :`Hell ${r.water}g ${waterTempPhrase()} i bollen på kjøkkenmaskinen. Sett i eltekroken, kjør på laveste hastighet og tilsett ${r.flour}g mel gradvis. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`)+langpanneHintText(),
         why:whyAu(),
         tip:S.kjokkenmaskin==='ankarsrum'
           ?'Ankarsrum liker væske i bunnen — melet trekkes jevnt inn under rullekniven. Ikke overfyll på én gang.'
@@ -864,9 +870,9 @@ function rawSteps(a){
     const rdy=aM(pa,14*60);
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
-        desc:S.kjokkenmaskin==='ankarsrum'
+        desc:(S.kjokkenmaskin==='ankarsrum'
           ?`Ta av rullekniv og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
-          :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,
+          :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
         why:WHY.pl,
         tip:S.kjokkenmaskin==='ankarsrum'
           ?'Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'
@@ -889,7 +895,7 @@ function rawSteps(a){
     const rdy=aM(ba2,18*60);
     return[
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
-        desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${Math.round(r3.yDry*0.1*100)/100}g tørrgjær til klumpete, tørr konsistens. Ikke bland for mye.`,
+        desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${Math.round(r3.yDry*0.1*100)/100}g tørrgjær til klumpete, tørr konsistens. Ikke bland for mye.${langpanneHintText()}`,
         why:WHY.bi,
         tip:'La stå 16–24 timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.'},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
@@ -919,11 +925,11 @@ function hurtigSteps(anchor){
   const t0=ie?sM(anchor,30+ba+afm):anchor;
   return{o,w,ya,tmp,ba,afm,p,steps:[
     {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:t0,dur:15,
-      desc:S.kjokkenmaskin==='ankarsrum'
+      desc:(S.kjokkenmaskin==='ankarsrum'
         ?`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min.`
         :S.kjokkenmaskin==='manuell'
         ?`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
-        :`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min.`,
+        :`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min.`)+langpanneHintText(),
       why:'Lunkent vann (35–38°C) aktiverer gjæren raskt uansett eltemetode.',
       tip:S.kjokkenmaskin==='ankarsrum'
         ?'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'
