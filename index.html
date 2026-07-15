@@ -1313,7 +1313,6 @@ function overfermentWarningHTML(){
 function buildTechHTML(){
   if(S.type==='ingenelting'){
     return `
-    ${meltypeWarningHTML()}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">🥣 Ingen elting — hele poenget</div><div class="sdesc">Samme prinsipp som klassisk no-knead-brød: lang, langsom heving ved romtemperatur bygger opp glutennettverket helt av seg selv. Ingen kjøkkenmaskin, ingen håndelting, ingen windowpane-test underveis — bare tid.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor ingen kjøleskapsdager?</div><div class="sdesc">Denne metoden bruker kun én lang romtemperert heving (~15 timer) i stedet for dager i kjøleskap. Vil du ha mer kompleks smak, kan du sette bollen i kjøleskapet i stedet for på benken og heller la den stå 24–36 timer kaldt — men da mister du noe av "sett det og glem det"-enkelheten.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvordan vet jeg at den er klar?</div><div class="sdesc">Se etter bobler i overflaten og at deigen har mer enn doblet seg — ikke stol blindt på klokken. Er den ikke klar etter 15 timer, gi den et par timer til. Romtemperatur styrer farten mer enn for andre metoder siden det ikke er noen elting som kompenserer.</div></div>
@@ -1322,7 +1321,6 @@ function buildTechHTML(){
   }
   if(S.method==='hurtig'){
     return `
-    ${meltypeWarningHTML()}
     ${machineSeqHTML()}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
@@ -1331,7 +1329,6 @@ function buildTechHTML(){
   }
   if(S.method==='kveld'){
     return `
-    ${meltypeWarningHTML()}
     ${machineSeqHTML()}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor kaldt vann, ikke lunkent?</div><div class="sdesc">I motsetning til Hurtigdeig skal denne varianten roe seg ned i kjøleskapet, ikke få full fart før den kommer dit. Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen i minuttene før kjøleskapet kjøler deigen ned.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Om gjærmengden</div><div class="sdesc">Gjærkurven for 5–24 timer i kjøleskap er anslått ut fra at kald gjæring er 4–8× tregere enn romtemperatur — kildene spriker noe her, så tallene er et fornuftig utgangspunkt, ikke en eksakt fasit. Virker deigen for aktiv eller for treg i forhold til valgt tid, juster gjerne timeantallet neste gang.</div></div>
@@ -1341,7 +1338,6 @@ function buildTechHTML(){
   }
   return `
     ${overfermentWarningHTML()}
-    ${meltypeWarningHTML()}
     ${chicagoButterHTML()}
     ${machineSeqHTML()}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar. Reiver den med én gang trenger den mer elting.</div></div>
@@ -1377,7 +1373,7 @@ const CHANGELOG = [
     d: 'juli 2026',
     changes: [
       'Nytt valg: Meltype (Dallari, Caputo Doppio Zero/Pizzeria/Nuvola/Couco/Manitoba Oro) — basert på MENY sin meloversikt, med protein, styrke (W) og anbefalt fermenteringsvindu per mel.',
-      'Nytt varsel i Teknikk hvis planlagt total gjæringstid ligger utenfor det valgte melets anbefalte vindu — for kort tid gir dårlig glutenutvikling, for lang tid kan bryte ned gluten. Regner riktig uansett metode (dager for Standard/Poolish/Biga, timer for Hurtigdeig/Kveldsdeig/IngenElting).'
+      'Nytt varsel direkte øverst i Tidsplan hvis planlagt total gjæringstid ligger utenfor det valgte melets anbefalte vindu — for kort tid gir dårlig glutenutvikling, for lang tid kan bryte ned gluten. Regner riktig uansett metode (dager for Standard/Poolish/Biga, timer for Hurtigdeig/Kveldsdeig/IngenElting).'
     ]
   },
   {
@@ -1488,6 +1484,7 @@ function gen(){
   document.getElementById('main').innerHTML=`
     ${startHintHTML()}
     <div id="main-content">
+    ${meltypeWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
@@ -1508,6 +1505,7 @@ function hurtigRes(){
   document.getElementById('main').innerHTML=`
     ${startHintHTML()}
     <div id="main-content">
+    ${meltypeWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
@@ -1528,6 +1526,7 @@ function kveldRes(){
   document.getElementById('main').innerHTML=`
     ${startHintHTML()}
     <div id="main-content">
+    ${meltypeWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Kveldsdeig <span style="color:#1D9E75;font-weight:500">· ${S.kveldH} timer kjøl</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
@@ -1864,7 +1863,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.butter?`<div class="mob-rrow"><span>Smør</span><span class="mob-rval">${r2.butter}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
     return;
@@ -1873,7 +1872,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='kveld'){
     const {ya,steps}=kveldSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),p=pc();
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${r2.water}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.butter?`<div class="mob-rrow"><span>Smør</span><span class="mob-rval">${r2.butter}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Kjøleskap</span><span class="mob-rval">${S.kveldH}t</span></div></div></div>`;
     return;
@@ -1883,7 +1882,7 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
