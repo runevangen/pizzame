@@ -372,10 +372,10 @@ body.fs-xlarge{zoom:1.3}
     <div class="pills" id="gmel">
       <span class="pill" data-v="dallari" title="10,7% protein. 4–8t fermentering.">Dallari pizzamel</span>
       <span class="pill on" data-v="doppio_zero" title="11% protein, W220-230. 6–24t fermentering.">Caputo Doppio Zero</span>
-      <span class="pill" data-v="pizzeria" title="12,5% protein, W260-270. 12–36t fermentering.">Caputo Pizzeria</span>
-      <span class="pill" data-v="nuvola" title="12,5% protein, W260-280. 12–40t fermentering.">Caputo Nuvola</span>
-      <span class="pill" data-v="couco" title="13% protein, W300-320. 16–54t fermentering.">Caputo Couco</span>
-      <span class="pill" data-v="manitoba" title="14,5% protein, W370-390. 24–78t fermentering.">Caputo Manitoba Oro</span>
+      <span class="pill" data-v="pizzeria" title="12,5% protein, W260-270. 12–48t fermentering.">Caputo Pizzeria</span>
+      <span class="pill" data-v="nuvola" title="12,5% protein, W260-280. 12–48t fermentering.">Caputo Nuvola</span>
+      <span class="pill" data-v="couco" title="13% protein, W300-340. 16–54t fermentering.">Caputo Couco</span>
+      <span class="pill" data-v="manitoba" title="12,9-14,5% protein, W340-390. 24–78t fermentering.">Caputo Manitoba Oro</span>
     </div>
   </div>
 
@@ -450,15 +450,16 @@ const BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:
 const COLDMULT={1:1.5,2:1.05,3:0.75,4:0.59,5:0.45,6:0.38};
 const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 
-// Meltyper med anbefalt fermenteringsvindu (fra meny.no/italiensk-pizza/riktig-mel-til-pizza).
+// Meltyper med anbefalt fermenteringsvindu (fra meny.no/italiensk-pizza/riktig-mel-til-pizza,
+// kryssjekket mot Maschmanns — norsk Caputo-distributør — 15. juli 2026).
 // Brukes til å varsle hvis planlagt total gjæringstid ligger utenfor melets styrke-område.
 const MELTYPER=[
   {v:'dallari',t:'Dallari pizzamel',protein:'10,7%',w:'–',hydro:'55–60%',ferm:{mn:4,mx:8}},
   {v:'doppio_zero',t:'Caputo Doppio Zero',protein:'11%',w:'220–230',hydro:'60–70%',ferm:{mn:6,mx:24}},
-  {v:'pizzeria',t:'Caputo Pizzeria',protein:'12,5%',w:'260–270',hydro:'60–80%',ferm:{mn:12,mx:36}},
-  {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',ferm:{mn:12,mx:40}},
-  {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–320',hydro:'60–80%',ferm:{mn:16,mx:54}},
-  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'14,5%',w:'370–390',hydro:'70–100%',ferm:{mn:24,mx:78}}
+  {v:'pizzeria',t:'Caputo Pizzeria',protein:'12,5%',w:'260–270',hydro:'60–80%',ferm:{mn:12,mx:48}},
+  {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',ferm:{mn:12,mx:48}},
+  {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',ferm:{mn:16,mx:54}},
+  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',ferm:{mn:24,mx:78}}
 ];
 function tf(){
   const pts=[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]];
@@ -491,6 +492,16 @@ function sched(){
     if(isMob){mobGen();}else{gen();}
   },200);
 }
+// Som sched(), men uten debounce-forsinkelsen — for diskrete klikk (piller/kort)
+// i stedet for kontinuerlige dra-hendelser (glidebrytere), slik at f.eks. et
+// meltype-varsel ikke henger igjen fra forrige valg hvis du klikker fort.
+function schedNow(){
+  clearTimeout(AT);
+  updateEarliestHint();
+  const mobEl=document.getElementById('mob-layout');
+  const isMob=mobEl&&mobEl.classList.contains('active');
+  if(isMob){mobGen();}else{gen();}
+}
 function updateEarliestHint(){
   const el=document.getElementById('earliest-hint');
   if(!el||S.mode!=='end')return;
@@ -504,12 +515,12 @@ function buildHrows(){
   const b=document.getElementById('hrows');if(!b)return;
   b.innerHTML=HOPTS.map(o=>`<div class="hrow ${o.h===S.hurtigH?'on':''}" onclick="setH(${o.h})"><div class="hd"></div>${o.h} timer — <b>${o.b}</b></div>`).join('');
 }
-function setH(h){S.hurtigH=h;buildHrows();sched();}
+function setH(h){S.hurtigH=h;buildHrows();schedNow();}
 function buildKrows(){
   const b=document.getElementById('krows');if(!b)return;
   b.innerHTML=KOPTS.map(o=>`<div class="hrow ${o.h===S.kveldH?'on':''}" onclick="setK(${o.h})"><div class="hd"></div>${o.h} timer — <b>${o.b}</b></div>`).join('');
 }
-function setK(h){S.kveldH=h;buildKrows();sched();}
+function setK(h){S.kveldH=h;buildKrows();schedNow();}
 
 function pgrp(id,key,cb){
   document.getElementById(id).querySelectorAll('.pill').forEach(p=>{
@@ -520,7 +531,7 @@ function pgrp(id,key,cb){
       pgrp(id,key,cb);
       if(cb)cb();
       if(key==='type' && changed) showPizzaToast(S.type);
-      sched();
+      schedNow();
     };
   });
 }
@@ -532,7 +543,7 @@ function mCards(){
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
       document.getElementById('ksub').style.display=S.method==='kveld'?'block':'none';
       document.getElementById('cwrap').style.display=(S.method==='hurtig'||S.method==='kveld')?'none':'block';
-      sched();
+      schedNow();
     };
   });
 }
@@ -598,7 +609,7 @@ function setMode(m){
   const bs=document.getElementById('bs');const be=document.getElementById('be');
   if(bs)bs.style.display=m==='start'?'block':'none';
   if(be)be.style.display=m==='end'?'block':'none';
-  sched();
+  schedNow();
 }
 function doReset(){
   Object.assign(S,DEF);
@@ -616,7 +627,7 @@ function doReset(){
   document.getElementById('cwrap').style.display='block';
   applyTypeUI();
   syncMobControls();
-  setMode('start');initD();sched();
+  setMode('start');initD();schedNow();
 }
 function toggleHelp(){
   S.showHelp=!S.showHelp;
@@ -1369,6 +1380,15 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '3.0',
+    d: 'juli 2026',
+    changes: [
+      'Caputo Pizzeria og Nuvola sitt gjæringstak økt fra hhv. 36t/40t til 48t, etter kryssjekk mot Maschmanns (norsk Caputo-distributør) — Doppio Zero sitt tak på 24t stemte allerede.',
+      'Mindre presiseringer i protein/styrke-tall for Couco og Manitoba Oro basert på samme kryssjekk.',
+      'Fikset en timing-illusjon: pille- og kortvalg (pizzatype, metode, meltype, gjærtype, kjøkkenmaskin, ovntype, timevalg, nullstill) oppdaterer nå tidsplanen umiddelbart i stedet for etter en liten forsinkelse — klikker du fort gjennom flere valg, henger ikke visningen lenger igjen på det forrige valget.'
+    ]
+  },
+  {
     v: '2.9',
     d: 'juli 2026',
     changes: [
@@ -1555,7 +1575,7 @@ function stepPizzas(d){
     const t=document.getElementById(disp);if(t)t.textContent=S.mel+'g';
   });
   updatePcountDisp();
-  sched();
+  schedNow();
 }
 function updatePcountDisp(){
   const c=pc().count;
