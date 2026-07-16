@@ -10,8 +10,11 @@ import crypto from 'node:crypto';
 // GET    /api/users/admin?password=X       -> (admin) liste alle brukere uten PIN-hash
 // PATCH  /api/users/admin/:id     -> (admin) sett ny PIN { password, newPin }
 // DELETE /api/users/admin/:id     -> (admin) slett bruker { password }  (send som ?password=X siden DELETE-body er upålitelig i noen klienter)
-
-const ADMIN_PASSWORD_HASH = '532720a9925cb133ccfdb81e3bd79164029e063dae6db328048b7bff2c55065b';
+//
+// Admin-passord: sett miljøvariabelen ADMIN_PASSWORD i Netlify (Site settings →
+// Environment variables). Faller tilbake til standardpassordet under hvis den
+// ikke er satt ennå — bytt den så snart du har satt miljøvariabelen i Netlify.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Pizzamester2026';
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -26,7 +29,7 @@ function hash(str) {
 
 function checkAdminPassword(pw) {
   if (!pw) return false;
-  return hash(pw) === ADMIN_PASSWORD_HASH;
+  return pw === ADMIN_PASSWORD;
 }
 
 function idFromPath(path) {
