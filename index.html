@@ -218,9 +218,9 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .sidenav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11px;font-weight:600;color:#555;background:#fff;border:1px solid #d0cdc8;border-radius:20px;cursor:pointer}
 .sidenav-item:hover{border-color:#1D9E75;color:#085041}
 .sidenav-item .cnt{background:#1D9E75;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
-.modal-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:85vh;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);display:flex;flex-direction:column}
-.modal-head{display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.1rem;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px))}
+.modal-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:85vh;max-height:85dvh;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);display:flex;flex-direction:column}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:max(.85rem,env(safe-area-inset-top,0px)) 1.1rem .85rem;border-bottom:1px solid #e8e5e0;flex-shrink:0}
 .modal-head b{font-size:15px}
 .modal-x{width:26px;height:26px;border-radius:50%;background:#f0ede8;border:none;font-size:14px;color:#888;cursor:pointer;flex-shrink:0}
 .modal-x:hover{background:#e5e2dc}
@@ -247,6 +247,9 @@ body.fs-xlarge{zoom:1.3}
 .start-hint button{flex-shrink:0;padding:6px 12px;border:1px solid #EF9F27;border-radius:8px;background:#fff;color:#633806;font-size:12px;font-weight:600;cursor:pointer}
 .step-missed{border-left:3px solid #EF9F27}
 .mob-step.step-missed{border-left:3px solid #EF9F27}
+.step-next{border-left:3px solid #1D7FE9}
+.mob-step.step-next{border-left:3px solid #1D7FE9}
+.next-flag{display:inline-block;font-size:10px;font-weight:600;color:#1257A0;background:#E3F0FD;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .pizza-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;background:#fff;border:1px solid #e0ddd8;border-radius:12px;padding:.7rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;z-index:300;transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:min(90vw,360px)}
 .pizza-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -1120,6 +1123,14 @@ function renderSteps(steps, mode='desktop'){
     if(steps[i].at <= now) curIdx = i; else break;
   }
 
+  // Neste steg å gjøre = første ikke-avhakede steg, uansett klokke. Ligger den bak "nå"
+  // (curIdx) er du på etterskudd og bør ta igjen den først; ligger den foran er du i forkant.
+  // Faller de sammen, holder "nå"-fremhevingen alene — ingen grunn til to markører på samme kort.
+  let nextIdx = -1;
+  for(let i=0;i<steps.length;i++){
+    if(!(window._checked && window._checked.has(i))){ nextIdx = i; break; }
+  }
+
   const C = isMob ? {
     daylbl: 'mob-daylbl',
     today: 'today',
@@ -1186,12 +1197,13 @@ function renderSteps(steps, mode='desktop'){
 
     const done = window._checked && window._checked.has(i);
     const missed = i < curIdx && !done;
-    html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${isDimmed ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''}">
+    const isNext = i === nextIdx && nextIdx !== curIdx;
+    html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${isDimmed ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
       <div class="${C.body}">
         <div class="${C.head}">
           <div class="${C.num} snum-btn ${done ? 'snum-done' : (i===curIdx ? '' : C.numDim)}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">${done ? '✓' : i+1}</div>
           <div style="flex:1;min-width:0">
-            <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}</div>
+            <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}</div>
             <div class="${C.meta}">
               <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + (s.passive ? fmtDur(s.dur)+' venting' : s.dur+(isMob ? ' min' : ' min aktivt')) : ''}</div>
               ${locHtml}
@@ -1224,6 +1236,17 @@ function toggleStepDone(i){
   const mobEl=document.getElementById('mob-layout');
   const isMob=mobEl&&mobEl.classList.contains('active');
   if(isMob){ mobGen(); } else { gen(); }
+  scrollToNextStep();
+}
+function scrollToNextStep(){
+  const mobEl = document.getElementById('mob-layout');
+  const isMob = mobEl && mobEl.classList.contains('active');
+  const container = isMob ? document.getElementById('mob-plan-content') : document.getElementById('main');
+  if(!container) return;
+  const el = container.querySelector('.step-next');
+  if(el && typeof el.scrollIntoView === 'function'){
+    try{ el.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){}
+  }
 }
 
 async function persistCheckedSteps(){
@@ -1447,6 +1470,21 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '3.6',
+    d: 'juli 2026',
+    changes: [
+      'Neste steg å gjøre får nå en tydelig blå markering ("👉 neste") — det er det første ikke-avhakede steget, og henger sammen med klokka: er du på etterskudd peker den på det du mangler, er du i rute faller den sammen med den vanlige "nå"-fremhevingen (og vises da ikke som en ekstra boks).',
+      'Haker du av et steg, scroller siden nå automatisk til neste steg — nyttig på en lang tidsplan der du ellers må lete etter hvor du var.'
+    ]
+  },
+  {
+    v: '3.5',
+    d: 'juli 2026',
+    changes: [
+      'Fikset lukkeknappen på popup-vinduer (Tips, Hva er nytt, Deiger, Feedback, Guide, Admin) på telefoner med hakk/dynamisk øy — vinduet kunne tidligere rendres bak den øverste sikkerhetssonen, slik at ✕ ble vanskelig eller umulig å treffe.'
+    ]
+  },
   {
     v: '3.4',
     d: 'juli 2026',
