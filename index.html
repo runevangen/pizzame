@@ -2191,6 +2191,11 @@ async function refreshFormlerView(){
     document.getElementById('formler-modal-body').innerHTML = '<p style="color:#993C1D;font-size:12px">Kunne ikke hente tallene.</p>';
   }
 }
+function formlerGramEquiv(field, pct){
+  if(field==='hydro') return '';
+  const g = Math.round(500 * pct / 100 * 100) / 100;
+  return `<div style="font-size:9px;color:#999;margin-top:1px">≈ ${g}g ved 500g mel</div>`;
+}
 function buildFormlerHTML(values){
   const isAdmin = !!window._adminPassword;
   const types = Object.keys(FORMLER_TYPE_LABELS);
@@ -2203,6 +2208,7 @@ function buildFormlerHTML(values){
         : '';
       return `<td style="padding:.4rem .5rem;text-align:center;border-bottom:1px solid #f0ede8">
         <div style="font-size:13px;font-weight:600;color:#1a1a1a">${entry.current}${f==='hydro'||f==='salt'||f==='oil'||f==='yeast'?'%':''}${isAdmin?` <span onclick="formlerEdit('${t}','${f}',${entry.current})" style="cursor:pointer;color:#1D9E75;font-size:11px">✏️</span>`:''}</div>
+        ${formlerGramEquiv(f, entry.current)}
         ${prevHtml}
       </td>`;
     }).join('');
@@ -2210,7 +2216,7 @@ function buildFormlerHTML(values){
   }).join('');
   const header = `<tr>${['Pizzatype',...fields.map(f=>FORMLER_FIELD_LABELS[f])].map(h=>`<th style="padding:.4rem .5rem;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#888;text-align:${h==='Pizzatype'?'left':'center'}">${h}</th>`).join('')}</tr>`;
   let html = `
-    <div style="font-size:12px;color:#666;margin-bottom:.8rem;line-height:1.5">Kjernetallene bak beregningene — salt/olje/gjær som prosent av melvekt, og anbefalt hydrering. ${isAdmin?'Du er logget inn som admin — trykk ✏️ for å endre en verdi.':'Synlig for alle. Foreslå gjerne en endring nederst hvis du mener noe bør justeres.'}</div>
+    <div style="font-size:12px;color:#666;margin-bottom:.8rem;line-height:1.5">Kjernetallene bak beregningene — salt/olje/gjær som prosent av melvekt (med gram-eksempel ved 500g mel), og anbefalt hydrering. ${isAdmin?'Du er logget inn som admin — trykk ✏️ for å endre en verdi.':'Synlig for alle. Foreslå gjerne en endring nederst hvis du mener noe bør justeres.'}</div>
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${header}${rows}</table></div>`;
   if(!isAdmin){
     html += `<div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
@@ -2290,7 +2296,8 @@ function formlerUpdateSuggestCurrent(){
   const type = document.getElementById('formler-sug-type').value;
   const field = document.getElementById('formler-sug-field').value;
   const entry = (window._configValues && window._configValues[type] && window._configValues[type][field]) || {current:'?'};
-  document.getElementById('formler-sug-current').textContent = 'Dagens verdi: '+entry.current;
+  const gramTxt = field!=='hydro' && Number.isFinite(entry.current) ? ` (≈ ${Math.round(500*entry.current/100*100)/100}g ved 500g mel)` : '';
+  document.getElementById('formler-sug-current').innerHTML = 'Dagens verdi: '+entry.current+'%'+gramTxt;
 }
 async function submitConfigSuggestion(){
   const type = document.getElementById('formler-sug-type').value;
