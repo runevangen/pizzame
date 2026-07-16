@@ -361,6 +361,7 @@ body.fs-xlarge{zoom:1.3}
     <span id="active-deiger-count" class="cnt" style="display:none">0</span>
   </div>
   <div class="sidenav-item" onclick="openFeedbackModal()">💬 Feedback</div>
+  <div style="height:1px;background:#e0ddd8;margin:4px 2px"></div>
   <div class="sidenav-item" onclick="openFormlerModal()">📊 Formler</div>
   <div class="sidenav-item" onclick="openAdminLogin()">🔒 Admin</div>
 </div>
@@ -386,6 +387,29 @@ body.fs-xlarge{zoom:1.3}
     <div class="hsub" id="hsub" style="display:none"><div class="hsub-body" id="hrows"></div></div>
     <div class="hsub" id="ksub" style="display:none"><div class="hsub-body" id="krows"></div></div>
   </div>
+
+  <div class="divl"></div>
+
+  <div class="tbox">
+    <div class="tbox-t">📅 Planlegging</div>
+    <div class="mbtns">
+      <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br>Starter nå</div>
+      <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br>Planlagt steketid</div>
+    </div>
+    <div id="bs">
+      <div class="lbl" style="margin-bottom:4px">Når begynner du?</div>
+      <div class="dtg"><input type="date" id="sd"><input type="time" id="st" value="07:30"></div>
+      <div class="hint">Appen regner fremover og viser når hvert steg skjer.</div>
+    </div>
+    <div id="be" style="display:none">
+      <div class="lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+      <div class="dtg"><input type="date" id="ed"><input type="time" id="et" value="18:00"></div>
+      <div class="hint">Appen regner bakover og viser når du må starte.</div>
+      <div id="earliest-hint" style="font-size:11px;color:#1D9E75;margin-top:3px"></div>
+    </div>
+  </div>
+
+  <div class="divl"></div>
 
   <div><div class="lbl">Melmengde</div>
     <div class="sr"><input type="range" id="msl" min="300" max="1500" step="100" value="500" title="Skalerer alle ingredienser automatisk." oninput="uMel(this.value)"><span class="sv" id="mdisp">500g</span></div>
@@ -459,34 +483,6 @@ body.fs-xlarge{zoom:1.3}
     </div>
   </div>
 
-  </div>
-
-  <div><div class="lbl">Visning</div>
-    <div class="swrow" onclick="toggleHelp()" title="Vis eller skjul forklaringer og tips i tidsplanen">
-      <span class="swlbl">Forklaringer og tips</span>
-      <span class="sw on" id="help-sw"></span>
-    </div>
-  </div>
-
-  <div class="divl"></div>
-
-  <div class="tbox">
-    <div class="tbox-t">📅 Planlegging</div>
-    <div class="mbtns">
-      <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br>Starter nå</div>
-      <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br>Planlagt steketid</div>
-    </div>
-    <div id="bs">
-      <div class="lbl" style="margin-bottom:4px">Når begynner du?</div>
-      <div class="dtg"><input type="date" id="sd"><input type="time" id="st" value="07:30"></div>
-      <div class="hint">Appen regner fremover og viser når hvert steg skjer.</div>
-    </div>
-    <div id="be" style="display:none">
-      <div class="lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
-      <div class="dtg"><input type="date" id="ed"><input type="time" id="et" value="18:00"></div>
-      <div class="hint">Appen regner bakover og viser når du må starte.</div>
-      <div id="earliest-hint" style="font-size:11px;color:#1D9E75;margin-top:3px"></div>
-    </div>
   </div>
 
   <div class="brow">
@@ -726,10 +722,8 @@ function toggleHelp(){
   if(isMob){mobGen();}else{gen();}
 }
 function syncHelpUI(){
-  ['help-sw','mob-help-sw'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.classList.toggle('on',S.showHelp);
-  });
+  // Bryterne i sidepanelet/mobil-Visning er fjernet (dupliserte handlingsgruppens knapp) —
+  // selve knappeteksten der oppdateres direkte i actionGroupHTML()/mobil-ekvivalenten ved gen().
   const pcBtn=document.getElementById('help-toggle');
   if(pcBtn)pcBtn.textContent=S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer';
 }
@@ -1495,6 +1489,16 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '3.9',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet dupliserte "Vis/skjul forklaringer"-kontroller (fantes både i sidepanelet/mobil-Visning og i handlingsgruppen) — finnes nå kun ett sted.',
+      '"Planlegging" (når du vil spise) er flyttet opp til rett etter Metode, både på PC og mobil — tidligere lå den nederst, bak seks andre innstillinger, selv om det ofte er den første beslutningen man faktisk tar.',
+      'Ny "❓ Guide"-lenke lagt til på mobil — fantes tidligere kun på PC (bortsett fra automatisk førstegangsvisning).',
+      'Visuelt skille i navigasjonen mellom verktøy for alle (Guide/Tips/Deiger/Feedback) og admin-verktøy (Formler/Admin), på både PC og mobil.'
+    ]
+  },
   {
     v: '3.8',
     d: 'juli 2026',
@@ -3091,6 +3095,28 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
     </div>
 
+    <div class="mob-section-lbl">Planlegg fra</div>
+    <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
+      <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;color:#888;font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
+    </div>
+    <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
+      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+        <input type="date" id="mob-sd">
+        <input type="time" id="mob-st" value="07:30">
+      </div>
+    </div>
+    <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+        <input type="date" id="mob-ed">
+        <input type="time" id="mob-et" value="18:00">
+      </div>
+    </div>
+    <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:#1D9E75;background:#fff;display:none"></div>
+    <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
+
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)">
       <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
@@ -3135,41 +3161,13 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div class="mob-section-lbl">Visning</div>
     <div style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div class="swrow" onclick="toggleHelp()">
-        <span class="swlbl">Forklaringer og tips</span>
-        <span class="sw on" id="mob-help-sw"></span>
-      </div>
-      <div style="margin-top:.6rem">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">Skriftstørrelse</div>
-        <div class="fs-seg" id="mob-fs-seg">
-          <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
-          <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
-          <div class="o" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
-        </div>
+      <div style="font-size:11px;color:#888;margin-bottom:4px">Skriftstørrelse</div>
+      <div class="fs-seg" id="mob-fs-seg">
+        <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
+        <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
+        <div class="o" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
       </div>
     </div>
-
-    <div class="mob-section-lbl">Planlegg fra</div>
-    <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
-      <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;color:#888;font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
-    </div>
-    <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
-      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
-        <input type="date" id="mob-sd">
-        <input type="time" id="mob-st" value="07:30">
-      </div>
-    </div>
-    <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
-      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
-        <input type="date" id="mob-ed">
-        <input type="time" id="mob-et" value="18:00">
-      </div>
-    </div>
-    <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:#1D9E75;background:#fff;display:none"></div>
-    <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
 
     <div class="mob-section-lbl">Om appen</div>
     <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
@@ -3177,9 +3175,13 @@ document.addEventListener('change', firstInteractionCheck, true);
       <span style="font-size:12px;color:#1D9E75;font-weight:600" onclick="openChangelogModal()">Hva er nytt?</span>
     </div>
     <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:#993C1D;font-weight:600" onclick="authLogout()">Logg ut</span>
+      <span style="font-size:12px;color:#888;font-weight:600" onclick="openGuideModal()">❓ Guide</span>
       <span style="font-size:12px;color:#888;font-weight:600" onclick="openFeedbackModal()">💬 Feedback</span>
     </div>
+    <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:#993C1D;font-weight:600" onclick="authLogout()">Logg ut</span>
+    </div>
+    <div style="height:1px;background:#e0ddd8;margin:0 1rem"></div>
     <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:12px;color:#888;font-weight:600" onclick="openFormlerModal()">📊 Formler</span>
       <span style="font-size:12px;color:#888;font-weight:600" onclick="openAdminLogin()">🔒 Admin</span>
