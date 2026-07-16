@@ -261,10 +261,27 @@ body.fs-xlarge{zoom:1.3}
 </style>
 </head>
 <body class="pre-interact">
+<div id="auth-overlay" style="position:fixed;inset:0;background:#f5f4f0;z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem">
+  <div style="background:#fff;border-radius:14px;padding:1.5rem 1.3rem;max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.15)">
+    <div style="text-align:center;font-size:32px;margin-bottom:.3rem">🍕</div>
+    <div style="text-align:center;font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:1rem">Pizzaplanlegger</div>
+    <div id="auth-body"></div>
+    <div style="text-align:center;margin-top:1rem">
+      <span onclick="openAdminLogin()" style="font-size:11px;color:#aaa;cursor:pointer;text-decoration:underline">admin</span>
+    </div>
+  </div>
+</div>
+<div id="admin-modal" class="modal-overlay" onclick="if(event.target===this)closeAdminModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>🔐 Admin</b><button class="modal-x" onclick="closeAdminModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="admin-modal-body"></div>
+  </div>
+</div>
 <div id="tech-modal" class="modal-overlay" onclick="if(event.target===this)closeTechModal()">
   <div class="modal-box">
     <div class="modal-head"><b>💡 Teknikk</b><button class="modal-x" onclick="closeTechModal()" aria-label="Lukk">✕</button></div>
     <div class="modal-body" id="tech-modal-body"></div>
+
   </div>
 </div>
 <div id="deiger-modal" class="modal-overlay" onclick="if(event.target===this)closeDeigerModal()">
@@ -279,6 +296,12 @@ body.fs-xlarge{zoom:1.3}
     <div class="modal-body" id="changelog-modal-body"></div>
   </div>
 </div>
+<div id="feedback-modal" class="modal-overlay" onclick="if(event.target===this)closeFeedbackModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>💬 Gi tilbakemelding</b><button class="modal-x" onclick="closeFeedbackModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="feedback-modal-body"></div>
+  </div>
+</div>
 <div class="app">
 <div class="sb">
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -286,6 +309,7 @@ body.fs-xlarge{zoom:1.3}
     <div style="display:flex;flex-direction:column;gap:2px">
       <span>Pizzaplanlegger</span>
       <span id="build-stamp" onclick="openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#1D9E75;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
+      <span onclick="openFeedbackModal()" title="Gi tilbakemelding" style="font-size:10px;color:#888;cursor:pointer;text-decoration:underline">💬 Tilbakemelding</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
@@ -314,7 +338,7 @@ body.fs-xlarge{zoom:1.3}
       <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Standard</div><div class="mc-s">Direkte + kjøl</div></div>
       <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
       <div class="mc" data-v="biga" title="Fast fordeig 16–24t."><div class="mc-t">Biga</div><div class="mc-s">Fast fordeig, 16–24t</div></div>
-      <div class="mc hc" data-v="hurtig" title="2–10 timer, uten kjøleskapsheving."><div class="mc-t">Hurtigdeig</div><div class="mc-s">2–10 timer, uten kjøleskapsheving</div></div>
+      <div class="mc hc" data-v="hurtig" title="2–16 timer i romtemperatur."><div class="mc-t">Hurtigdeig</div><div class="mc-s">2–16 timer, romtemperatur</div></div>
       <div class="mc" data-v="kveld" title="5–24 timer i kjøleskap. Kaldt vann, ingen dagers planlegging."><div class="mc-t">Kveldsdeig</div><div class="mc-s">5–24t kjøleskap</div></div>
     </div>
     <div class="hsub" id="hsub" style="display:none"><div class="hsub-body" id="hrows"></div></div>
@@ -416,6 +440,7 @@ body.fs-xlarge{zoom:1.3}
 
   <div class="brow">
     <button class="bgo" onclick="doReset()" title="Nullstill alle innstillinger">↺ Nullstill</button>
+    <button id="fav-btn" onclick="openFavorite()" title="Åpne din favorittdeig" style="display:none;padding:8px 12px;border:1px solid #EFAB27;border-radius:8px;background:#FFF8EA;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer;align-items:center;gap:5px">★ Min favoritt</button>
   </div>
 </div>
 
@@ -430,7 +455,7 @@ body.fs-xlarge{zoom:1.3}
 <script>
 const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,meltype:'doppio_zero',showHelp:true};
 const S={...DEF};let AT=null;
-const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'}];
+const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
 // (som er kalibrert for 1–6 DAGER). Reell usikkerhet i kilder (2–3× vs. opptil 6× tregere enn
 // romtemp) — disse tallene er et fornuftig midtpunkt, ikke en eksakt fasit. Juster ved behov.
@@ -1302,6 +1327,13 @@ function meltypeWarningHTML(){
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">Du har planlagt ca. ${hrs} timer total gjæringstid, mens ${flour.t} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}) er ment for ${flour.ferm.mn}–${flour.ferm.mx} timer. ${tooShort?'For kort tid gir dårlig utviklet gluten og lite smak — melet rekker ikke å bygge den strukturen den er laget for.':'For lang tid kan bryte ned glutenet mer enn det bygges — deigen kan bli slapp og vanskelig å håndtere.'} Vurder ${tooShort?'et svakere mel (f.eks. Dallari eller Doppio Zero) eller kortere hevetid':'et sterkere mel (lenger ned på listen) eller kortere hevetid'} for bedre match.</div>
   </div>`;
 }
+function hurtigWarmRoomWarningHTML(){
+  if(S.method!=='hurtig' || S.hurtigH<12 || S.temp<22) return '';
+  return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌡️ ${S.hurtigH} timer ved ${S.temp}°C — sjekk deigen underveis</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">De lengste hurtigdeig-alternativene (12–16t) er beregnet for et kjøligere kjøkken (18–20°C). Ved ${S.temp}°C går gjæringen fortere enn ventet, og deigen kan bli overmoden før tiden er ute. Sjekk den gjerne en time eller to før planlagt slutt — er den allerede stor og blank med bobler som kollapser lett, er den klar til bruk selv om klokken ikke stemmer helt.</div>
+  </div>`;
+}
 function overfermentWarningHTML(){
   if(S.method==='hurtig' || S.type==='ingenelting') return '';
   // Forgjæring legges til kjøleskapsdagene for å få total EFFEKTIV gjæringstid —
@@ -1379,6 +1411,31 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '3.3',
+    d: 'juli 2026',
+    changes: [
+      'Enkel innlogging med navn + 4-sifret PIN — første gang du skriver navnet ditt, lager du en PIN; neste gang logger du inn med samme navn og PIN. Forblir innlogget til du selv logger ut.',
+      'Ny admin-visning (lenke nederst på innloggingsskjermen, passordbeskyttet) for å se alle brukere, sette ny PIN, og slette brukere.'
+    ]
+  },
+  {
+    v: '3.2',
+    d: 'juli 2026',
+    changes: [
+      'Favoritt-merking av lagrede deiger (★ på kortet i Mine deiger) — kun én av gangen. En ny "★ Min favoritt"-knapp dukker opp i sidepanelet (og mobiltoppfeltet) og åpner favoritten direkte, uten å lete gjennom listen.',
+      'Ny "Gi tilbakemelding"-funksjon — send inn kategori (mel/feil/forslag/annet) + melding, med versjon og gjeldende innstillinger sendt med automatisk. Lagres delt via Netlify Blobs, med en egen liste du kan se og merke som løst inne i appen.'
+    ]
+  },
+  {
+    v: '3.1',
+    d: 'juli 2026',
+    changes: [
+      'Hurtigdeig utvidet fra 2–10 til 2–16 timer — de tre nye alternativene (12/14/16t) er kalibrert for et kjøligere kjøkken (18–20°C), etter research som viser at dette er helt vanlig praksis ved lavere romtemperatur.',
+      'Beskrivelsen er endret fra "uten kjøleskapsheving" til "romtemperatur", siden det er det som faktisk kjennetegner metoden.',
+      'Nytt varsel hvis du velger en lang hurtigdeig-variant (12t+) samtidig som romtemperaturen er stilt til 22°C eller høyere — de lange alternativene forutsetter et kjøligere kjøkken enn det.'
+    ]
+  },
   {
     v: '3.0',
     d: 'juli 2026',
@@ -1494,6 +1551,120 @@ function closeChangelogModal(){
   document.getElementById('changelog-modal').style.display = 'none';
 }
 
+// ===== TILBAKEMELDING (delt liste via Netlify Blobs) =====
+const FEEDBACK_CATEGORIES = [
+  {v:'mel', t:'Mangler mel'},
+  {v:'feil', t:'Noe er feil'},
+  {v:'forslag', t:'Forslag'},
+  {v:'annet', t:'Annet'}
+];
+window._feedbackCategory = 'feil';
+
+function buildFeedbackFormHTML(){
+  return `
+    <div style="font-size:12px;color:#666;margin-bottom:.8rem;line-height:1.5">Fant du en feil, savner du et mel, eller har du et forslag? Skriv det her — versjon og innstillingene dine sendes med automatisk, så det er lettere å finne igjen problemet.</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.7rem" id="feedback-cat-pills">
+      ${FEEDBACK_CATEGORIES.map(c=>`<span class="pill${window._feedbackCategory===c.v?' on':''}" data-v="${c.v}" onclick="setFeedbackCategory('${c.v}')" style="cursor:pointer">${c.t}</span>`).join('')}
+    </div>
+    <textarea id="feedback-msg" placeholder="Skriv her..." style="width:100%;min-height:90px;padding:.6rem;border:1px solid #d0cdc8;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:.6rem">
+      <button onclick="submitFeedback()" style="padding:8px 14px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Send</button>
+      <span id="feedback-status" style="font-size:12px;color:#888"></span>
+    </div>
+    <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
+      <span onclick="toggleFeedbackList()" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">📋 Se tidligere tilbakemeldinger</span>
+      <div id="feedback-list-wrap" style="display:none;margin-top:.7rem"></div>
+    </div>`;
+}
+function setFeedbackCategory(v){
+  window._feedbackCategory = v;
+  document.querySelectorAll('#feedback-cat-pills .pill').forEach(p=>p.classList.toggle('on', p.dataset.v===v));
+}
+function openFeedbackModal(){
+  window._feedbackCategory = 'feil';
+  document.getElementById('feedback-modal-body').innerHTML = buildFeedbackFormHTML();
+  document.getElementById('feedback-modal').style.display = 'flex';
+}
+function closeFeedbackModal(){
+  document.getElementById('feedback-modal').style.display = 'none';
+}
+async function submitFeedback(){
+  const ta = document.getElementById('feedback-msg');
+  const statusEl = document.getElementById('feedback-status');
+  const msg = ta ? ta.value.trim() : '';
+  if(!msg){ if(statusEl) statusEl.textContent = 'Skriv en melding først.'; return; }
+  if(statusEl) statusEl.textContent = 'Sender...';
+  try{
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        category: window._feedbackCategory,
+        message: msg,
+        context: {version: CHANGELOG[0].v, type: S.type, method: S.method, meltype: S.meltype, kjokkenmaskin: S.kjokkenmaskin}
+      })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(statusEl) statusEl.textContent = '✓ Takk! Sendt.';
+    if(ta) ta.value='';
+    setTimeout(()=>{ if(statusEl) statusEl.textContent=''; }, 3000);
+  }catch(e){
+    if(statusEl) statusEl.textContent = 'Kunne ikke sende — prøv igjen.';
+  }
+}
+async function toggleFeedbackList(){
+  const wrap = document.getElementById('feedback-list-wrap');
+  if(!wrap) return;
+  if(wrap.style.display==='block'){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  wrap.innerHTML = '<p style="color:#999;font-size:12px">Laster...</p>';
+  try{
+    const res = await fetch('/api/feedback');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const items = data.feedback || [];
+    if(!items.length){ wrap.innerHTML = '<p style="color:#999;font-size:12px">Ingen tilbakemeldinger ennå.</p>'; return; }
+    const catLbl = v => (FEEDBACK_CATEGORIES.find(c=>c.v===v)||{t:v}).t;
+    wrap.innerHTML = items.map(it=>{
+      let dt=''; try{ dt=fDT(new Date(it.createdAt)); }catch(e){}
+      const ctx = it.context||{};
+      return `<div style="border:1px solid #e0ddd8;border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:${it.resolved?'#faf9f6':'#fff'};opacity:${it.resolved?'.7':'1'}">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+          <div style="min-width:0">
+            <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
+            <span style="font-size:10px;color:#aaa;margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}</span>
+            <div style="font-size:12px;color:#1a1a1a;margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0">
+            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?'Merk som ulest':'Merk som løst'}" style="padding:3px 7px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
+            <button onclick="deleteFeedbackConfirm('${it.id}')" title="Slett" style="padding:3px 7px;border:1px solid #e0ddd8;border-radius:6px;background:#fff;color:#993C1D;font-size:10px;cursor:pointer">✕</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    wrap.innerHTML = '<p style="color:#993C1D;font-size:12px">Kunne ikke laste tilbakemeldinger.</p>';
+  }
+}
+async function toggleFeedbackResolved(id, currentlyResolved){
+  try{
+    await fetch('/api/feedback/'+id, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({resolved: !currentlyResolved})
+    });
+  }catch(e){}
+  const wrap=document.getElementById('feedback-list-wrap');
+  if(wrap){ wrap.style.display='none'; toggleFeedbackList(); }
+}
+function deleteFeedbackConfirm(id){
+  if(!confirm('Slette denne tilbakemeldingen permanent?')) return;
+  fetch('/api/feedback/'+id, {method:'DELETE'}).catch(()=>{}).finally(()=>{
+    const wrap=document.getElementById('feedback-list-wrap');
+    if(wrap){ wrap.style.display='none'; toggleFeedbackList(); }
+  });
+}
+
 function gen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){hurtigRes();return;}
   if(S.type!=='ingenelting' && S.method==='kveld'){kveldRes();return;}
@@ -1505,6 +1676,7 @@ function gen(){
     ${startHintHTML()}
     <div id="main-content">
     ${meltypeWarningHTML()}
+    ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
@@ -1526,6 +1698,7 @@ function hurtigRes(){
     ${startHintHTML()}
     <div id="main-content">
     ${meltypeWarningHTML()}
+    ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
@@ -1547,6 +1720,7 @@ function kveldRes(){
     ${startHintHTML()}
     <div id="main-content">
     ${meltypeWarningHTML()}
+    ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Kveldsdeig <span style="color:#1D9E75;font-weight:500">· ${S.kveldH} timer kjøl</span>${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
@@ -1706,6 +1880,169 @@ function setLayout(mode){
   else{gen();}
 }
 
+// ===== INNLOGGING (navn + 4-sifret PIN, delt via Netlify Blobs) =====
+function escAttr(s){return String(s).replace(/'/g,"&#39;").replace(/"/g,'&quot;');}
+
+function authNameScreenHTML(){
+  return `
+    <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">Hva heter du?</div>
+    <input id="auth-name" type="text" placeholder="Navnet ditt" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:15px;box-sizing:border-box;text-align:center" onkeydown="if(event.key==='Enter')authSubmitName()">
+    <button onclick="authSubmitName()" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Fortsett</button>
+    <div id="auth-error" style="text-align:center;font-size:12px;color:#993C1D;margin-top:.5rem"></div>`;
+}
+function authPinScreenHTML(name, isNew){
+  return `
+    <div style="font-size:13px;color:#1a1a1a;margin-bottom:.2rem;text-align:center;font-weight:600">Hei, ${escH(name)}!</div>
+    <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">${isNew?'Lag en 4-sifret PIN-kode':'Skriv inn PIN-koden din'}</div>
+    <input id="auth-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')${isNew?'authSubmitNewPin()':'authSubmitPin()'}">
+    ${isNew?`<input id="auth-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Gjenta PIN" autocomplete="off" style="width:100%;margin-top:.5rem;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')authSubmitNewPin()">`:''}
+    <button onclick="${isNew?'authSubmitNewPin()':'authSubmitPin()'}" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${isNew?'Registrer':'Logg inn'}</button>
+    <div onclick="authShowNameScreen()" style="text-align:center;font-size:11px;color:#888;margin-top:.6rem;cursor:pointer;text-decoration:underline">Feil navn? Start på nytt</div>
+    <div id="auth-error" style="text-align:center;font-size:12px;color:#993C1D;margin-top:.5rem"></div>`;
+}
+function authShowNameScreen(){
+  window._authName = null;
+  document.getElementById('auth-body').innerHTML = authNameScreenHTML();
+  document.getElementById('auth-name').focus();
+}
+async function authSubmitName(){
+  const input = document.getElementById('auth-name');
+  const name = input ? input.value.trim() : '';
+  const errEl = document.getElementById('auth-error');
+  if(!name){ if(errEl) errEl.textContent = 'Skriv inn et navn.'; return; }
+  if(errEl) errEl.textContent = 'Sjekker...';
+  try{
+    const res = await fetch('/api/users?name='+encodeURIComponent(name));
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    window._authName = name;
+    document.getElementById('auth-body').innerHTML = authPinScreenHTML(name, !data.exists);
+    const pinEl = document.getElementById('auth-pin');
+    if(pinEl) pinEl.focus();
+  }catch(e){
+    if(errEl) errEl.textContent = 'Fikk ikke kontakt — prøv igjen.';
+  }
+}
+async function authSubmitNewPin(){
+  const pin1 = document.getElementById('auth-pin').value;
+  const pin2 = document.getElementById('auth-pin2').value;
+  const errEl = document.getElementById('auth-error');
+  if(!/^\d{4}$/.test(pin1)){ if(errEl) errEl.textContent = 'PIN må være 4 siffer.'; return; }
+  if(pin1!==pin2){ if(errEl) errEl.textContent = 'PIN-kodene er ikke like.'; return; }
+  if(errEl) errEl.textContent = 'Registrerer...';
+  try{
+    const res = await fetch('/api/users', {
+      method: 'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name: window._authName, pin: pin1})
+    });
+    const data = await res.json();
+    if(!res.ok){ if(errEl) errEl.textContent = data.error || 'Kunne ikke registrere.'; return; }
+    authComplete(data.id, data.name);
+  }catch(e){
+    if(errEl) errEl.textContent = 'Fikk ikke kontakt — prøv igjen.';
+  }
+}
+async function authSubmitPin(){
+  const pin = document.getElementById('auth-pin').value;
+  const errEl = document.getElementById('auth-error');
+  if(!/^\d{4}$/.test(pin)){ if(errEl) errEl.textContent = 'PIN må være 4 siffer.'; return; }
+  if(errEl) errEl.textContent = 'Sjekker...';
+  try{
+    const res = await fetch('/api/users/verify', {
+      method: 'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name: window._authName, pin})
+    });
+    const data = await res.json();
+    if(!data.ok){ if(errEl) errEl.textContent = 'Feil PIN.'; return; }
+    authComplete(data.id, data.name);
+  }catch(e){
+    if(errEl) errEl.textContent = 'Fikk ikke kontakt — prøv igjen.';
+  }
+}
+function authComplete(id, name){
+  try{ localStorage.setItem('pizzaUser', JSON.stringify({id,name})); }catch(e){}
+  document.getElementById('auth-overlay').style.display = 'none';
+}
+function authLogout(){
+  try{ localStorage.removeItem('pizzaUser'); }catch(e){}
+  location.reload();
+}
+function checkAuthOnLoad(){
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem('pizzaUser')); }catch(e){}
+  if(saved && saved.id && saved.name){
+    document.getElementById('auth-overlay').style.display = 'none';
+  }else{
+    document.getElementById('auth-body').innerHTML = authNameScreenHTML();
+  }
+}
+
+// ===== ADMIN-VISNING (passordbeskyttet) =====
+function openAdminLogin(){
+  const pw = prompt('Admin-passord:');
+  if(pw===null) return;
+  loadAdminView(pw);
+}
+async function loadAdminView(password){
+  try{
+    const res = await fetch('/api/users/admin?password='+encodeURIComponent(password));
+    if(res.status===401){ alert('Feil passord.'); return; }
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    window._adminPassword = password;
+    renderAdminModal(data.users || []);
+    document.getElementById('admin-modal').style.display = 'flex';
+  }catch(e){
+    alert('Fikk ikke kontakt med serveren.');
+  }
+}
+function renderAdminModal(users){
+  const body = document.getElementById('admin-modal-body');
+  if(!users.length){ body.innerHTML = '<p style="color:#999;font-size:13px">Ingen registrerte brukere ennå.</p>'; return; }
+  body.innerHTML = users.map(u=>{
+    let created=''; try{ created=fDT(new Date(u.createdAt)); }catch(e){}
+    let lastLogin=''; try{ lastLogin=fDT(new Date(u.lastLoginAt)); }catch(e){}
+    return `<div style="border:1px solid #e0ddd8;border-radius:8px;padding:.6rem .7rem;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="min-width:0">
+          <div style="font-size:13px;font-weight:600;color:#1a1a1a">${escH(u.name)}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">Registrert: ${created} · Sist inne: ${lastLogin}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="adminResetPin('${u.id}','${escAttr(u.name)}')" style="padding:5px 9px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:11px;cursor:pointer">Ny PIN</button>
+          <button onclick="adminDeleteUser('${u.id}','${escAttr(u.name)}')" style="padding:5px 9px;border:1px solid #e0ddd8;border-radius:6px;background:#fff;color:#993C1D;font-size:11px;cursor:pointer">Slett</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function adminResetPin(id, name){
+  const newPin = prompt('Ny 4-sifret PIN for '+name+':');
+  if(newPin===null) return;
+  if(!/^\d{4}$/.test(newPin)){ alert('PIN må være nøyaktig 4 siffer.'); return; }
+  try{
+    const res = await fetch('/api/users/admin/'+id, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: window._adminPassword, newPin})
+    });
+    if(!res.ok){ alert('Kunne ikke sette ny PIN.'); return; }
+    alert('Ny PIN for '+name+': '+newPin);
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); }
+}
+async function adminDeleteUser(id, name){
+  if(!confirm('Slette brukeren "'+name+'" permanent?')) return;
+  try{
+    const res = await fetch('/api/users/admin/'+id+'?password='+encodeURIComponent(window._adminPassword), {method:'DELETE'});
+    if(!res.ok){ alert('Kunne ikke slette bruker.'); return; }
+    loadAdminView(window._adminPassword);
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); }
+}
+function closeAdminModal(){
+  document.getElementById('admin-modal').style.display = 'none';
+}
+
+checkAuthOnLoad();
+
 function initLayout(){
   if(window._layoutInit)return;window._layoutInit=true;
   let saved=null;try{saved=localStorage.getItem('pizzaLayout');}catch(e){}
@@ -1786,7 +2123,7 @@ function mobMethodCards(){
   [{v:'standard',t:'Standard',s:'Direkte + kjøleskapsheving',hc:false},
    {v:'poolish',t:'Poolish',s:'Løs fordeig, 12–16t',hc:false},
    {v:'biga',t:'Biga',s:'Fast fordeig, 16–24t',hc:false},
-   {v:'hurtig',t:'Hurtigdeig',s:'2–10 timer, uten kjøleskapsheving',hc:true},
+   {v:'hurtig',t:'Hurtigdeig',s:'2–16 timer, romtemperatur',hc:true},
    {v:'kveld',t:'Kveldsdeig',s:'5–24 timer i kjøleskap',hc:true}
   ].forEach(({v,t,s,hc})=>{
     const el=document.createElement('div');
@@ -1883,7 +2220,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.butter?`<div class="mob-rrow"><span>Smør</span><span class="mob-rval">${r2.butter}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
     return;
@@ -1892,7 +2229,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='kveld'){
     const {ya,steps}=kveldSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),p=pc();
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${r2.water}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.butter?`<div class="mob-rrow"><span>Smør</span><span class="mob-rval">${r2.butter}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Kjøleskap</span><span class="mob-rval">${S.kveldH}t</span></div></div></div>`;
     return;
@@ -1902,7 +2239,7 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
@@ -1936,6 +2273,38 @@ async function fetchBakes(){
   }
 }
 
+async function toggleFavorite(id, currentlyFavorite){
+  try{
+    const res = await fetch('/api/bakes/'+id, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({favorite: !currentlyFavorite})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }catch(e){
+    console.error('Kunne ikke oppdatere favoritt:', e);
+  }
+  refreshBaksterPanels();
+  syncFavoriteButton();
+}
+
+async function syncFavoriteButton(){
+  const bakes = await fetchBakes();
+  const fav = bakes ? bakes.find(b=>b.favorite) : null;
+  ['fav-btn','mob-fav-btn'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = fav ? 'flex' : 'none';
+  });
+  window._favoriteId = fav ? fav.id : null;
+}
+
+function openFavorite(){
+  if(window._favoriteId){
+    openBake(window._favoriteId);
+    closeDeigerModal();
+  }
+}
+
 function bakeMetaLine(b){
   const tn = {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago'}[b.config.type] || b.config.type;
   const mn = {standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig'}[b.config.method] || b.config.method;
@@ -1947,12 +2316,16 @@ function bakeMetaLine(b){
 
 function bakeCardHTML(b, mob){
   const pad = mob ? '.6rem .7rem' : '.7rem .9rem';
+  const starBtn = `<span onclick="event.stopPropagation();toggleFavorite('${b.id}',${!!b.favorite})" title="${b.favorite?'Fjern som favoritt':'Sett som favoritt'}" style="cursor:pointer;font-size:16px;color:${b.favorite?'#EFAB27':'#d0cdc8'};flex-shrink:0;line-height:1">${b.favorite?'★':'☆'}</span>`;
   if(b.status==='active'){
-    return `<div style="border:1px solid #e0ddd8;border-radius:10px;padding:${pad};margin-bottom:8px;background:#fff">
+    return `<div style="border:1px solid ${b.favorite?'#EFAB27':'#e0ddd8'};border-radius:10px;padding:${pad};margin-bottom:8px;background:#fff">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="min-width:0">
-          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
-          <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)}</div>
+        <div style="min-width:0;display:flex;gap:6px;align-items:flex-start">
+          ${starBtn}
+          <div>
+            <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
+            <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)}</div>
+          </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
           <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;cursor:pointer">Åpne</button>
@@ -1962,12 +2335,15 @@ function bakeCardHTML(b, mob){
     </div>`;
   }
   const finDt = b.finishedAt ? (()=>{try{return fDT(new Date(b.finishedAt));}catch(e){return '';}})() : '';
-  return `<div style="border:1px solid #e0ddd8;border-radius:10px;padding:${pad};margin-bottom:8px;background:#faf9f6;opacity:.9">
+  return `<div style="border:1px solid ${b.favorite?'#EFAB27':'#e0ddd8'};border-radius:10px;padding:${pad};margin-bottom:8px;background:#faf9f6;opacity:.9">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <div style="min-width:0">
-        <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
-        <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)} · Ferdig: ${finDt}</div>
-        ${b.note?`<div style="font-size:12px;color:#1a1a1a;margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>`:''}
+      <div style="min-width:0;display:flex;gap:6px;align-items:flex-start">
+        ${starBtn}
+        <div>
+          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)} · Ferdig: ${finDt}</div>
+          ${b.note?`<div style="font-size:12px;color:#1a1a1a;margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>`:''}
+        </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #d0cdc8;border-radius:8px;background:#fff;color:#555;font-size:11px;cursor:pointer">Se</button>
@@ -2046,6 +2422,7 @@ async function saveBake(){
     }
     syncSaveBakeLabel();
     refreshDeigerBanner();
+  syncFavoriteButton();
   }catch(e){
     alert('Kunne ikke lagre deig. Sjekk nettforbindelsen og at Netlify-funksjonen er koblet til.\n('+e.message+')');
   }
@@ -2237,6 +2614,7 @@ async function finishBakePrompt(id){
     refreshBaksterPanels();
     refreshNotesPanels();
     refreshDeigerBanner();
+  syncFavoriteButton();
   }catch(e){
     alert('Kunne ikke merke deigen som ferdig. ('+e.message+')');
   }
@@ -2251,6 +2629,7 @@ async function deleteBakeConfirm(id){
     refreshBaksterPanels();
     refreshNotesPanels();
     refreshDeigerBanner();
+  syncFavoriteButton();
   }catch(e){
     alert('Kunne ikke slette deigen. ('+e.message+')');
   }
@@ -2264,6 +2643,7 @@ if(document.readyState==='complete'||document.readyState==='interactive'){
   initLayout();
 }
 refreshDeigerBanner();
+  syncFavoriteButton();
 function firstInteractionCheck(e){
   if(!document.body.classList.contains('pre-interact')) return;
   if(e.target && e.target.closest && (e.target.closest('.sb') || e.target.closest('#mob-settings'))){
@@ -2286,6 +2666,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <button class="mob-icon-btn" id="mob-fontsize-btn" onclick="cycleFontSize()" title="Endre skriftstørrelse" style="font-weight:700">Aa</button>
       <button class="mob-icon-btn" id="mob-active-deiger-btn" onclick="jumpToDeiger()" title="Mine deiger" style="display:none;position:relative">🍽️<span id="mob-active-deiger-count" style="position:absolute;top:-4px;right:-4px;background:#1D9E75;color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;line-height:14px;min-width:14px;text-align:center">0</span></button>
       <button class="mob-icon-btn" onclick="doReset()" title="Nullstill">↺</button>
+      <button class="mob-icon-btn" id="mob-fav-btn" onclick="openFavorite()" title="Åpne din favorittdeig" style="display:none;color:#8a5a00;border-color:#EFAB27;background:#FFF8EA">★</button>
       <button class="layout-toggle mob-style" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
     </div>
   </div>
@@ -2403,6 +2784,10 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:12px;color:#888">Pizzaplanlegger <b id="mob-footer-version" style="color:#555"></b></span>
       <span style="font-size:12px;color:#1D9E75;font-weight:600" onclick="openChangelogModal()">Hva er nytt?</span>
+    </div>
+    <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:#993C1D;font-weight:600" onclick="authLogout()">Logg ut</span>
+      <span style="font-size:12px;color:#888;font-weight:600" onclick="openFeedbackModal()">💬 Gi tilbakemelding</span>
     </div>
 
     <div style="height:80px"></div>
