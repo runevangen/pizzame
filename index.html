@@ -266,6 +266,10 @@ body.fs-xlarge{zoom:1.3}
 </style>
 </head>
 <body class="pre-interact">
+<div id="loading-overlay" style="position:fixed;inset:0;background:#f5f4f0;z-index:600;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.7rem">
+  <div style="font-size:36px">🍕</div>
+  <div style="font-size:13px;color:#888">Laster...</div>
+</div>
 <div id="auth-overlay" style="position:fixed;inset:0;background:#f5f4f0;z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem">
   <div style="background:#fff;border-radius:14px;padding:1.5rem 1.3rem;max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.15)">
     <div style="text-align:center;font-size:32px;margin-bottom:.3rem">🍕</div>
@@ -331,6 +335,12 @@ body.fs-xlarge{zoom:1.3}
     </div>
   </div>
 </div>
+<div id="formler-modal" class="modal-overlay" onclick="if(event.target===this)closeFormlerModal()">
+  <div class="modal-box" style="max-width:720px">
+    <div class="modal-head"><b>📊 Formler</b><button class="modal-x" onclick="closeFormlerModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="formler-modal-body"></div>
+  </div>
+</div>
 <div class="app">
 <div class="sb">
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -351,6 +361,7 @@ body.fs-xlarge{zoom:1.3}
     <span id="active-deiger-count" class="cnt" style="display:none">0</span>
   </div>
   <div class="sidenav-item" onclick="openFeedbackModal()">💬 Feedback</div>
+  <div class="sidenav-item" onclick="openFormlerModal()">📊 Formler</div>
   <div class="sidenav-item" onclick="openAdminLogin()">🔒 Admin</div>
 </div>
 
@@ -438,6 +449,7 @@ body.fs-xlarge{zoom:1.3}
       <span class="pill" data-v="couco" title="13% protein, W300-340. 16–54t fermentering.">Caputo Couco</span>
       <span class="pill" data-v="manitoba" title="12,9-14,5% protein, W340-390. 24–78t fermentering.">Caputo Manitoba Oro</span>
     </div>
+    <div id="gmel-info" style="margin-top:5px;font-size:11px;color:#888;background:#f0ede8;border-radius:6px;padding:5px 8px;line-height:1.4"></div>
   </div>
 
   <div id="govn-wrap"><div class="lbl">Ovntype</div>
@@ -500,14 +512,14 @@ const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5
 // romtemp) — disse tallene er et fornuftig midtpunkt, ikke en eksakt fasit. Juster ved behov.
 const KOPTS=[{h:5,b:'Kveld til morgen'},{h:8,b:'Anbefalt'},{h:10,b:'Over natta'},{h:12,b:'Lang natt'},{h:15,b:'Kveld til sen kveld'},{h:18,b:'Lang kveld'},{h:24,b:'Ekte kveld-til-kveld'}];
 const KCOLDMULT={5:2.3,8:1.9,10:1.65,12:1.5,15:1.35,18:1.2,24:1.0};
-const HREC={napoletana:65,newyork:63,langpanne:70,chicago:55,ingenelting:75};
+let HREC={napoletana:65,newyork:63,langpanne:70,chicago:55,ingenelting:75};
 const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:48,mx:60},ingenelting:{mn:70,mx:82}};
-const BSALT={napoletana:2.8,newyork:2.0,langpanne:2.0,chicago:2.0,ingenelting:2.0};
-const BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0,ingenelting:6.0};
+let BSALT={napoletana:2.8,newyork:2.0,langpanne:2.0,chicago:2.0,ingenelting:2.0};
+let BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0,ingenelting:6.0};
 // Ekte Chicago deep dish bruker smør i tillegg til olje for den kjente flakete skorpen —
 // flere anerkjente oppskrifter (King Arthur, Sally's Baking) lander på 15-22% totalt fett.
 const BBUTTER={napoletana:0,newyork:0,langpanne:0,chicago:12.0,ingenelting:0};
-const BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:0.2};
+let BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:0.2};
 // Skalert ned ~25% fra opprinnelig kurve — AVPN-kilder antyder enda lavere gjærmengde ved
 // lange kaldhevinger (0,1-0,2% fersk gjær for 48-72t), men vi holder oss til en mer praktisk
 // mellomting som ikke krever en presisjonsvekt for hjemmebakere. Samme prinsipp som Kveldsdeig.
@@ -525,6 +537,17 @@ const MELTYPER=[
   {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',ferm:{mn:16,mx:54}},
   {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',ferm:{mn:24,mx:78}}
 ];
+// Piller viser bare navn — egenskapene (protein/styrke/vann/gjæring) må vises et sted som
+// fungerer på touch-skjerm, siden hover-tekst (title=) er usynlig på mobil.
+function updateMeltypeInfo(){
+  const flour = MELTYPER.find(m=>m.v===S.meltype);
+  if(!flour) return;
+  const txt = `<b>${escH(flour.t)}</b> · ${flour.protein} protein${flour.w!=='–'?` · W${flour.w}`:''} · ${flour.hydro} hydrering · ${flour.ferm.mn}–${flour.ferm.mx}t fermentering`;
+  ['gmel-info','mob-gmel-info'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML = txt;
+  });
+}
 function tf(){
   const pts=[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]];
   const t=S.temp;
@@ -633,7 +656,8 @@ function applyMobTypeUI(){
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
 pgrp('ggj','gjaer');
 pgrp('gkm','kjokkenmaskin');
-pgrp('gmel','meltype');
+pgrp('gmel','meltype',updateMeltypeInfo);
+updateMeltypeInfo();
 pgrp('govn','oven');
 mCards();buildHrows();buildKrows();
 
@@ -685,7 +709,8 @@ function doReset(){
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
   document.getElementById('csl').value=3;uCold(3);
   document.getElementById('tsl').value=22;S.temp=22;uTempUI();
-  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('gmel','meltype');pgrp('govn','oven');
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('gmel','meltype',updateMeltypeInfo);pgrp('govn','oven');
+  updateMeltypeInfo();
   mCards();
   document.getElementById('hsub').style.display='none';
   document.getElementById('cwrap').style.display='block';
@@ -1471,6 +1496,23 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '3.8',
+    d: 'juli 2026',
+    changes: [
+      'Ny "📊 Formler"-side i sidenav — viser salt/olje/gjær/hydrering for alle pizzatyper. Åpen for alle å se, redigerbar for admin.',
+      'Admin kan nå endre disse kjernetallene direkte i appen, uten å be meg redigere kode og deploye på nytt. Forrige verdi vises alltid ved siden av, med en "↺ angre"-knapp.',
+      'Vanlige brukere kan foreslå en ny verdi for et tall (med begrunnelse) — admin ser innsendte forslag i Formler-siden og kan bruke eller avvise dem med ett trykk.',
+      'Appen venter nå på å hente disse tallene fra serveren før noe vises ved oppstart, slik at ingen noensinne ser utdaterte tall.'
+    ]
+  },
+  {
+    v: '3.7',
+    d: 'juli 2026',
+    changes: [
+      'Meltype viser nå protein, styrke (W), hydrering og fermenteringsvindu i en alltid-synlig infolinje under pillene — fungerer på mobil, der den gamle hover-teksten aldri var synlig i utgangspunktet siden touch-skjermer ikke har hover.'
+    ]
+  },
+  {
     v: '3.6',
     d: 'juli 2026',
     changes: [
@@ -2126,6 +2168,196 @@ function closeAdminModal(){
   document.getElementById('admin-modal').style.display = 'none';
 }
 
+// ===== FORMLER (kjernetall salt/olje/gjær/hydrering, redigerbart av admin) =====
+const FORMLER_FIELD_LABELS = {salt:'Salt', oil:'Olje', yeast:'Gjær', hydro:'Hydrering'};
+const FORMLER_TYPE_LABELS = {napoletana:'Napoletansk', newyork:'New York', chicago:'Chicago', langpanne:'Langpanne', ingenelting:'IngenElting'};
+
+async function openFormlerModal(){
+  document.getElementById('formler-modal').style.display = 'flex';
+  document.getElementById('formler-modal-body').innerHTML = '<p style="color:#999;font-size:12px">Laster...</p>';
+  await refreshFormlerView();
+}
+function closeFormlerModal(){
+  document.getElementById('formler-modal').style.display = 'none';
+}
+async function refreshFormlerView(){
+  try{
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    window._configValues = data.values;
+    applyConfigValues(data.values);
+    document.getElementById('formler-modal-body').innerHTML = buildFormlerHTML(data.values);
+  }catch(e){
+    document.getElementById('formler-modal-body').innerHTML = '<p style="color:#993C1D;font-size:12px">Kunne ikke hente tallene.</p>';
+  }
+}
+function buildFormlerHTML(values){
+  const isAdmin = !!window._adminPassword;
+  const types = Object.keys(FORMLER_TYPE_LABELS);
+  const fields = Object.keys(FORMLER_FIELD_LABELS);
+  let rows = types.map(t=>{
+    const cells = fields.map(f=>{
+      const entry = (values[t] && values[t][f]) || {current:0, previous:null};
+      const prevHtml = entry.previous!==null && entry.previous!==undefined
+        ? `<div style="font-size:9px;color:#aaa;margin-top:1px">forrige: ${entry.previous}${isAdmin?` <span onclick="formlerRevert('${t}','${f}')" style="color:#1D9E75;cursor:pointer;text-decoration:underline">↺ angre</span>`:''}</div>`
+        : '';
+      return `<td style="padding:.4rem .5rem;text-align:center;border-bottom:1px solid #f0ede8">
+        <div style="font-size:13px;font-weight:600;color:#1a1a1a">${entry.current}${f==='hydro'||f==='salt'||f==='oil'||f==='yeast'?'%':''}${isAdmin?` <span onclick="formlerEdit('${t}','${f}',${entry.current})" style="cursor:pointer;color:#1D9E75;font-size:11px">✏️</span>`:''}</div>
+        ${prevHtml}
+      </td>`;
+    }).join('');
+    return `<tr><td style="padding:.4rem .5rem;font-size:12px;font-weight:600;color:#1a1a1a;border-bottom:1px solid #f0ede8">${FORMLER_TYPE_LABELS[t]}</td>${cells}</tr>`;
+  }).join('');
+  const header = `<tr>${['Pizzatype',...fields.map(f=>FORMLER_FIELD_LABELS[f])].map(h=>`<th style="padding:.4rem .5rem;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#888;text-align:${h==='Pizzatype'?'left':'center'}">${h}</th>`).join('')}</tr>`;
+  let html = `
+    <div style="font-size:12px;color:#666;margin-bottom:.8rem;line-height:1.5">Kjernetallene bak beregningene — salt/olje/gjær som prosent av melvekt, og anbefalt hydrering. ${isAdmin?'Du er logget inn som admin — trykk ✏️ for å endre en verdi.':'Synlig for alle. Foreslå gjerne en endring nederst hvis du mener noe bør justeres.'}</div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${header}${rows}</table></div>`;
+  if(!isAdmin){
+    html += `<div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
+      <span onclick="formlerToggleSuggest()" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">💡 Foreslå endring</span>
+      <div id="formler-suggest-wrap" style="display:none;margin-top:.7rem"></div>
+      <div style="margin-top:.7rem"><span onclick="formlerAdminLoginPrompt()" style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline">🔒 Logg inn som admin</span></div>
+    </div>`;
+  }else{
+    html += `<div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
+      <span onclick="formlerToggleSuggestions()" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">📋 Se innsendte forslag</span>
+      <div id="formler-suggestions-wrap" style="display:none;margin-top:.7rem"></div>
+    </div>`;
+  }
+  return html;
+}
+async function formlerEdit(type, field, currentVal){
+  const label = FORMLER_TYPE_LABELS[type]+' — '+FORMLER_FIELD_LABELS[field];
+  const input = prompt('Ny verdi for '+label+' (nåværende: '+currentVal+'):', currentVal);
+  if(input===null) return;
+  const num = Number(input.replace(',','.'));
+  if(!Number.isFinite(num)){ alert('Ugyldig tall.'); return; }
+  try{
+    const res = await fetch('/api/config/admin', {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: window._adminPassword, type, field, newValue: num})
+    });
+    if(!res.ok){ alert('Kunne ikke lagre — feil passord?'); return; }
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); return; }
+  refreshFormlerView();
+}
+async function formlerRevert(type, field){
+  if(!confirm('Angre til forrige verdi for '+FORMLER_TYPE_LABELS[type]+' — '+FORMLER_FIELD_LABELS[field]+'?')) return;
+  try{
+    const res = await fetch('/api/config/admin/revert', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: window._adminPassword, type, field})
+    });
+    if(!res.ok){ alert('Kunne ikke angre.'); return; }
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); return; }
+  refreshFormlerView();
+}
+async function formlerAdminLoginPrompt(){
+  const pw = prompt('Admin-passord:');
+  if(pw===null) return;
+  try{
+    const res = await fetch('/api/config/suggestions?password='+encodeURIComponent(pw));
+    if(res.status===401){ alert('Feil passord.'); return; }
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); return; }
+  window._adminPassword = pw;
+  refreshFormlerView();
+}
+function formlerToggleSuggest(){
+  const wrap = document.getElementById('formler-suggest-wrap');
+  if(!wrap) return;
+  if(wrap.style.display==='block'){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  const types = Object.keys(FORMLER_TYPE_LABELS);
+  const fields = Object.keys(FORMLER_FIELD_LABELS);
+  wrap.innerHTML = `
+    <select id="formler-sug-type" onchange="formlerUpdateSuggestCurrent()" style="padding:6px;border:1px solid #d0cdc8;border-radius:6px;font-size:12px;margin-right:6px">
+      ${types.map(t=>`<option value="${t}">${FORMLER_TYPE_LABELS[t]}</option>`).join('')}
+    </select>
+    <select id="formler-sug-field" onchange="formlerUpdateSuggestCurrent()" style="padding:6px;border:1px solid #d0cdc8;border-radius:6px;font-size:12px">
+      ${fields.map(f=>`<option value="${f}">${FORMLER_FIELD_LABELS[f]}</option>`).join('')}
+    </select>
+    <div style="font-size:11px;color:#888;margin:.5rem 0" id="formler-sug-current"></div>
+    <input id="formler-sug-value" type="text" placeholder="Foreslått ny verdi" style="width:100%;padding:8px;border:1px solid #d0cdc8;border-radius:6px;font-size:13px;box-sizing:border-box;margin-bottom:.5rem">
+    <textarea id="formler-sug-reason" placeholder="Kort begrunnelse (valgfritt)" style="width:100%;min-height:60px;padding:8px;border:1px solid #d0cdc8;border-radius:6px;font-size:13px;box-sizing:border-box;resize:vertical"></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:.5rem">
+      <button onclick="submitConfigSuggestion()" style="padding:7px 12px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Send forslag</button>
+      <span id="formler-sug-status" style="font-size:12px;color:#888"></span>
+    </div>`;
+  formlerUpdateSuggestCurrent();
+}
+function formlerUpdateSuggestCurrent(){
+  const type = document.getElementById('formler-sug-type').value;
+  const field = document.getElementById('formler-sug-field').value;
+  const entry = (window._configValues && window._configValues[type] && window._configValues[type][field]) || {current:'?'};
+  document.getElementById('formler-sug-current').textContent = 'Dagens verdi: '+entry.current;
+}
+async function submitConfigSuggestion(){
+  const type = document.getElementById('formler-sug-type').value;
+  const field = document.getElementById('formler-sug-field').value;
+  const valInput = document.getElementById('formler-sug-value').value;
+  const reason = document.getElementById('formler-sug-reason').value;
+  const statusEl = document.getElementById('formler-sug-status');
+  const num = Number(valInput.replace(',','.'));
+  if(!Number.isFinite(num)){ if(statusEl) statusEl.textContent = 'Skriv et gyldig tall.'; return; }
+  const entry = (window._configValues && window._configValues[type] && window._configValues[type][field]) || {current:null};
+  if(statusEl) statusEl.textContent = 'Sender...';
+  try{
+    const res = await fetch('/api/config/suggest', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({type, field, currentValue: entry.current, suggestedValue: num, reasoning: reason})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(statusEl) statusEl.textContent = '✓ Takk! Forslaget er sendt.';
+    document.getElementById('formler-sug-value').value='';
+    document.getElementById('formler-sug-reason').value='';
+  }catch(e){
+    if(statusEl) statusEl.textContent = 'Kunne ikke sende — prøv igjen.';
+  }
+}
+async function formlerToggleSuggestions(){
+  const wrap = document.getElementById('formler-suggestions-wrap');
+  if(!wrap) return;
+  if(wrap.style.display==='block'){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  await loadSuggestionsIntoWrap(wrap);
+}
+async function loadSuggestionsIntoWrap(wrap){
+  wrap.innerHTML = '<p style="color:#999;font-size:12px">Laster...</p>';
+  try{
+    const res = await fetch('/api/config/suggestions?password='+encodeURIComponent(window._adminPassword));
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const items = (data.suggestions||[]).filter(s=>s.status==='pending');
+    if(!items.length){ wrap.innerHTML = '<p style="color:#999;font-size:12px">Ingen ventende forslag.</p>'; return; }
+    wrap.innerHTML = items.map(s=>{
+      let dt=''; try{ dt=fDT(new Date(s.createdAt)); }catch(e){}
+      return `<div style="border:1px solid #e0ddd8;border-radius:8px;padding:.55rem .7rem;margin-bottom:6px">
+        <div style="font-size:12px;color:#1a1a1a"><b>${escH(FORMLER_TYPE_LABELS[s.type]||s.type)} — ${escH(FORMLER_FIELD_LABELS[s.field]||s.field)}</b>: ${escH(String(s.currentValue))} → <b>${escH(String(s.suggestedValue))}</b></div>
+        ${s.reasoning?`<div style="font-size:11px;color:#666;margin-top:3px;white-space:pre-wrap">${escH(s.reasoning)}</div>`:''}
+        <div style="font-size:10px;color:#aaa;margin-top:3px">${dt}</div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button onclick="formlerHandleSuggestion('${s.id}','applied')" style="padding:4px 9px;border:1px solid #1D9E75;border-radius:6px;background:#1D9E75;color:#fff;font-size:11px;cursor:pointer">Bruk forslag</button>
+          <button onclick="formlerHandleSuggestion('${s.id}','dismissed')" style="padding:4px 9px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:11px;cursor:pointer">Avvis</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    wrap.innerHTML = '<p style="color:#993C1D;font-size:12px">Kunne ikke laste forslag.</p>';
+  }
+}
+async function formlerHandleSuggestion(id, status){
+  try{
+    await fetch('/api/config/suggestions/admin/'+id, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: window._adminPassword, status})
+    });
+  }catch(e){}
+  await refreshFormlerView();
+  const wrap=document.getElementById('formler-suggestions-wrap');
+  if(wrap){ wrap.style.display='block'; await loadSuggestionsIntoWrap(wrap); }
+}
+
 function toggleAdvanced(){
   const sec = document.getElementById('adv-section');
   const arrow = document.getElementById('adv-arrow');
@@ -2158,8 +2390,38 @@ function maybeShowGuideOnLoad(){
   if(!seen) openGuideModal();
 }
 
-checkAuthOnLoad();
-initAdvancedState();
+// ===== KJERNETALL FRA SERVER (salt/olje/gjær/hydrering per pizzatype) =====
+// Venter med å vise noe som helst til disse er hentet, slik at ingen noensinne ser
+// gamle/feil tall. De hardkodede verdiene over fungerer som reserve hvis hentingen feiler.
+window._configValues = null;
+async function loadConfigThenStart(){
+  try{
+    const res = await fetch('/api/config');
+    if(res.ok){
+      const data = await res.json();
+      window._configValues = data.values;
+      applyConfigValues(data.values);
+    }
+  }catch(e){
+    console.error('Kunne ikke hente config — bruker innebygde standardverdier.', e);
+  }
+  document.getElementById('loading-overlay').style.display = 'none';
+  checkAuthOnLoad();
+  initAdvancedState();
+}
+function applyConfigValues(values){
+  if(!values) return;
+  Object.keys(values).forEach(type=>{
+    const v = values[type];
+    if(!v) return;
+    if(BSALT[type]!==undefined && v.salt!==undefined && v.salt.current!==undefined) BSALT[type]=v.salt.current;
+    if(BOIL[type]!==undefined && v.oil!==undefined && v.oil.current!==undefined) BOIL[type]=v.oil.current;
+    if(BYEAST[type]!==undefined && v.yeast!==undefined && v.yeast.current!==undefined) BYEAST[type]=v.yeast.current;
+    if(HREC[type]!==undefined && v.hydro!==undefined && v.hydro.current!==undefined) HREC[type]=v.hydro.current;
+  });
+}
+
+loadConfigThenStart();
 
 function initLayout(){
   if(window._layoutInit)return;window._layoutInit=true;
@@ -2184,6 +2446,7 @@ function syncMobControls(){
   mobPillGroup('mob-ggj','gjaer');
   mobPillGroup('mob-gkm','kjokkenmaskin');
   mobPillGroup('mob-gmel','meltype');
+  updateMeltypeInfo();
   mobPillGroup('mob-govn','oven');
   mobMethodCards();
   mobBuildHrows();
@@ -2229,6 +2492,7 @@ function mobPillGroup(id,key){
       mobPillGroup(id,key);
       if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
       if(key==='type' && changed) showPizzaToast(S.type);
+      if(key==='meltype') updateMeltypeInfo();
       mobGen();
     };
     wrap.appendChild(el);
@@ -2680,7 +2944,8 @@ function syncDesktopControls(){
   const cdisp=document.getElementById('cdisp');if(cdisp)cdisp.textContent=ct;
   const tsl=document.getElementById('tsl');if(tsl)tsl.value=S.temp;
   uTempUI();
-  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('gmel','meltype');pgrp('govn','oven');
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('gmel','meltype',updateMeltypeInfo);pgrp('govn','oven');
+  updateMeltypeInfo();
   mCards();buildHrows();buildKrows();
   applyTypeUI();
 }
@@ -2854,6 +3119,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div class="mob-section-lbl">Meltype</div>
     <div class="mob-pill-wrap" id="mob-gmel"></div>
+    <div id="mob-gmel-info" style="margin:2px 1rem 8px;font-size:12px;color:#888;background:#f0ede8;border-radius:6px;padding:6px 9px;line-height:1.4"></div>
 
     <div id="mob-govn-wrap">
       <div class="mob-section-lbl">Ovntype</div>
