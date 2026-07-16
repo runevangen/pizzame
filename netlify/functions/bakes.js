@@ -4,7 +4,8 @@ import { getStore } from '@netlify/blobs';
 // Ingen pålogging — åpen for alle i familie/vennegruppen som har lenken.
 // GET    /api/bakes          -> liste alle
 // POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO }
-// PATCH  /api/bakes/:id      -> merk ferdig + kommentar { note } eller gjenåpne { status:'active' }
+// PATCH  /api/bakes/:id      -> merk ferdig + kommentar { note } eller gjenåpne { status:'active' },
+//                                eller sett/fjern favoritt { favorite: true|false } (kun én favoritt om gangen)
 // DELETE /api/bakes/:id      -> slette permanent
 
 function json(status, body) {
@@ -47,6 +48,7 @@ export default async (req, context) => {
         id,
         name: String(body.name).slice(0, 60),
         status: 'active',
+        favorite: false,
         config: body.config,
         anchorMode: body.anchorMode === 'end' ? 'end' : 'start',
         anchorISO: body.anchorISO,
@@ -79,6 +81,21 @@ export default async (req, context) => {
       if (body.anchorMode) updated.anchorMode = body.anchorMode === 'end' ? 'end' : 'start';
       if (typeof body.anchorISO === 'string') updated.anchorISO = body.anchorISO;
       if (Array.isArray(body.checkedSteps)) updated.checkedSteps = body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50);
+      if (typeof body.favorite === 'boolean') {
+        updated.favorite = body.favorite;
+        // Kun én favoritt om gangen — fjern favoritt-merket fra alle andre bakster.
+        if (body.favorite === true) {
+          const { blobs } = await store.list();
+          await Promise.all(blobs.map(async (b) => {
+            if (b.key === id) return;
+            const other = await store.get(b.key, { type: 'json' });
+            if (other && other.favorite) {
+              other.favorite = false;
+              await store.setJSON(b.key, other);
+            }
+          }));
+        }
+      }
       await store.setJSON(id, updated);
       return json(200, updated);
     }
