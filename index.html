@@ -258,6 +258,8 @@ body.fs-xlarge{zoom:1.3}
 .toast-anim-wiggle{animation:toastWiggle .5s ease-in-out infinite}
 .toast-anim-bounce{animation:toastBounce .6s ease-in-out infinite}
 .toast-anim-knead{animation:toastKnead .45s ease-in-out infinite}
+.adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f0ede8;border-radius:8px;font-size:12px;font-weight:600;color:#555;cursor:pointer;margin:.6rem 0}
+.adv-toggle:hover{background:#e5e2dc}
 </style>
 </head>
 <body class="pre-interact">
@@ -279,7 +281,7 @@ body.fs-xlarge{zoom:1.3}
 </div>
 <div id="tech-modal" class="modal-overlay" onclick="if(event.target===this)closeTechModal()">
   <div class="modal-box">
-    <div class="modal-head"><b>💡 Teknikk</b><button class="modal-x" onclick="closeTechModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-head"><b>💡 Tips</b><button class="modal-x" onclick="closeTechModal()" aria-label="Lukk">✕</button></div>
     <div class="modal-body" id="tech-modal-body"></div>
 
   </div>
@@ -302,6 +304,30 @@ body.fs-xlarge{zoom:1.3}
     <div class="modal-body" id="feedback-modal-body"></div>
   </div>
 </div>
+<div id="guide-modal" class="modal-overlay" onclick="if(event.target===this)closeGuideModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>👋 Slik fungerer appen</b><button class="modal-x" onclick="closeGuideModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="guide-modal-body">
+      <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
+        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
+        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Velg pizzatype</b>Napoletansk, New York, Chicago, Langpanne eller IngenElting.</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
+        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
+        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Velg metode (valgfritt)</b>Standard fungerer fint til å begynne med — bytt senere når du vil eksperimentere.</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
+        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
+        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Sett når du vil spise</b>Appen regner bakover og viser nøyaktig når du må starte.</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:.3rem;align-items:flex-start">
+        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div>
+        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Følg tidsplanen</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
+      </div>
+      <div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) ligger bak "⚙️ Avanserte innstillinger" i sidepanelet, hvis du vil finjustere.</div>
+    </div>
+  </div>
+</div>
 <div class="app">
 <div class="sb">
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -315,7 +341,8 @@ body.fs-xlarge{zoom:1.3}
 </div>
 
 <div class="sidenav">
-  <div class="sidenav-item" onclick="openTechModal()">💡 Teknikk</div>
+  <div class="sidenav-item" onclick="openGuideModal()">❓ Guide</div>
+  <div class="sidenav-item" onclick="openTechModal()">💡 Tips</div>
   <div class="sidenav-item" onclick="openDeigerModal()">
     <span>🍽️ Deiger</span>
     <span id="active-deiger-count" class="cnt" style="display:none">0</span>
@@ -378,6 +405,12 @@ body.fs-xlarge{zoom:1.3}
     <div id="thint" class="hint"></div>
   </div>
 
+  <div class="adv-toggle" onclick="toggleAdvanced()">
+    <span>⚙️ Avanserte innstillinger</span>
+    <span id="adv-arrow">▾</span>
+  </div>
+  <div id="adv-section" style="display:none">
+
   <div><div class="lbl">Gjærtype</div>
     <div class="pills" id="ggj">
       <span class="pill on" data-v="torr" title="1g tørrgjær = 3g fersk.">Tørrgjær</span>
@@ -409,6 +442,8 @@ body.fs-xlarge{zoom:1.3}
       <span class="pill on" data-v="pizza" title="430–450°C. Leopardmønster.">Pizzaovn (430–450°C)</span>
       <span class="pill" data-v="vanlig" title="Maks 250°C med pizzastein.">Vanlig ovn (maks 250°C)</span>
     </div>
+  </div>
+
   </div>
 
   <div><div class="lbl">Visning</div>
@@ -1413,6 +1448,15 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '3.4',
+    d: 'juli 2026',
+    changes: [
+      'Gjærtype, Kjøkkenmaskin, Meltype og Ovntype er samlet bak "⚙️ Avanserte innstillinger" i sidepanelet, lukket som standard — kjernevalgene (Pizzatype, Metode, Melmengde, Planlegging) er nå det eneste en ny bruker møter først.',
+      'Ny "❓ Guide"-lenke i sidepanelet — en kort 4-stegs quickstart som viser seg automatisk første gang du logger inn, og er tilgjengelig når som helst etterpå.',
+      '"Teknikk" heter nå "Tips" — samme innhold, mindre teknisk klingende navn.'
+    ]
+  },
+  {
     v: '3.3',
     d: 'juli 2026',
     changes: [
@@ -1963,6 +2007,7 @@ async function authSubmitPin(){
 function authComplete(id, name){
   try{ localStorage.setItem('pizzaUser', JSON.stringify({id,name})); }catch(e){}
   document.getElementById('auth-overlay').style.display = 'none';
+  maybeShowGuideOnLoad();
 }
 function authLogout(){
   try{ localStorage.removeItem('pizzaUser'); }catch(e){}
@@ -1973,6 +2018,7 @@ function checkAuthOnLoad(){
   try{ saved = JSON.parse(localStorage.getItem('pizzaUser')); }catch(e){}
   if(saved && saved.id && saved.name){
     document.getElementById('auth-overlay').style.display = 'none';
+    maybeShowGuideOnLoad();
   }else{
     document.getElementById('auth-body').innerHTML = authNameScreenHTML();
   }
@@ -2042,7 +2088,40 @@ function closeAdminModal(){
   document.getElementById('admin-modal').style.display = 'none';
 }
 
+function toggleAdvanced(){
+  const sec = document.getElementById('adv-section');
+  const arrow = document.getElementById('adv-arrow');
+  const nowOpen = sec.style.display === 'none';
+  sec.style.display = nowOpen ? 'block' : 'none';
+  if(arrow) arrow.textContent = nowOpen ? '▴' : '▾';
+  try{ localStorage.setItem('pizzaAdvOpen', nowOpen ? '1' : '0'); }catch(e){}
+}
+function initAdvancedState(){
+  let open = false;
+  try{ open = localStorage.getItem('pizzaAdvOpen')==='1'; }catch(e){}
+  if(open){
+    const sec = document.getElementById('adv-section');
+    const arrow = document.getElementById('adv-arrow');
+    if(sec) sec.style.display = 'block';
+    if(arrow) arrow.textContent = '▴';
+  }
+}
+
+function openGuideModal(){
+  document.getElementById('guide-modal').style.display = 'flex';
+  try{ localStorage.setItem('pizzaGuideSeen', '1'); }catch(e){}
+}
+function closeGuideModal(){
+  document.getElementById('guide-modal').style.display = 'none';
+}
+function maybeShowGuideOnLoad(){
+  let seen = false;
+  try{ seen = localStorage.getItem('pizzaGuideSeen')==='1'; }catch(e){}
+  if(!seen) openGuideModal();
+}
+
 checkAuthOnLoad();
+initAdvancedState();
 
 function initLayout(){
   if(window._layoutInit)return;window._layoutInit=true;
@@ -2847,7 +2926,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <span aria-hidden="true">🍽️</span>Deiger
     </div>
     <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
-      <span aria-hidden="true">💡</span>Teknikk
+      <span aria-hidden="true">💡</span>Tips
     </div>
   </div>
 
