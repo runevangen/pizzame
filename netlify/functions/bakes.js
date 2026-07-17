@@ -3,9 +3,11 @@ import { getStore } from '@netlify/blobs';
 // Delt liste over aktive og ferdige bakster.
 // Ingen pålogging — åpen for alle i familie/vennegruppen som har lenken.
 // GET    /api/bakes          -> liste alle
-// POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO }
+// POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO, checkedSteps?, checkedIngredients? }
 // PATCH  /api/bakes/:id      -> merk ferdig + kommentar { note } eller gjenåpne { status:'active' },
-//                                eller sett/fjern favoritt { favorite: true|false } (kun én favoritt om gangen)
+//                                sett/fjern favoritt { favorite: true|false } (kun én favoritt om gangen),
+//                                huske avhaket steg/ingredienser { checkedSteps, checkedIngredients },
+//                                eller sette vurdering/bilde på ferdig deig { rating: 1-5|null, photo: base64-string|null }
 // DELETE /api/bakes/:id      -> slette permanent
 
 function json(status, body) {
@@ -55,7 +57,10 @@ export default async (req, context) => {
         savedAt: new Date().toISOString(),
         finishedAt: null,
         note: '',
-        checkedSteps: Array.isArray(body.checkedSteps) ? body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50) : []
+        rating: null,
+        photo: null,
+        checkedSteps: Array.isArray(body.checkedSteps) ? body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50) : [],
+        checkedIngredients: Array.isArray(body.checkedIngredients) ? body.checkedIngredients.filter(s => typeof s === 'string').slice(0, 20) : []
       };
       await store.setJSON(id, bake);
       return json(201, bake);
@@ -81,6 +86,14 @@ export default async (req, context) => {
       if (body.anchorMode) updated.anchorMode = body.anchorMode === 'end' ? 'end' : 'start';
       if (typeof body.anchorISO === 'string') updated.anchorISO = body.anchorISO;
       if (Array.isArray(body.checkedSteps)) updated.checkedSteps = body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50);
+      if (Array.isArray(body.checkedIngredients)) updated.checkedIngredients = body.checkedIngredients.filter(s => typeof s === 'string').slice(0, 20);
+      if (Number.isInteger(body.rating) && body.rating >= 1 && body.rating <= 5) updated.rating = body.rating;
+      if (body.rating === null) updated.rating = null;
+      if (typeof body.photo === 'string') {
+        if (body.photo.length > 900000) return json(400, { error: 'Bildet er for stort' });
+        updated.photo = body.photo;
+      }
+      if (body.photo === null) updated.photo = null;
       if (typeof body.favorite === 'boolean') {
         updated.favorite = body.favorite;
         // Kun én favoritt om gangen — fjern favoritt-merket fra alle andre bakster.
