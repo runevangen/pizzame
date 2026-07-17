@@ -923,7 +923,7 @@ function oD(t){
 function oT(t){
   const p=S.oven==='pizza';
   if(t==='napoletana')return p?'Pizzastein/-stål MÅ varmes minst 45 min.':'Sett rist øverst. 250°C varmluft gir best resultat.';
-  if(t==='newyork')return p?'Strekk tynt og bredt — kantene skal kunne brettes. Ikke over 350°C.':'Pizzastål gir den klassiske sprø, foldbare NY-bunnen.';
+  if(t==='newyork')return p?'Strekk tynt og bredt — kantene skal kunne brettes. 300–340°C er et godt utgangspunkt — juster opp mot 350–370°C hvis pizzaen blir for lys, ned igjen hvis den blir for mørk før bunnen er gjennomstekt.':'Pizzastål gir den klassiske sprø, foldbare NY-bunnen.';
   if(t==='langpanne')return p?'Tykkbunnet form tåler høy varme.':'Olje i formen. Forhåndstek 5 min uten fyll.';
   return p?'Jernpanne gir best varmeoverføring.':'Ost UNDER sausen — Chicago-tradisjonen.';
 }
@@ -940,7 +940,7 @@ const WHY={
   fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
   tu:'Kald deig er stiv — gluten er seig ved 4°C. 3–4 timer romtemperatur lar gluten slappe av slik at deigen strekkes uten å rive.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
-  pl:'Poolish fermenterer lenge med lite gjær. Enzymer og melkesyrebakterier bygger smak og fordøyelighet.',
+  pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
 };
 function rtW(actualMins){
@@ -1091,20 +1091,20 @@ function rawSteps(a){
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
-          ?`Ta av rullekniv og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
-          :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${Math.round(r2.yDry*0.2*100)/100}g tørrgjær. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
+          ?`Ta av rullekniv og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
+          :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
         why:WHY.pl,
         tip:S.kjokkenmaskin==='ankarsrum'
           ?'Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'
           :'La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
         desc:S.kjokkenmaskin==='ankarsrum'
-          ?`Sett rullekniv og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær etter 5 min. Øk til trinn 3–4. Elt totalt 10–12 min.`
+          ?`Sett rullekniv og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`
           :S.kjokkenmaskin==='manuell'
-          ?`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}, ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`
-          :`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Tilsett ${r2.salt}g salt og ${Math.round(r2.yDry*0.3*100)/100}g gjær etter 2–3 min. Øk til middels lav hastighet. Elt totalt 6–9 min.`,
+          ?`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`
+          :`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,
         why:'Poolishen har allerede fermentert mesteparten av deigen — resten inkorporeres effektivt uansett metode.',
-        tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gir løsere glutenstruktur. Deigtemperatur: 22–24°C.'},
+        tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,why:rtW(rt)},
       ...tailSteps(aM(rdy,20+rt))
     ];
@@ -1115,7 +1115,7 @@ function rawSteps(a){
     const rdy=aM(ba2,18*60);
     return[
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
-        desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${Math.round(r3.yDry*0.1*100)/100}g tørrgjær til klumpete, tørr konsistens. Ikke bland for mye.${langpanneHintText()}`,
+        desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${r3.yDry}g tørrgjær til klumpete, tørr konsistens — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Ikke bland for mye.${langpanneHintText()}`,
         why:WHY.bi,
         tip:'La stå 16–24 timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.'},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
@@ -1649,6 +1649,16 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '4.9',
+    d: 'juli 2026',
+    changes: [
+      'Fikset en reell feil i gjærregnskapet for Poolish og Biga — kun 50% (Poolish) og 10% (Biga) av beregnet gjærmengde ble faktisk brukt i oppskriftene, resten forsvant sporløst. All gjæren legges nå riktig i selve for-deigen (poolishen/bigaen), ingenting tilsettes i sluttblandingen — det er slik det faktisk skal gjøres.',
+      'Rettet en upresis forklaring om melkesyrebakterier i Poolish-teknikken — det er primært enzymer, gjærens egne fermenteringsprodukter og milde organiske syrer som bygger smak, ikke melkesyrebakterier (som spiller en mye større rolle i ekte surdeig).',
+      '"Poolish gir løsere glutenstruktur" er endret til riktig beskrivelse: poolish gjør deigen mer extensibel (lettere å strekke), ikke løsere.',
+      'New York-pizzaens steketemperatur er endret fra et absolutt tak ("ikke over 350°C") til et veiledende intervall med rom for justering etter egen ovn.'
+    ]
+  },
   {
     v: '4.8',
     d: 'juli 2026',
