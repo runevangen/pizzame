@@ -1650,6 +1650,13 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '4.8',
+    d: 'juli 2026',
+    changes: [
+      'Fikset en oppstartsfeil på mobil der Pizzatype og Metode kunne vises tomme når appen ble åpnet direkte på telefon (ikke via "bytt til mobil" på PC) — mobil-innholdet ligger fysisk etter hovedskriptet i selve filen, og kunne i noen tilfeller forsøke å fylles ut før den delen av siden var ferdig lastet inn. Lagt til et sikkerhetsnett som garantert fyller alt på nytt når absolutt alt er klart.'
+    ]
+  },
+  {
     v: '4.7',
     d: 'juli 2026',
     changes: [
@@ -2681,6 +2688,13 @@ async function loadConfigThenStart(){
   document.getElementById('loading-overlay').style.display = 'none';
   checkAuthOnLoad();
   initAdvancedState();
+  // Sikkerhetsnett: initLayout() kjørte allerede tidligere (før denne funksjonen var ferdig),
+  // men på det tidspunktet fantes kanskje ikke mobil-HTML-en (mob-gtype osv.) ennå i DOM-en —
+  // de ligger etter hovedskriptet i selve filen. Bestem riktig visning på nytt her, nå som
+  // absolutt alt garantert er lastet inn, og kjør den fullt ut uansett hva som skjedde før.
+  let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
+  const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
+  setLayout(targetLayout);
 }
 function applyConfigValues(values){
   if(!values) return;
