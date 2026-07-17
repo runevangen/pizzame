@@ -573,12 +573,12 @@ const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 // kryssjekket mot Maschmanns — norsk Caputo-distributør — 15. juli 2026).
 // Brukes til å varsle hvis planlagt total gjæringstid ligger utenfor melets styrke-område.
 const MELTYPER=[
-  {v:'dallari',t:'Dallari pizzamel',protein:'10,7%',w:'–',hydro:'55–60%',ferm:{mn:4,mx:8}},
-  {v:'doppio_zero',t:'Caputo Doppio Zero',protein:'11%',w:'220–230',hydro:'60–70%',ferm:{mn:6,mx:24}},
-  {v:'pizzeria',t:'Caputo Pizzeria',protein:'12,5%',w:'260–270',hydro:'60–80%',ferm:{mn:12,mx:48}},
-  {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',ferm:{mn:12,mx:48}},
-  {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',ferm:{mn:16,mx:54}},
-  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',ferm:{mn:24,mx:78}}
+  {v:'dallari',t:'Dallari pizzamel',protein:'10,7%',w:'–',hydro:'55–60%',hydroRange:{mn:55,mx:60},ferm:{mn:4,mx:8}},
+  {v:'doppio_zero',t:'Caputo Doppio Zero',protein:'11%',w:'220–230',hydro:'60–70%',hydroRange:{mn:60,mx:70},ferm:{mn:6,mx:24}},
+  {v:'pizzeria',t:'Caputo Pizzeria',protein:'12,5%',w:'260–270',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:12,mx:48}},
+  {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48}},
+  {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:16,mx:54}},
+  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:78}}
 ];
 // Piller viser bare navn — egenskapene (protein/styrke/vann/gjæring) må vises et sted som
 // fungerer på touch-skjerm, siden hover-tekst (title=) er usynlig på mobil.
@@ -1513,11 +1513,23 @@ function meltypeWarningHTML(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return '';
   const hrs=totalFermentHours();
-  if(hrs>=flour.ferm.mn && hrs<=flour.ferm.mx) return '';
-  const tooShort=hrs<flour.ferm.mn;
+  const fermOk = hrs>=flour.ferm.mn && hrs<=flour.ferm.mx;
+  const hydroOk = !flour.hydroRange || (S.hydro>=flour.hydroRange.mn && S.hydro<=flour.hydroRange.mx);
+  if(fermOk && hydroOk) return '';
+
+  const issues=[];
+  if(!fermOk){
+    const tooShort=hrs<flour.ferm.mn;
+    issues.push(`Du har planlagt ca. ${hrs} timer total gjæringstid, mens ${flour.t} er ment for ${flour.ferm.mn}–${flour.ferm.mx} timer. ${tooShort?'For kort tid gir dårlig utviklet gluten og lite smak — melet rekker ikke å bygge den strukturen den er laget for.':'For lang tid kan bryte ned glutenet mer enn det bygges — deigen kan bli slapp og vanskelig å håndtere.'} Vurder ${tooShort?'et svakere mel (f.eks. Dallari eller Doppio Zero) eller kortere hevetid':'et sterkere mel (lenger ned på listen) eller kortere hevetid'} for bedre match.`);
+  }
+  if(!hydroOk){
+    const tooLow = S.hydro<flour.hydroRange.mn;
+    issues.push(`Du har satt ${S.hydro}% hydrering, mens ${flour.t} er beregnet for ${flour.hydro} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}). ${tooLow?'Lavere hydrering enn anbefalt er ikke farlig i seg selv, men gir en fastere, tørrere deig enn melet egentlig er designet for — du utnytter ikke potensialet i det.':'Høyere hydrering enn dette melet er designet for kan gi en for løs, klissete deig som er vanskelig å håndtere, siden det ikke har nok proteinstyrke til å holde på så mye vann.'} Juster hydreringen til ${flour.hydro}, eller bytt til et mel som passer bedre med ${S.hydro}%.`);
+  }
+  const title = (!fermOk && !hydroOk) ? `${flour.t}: gjæringstid og hydrering stemmer ikke` : (!fermOk ? `${flour.t} er ${hrs<flour.ferm.mn?'ikke gjæret lenge nok':'gjæret lenger enn anbefalt'}` : `${flour.t}: hydreringen stemmer ikke med melet`);
   return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
-    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌾 ${flour.t} er ${tooShort?'ikke gjæret lenge nok':'gjæret lenger enn anbefalt'}</div>
-    <div style="font-size:12px;color:#4a2a05;line-height:1.5">Du har planlagt ca. ${hrs} timer total gjæringstid, mens ${flour.t} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}) er ment for ${flour.ferm.mn}–${flour.ferm.mx} timer. ${tooShort?'For kort tid gir dårlig utviklet gluten og lite smak — melet rekker ikke å bygge den strukturen den er laget for.':'For lang tid kan bryte ned glutenet mer enn det bygges — deigen kan bli slapp og vanskelig å håndtere.'} Vurder ${tooShort?'et svakere mel (f.eks. Dallari eller Doppio Zero) eller kortere hevetid':'et sterkere mel (lenger ned på listen) eller kortere hevetid'} for bedre match.</div>
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌾 ${title}</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">${issues.join(' ')}</div>
   </div>`;
 }
 function hurtigWarmRoomWarningHTML(){
@@ -1604,6 +1616,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '4.4',
+    d: 'juli 2026',
+    changes: [
+      'Meltype-varselet sjekker nå også hydrering, ikke bare gjæringstid — velger du f.eks. Dallari pizzamel (55–60%) mens hydreringen står på 65%, får du nå beskjed om det. Viser begge problemene samlet hvis både tid og hydrering ikke stemmer.'
+    ]
+  },
   {
     v: '4.3',
     d: 'juli 2026',
