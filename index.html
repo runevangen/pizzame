@@ -6,121 +6,137 @@
 <title>Pizzaplanlegger</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;font-size:16px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:#1D1D1F;font-size:16px}
 .app{display:grid;grid-template-columns:295px 1fr;min-height:100vh}
-.sb{background:#f0ede8;border-right:1px solid #e0ddd8;padding:1rem;display:flex;flex-direction:column;gap:.8rem;overflow-y:auto;position:sticky;top:0;height:100vh}
+.sb{background:#FAFAF9;border-right:1px solid #EDEDED;padding:1rem;display:flex;flex-direction:column;gap:.8rem;overflow-y:auto;position:sticky;top:0;height:100vh}
 .mn{background:#fff;padding:1.5rem;overflow-y:auto}
-.logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:7px;color:#1a1a1a}
+.logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:7px;color:#1D1D1F}
 .logo span{font-size:20px}
-.lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.lbl{font-size:12px;font-weight:600;color:#6E6E73;margin-bottom:6px;letter-spacing:-.01em}
 .pills{display:flex;flex-wrap:wrap;gap:4px}
-.pill{padding:4px 10px;border-radius:20px;border:1px solid #d0cdc8;font-size:12px;cursor:pointer;background:#fff;color:#555;transition:all .15s;white-space:nowrap;user-select:none}
-.pill.on{background:#1D9E75;border-color:#1D9E75;color:#fff;font-weight:600}
-.pill:hover:not(.on){background:#e8e5e0}
+.pill{padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:#F2F2F7;color:#1D1D1F;transition:background .15s;white-space:nowrap;user-select:none;display:inline-flex;align-items:center;height:34px}
+.pill.on{background:#1D9E75;color:#fff;font-weight:600}
+.pill:hover:not(.on){background:#EDEDED}
+.segctrl{background:#F2F2F7;border-radius:10px;padding:2px;gap:2px}
+.segctrl .pill{flex:1;justify-content:center;border-radius:8px;background:transparent;height:32px}
+.segctrl .pill.on{background:#fff;color:#1D1D1F;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.segctrl .pill:hover:not(.on){background:rgba(0,0,0,.04)}
+.dropdown-select{position:relative}
+.dropdown-select select{width:100%;height:38px;padding:0 32px 0 12px;border-radius:10px;border:none;background:#F2F2F7;font-size:13px;font-weight:500;color:#1D1D1F;-webkit-appearance:none;appearance:none;cursor:pointer;font-family:inherit}
+.dropdown-select::after{content:'⌄';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:#6E6E73;pointer-events:none}
+.menu-wrap{position:relative}
+.menu-trigger{display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 12px;border-radius:10px;background:#F2F2F7;font-size:13px;font-weight:600;color:#1D1D1F;cursor:pointer}
+.menu-trigger:hover{background:#EDEDED}
+.menu-dropdown{position:absolute;top:44px;left:0;right:0;z-index:60;margin-top:0;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.15);overflow:hidden}
+.menu-row{display:flex;align-items:center;justify-content:space-between;height:38px;padding:0 12px;font-size:13px;font-weight:500;color:#1D1D1F;cursor:pointer}
+.menu-row:hover{background:#FAFAF9}
 .mcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.mc{border:1px solid #d0cdc8;border-radius:8px;padding:.5rem .65rem;cursor:pointer;transition:all .15s;background:#fff}
-.mc.on{border-color:#1D9E75;border-width:2px;background:#e8f7f1}
-.mc.hc{border-color:#BA7517}
-.mc.hc.on{background:#fef3e2;border-color:#BA7517}
-.mc-t{font-size:12px;font-weight:600;color:#1a1a1a}
-.mc.on .mc-t{color:#085041}
-.mc.hc.on .mc-t{color:#633806}
-.mc-s{font-size:11px;color:#888;margin-top:1px}
-.mc.on .mc-s{color:#0F6E56}
-.mc.hc.on .mc-s{color:#854F0B}
-.hsub{border:1px solid #d0cdc8;border-radius:8px;margin-top:4px;overflow:hidden}
+.mc{border-radius:12px;padding:.6rem .7rem;cursor:pointer;transition:all .15s;background:#F2F2F7}
+.mc.on{background:#1D9E75}
+.mc.hc{background:#FFF4E5}
+.mc.hc.on{background:#BA7517}
+.mc-t{font-size:12px;font-weight:600;color:#1D1D1F}
+.mc.on .mc-t{color:#fff}
+.mc.hc.on .mc-t{color:#fff}
+.mc-s{font-size:11px;color:#6E6E73;margin-top:1px}
+.mc.on .mc-s{color:rgba(255,255,255,.85)}
+.mc.hc.on .mc-s{color:rgba(255,255,255,.85)}
+.hsub{border:1px solid #E5E5EA;border-radius:8px;margin-top:4px;overflow:hidden}
 .hsub-body{background:#fff;padding:.5rem .65rem;display:flex;flex-direction:column;gap:2px}
-.hrow{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:#555;transition:background .1s}
-.hrow:hover{background:#f0ede8}
+.hrow{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:#3A3A3C;transition:background .1s}
+.hrow:hover{background:#F2F2F7}
 .hrow.on{background:#e8f7f1;color:#085041;font-weight:600}
 .hd{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
 .hrow.on .hd{background:#1D9E75}
 .gcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.divl{height:1px;background:#e0ddd8;flex-shrink:0}
-.tbox{background:#fff;border:1px solid #d0cdc8;border-radius:8px;padding:.75rem}
-.tbox-t{font-size:12px;font-weight:600;margin-bottom:.55rem;display:flex;align-items:center;gap:5px;color:#1a1a1a}
+.divl{height:1px;background:#EDEDED;flex-shrink:0}
+.tbox{background:#fff;border-radius:14px;padding:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+.tbox-t{font-size:12px;font-weight:600;margin-bottom:.55rem;display:flex;align-items:center;gap:5px;color:#1D1D1F}
 .mbtns{display:flex;gap:5px;margin-bottom:.6rem}
-.mb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:8px;border:2px solid #d0cdc8;cursor:pointer;background:#fff;color:#888;transition:all .15s;font-size:11px;text-align:center;line-height:1.3;user-select:none}
+.mb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:8px;border:2px solid #E5E5EA;cursor:pointer;background:#fff;color:#6E6E73;transition:all .15s;font-size:11px;text-align:center;line-height:1.3;user-select:none}
 .mb.on{border-color:#1D9E75;background:#e8f7f1;color:#085041;font-weight:600}
-.mb:hover:not(.on){background:#f0ede8}
+.mb:hover:not(.on){background:#F2F2F7}
 .dtg{display:grid;grid-template-columns:1fr 110px;gap:5px;margin-bottom:3px}
-input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #d0cdc8;border-radius:6px;font-size:12px;background:#fff;color:#1a1a1a;outline:none;min-width:0;font-family:inherit}
+input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #E5E5EA;border-radius:6px;font-size:12px;background:#fff;color:#1D1D1F;outline:none;min-width:0;font-family:inherit}
 input[type=date]:focus,input[type=time]:focus{border-color:#1D9E75;outline:2px solid #1D9E7530}
-.hint{font-size:11px;color:#999;line-height:1.4;margin-top:3px}
+.hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
 .sr input[type=range]{flex:1;min-width:0;accent-color:#1D9E75}
 .sv{font-size:12px;font-weight:600;color:#1D9E75;white-space:nowrap;min-width:44px;text-align:right}
 .hb{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:7px;margin-left:3px;vertical-align:middle}
 .brow{display:grid;grid-template-columns:1fr auto;gap:5px;margin-top:auto;padding-top:.5rem}
-.bgo{width:100%;padding:10px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-.bgo:hover{background:#178a65}
-.brst{padding:10px 13px;background:#fff;color:#888;border:1px solid #d0cdc8;border-radius:8px;cursor:pointer;font-size:13px}
-.brst:hover{background:#f0ede8}
+.bgo{width:100%;height:38px;background:transparent;color:#1D9E75;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.bgo:hover{background:#F2F2F7}
+.brst{padding:10px 13px;background:#fff;color:#6E6E73;border:1px solid #E5E5EA;border-radius:8px;cursor:pointer;font-size:13px}
+.brst:hover{background:#F2F2F7}
 h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
-.sub{font-size:12px;color:#888;margin-bottom:.75rem;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.sub{font-size:12px;color:#6E6E73;margin-bottom:.75rem;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
-.bg{background:#e8f7f1;color:#085041}.ba{background:#fef3e2;color:#633806}.bc{background:#feece8;color:#712B13}.bw{background:#f0ede8;color:#666}
+.bg{background:#e8f7f1;color:#085041}.ba{background:#fef3e2;color:#633806}.bc{background:#feece8;color:#712B13}.bw{background:#F2F2F7;color:#666}
 .crow{display:flex;gap:6px;margin-bottom:1rem}
-.cbtn{flex:1;padding:7px 10px;border:1px solid #d0cdc8;border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px;background:#fff;color:#555;cursor:pointer}
-.cbtn:hover{background:#f5f4f0}
+.cbtn{flex:1;height:38px;border:none;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px;background:transparent;color:#1D9E75;cursor:pointer}
+.cbtn:hover{background:#F2F2F7}
 .pcbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1rem}
-.pcc{background:#f5f4f0;border-radius:8px;padding:.55rem .7rem;text-align:center}
-.pcc .pl{font-size:11px;color:#888;margin-bottom:2px}
-.pcc .pv{font-size:15px;font-weight:600;color:#1a1a1a}
-.pcc .ps{font-size:10px;color:#999;margin-top:1px}
-.topnav{display:flex;gap:4px;background:#fff;border-bottom:1px solid #e0ddd8;padding:.5rem 1.5rem;position:sticky;top:0;z-index:50;margin:-1.5rem -1.5rem 1.1rem}
+.pcc{background:#FAFAF9;border-radius:8px;padding:.55rem .7rem;text-align:center}
+.pcc .pl{font-size:11px;color:#6E6E73;margin-bottom:2px}
+.pcc .pv{font-size:15px;font-weight:600;color:#1D1D1F}
+.pcc .ps{font-size:10px;color:#8E8E93;margin-top:1px}
+.topnav{display:flex;gap:4px;background:#fff;border-bottom:1px solid #EDEDED;padding:.5rem 1.5rem;position:sticky;top:0;z-index:50;margin:-1.5rem -1.5rem 1.1rem}
 .tab{padding:7px 15px;font-size:13px;cursor:pointer;color:#666;border-radius:8px}
 .tab.on{background:#085041;color:#fff;font-weight:600}
-.tab:hover:not(.on){background:#f0ede8;color:#1a1a1a}
-.step{border:1px solid #e8e5e0;border-radius:10px;overflow:hidden;margin-bottom:.6rem;background:#fff}
+.tab:hover:not(.on){background:#F2F2F7;color:#1D1D1F}
+.step{border-radius:14px;overflow:hidden;margin-bottom:.6rem;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 .step.now{border-color:#1D9E75;border-width:2px}
 .step.shifted{border-color:#BA7517;border-style:dashed}
 .step-body{padding:.75rem 1rem}
 .sh2{display:flex;align-items:flex-start;gap:9px}
 .sn{width:24px;height:24px;border-radius:50%;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.sn.d{background:#e8e5e0;color:#888;border:1px solid #d0cdc8}
-.stit{font-size:13px;font-weight:600;color:#1a1a1a}
+.sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
+.stit{font-size:13px;font-weight:600;color:#1D1D1F}
 .smeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px}
-.stim{font-size:11px;color:#888}
+.stim{font-size:11px;color:#6E6E73}
 .stim.late{color:#BA7517;font-weight:600}
 .sloc{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
 .sloc.k{color:#185FA5}.sloc.r{color:#0F6E56}.sloc.o{color:#993C1D}
-.sdesc{font-size:12px;color:#555;margin-top:.45rem;line-height:1.65}
+.sdesc{font-size:12px;color:#3A3A3C;margin-top:.45rem;line-height:1.65}
 .swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#085041;margin-top:.45rem;line-height:1.5}
-.stip{background:#f5f4f0;border-left:3px solid #ccc;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#555;margin-top:.4rem;line-height:1.5}
+.stip{background:#FAFAF9;border-left:3px solid #ccc;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#3A3A3C;margin-top:.4rem;line-height:1.5}
 .snote{background:#fef3e2;border-left:3px solid #BA7517;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#633806;margin-top:.4rem;line-height:1.5}
-.swait{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;background:#f5f4f0;border-top:1px solid #e8e5e0}
-.swait i{font-size:14px;color:#999}
+.swait{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;background:#FAFAF9;border-top:1px solid #EDEDED}
+.swait i{font-size:14px;color:#8E8E93}
 .swait-txt{font-size:12px;color:#666}
-.swait-val{font-size:12px;font-weight:600;color:#1a1a1a}
-.rec{background:#f5f4f0;border-radius:10px;padding:.85rem 1rem;margin-bottom:.9rem}
-.rrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #e8e5e0}
+.swait-val{font-size:12px;font-weight:600;color:#1D1D1F}
+.rec{background:#F2F2F7;border-radius:14px;padding:.9rem 1rem;margin-bottom:.9rem}
+.rrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #EDEDED}
+.ing-check{width:18px;height:18px;border-radius:50%;border:2px solid #D1D1D6;flex-shrink:0;display:inline-block}
+.ing-check.on{background:#1D9E75;border-color:#1D9E75;position:relative}
+.ing-check.on::after{content:'✓';position:absolute;inset:0;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .rrow:last-child{border-bottom:none}
 .rval{font-weight:600;color:#1D9E75}
 .wbox{background:#fef3e2;border-left:3px solid #BA7517;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#633806;margin-bottom:.75rem;line-height:1.5}
 .ibox{background:#e8f1fb;border-left:3px solid #185FA5;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#0C447C;margin-bottom:.75rem;line-height:1.5}
 .future-dim{opacity:.45}
-.daylbl{font-size:11px;font-weight:600;color:#888;margin:.6rem 0 .2rem;display:flex;align-items:center;gap:6px}
+.daylbl{font-size:11px;font-weight:600;color:#6E6E73;margin:.6rem 0 .2rem;display:flex;align-items:center;gap:6px}
 .daylbl.today{color:#085041}
 .daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
 .daylbl.today .ddot{background:#1D9E75}
 /* ===== MOBILE LAYOUT ===== */
-.mob-layout{display:none;flex-direction:column;min-height:100vh;background:#f5f4f0}
+.mob-layout{display:none;flex-direction:column;min-height:100vh;background:#FAFAF9}
 .mob-layout.active{display:flex}
 .app.pc-active{display:grid}
 
 /* top bar */
-.mob-topbar{background:#fff;border-bottom:1px solid #e0ddd8;padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50}
+.mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50}
 .mob-topbar-title{display:flex;flex-direction:column;gap:1px}
 .mob-topbar-title span{font-size:15px;font-weight:600}
 .mob-topbar-title small{font-size:10px;color:#aaa;font-weight:400}
 .mob-topbar-actions{display:flex;align-items:center;gap:8px}
-.mob-icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e0ddd8;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#555}
-.mob-icon-btn:hover{background:#f0ede8}
+.mob-icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #EDEDED;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#3A3A3C}
+.mob-icon-btn:hover{background:#F2F2F7}
 
 /* bottom tab bar */
-.mob-tabbar{background:#fff;border-top:1px solid #e0ddd8;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
-.mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:#888;cursor:pointer;gap:2px;border-top:2px solid transparent}
+.mob-tabbar{background:#fff;border-top:1px solid #EDEDED;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
 .mob-tab span[aria-hidden]{font-size:18px;line-height:1}
 .mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
 
@@ -132,63 +148,64 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .mob-content{padding:.75rem 1rem}
 
 /* mob steps — compact */
-.mob-step{border:1px solid #e8e5e0;border-radius:10px;overflow:hidden;margin-bottom:.5rem;background:#fff}
+.mob-step{border-radius:14px;overflow:hidden;margin-bottom:.5rem;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 .mob-step.now{border-color:#1D9E75;border-width:2px}
 .mob-step.shifted{border-color:#BA7517;border-style:dashed}
 .mob-step.dim{opacity:.4}
 .mob-step-body{padding:.55rem .75rem}
 .mob-sh{display:flex;align-items:flex-start;gap:8px}
 .mob-sn{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.mob-sn.d{background:#e8e5e0;color:#888;border:1px solid #d0cdc8}
-.mob-stit{font-size:13px;font-weight:600;color:#1a1a1a;line-height:1.3}
+.mob-sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
+.mob-stit{font-size:13px;font-weight:600;color:#1D1D1F;line-height:1.3}
 .mob-smeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
-.mob-stim{font-size:11px;color:#888}
+.mob-stim{font-size:11px;color:#6E6E73}
 .mob-stim.late{color:#BA7517;font-weight:600}
 .mob-sloc{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
 .mob-sloc.k{color:#185FA5}.mob-sloc.r{color:#0F6E56}.mob-sloc.o{color:#993C1D}
-.mob-swait{display:flex;align-items:center;gap:6px;padding:.35rem .75rem;background:#f5f4f0;border-top:1px solid #e8e5e0;font-size:11px;color:#666}
-.mob-swait b{color:#1a1a1a}
+.mob-swait{display:flex;align-items:center;gap:6px;padding:.35rem .75rem;background:#FAFAF9;border-top:1px solid #EDEDED;font-size:11px;color:#666}
+.mob-swait b{color:#1D1D1F}
 .mob-snote{background:#fef3e2;border-left:3px solid #BA7517;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#633806;margin-top:.35rem;line-height:1.5}
-.mob-sdesc{font-size:12px;color:#555;margin-top:.4rem;line-height:1.6}
+.mob-sdesc{font-size:12px;color:#3A3A3C;margin-top:.4rem;line-height:1.6}
 .mob-swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#085041;margin-top:.35rem;line-height:1.5}
-.mob-stip{background:#f5f4f0;border-left:3px solid #ccc;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#555;margin-top:.3rem;line-height:1.5}
-.mob-daylbl{font-size:11px;font-weight:600;color:#888;margin:.5rem 0 .15rem;display:flex;align-items:center;gap:5px}
+.mob-stip{background:#FAFAF9;border-left:3px solid #ccc;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
+.mob-daylbl{font-size:11px;font-weight:600;color:#6E6E73;margin:.5rem 0 .15rem;display:flex;align-items:center;gap:5px}
 .mob-daylbl.today{color:#085041}
 .mob-daylbl .ddot{width:6px;height:6px;border-radius:50%;background:#ccc;flex-shrink:0}
 .mob-daylbl.today .ddot{background:#1D9E75}
-.mob-action-bar{display:flex;gap:6px;padding:.6rem 1rem;background:#fff;border-top:1px solid #e0ddd8;position:sticky;bottom:calc(56px + env(safe-area-inset-bottom,0px));z-index:40}
-.mob-abtn{flex:1;padding:8px 4px;border:1px solid #d0cdc8;border-radius:8px;font-size:11px;text-align:center;background:#fff;color:#555;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mob-action-bar{display:flex;gap:6px;padding:.6rem 1rem;background:#fff;border-top:1px solid #EDEDED;position:sticky;bottom:calc(56px + env(safe-area-inset-bottom,0px));z-index:40}
+.mob-abtn{flex:1;height:44px;border:none;border-radius:10px;font-size:11px;text-align:center;background:transparent;color:#1D9E75;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .mob-abtn i{font-size:16px}
-.mob-abtn.pri{background:#1D9E75;border-color:#1D9E75;color:#fff;font-weight:600}
-.mob-abtn:hover:not(.pri){background:#f0ede8}
+.mob-abtn.pri{background:#1D9E75;color:#fff}
+.mob-abtn:hover:not(.pri){background:#F2F2F7}
 
 /* mob settings */
-.mob-section-lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
-.mob-setting-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;background:#fff;border-bottom:1px solid #f0ede8}
-.mob-setting-row:first-of-type{border-top:1px solid #e0ddd8}
-.mob-slabel{font-size:13px;color:#1a1a1a}
-.mob-sval{font-size:13px;color:#888}
-.mob-slider-wrap{background:#fff;padding:.1rem 1rem .55rem;border-bottom:1px solid #e0ddd8}
+.mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
+.mob-setting-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;background:#fff;border-bottom:1px solid #F2F2F7}
+.mob-setting-row:first-of-type{border-top:1px solid #EDEDED}
+.mob-slabel{font-size:13px;color:#1D1D1F}
+.mob-sval{font-size:13px;color:#6E6E73}
+.mob-slider-wrap{background:#fff;padding:.1rem 1rem .55rem;border-bottom:1px solid #EDEDED}
 .mob-slider-wrap input[type=range]{width:100%;accent-color:#1D9E75}
-.mob-pill-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8}
-.mob-mcard-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8}
+.mob-pill-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #EDEDED}
+.mob-pill-wrap.mob-segctrl{flex-wrap:nowrap;background:#F2F2F7;border-radius:10px;margin:.4rem 1rem .65rem;padding:2px;gap:2px}
+.mob-mcard-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #EDEDED}
 
 /* mob recipe */
 .mob-pcbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:.5rem 0 .75rem}
-.mob-pcc{background:#f5f4f0;border-radius:8px;padding:.5rem .65rem}
-.mob-pcc .pl{font-size:10px;color:#888;margin-bottom:2px}
-.mob-pcc .pv{font-size:18px;font-weight:600;color:#1a1a1a}
-.mob-pcc .ps{font-size:10px;color:#999;margin-top:1px}
-.mob-rec{border-radius:10px;overflow:hidden;margin-bottom:.75rem;border:1px solid #e8e5e0}
-.mob-rrow{display:flex;justify-content:space-between;padding:9px 12px;font-size:13px;border-bottom:1px solid #f0ede8;background:#fff}
+.mob-pcc{background:#FAFAF9;border-radius:8px;padding:.5rem .65rem}
+.mob-pcc .pl{font-size:10px;color:#6E6E73;margin-bottom:2px}
+.mob-pcc .pv{font-size:18px;font-weight:600;color:#1D1D1F}
+.mob-pcc .ps{font-size:10px;color:#8E8E93;margin-top:1px}
+.mob-rec{border-radius:14px;overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+.mob-rrow{display:flex;justify-content:space-between;padding:9px 12px;font-size:13px;border-bottom:1px solid #F2F2F7;background:#fff}
 .mob-rrow:last-child{border-bottom:none}
 .mob-rval{font-weight:600;color:#1D9E75}
 
 /* layout toggle btn */
 
-.layout-toggle{display:flex;align-items:center;gap:4px;padding:4px 8px;border:1px solid #d0cdc8;border-radius:14px;background:#fff;cursor:pointer;font-size:10px;color:#666}
-.layout-toggle:hover{background:#f0ede8}
-.layout-toggle.mob-style{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.layout-toggle{display:flex;align-items:center;gap:4px;padding:4px 8px;border:1px solid #E5E5EA;border-radius:14px;background:#fff;cursor:pointer;font-size:10px;color:#666}
+.layout-toggle:hover{background:#F2F2F7}
+.layout-toggle.mob-style{background:#1D1D1F;color:#fff;border-color:#1D1D1F}
 
 @media(max-width:767px){
   body:not(.pc-mode) .app{display:none}
@@ -200,7 +217,7 @@ body.pc-mode .app{display:grid!important}
 body.pc-mode .mob-layout{display:none!important}
 @media(max-width:767px){body{font-size:17px}}
 .swrow{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-.swlbl{font-size:13px;color:#1a1a1a}
+.swlbl{font-size:13px;color:#1D1D1F}
 .sw{width:36px;height:20px;border-radius:10px;background:#c9c6c0;position:relative;flex-shrink:0;transition:background .15s}
 .sw.on{background:#1D9E75}
 .sw::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
@@ -209,39 +226,56 @@ body.pre-interact #main-content{filter:grayscale(85%);opacity:.7;transition:filt
 body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
 @keyframes fadeOutFlash{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .method-flash{animation:fadeOutFlash 2.5s forwards}
-.act-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.act-btn-pri{border:1px solid #1D9E75;background:#1D9E75;color:#fff;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.act-btn-sec{border:1px solid #d0cdc8;background:#fff;color:#1a1a1a;font-weight:500}
-.act-btn-sec:hover{background:#f5f4f0}
-.act-group-lbl{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+.act-btn{display:flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none}
+.act-btn-pri{background:#1D9E75;color:#fff}
+.act-btn-sec{background:transparent;color:#1D9E75}
+.act-btn-sec:hover{background:#F2F2F7}
+.act-group-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
 .sidenav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.9rem}
-.sidenav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11px;font-weight:600;color:#555;background:#fff;border:1px solid #d0cdc8;border-radius:20px;cursor:pointer}
+.sidenav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11px;font-weight:600;color:#3A3A3C;background:#fff;border:1px solid #E5E5EA;border-radius:20px;cursor:pointer}
 .sidenav-item:hover{border-color:#1D9E75;color:#085041}
 .sidenav-item .cnt{background:#1D9E75;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px))}
 .modal-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:85vh;max-height:85dvh;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);display:flex;flex-direction:column}
-.modal-head{display:flex;justify-content:space-between;align-items:center;padding:max(.85rem,env(safe-area-inset-top,0px)) 1.1rem .85rem;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:max(.85rem,env(safe-area-inset-top,0px)) 1.1rem .85rem;border-bottom:1px solid #EDEDED;flex-shrink:0}
 .modal-head b{font-size:15px}
-.modal-x{width:26px;height:26px;border-radius:50%;background:#f0ede8;border:none;font-size:14px;color:#888;cursor:pointer;flex-shrink:0}
+.modal-x{width:26px;height:26px;border-radius:50%;background:#F2F2F7;border:none;font-size:14px;color:#6E6E73;cursor:pointer;flex-shrink:0}
 .modal-x:hover{background:#e5e2dc}
 .modal-body{padding:1rem 1.1rem;overflow-y:auto}
 .snum-btn{cursor:pointer;transition:background .15s,transform .1s;user-select:none}
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
-.step-done .stit,.step-done .mob-stit{text-decoration:line-through;color:#888}
+.step-done .stit,.step-done .mob-stit{text-decoration:line-through;color:#6E6E73}
 .snum-done{background:#1D9E75!important;color:#fff!important}
 .clog-ver{margin-bottom:1.1rem}
 .clog-ver:last-child{margin-bottom:0}
 .clog-ver .vh{display:flex;align-items:baseline;gap:8px;margin-bottom:.4rem}
-.clog-ver .vh b{font-size:14px;color:#1a1a1a}
-.clog-ver .vh span{font-size:11px;color:#999}
+.clog-ver .vh b{font-size:14px;color:#1D1D1F}
+.clog-ver .vh span{font-size:11px;color:#8E8E93}
 .clog-ver ul{margin:0;padding-left:1.1rem}
 .clog-ver li{font-size:12px;color:#444;margin-bottom:.3rem;line-height:1.5}
-.fs-seg{display:flex;background:#f0ede8;border-radius:8px;padding:3px;gap:2px}
+.fs-seg{display:flex;background:#F2F2F7;border-radius:8px;padding:3px;gap:2px}
 .fs-seg .o{flex:1;text-align:center;padding:6px 4px;font-size:11px;font-weight:600;color:#666;border-radius:6px;cursor:pointer}
 .fs-seg .o.on{background:#fff;color:#085041;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 body.fs-large{zoom:1.15}
 body.fs-xlarge{zoom:1.3}
+/* Knapper/piller/navigasjon skal ikke vokse med skriftstørrelse-innstillingen —
+   kun lesetekst (steg, forklaringer) skal bli større. Motsatt zoom kansellerer
+   ut body sin zoom for disse elementene spesifikt. */
+body.fs-large .pill,body.fs-large .mc,body.fs-large .act-btn,body.fs-large .bgo,
+body.fs-large .cbtn,body.fs-large .dropdown-select select,body.fs-large .menu-trigger,
+body.fs-large .menu-dropdown,body.fs-large .fs-seg,body.fs-large #fav-btn,
+body.fs-large .adv-toggle,body.fs-large .tab,body.fs-large .layout-toggle,
+body.fs-large .mb,body.fs-large .sw,body.fs-large input[type=range],
+body.fs-large .snum-btn,body.fs-large .mob-icon-btn,body.fs-large .mob-abtn,
+body.fs-large .mob-tab{zoom:0.8696}
+body.fs-xlarge .pill,body.fs-xlarge .mc,body.fs-xlarge .act-btn,body.fs-xlarge .bgo,
+body.fs-xlarge .cbtn,body.fs-xlarge .dropdown-select select,body.fs-xlarge .menu-trigger,
+body.fs-xlarge .menu-dropdown,body.fs-xlarge .fs-seg,body.fs-xlarge #fav-btn,
+body.fs-xlarge .adv-toggle,body.fs-xlarge .tab,body.fs-xlarge .layout-toggle,
+body.fs-xlarge .mb,body.fs-xlarge .sw,body.fs-xlarge input[type=range],
+body.fs-xlarge .snum-btn,body.fs-xlarge .mob-icon-btn,body.fs-xlarge .mob-abtn,
+body.fs-xlarge .mob-tab{zoom:0.7692}
 .start-hint{display:flex;align-items:center;gap:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.7rem .9rem;margin-bottom:1rem;font-size:13px;color:#633806}
 .start-hint b{color:#4a2a05}
 .start-hint button{flex-shrink:0;padding:6px 12px;border:1px solid #EF9F27;border-radius:8px;background:#fff;color:#633806;font-size:12px;font-weight:600;cursor:pointer}
@@ -251,17 +285,17 @@ body.fs-xlarge{zoom:1.3}
 .mob-step.step-next{border-left:3px solid #1D7FE9}
 .next-flag{display:inline-block;font-size:10px;font-weight:600;color:#1257A0;background:#E3F0FD;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
-.pizza-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;background:#fff;border:1px solid #e0ddd8;border-radius:12px;padding:.7rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;z-index:300;transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:min(90vw,360px)}
+.pizza-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;background:#fff;border:1px solid #EDEDED;border-radius:12px;padding:.7rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;z-index:300;transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:min(90vw,360px)}
 .pizza-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .pizza-toast-emoji{font-size:30px;line-height:1;flex-shrink:0;display:inline-block}
-.pizza-toast-text{font-size:13px;font-weight:600;color:#1a1a1a;line-height:1.35}
+.pizza-toast-text{font-size:13px;font-weight:600;color:#1D1D1F;line-height:1.35}
 @keyframes toastWiggle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
 @keyframes toastBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes toastKnead{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
 .toast-anim-wiggle{animation:toastWiggle .5s ease-in-out infinite}
 .toast-anim-bounce{animation:toastBounce .6s ease-in-out infinite}
 .toast-anim-knead{animation:toastKnead .45s ease-in-out infinite}
-.adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f0ede8;border-radius:8px;font-size:12px;font-weight:600;color:#555;cursor:pointer;margin:.6rem 0}
+.adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#F2F2F7;border-radius:8px;font-size:12px;font-weight:600;color:#3A3A3C;cursor:pointer;margin:.6rem 0}
 .adv-toggle:hover{background:#e5e2dc}
 </style>
 </head>
@@ -317,7 +351,7 @@ body.fs-xlarge{zoom:1.3}
     <div class="modal-body" id="guide-modal-body">
       <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
         <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
-        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Velg pizzatype</b>Napoletansk, New York, Chicago, Langpanne eller IngenElting.</div>
+        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Velg pizzatype</b>Napoletansk, New York, Chicago, Langpanne eller Ingen elting.</div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
         <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
@@ -331,8 +365,14 @@ body.fs-xlarge{zoom:1.3}
         <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div>
         <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Følg tidsplanen</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
       </div>
-      <div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) ligger bak "⚙️ Avanserte innstillinger" i sidepanelet, hvis du vil finjustere.</div>
+      <div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) ligger bak "⚙️ Avanserte innstillinger" i sidepanelet, hvis du vil finjustere. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "☰ Meny" øverst.</div>
     </div>
+  </div>
+</div>
+<div id="finish-bake-modal" class="modal-overlay" onclick="if(event.target===this)closeFinishBakeModal()">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-head"><b>🍕 Hvordan ble den?</b><button class="modal-x" onclick="closeFinishBakeModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="finish-bake-modal-body"></div>
   </div>
 </div>
 <div id="formler-modal" class="modal-overlay" onclick="if(event.target===this)closeFormlerModal()">
@@ -353,17 +393,20 @@ body.fs-xlarge{zoom:1.3}
   <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
 </div>
 
-<div class="sidenav">
-  <div class="sidenav-item" onclick="openGuideModal()">❓ Guide</div>
-  <div class="sidenav-item" onclick="openTechModal()">💡 Tips</div>
-  <div class="sidenav-item" onclick="openDeigerModal()">
-    <span>🍽️ Deiger</span>
-    <span id="active-deiger-count" class="cnt" style="display:none">0</span>
+<div class="menu-wrap">
+  <div class="menu-trigger" onclick="toggleSidenavMenu()"><span>☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
+  <div class="menu-dropdown" id="sidenav-dropdown" style="display:none">
+    <div class="menu-row" onclick="sidenavGo(openGuideModal)">❓ Guide</div>
+    <div class="menu-row" onclick="sidenavGo(openTechModal)">💡 Tips</div>
+    <div class="menu-row" onclick="sidenavGo(openDeigerModal)">
+      <span>🍽️ Deiger</span>
+      <span id="active-deiger-count" class="cnt" style="display:none">0</span>
+    </div>
+    <div class="menu-row" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
+    <div style="height:1px;background:#F2F2F7"></div>
+    <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
+    <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
   </div>
-  <div class="sidenav-item" onclick="openFeedbackModal()">💬 Feedback</div>
-  <div style="height:1px;background:#e0ddd8;margin:4px 2px"></div>
-  <div class="sidenav-item" onclick="openFormlerModal()">📊 Formler</div>
-  <div class="sidenav-item" onclick="openAdminLogin()">🔒 Admin</div>
 </div>
 
   <div><div class="lbl">Pizzatype</div>
@@ -372,7 +415,7 @@ body.fs-xlarge{zoom:1.3}
       <span class="pill" data-v="langpanne" title="Myk langpannepizza. 68–75%.">Langpanne</span>
       <span class="pill" data-v="newyork" title="Tynn, foldbar. Anbefalt hydrering 60–67%. Med sukker og olje.">New York</span>
       <span class="pill" data-v="chicago" title="Deep dish. 55–62%.">Chicago</span>
-      <span class="pill" data-v="ingenelting" title="Ingen elting, ingen kjøkkenmaskin. Bland med skje, la stå natten over.">IngenElting</span>
+      <span class="pill" data-v="ingenelting" title="Ingen elting, ingen kjøkkenmaskin. Bland med skje, la stå natten over.">Ingen elting</span>
     </div>
   </div>
 
@@ -450,14 +493,14 @@ body.fs-xlarge{zoom:1.3}
   <div id="adv-section" style="display:none">
 
   <div><div class="lbl">Gjærtype</div>
-    <div class="pills" id="ggj">
+    <div class="pills segctrl" id="ggj">
       <span class="pill on" data-v="torr" title="1g tørrgjær = 3g fersk.">Tørrgjær</span>
       <span class="pill" data-v="fersk" title="Mer aroma. 3× mengden.">Fersk gjær</span>
     </div>
   </div>
 
   <div id="gkm-wrap"><div class="lbl">Kjøkkenmaskin</div>
-    <div class="pills" id="gkm">
+    <div class="pills segctrl" id="gkm">
       <span class="pill on" data-v="ankarsrum" title="Ruller bollen, lite friksjonsvarme.">Ankarsrum</span>
       <span class="pill" data-v="manuell" title="For hånd. Teknikk avhenger av hydrering.">Manuell elting</span>
       <span class="pill" data-v="annen" title="Eltekrok, f.eks. KitchenAid. Mer friksjonsvarme.">Annen maskin</span>
@@ -465,19 +508,21 @@ body.fs-xlarge{zoom:1.3}
   </div>
 
   <div><div class="lbl">Meltype</div>
-    <div class="pills" id="gmel">
-      <span class="pill" data-v="dallari" title="10,7% protein. 4–8t fermentering.">Dallari pizzamel</span>
-      <span class="pill on" data-v="doppio_zero" title="11% protein, W220-230. 6–24t fermentering.">Caputo Doppio Zero</span>
-      <span class="pill" data-v="pizzeria" title="12,5% protein, W260-270. 12–48t fermentering.">Caputo Pizzeria</span>
-      <span class="pill" data-v="nuvola" title="12,5% protein, W260-280. 12–48t fermentering.">Caputo Nuvola</span>
-      <span class="pill" data-v="couco" title="13% protein, W300-340. 16–54t fermentering.">Caputo Couco</span>
-      <span class="pill" data-v="manitoba" title="12,9-14,5% protein, W340-390. 24–78t fermentering.">Caputo Manitoba Oro</span>
+    <div class="dropdown-select">
+      <select id="gmel">
+        <option value="dallari">Dallari pizzamel</option>
+        <option value="doppio_zero" selected>Caputo Doppio Zero</option>
+        <option value="pizzeria">Caputo Pizzeria</option>
+        <option value="nuvola">Caputo Nuvola</option>
+        <option value="couco">Caputo Couco</option>
+        <option value="manitoba">Caputo Manitoba Oro</option>
+      </select>
     </div>
-    <div id="gmel-info" style="margin-top:5px;font-size:11px;color:#888;background:#f0ede8;border-radius:6px;padding:5px 8px;line-height:1.4"></div>
+    <div id="gmel-info" style="margin-top:5px;font-size:11px;color:#6E6E73;background:#F2F2F7;border-radius:6px;padding:5px 8px;line-height:1.4"></div>
   </div>
 
   <div id="govn-wrap"><div class="lbl">Ovntype</div>
-    <div class="pills" id="govn">
+    <div class="pills segctrl" id="govn">
       <span class="pill on" data-v="pizza" title="430–450°C. Leopardmønster.">Pizzaovn (430–450°C)</span>
       <span class="pill" data-v="vanlig" title="Maks 250°C med pizzastein.">Vanlig ovn (maks 250°C)</span>
     </div>
@@ -543,6 +588,22 @@ function updateMeltypeInfo(){
     const el=document.getElementById(id);
     if(el) el.innerHTML = txt;
   });
+}
+function syncMeltypeSelect(){
+  const el = document.getElementById('gmel');
+  if(el){
+    el.value = S.meltype;
+    el.onchange = () => { S.meltype = el.value; updateMeltypeInfo(); schedNow(); };
+  }
+  updateMeltypeInfo();
+}
+function syncMobMeltypeSelect(){
+  const el = document.getElementById('mob-gmel');
+  if(el){
+    el.value = S.meltype;
+    el.onchange = () => { S.meltype = el.value; updateMeltypeInfo(); mobGen(); };
+  }
+  updateMeltypeInfo();
 }
 function tf(){
   const pts=[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]];
@@ -652,8 +713,7 @@ function applyMobTypeUI(){
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
 pgrp('ggj','gjaer');
 pgrp('gkm','kjokkenmaskin');
-pgrp('gmel','meltype',updateMeltypeInfo);
-updateMeltypeInfo();
+syncMeltypeSelect();
 pgrp('govn','oven');
 mCards();buildHrows();buildKrows();
 
@@ -699,14 +759,15 @@ function doReset(){
   Object.assign(S,DEF);
   window._activeDeigId=null;window._activeDeigName=null;
   window._checked=new Set();
+  window._checkedIngredients=new Set();
   document.body.classList.add('pre-interact');
   syncSaveBakeLabel();
   document.getElementById('msl').value=500;uMel(500);
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
   document.getElementById('csl').value=3;uCold(3);
   document.getElementById('tsl').value=22;S.temp=22;uTempUI();
-  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('gmel','meltype',updateMeltypeInfo);pgrp('govn','oven');
-  updateMeltypeInfo();
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
+  syncMeltypeSelect();
   mCards();
   document.getElementById('hsub').style.display='none';
   document.getElementById('cwrap').style.display='block';
@@ -830,7 +891,7 @@ function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinu
 
 function R(){
   const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:(COLDMULT[S.cold]||1))*100)/100,yf=Math.round(yd*3*10)/10;
-  const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'IngenElting-pizza'};
+  const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
   return{name:ns[S.type],flour:m,water:w,salt:sa,oil:oi,butter:bu,sugar:su,yDry:yd,yFresh:yf};
 }
 function yA(r){return S.gjaer==='torr'?`${r.yDry}g tørrgjær`:`${r.yFresh}g fersk gjær`;}
@@ -865,7 +926,7 @@ function oT(t){
   return p?'Jernpanne gir best varmeoverføring.':'Ost UNDER sausen — Chicago-tradisjonen.';
 }
 function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
-function mN(m){return{standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'IngenElting',kveld:'Kveldsdeig'}[m]||m;}
+function mN(m){return{standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig'}[m]||m;}
 
 const LOC={
   kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
@@ -1246,6 +1307,7 @@ function stepH(steps){
 
 // ===== AVHAKING AV STEG =====
 window._checked = new Set();
+window._checkedIngredients = new Set();
 
 function toggleStepDone(i){
   if(!window._checked) window._checked = new Set();
@@ -1278,6 +1340,57 @@ async function persistCheckedSteps(){
       body: JSON.stringify({checkedSteps: [...window._checked]})
     });
   }catch(e){ /* stille — avhaking er ikke kritisk nok til alert */ }
+}
+async function persistCheckedIngredients(){
+  const id = window._activeDeigId;
+  if(!id) return; // Ulagret oppsett: avhaking lever kun i denne økten
+  try{
+    await fetch('/api/bakes/'+id, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({checkedIngredients: [...window._checkedIngredients]})
+    });
+  }catch(e){ /* stille */ }
+}
+const INGREDIENT_KEYS = ['Mel','Vann','Salt','Olivenolje','Smør','Sukker','Gjær'];
+function recipeRowsHTML(rr){
+  return rr.map(row=>{
+    if(!INGREDIENT_KEYS.includes(row.k)){
+      return `<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`;
+    }
+    const checked = window._checkedIngredients && window._checkedIngredients.has(row.k);
+    return `<div class="rrow" onclick="toggleIngredientCheck('${row.k}')" style="cursor:pointer">
+      <span style="display:flex;align-items:center;gap:8px">
+        <span class="ing-check${checked?' on':''}"></span>
+        <span style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${row.k}</span>
+      </span>
+      <span class="rval" style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${row.v}</span>
+    </div>`;
+  }).join('');
+}
+function toggleIngredientCheck(key){
+  if(!window._checkedIngredients) window._checkedIngredients = new Set();
+  if(window._checkedIngredients.has(key)) window._checkedIngredients.delete(key);
+  else window._checkedIngredients.add(key);
+  persistCheckedIngredients();
+  const mobEl=document.getElementById('mob-layout');
+  const isMob=mobEl&&mobEl.classList.contains('active');
+  if(isMob){mobGen();}else{gen();}
+}
+function mobRecipeRowsHTML(rr){
+  return rr.map(row=>{
+    if(!INGREDIENT_KEYS.includes(row.k)){
+      return `<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`;
+    }
+    const checked = window._checkedIngredients && window._checkedIngredients.has(row.k);
+    return `<div class="mob-rrow" onclick="toggleIngredientCheck('${row.k}')" style="cursor:pointer">
+      <span style="display:flex;align-items:center;gap:8px">
+        <span class="ing-check${checked?' on':''}"></span>
+        <span style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${row.k}</span>
+      </span>
+      <span class="mob-rval" style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${row.v}</span>
+    </div>`;
+  }).join('');
 }
 
 function waitRow(s,next){
@@ -1489,6 +1602,29 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '4.1',
+    d: 'juli 2026',
+    changes: [
+      'Kalender-påminnelser ("📅 Påminnelser") tilbake på PC — lastet ned som en .ics-fil med varsel 10 min før hvert steg. Fantes fra før kun på mobil.',
+      'Ferdige deiger kan nå få et bilde og en stjernevurdering (1–5) — trykk "Ferdig" på en aktiv deig, eller "✏️"/"⭐" på en allerede ferdig deig for å legge til eller endre i etterkant.',
+      'Ingredienser i Oppskrift-fanen kan nå hakes av (mel, vann, salt osv.) mens du henter dem frem — lagres sammen med deigen, akkurat som avhaking av steg i Tidsplan.',
+      'Guiden nevner nå at Tips, Deiger, Feedback og mer finnes i "☰ Meny" øverst.',
+      '"⋯ Mer" er omdøpt til "☰ Meny" for å signalisere navigasjon tydeligere, og "IngenElting" skrives nå "Ingen elting" i alle visningstekster.'
+    ]
+  },
+  {
+    v: '4.0',
+    d: 'juli 2026',
+    changes: [
+      'Nytt gjennomgående design — kjøligere fargepalett, hvite kort med skygge i stedet for synlige kanter, og et strammere visuelt uttrykk gjennom hele appen.',
+      'Meltype er endret fra piller til en vanlig nedtrekksmeny (dropdown) — seks lange melnavn i pille-form så rotete ut, spesielt på mobil der hover-tekst uansett ikke fungerer.',
+      'Gjærtype, Kjøkkenmaskin og Ovntype vises nå som en ekte segmentert kontroll (én sammenhengende boks) i stedet for løse piller, både på PC og mobil.',
+      'Sidenav (Guide/Tips/Deiger/Feedback/Formler/Admin) er samlet i én kompakt "⋯ Mer"-meny i stedet for seks alltid-synlige knapper.',
+      'Knapper er redusert til to konsekvente stiler i hele appen — fylt primær og nøytral "ghost" — med fast høyde.',
+      'Skriftstørrelse-innstillingen påvirker nå kun lesetekst (steg, forklaringer) — knapper, piller og navigasjon holder fast størrelse uansett innstilling.'
+    ]
+  },
   {
     v: '3.9',
     d: 'juli 2026',
@@ -1811,7 +1947,7 @@ function gen(){
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
-    <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
+    <div id="p-recipe" style="display:none"><div class="rec">${recipeRowsHTML(rr)}</div></div>
     <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
     </div>`;
   updatePcountDisp();
@@ -1833,7 +1969,7 @@ function hurtigRes(){
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
-    <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
+    <div id="p-recipe" style="display:none"><div class="rec">${recipeRowsHTML(rr)}</div></div>
     <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
     </div>`;
   updatePcountDisp();
@@ -1855,7 +1991,7 @@ function kveldRes(){
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
-    <div id="p-recipe" style="display:none"><div class="rec">${rr.map(row=>`<div class="rrow"><span>${row.k}</span><span class="rval">${row.v}</span></div>`).join('')}</div></div>
+    <div id="p-recipe" style="display:none"><div class="rec">${recipeRowsHTML(rr)}</div></div>
     <div id="p-notes" style="display:none"><div id="notes-panel">Laster notater…</div></div>
     </div>`;
   updatePcountDisp();
@@ -2174,7 +2310,7 @@ function closeAdminModal(){
 
 // ===== FORMLER (kjernetall salt/olje/gjær/hydrering, redigerbart av admin) =====
 const FORMLER_FIELD_LABELS = {salt:'Salt', oil:'Olje', yeast:'Gjær', hydro:'Hydrering'};
-const FORMLER_TYPE_LABELS = {napoletana:'Napoletansk', newyork:'New York', chicago:'Chicago', langpanne:'Langpanne', ingenelting:'IngenElting'};
+const FORMLER_TYPE_LABELS = {napoletana:'Napoletansk', newyork:'New York', chicago:'Chicago', langpanne:'Langpanne', ingenelting:'Ingen elting'};
 
 async function openFormlerModal(){
   document.getElementById('formler-modal').style.display = 'flex';
@@ -2369,6 +2505,23 @@ async function formlerHandleSuggestion(id, status){
   if(wrap){ wrap.style.display='block'; await loadSuggestionsIntoWrap(wrap); }
 }
 
+function toggleSidenavMenu(){
+  const el = document.getElementById('sidenav-dropdown');
+  if(el) el.style.display = el.style.display==='block' ? 'none' : 'block';
+}
+function sidenavGo(fn){
+  const el = document.getElementById('sidenav-dropdown');
+  if(el) el.style.display = 'none';
+  if(typeof fn==='function') fn();
+}
+document.addEventListener('click', (e)=>{
+  const wrap = document.getElementById('sidenav-dropdown');
+  const trigger = document.querySelector('.menu-trigger');
+  if(wrap && wrap.style.display==='block' && !wrap.contains(e.target) && e.target!==trigger && !(trigger && trigger.contains(e.target))){
+    wrap.style.display = 'none';
+  }
+});
+
 function toggleAdvanced(){
   const sec = document.getElementById('adv-section');
   const arrow = document.getElementById('adv-arrow');
@@ -2456,8 +2609,7 @@ function syncMobControls(){
   mobPillGroup('mob-gtype','type');
   mobPillGroup('mob-ggj','gjaer');
   mobPillGroup('mob-gkm','kjokkenmaskin');
-  mobPillGroup('mob-gmel','meltype');
-  updateMeltypeInfo();
+  syncMobMeltypeSelect();
   mobPillGroup('mob-govn','oven');
   mobMethodCards();
   mobBuildHrows();
@@ -2486,24 +2638,28 @@ function mobPillGroup(id,key){
   const wrap=document.getElementById(id);if(!wrap)return;
   wrap.innerHTML='';
   const vals={
-    type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'},{v:'ingenelting',t:'IngenElting'}],
+    type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'},{v:'ingenelting',t:'Ingen elting'}],
     gjaer:[{v:'torr',t:'Tørrgjær'},{v:'fersk',t:'Fersk gjær'}],
     kjokkenmaskin:[{v:'ankarsrum',t:'Ankarsrum'},{v:'manuell',t:'Manuell elting'},{v:'annen',t:'Annen maskin'}],
-    meltype:MELTYPER.map(m=>({v:m.v,t:m.t})),
     oven:[{v:'pizza',t:'Pizzaovn'},{v:'vanlig',t:'Vanlig ovn'}]
   }[key]||[];
+  const isSeg = key==='gjaer' || key==='kjokkenmaskin' || key==='oven';
+  wrap.classList.toggle('mob-segctrl', isSeg);
   vals.forEach(({v,t})=>{
     const el=document.createElement('span');
     el.className='pill'+(S[key]===v?' on':'');
     el.textContent=t;
-    el.style.cssText='padding:5px 10px;border-radius:20px;border:1px solid;font-size:12px;cursor:pointer;white-space:nowrap;user-select:none;border-color:'+(S[key]===v?'#1D9E75':'#d0cdc8')+';background:'+(S[key]===v?'#1D9E75':'#fff')+';color:'+(S[key]===v?'#fff':'#555')+';font-weight:'+(S[key]===v?'600':'400');
+    if(isSeg){
+      el.style.cssText='flex:1;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'#fff':'transparent')+';color:#1D1D1F;box-shadow:'+(S[key]===v?'0 1px 2px rgba(0,0,0,.1)':'none');
+    }else{
+      el.style.cssText='padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'#1D9E75':'#F2F2F7')+';color:'+(S[key]===v?'#fff':'#1D1D1F');
+    }
     el.onclick=()=>{
       const changed = S[key] !== v;
       S[key]=v;
       mobPillGroup(id,key);
       if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
       if(key==='type' && changed) showPizzaToast(S.type);
-      if(key==='meltype') updateMeltypeInfo();
       mobGen();
     };
     wrap.appendChild(el);
@@ -2521,8 +2677,8 @@ function mobMethodCards(){
   ].forEach(({v,t,s,hc})=>{
     const el=document.createElement('div');
     const isOn=S.method===v;
-    el.style.cssText=`border-radius:8px;padding:.5rem .65rem;cursor:pointer;border:${isOn?'2px':'1px'} solid ${isOn?(hc?'#BA7517':'#1D9E75'):(hc?'#BA7517':'#d0cdc8')};background:${isOn?(hc?'#fef3e2':'#e8f7f1'):'#fff'}`;
-    el.innerHTML=`<div style="font-size:12px;font-weight:600;color:${isOn?(hc?'#633806':'#085041'):'#1a1a1a'}">${t}</div><div style="font-size:11px;color:${isOn?(hc?'#854F0B':'#0F6E56'):'#888'};margin-top:1px">${s}</div>`;
+    el.style.cssText=`border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${isOn?(hc?'#BA7517':'#1D9E75'):(hc?'#FFF4E5':'#F2F2F7')}`;
+    el.innerHTML=`<div style="font-size:13px;font-weight:600;color:${isOn?'#fff':'#1D1D1F'}">${t}</div><div style="font-size:11px;color:${isOn?'rgba(255,255,255,.85)':'#6E6E73'};margin-top:1px">${s}</div>`;
     el.onclick=()=>{
       S.method=v;mobMethodCards();
       document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';
@@ -2615,7 +2771,8 @@ function mobGen(){
     window._steps=steps;
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
-    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${w2}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.butter?`<div class="mob-rrow"><span>Smør</span><span class="mob-rval">${r2.butter}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Steking</span><span class="mob-rval">${tmp}</span></div></div></div>`;
+    const rrH=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${w2}g (${S.hydro}%)`},{k:'Salt',v:`${r2.salt}g`},...(r2.oil?[{k:'Olivenolje',v:`${r2.oil}g`}]:[]),...(r2.butter?[{k:'Smør',v:`${r2.butter}g`}]:[]),...(r2.sugar?[{k:'Sukker',v:`${r2.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp}];
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rrH)}</div></div>`;
     return;
   }
 
@@ -2624,7 +2781,8 @@ function mobGen(){
     window._steps=steps;
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),p=pc();
-    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec"><div class="mob-rrow"><span>Mel</span><span class="mob-rval">${S.mel}g</span></div><div class="mob-rrow"><span>Vann (${S.hydro}%)</span><span class="mob-rval">${r2.water}g</span></div><div class="mob-rrow"><span>Salt</span><span class="mob-rval">${r2.salt}g</span></div>${r2.oil?`<div class="mob-rrow"><span>Olivenolje</span><span class="mob-rval">${r2.oil}g</span></div>`:''}${r2.butter?`<div class="mob-rrow"><span>Smør</span><span class="mob-rval">${r2.butter}g</span></div>`:''}${r2.sugar?`<div class="mob-rrow"><span>Sukker</span><span class="mob-rval">${r2.sugar}g</span></div>`:''}<div class="mob-rrow"><span>Gjær</span><span class="mob-rval">${ya}</span></div><div class="mob-rrow"><span>Kjøleskap</span><span class="mob-rval">${S.kveldH}t</span></div></div></div>`;
+    const rrK=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${r2.water}g (${S.hydro}%)`},{k:'Salt',v:`${r2.salt}g`},...(r2.oil?[{k:'Olivenolje',v:`${r2.oil}g`}]:[]),...(r2.butter?[{k:'Smør',v:`${r2.butter}g`}]:[]),...(r2.sugar?[{k:'Sukker',v:`${r2.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Kjøleskap',v:`${S.kveldH}t`}];
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rrK)}</div></div>`;
     return;
   }
 
@@ -2635,7 +2793,7 @@ function mobGen(){
   document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e8e5e0;font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
-  document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${rr.map(row=>`<div class="mob-rrow"><span>${row.k}</span><span class="mob-rval">${row.v}</span></div>`).join('')}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
+  document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rr)}</div><div class="swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
 
   // tips tab
   document.getElementById('mob-tips-content').innerHTML=`<div class="mob-content">${buildTechHTML()}</div>`;
@@ -2728,17 +2886,22 @@ function bakeCardHTML(b, mob){
     </div>`;
   }
   const finDt = b.finishedAt ? (()=>{try{return fDT(new Date(b.finishedAt));}catch(e){return '';}})() : '';
+  const ratingHtml = b.rating ? `<div style="margin-top:4px;font-size:13px;color:#EFAB27">${'★'.repeat(b.rating)}${'☆'.repeat(5-b.rating)}</div>` : '';
+  const photoHtml = b.photo ? `<img src="${b.photo}" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:6px">` : '';
   return `<div style="border:1px solid ${b.favorite?'#EFAB27':'#e0ddd8'};border-radius:10px;padding:${pad};margin-bottom:8px;background:#faf9f6;opacity:.9">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <div style="min-width:0;display:flex;gap:6px;align-items:flex-start">
+      <div style="min-width:0;display:flex;gap:6px;align-items:flex-start;flex:1">
         ${starBtn}
-        <div>
+        <div style="flex:1;min-width:0">
           <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
           <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)} · Ferdig: ${finDt}</div>
+          ${ratingHtml}
+          ${photoHtml}
           ${b.note?`<div style="font-size:12px;color:#1a1a1a;margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>`:''}
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid #d0cdc8;border-radius:8px;background:#fff;color:#555;font-size:11px;cursor:pointer">${b.rating||b.photo?'✏️':'⭐'}</button>
         <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #d0cdc8;border-radius:8px;background:#fff;color:#555;font-size:11px;cursor:pointer">Se</button>
         <button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid #e0ddd8;border-radius:8px;background:#fff;color:#993C1D;font-size:11px;cursor:pointer">Slett</button>
       </div>
@@ -2802,7 +2965,7 @@ async function saveBake(){
       res = await fetch('/api/bakes', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])] })
+        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])] })
       });
     }
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -2844,6 +3007,7 @@ function activeDeigIndicatorHTML(){
 function closeActiveDeig(){
   window._activeDeigId=null; window._activeDeigName=null;
   window._checked=new Set();
+  window._checkedIngredients=new Set();
   syncSaveBakeLabel();
   const isMob=document.getElementById('mob-layout')&&document.getElementById('mob-layout').classList.contains('active');
   if(isMob){ mobGen(); } else { gen(); }
@@ -2937,6 +3101,7 @@ function actionGroupHTML(){
       <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen slik at du eller andre kan hente den frem igjen senere">${saveBakeLabel()}</button>
       <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="Se alle lagrede deiger">🍽️ Mine deiger</button>
       <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</button>
+      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert steg">📅 Påminnelser</button>
       <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</button>
     </div>
     ${fontSizeStepperHTML()}
@@ -2955,8 +3120,8 @@ function syncDesktopControls(){
   const cdisp=document.getElementById('cdisp');if(cdisp)cdisp.textContent=ct;
   const tsl=document.getElementById('tsl');if(tsl)tsl.value=S.temp;
   uTempUI();
-  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('gmel','meltype',updateMeltypeInfo);pgrp('govn','oven');
-  updateMeltypeInfo();
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
+  syncMeltypeSelect();
   mCards();buildHrows();buildKrows();
   applyTypeUI();
 }
@@ -2967,6 +3132,7 @@ function openBake(id){
   window._activeDeigId = id;
   window._activeDeigName = b.name;
   window._checked = new Set(Array.isArray(b.checkedSteps) ? b.checkedSteps : []);
+  window._checkedIngredients = new Set(Array.isArray(b.checkedIngredients) ? b.checkedIngredients : []);
   syncSaveBakeLabel();
   document.body.classList.remove('pre-interact');
   Object.assign(S, b.config);
@@ -2996,22 +3162,97 @@ function openBake(id){
   }
 }
 
-async function finishBakePrompt(id){
-  if(!confirm('Merk denne deigen som ferdig? Du kan fortsatt skrive notater om den i Notater-fanen etterpå.')) return;
+let _finishBakeId = null;
+function finishBakePrompt(id){
+  _finishBakeId = id;
+  openFinishBakeModal(null, null, false);
+}
+function editRatingPrompt(id){
+  const b = (window._bakesCache||[]).find(x=>x.id===id);
+  _finishBakeId = id;
+  openFinishBakeModal(b?b.rating:null, b?b.photo:null, true);
+}
+function openFinishBakeModal(rating, photo, alreadyFinished){
+  window._pendingRating = rating;
+  window._pendingPhoto = photo;
+  window._editingFinished = !!alreadyFinished;
+  document.getElementById('finish-bake-modal-body').innerHTML = buildFinishBakeFormHTML(alreadyFinished);
+  document.getElementById('finish-bake-modal').style.display = 'flex';
+}
+function buildFinishBakeFormHTML(alreadyFinished){
+  const rating = window._pendingRating;
+  const photo = window._pendingPhoto;
+  const stars = [1,2,3,4,5].map(n=>`<span onclick="setPendingRating(${n})" style="font-size:28px;cursor:pointer;color:${rating&&n<=rating?'#EFAB27':'#E5E5EA'}">★</span>`).join('');
+  return `
+    <div style="font-size:12px;color:#666;margin-bottom:1rem;line-height:1.5">${alreadyFinished?'Endre vurdering og bilde for denne baksten.':'Gi den en rask vurdering og legg gjerne ved et bilde — så husker du hva som fungerte neste gang.'}</div>
+    <div style="text-align:center;margin-bottom:1rem" id="finish-stars">${stars}</div>
+    <div id="finish-photo-preview" style="margin-bottom:.8rem;text-align:center">${photo?`<img src="${photo}" style="max-width:100%;max-height:200px;border-radius:10px">`:''}</div>
+    <input type="file" accept="image/*" id="finish-photo-input" onchange="handlePhotoUpload(event)" style="display:none">
+    <button onclick="document.getElementById('finish-photo-input').click()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:.8rem">📷 ${photo?'Bytt bilde':'Legg til bilde'}</button>
+    <div style="display:flex;gap:8px">
+      <button onclick="confirmFinishBake(${alreadyFinished})" style="flex:1;height:38px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${alreadyFinished?'Lagre':'Merk som ferdig'}</button>
+      ${alreadyFinished?'':'<button onclick="confirmFinishBake(false,true)" style="flex-shrink:0;height:38px;padding:0 14px;border:none;border-radius:10px;background:transparent;color:#6E6E73;font-size:13px;cursor:pointer">Hopp over</button>'}
+    </div>
+    <div id="finish-status" style="text-align:center;font-size:12px;color:#8E8E93;margin-top:.5rem"></div>`;
+}
+function setPendingRating(n){
+  window._pendingRating = n;
+  document.getElementById('finish-bake-modal-body').innerHTML = buildFinishBakeFormHTML(!!window._editingFinished);
+}
+function handlePhotoUpload(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    img.onload = ()=>{
+      const maxW = 640;
+      const scale = Math.min(1, maxW/img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width*scale;
+      canvas.height = img.height*scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      window._pendingPhoto = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('finish-bake-modal-body').innerHTML = buildFinishBakeFormHTML(!!window._editingFinished);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+async function confirmFinishBake(alreadyFinished, skip){
+  const id = _finishBakeId;
+  if(!id) return;
+  const statusEl = document.getElementById('finish-status');
+  if(statusEl) statusEl.textContent = 'Lagrer...';
+  const body = {};
+  if(!alreadyFinished) body.status = 'finished';
+  if(!skip){
+    body.rating = window._pendingRating || null;
+    body.photo = window._pendingPhoto || null;
+  }
   try{
     const res = await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({status:'finished'})
+      body: JSON.stringify(body)
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
+    closeFinishBakeModal();
     refreshBaksterPanels();
     refreshNotesPanels();
     refreshDeigerBanner();
-  syncFavoriteButton();
+    syncFavoriteButton();
   }catch(e){
-    alert('Kunne ikke merke deigen som ferdig. ('+e.message+')');
+    if(statusEl) statusEl.textContent = 'Kunne ikke lagre — prøv igjen.';
   }
+}
+function closeFinishBakeModal(){
+  document.getElementById('finish-bake-modal').style.display = 'none';
+  _finishBakeId = null;
+  window._pendingRating = null;
+  window._pendingPhoto = null;
+  window._editingFinished = false;
 }
 
 async function deleteBakeConfirm(id){
@@ -3151,8 +3392,17 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div class="mob-section-lbl">Meltype</div>
-    <div class="mob-pill-wrap" id="mob-gmel"></div>
-    <div id="mob-gmel-info" style="margin:2px 1rem 8px;font-size:12px;color:#888;background:#f0ede8;border-radius:6px;padding:6px 9px;line-height:1.4"></div>
+    <div class="dropdown-select" style="margin:0 1rem .4rem">
+      <select id="mob-gmel">
+        <option value="dallari">Dallari pizzamel</option>
+        <option value="doppio_zero" selected>Caputo Doppio Zero</option>
+        <option value="pizzeria">Caputo Pizzeria</option>
+        <option value="nuvola">Caputo Nuvola</option>
+        <option value="couco">Caputo Couco</option>
+        <option value="manitoba">Caputo Manitoba Oro</option>
+      </select>
+    </div>
+    <div id="mob-gmel-info" style="margin:2px 1rem 8px;font-size:12px;color:#6E6E73;background:#F2F2F7;border-radius:6px;padding:6px 9px;line-height:1.4"></div>
 
     <div id="mob-govn-wrap">
       <div class="mob-section-lbl">Ovntype</div>
