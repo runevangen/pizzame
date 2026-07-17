@@ -137,6 +137,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 /* bottom tab bar */
 .mob-tabbar{background:#fff;border-top:1px solid #EDEDED;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
 .mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
+@keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.6}}
 .mob-tab span[aria-hidden]{font-size:18px;line-height:1}
 .mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
 
@@ -363,7 +364,7 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
       </div>
       <div style="display:flex;gap:10px;margin-bottom:.3rem;align-items:flex-start">
         <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div>
-        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Følg tidsplanen</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
+        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Følg steg for steg</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
       </div>
       <div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) ligger bak "⚙️ Avanserte innstillinger" i sidepanelet, hvis du vil finjustere. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "☰ Meny" øverst.</div>
       <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:13px;font-weight:600;cursor:pointer;margin-top:1rem">Ikke vis igjen</button>
@@ -541,7 +542,7 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
 <div class="mn" id="main">
   <div style="display:flex;align-items:center;justify-content:center;height:80vh;flex-direction:column;gap:12px;color:#aaa">
     <div style="font-size:60px">🍕</div>
-    <p style="font-size:15px;color:#888">Tidsplanen oppdateres automatisk når du gjør endringer</p>
+    <p style="font-size:15px;color:#888">Steg for steg oppdateres automatisk når du gjør endringer</p>
   </div>
 </div>
 </div>
@@ -1650,6 +1651,14 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.0',
+    d: 'juli 2026',
+    changes: [
+      '"Tidsplan" heter nå "Steg for steg" — mer tydelig for nye brukere at det er her selve fremgangsmåten vises, ikke bare en kalenderoversikt.',
+      'Ny pulserende prikk på "Steg for steg"-fanen på mobil, synlig helt til du besøker den første gang — en tydelig dytt videre etter at du har valgt pizzatype/metode i innstillinger.'
+    ]
+  },
+  {
     v: '4.9',
     d: 'juli 2026',
     changes: [
@@ -2057,7 +2066,7 @@ function gen(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
@@ -2079,7 +2088,7 @@ function hurtigRes(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
@@ -2101,7 +2110,7 @@ function kveldRes(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
     <h2>Kveldsdeig <span style="color:#1D9E75;font-weight:500">· ${S.kveldH} timer kjøl</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
@@ -2256,7 +2265,11 @@ function setLayout(mode){
   const mobEl=document.getElementById('mob-layout');
   if(mobEl){mobEl.classList.toggle('active',isMob);}
   try{localStorage.setItem('pizzaLayout',mode);}catch(e){}
-  if(isMob){syncMobControls();mobGen();}
+  if(isMob){
+    syncMobControls();mobGen();
+    const dot=document.getElementById('mob-plan-pulse-dot');
+    if(dot) dot.style.display = window._planVisited ? 'none' : 'block';
+  }
   else{gen();}
 }
 
@@ -2881,6 +2894,11 @@ function mobShowTab(t){
   });
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
   if(t==='notes')renderNotesPanel('mob-notes-content');
+  if(t==='plan'){
+    window._planVisited=true;
+    const dot=document.getElementById('mob-plan-pulse-dot');
+    if(dot)dot.style.display='none';
+  }
 }
 
 function mobGetAnchor(p){
@@ -3617,8 +3635,9 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-tab on" id="mob-tab-settings" onclick="mobShowTab('settings')">
       <span aria-hidden="true">⚙️</span>Pizzaplanlegger
     </div>
-    <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')">
-      <span aria-hidden="true">📅</span>Tidsplan
+    <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')" style="position:relative">
+      <span aria-hidden="true">📅</span>Steg for steg
+      <span id="mob-plan-pulse-dot" style="display:none;position:absolute;top:2px;right:18px;width:9px;height:9px;border-radius:50%;background:#1D9E75;animation:pulseDot 1.6s ease-in-out infinite"></span>
     </div>
     <div class="mob-tab" id="mob-tab-recipe" onclick="mobShowTab('recipe')">
       <span aria-hidden="true">🍕</span>Oppskrift
