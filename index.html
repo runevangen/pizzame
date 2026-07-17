@@ -305,6 +305,9 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
   <div style="font-size:36px">🍕</div>
   <div style="font-size:13px;color:#888">Laster...</div>
 </div>
+<div id="wizard-overlay" style="position:fixed;inset:0;background:#fff;z-index:300;display:none;flex-direction:column">
+  <div id="wizard-body" style="flex:1;display:flex;flex-direction:column;padding:1.2rem;padding-top:calc(1.2rem + env(safe-area-inset-top,0px));padding-bottom:calc(1.2rem + env(safe-area-inset-bottom,0px));overflow-y:auto"></div>
+</div>
 <div id="auth-overlay" style="position:fixed;inset:0;background:#f5f4f0;z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem">
   <div style="background:#fff;border-radius:14px;padding:1.5rem 1.3rem;max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.15)">
     <div style="text-align:center;font-size:32px;margin-bottom:.3rem">🍕</div>
@@ -1651,6 +1654,16 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.2',
+    d: 'juli 2026',
+    changes: [
+      'Ny wizard-flyt for innstillinger på mobil — erstatter den lange ettsides listen med tre korte steg (Pizzatype → Metode → Når vil du spise), med brødsmule-sti øverst du kan trykke på for å hoppe rett tilbake til et tidligere valg.',
+      'Returnerende brukere møtes av et valg først: "Bruk samme som sist", "Åpne favoritten min", eller "Start noe nytt" — for å unngå at wizarden blir tungvint hvis du baker samme oppskrift ofte.',
+      '"Finjuster"-lenke på siste steg åpner alle de andre innstillingene (mel, hydrering, gjærtype, meltype osv.) samlet, for de som vil justere mer.',
+      'Kun mobil — PC-versjonen er uendret.'
+    ]
+  },
+  {
     v: '5.1',
     d: 'juli 2026',
     changes: [
@@ -2892,6 +2905,115 @@ function mobSetMode(m){
   mobGen();
 }
 
+// ===== WIZARD-FLYT FOR MOBIL INNSTILLINGER =====
+// Reversering: sett USE_WIZARD_FLOW til false for å gå tilbake til den gamle,
+// ettsides innstillinger-visningen uten wizard — ingen annen kode må endres.
+const USE_WIZARD_FLOW = true;
+window._wizEnteredOnce = false;
+
+function wizEnterSettingsTab(){
+  if(!USE_WIZARD_FLOW){
+    document.querySelectorAll('#mob-settings .wiz-step').forEach(el=>{ el.style.display='block'; });
+    return;
+  }
+  if(window._wizEnteredOnce) return; // ikke vis "Hei igjen" på nytt bare fordi du bytter fane frem og tilbake
+  window._wizEnteredOnce = true;
+  wizDecideStart();
+}
+
+async function wizDecideStart(){
+  const hasFavorite = !!window._favoriteId;
+  let hasSavedDough = false;
+  try{
+    const bakes = await fetchBakes();
+    hasSavedDough = Array.isArray(bakes) && bakes.some(b=>b.status==='active');
+  }catch(e){}
+  let hasLastConfig = false;
+  try{ hasLastConfig = !!localStorage.getItem('pizzaLastConfig'); }catch(e){}
+  if(hasFavorite || hasSavedDough || hasLastConfig){
+    wizHideAllSteps();
+    document.getElementById('wiz-returning').style.display='block';
+    document.getElementById('wiz-returning-sub').textContent = hasLastConfig ? wizLastConfigSummary() : 'Du har brukt appen før';
+    document.getElementById('wiz-use-last-btn').style.display = hasLastConfig ? 'block' : 'none';
+    document.getElementById('wiz-use-fav-btn').style.display = hasFavorite ? 'block' : 'none';
+  }else{
+    wizGoto(1);
+  }
+}
+
+function wizLastConfigSummary(){
+  try{
+    const cfg = JSON.parse(localStorage.getItem('pizzaLastConfig'));
+    return 'Sist bakte du '+tnShort(cfg.type)+' med '+mN(cfg.method)+'-metoden';
+  }catch(e){ return 'Du har brukt appen før'; }
+}
+function tnShort(type){
+  return {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago',ingenelting:'Ingen elting'}[type]||type;
+}
+
+function wizHideAllSteps(){
+  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-3','wiz-finjuster'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
+}
+
+function wizUseLastConfig(){
+  try{
+    const cfg = JSON.parse(localStorage.getItem('pizzaLastConfig'));
+    Object.assign(S, cfg);
+  }catch(e){}
+  mobShowTab('plan');
+}
+async function wizOpenFavoriteFromWizard(){
+  await openFavorite();
+  if(window._activeDeigId) mobShowTab('plan');
+}
+
+const WIZ_STEPS = [
+  {id:1, label:'Pizzatype'},
+  {id:2, label:'Metode'},
+  {id:3, label:'Når?'}
+];
+function wizGoto(step){
+  window._wizStep = step;
+  document.getElementById('wiz-returning').style.display='none';
+  wizHideAllSteps();
+  document.getElementById('wiz-header').style.display='block';
+  if(step==='finjuster'){
+    document.getElementById('wiz-finjuster').style.display='block';
+  }else{
+    const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
+  }
+  wizRenderHeader(step);
+}
+function wizRenderHeader(step){
+  const idx = typeof step==='number' ? step : 4;
+  document.getElementById('wiz-progress-fill').style.width = Math.min(100, idx/3*100)+'%';
+  document.getElementById('wiz-back').style.visibility = idx>1 ? 'visible' : 'hidden';
+  const crumbsEl = document.getElementById('wiz-crumbs');
+  crumbsEl.innerHTML = WIZ_STEPS.map(s=>{
+    const done = s.id < idx;
+    const cur = s.id === idx;
+    const txt = (s.id===1 && (done||cur)) ? tnShort(S.type) : (s.id===2 && (done||cur)) ? mN(S.method) : s.label;
+    return `<span onclick="${done?`wizGoto(${s.id})`:''}" style="font-size:10px;padding:3px 8px;border-radius:10px;cursor:${done?'pointer':'default'};background:${cur?'#1D9E75':done?'#E1F5EE':'#F2F2F7'};color:${cur?'#fff':done?'#085041':'#8E8E93'};font-weight:${done||cur?'600':'400'}">${txt}</span>`;
+  }).join('');
+}
+function wizNext(){
+  const cur = window._wizStep;
+  if(cur===1) wizGoto(2);
+  else if(cur===2) wizGoto(3);
+}
+function wizBack(){
+  const cur = window._wizStep;
+  if(cur==='finjuster') wizGoto(3);
+  else if(cur===3) wizGoto(2);
+  else if(cur===2) wizGoto(1);
+}
+function wizFinish(){
+  try{ localStorage.setItem('pizzaLastConfig', JSON.stringify({...S})); }catch(e){}
+  mobShowTab('plan');
+}
+
 function mobShowTab(t){
   ['plan','settings','recipe','tips','notes','bakster'].forEach(id=>{
     const scr=document.getElementById('mob-'+id);
@@ -2901,6 +3023,7 @@ function mobShowTab(t){
   });
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
   if(t==='notes')renderNotesPanel('mob-notes-content');
+  if(t==='settings') wizEnterSettingsTab();
   updatePlanPulseDot(t);
 }
 // Varig, tilstandsbasert dytt videre — ikke en engangs-pulsering man ser bare første gang.
@@ -3490,42 +3613,74 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <!-- TAB: INNSTILLINGER -->
   <div class="mob-screen active" id="mob-settings">
-    <div class="mob-section-lbl">Pizzatype</div>
-    <div class="mob-pill-wrap" id="mob-gtype"></div>
-
-    <div id="mob-gmet-wrap">
-      <div class="mob-section-lbl">Metode</div>
-      <div class="mob-mcard-wrap" id="mob-gmet"></div>
-    </div>
-    <div id="mob-hsub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div id="mob-hrows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
-    </div>
-    <div id="mob-ksub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+    <div id="wiz-returning" class="wiz-step" style="display:none;padding:2rem 1.2rem;text-align:center">
+      <div style="font-size:17px;font-weight:700;margin-bottom:.3rem">Hei igjen! 👋</div>
+      <div id="wiz-returning-sub" style="font-size:12px;color:#6E6E73;margin-bottom:1.3rem"></div>
+      <button id="wiz-use-last-btn" onclick="wizUseLastConfig()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">🔁 Bruk samme som sist</button>
+      <button id="wiz-use-fav-btn" onclick="wizOpenFavoriteFromWizard()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">⭐ Åpne favoritten min</button>
+      <button onclick="wizGoto(1)" style="width:100%;height:40px;border:none;background:transparent;color:#1D9E75;font-size:13px;font-weight:600;cursor:pointer">Start noe nytt →</button>
     </div>
 
-    <div class="mob-section-lbl">Planlegg fra</div>
-    <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
-      <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;color:#888;font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
-    </div>
-    <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
-      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
-        <input type="date" id="mob-sd">
-        <input type="time" id="mob-st" value="07:30">
+    <div id="wiz-header" class="wiz-step" style="display:none;padding:.8rem 1rem .3rem">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:#6E6E73;cursor:pointer;padding:2px 6px">←</span>
+        <div style="flex:1;height:4px;background:#F2F2F7;border-radius:2px;overflow:hidden"><div id="wiz-progress-fill" style="height:100%;width:33%;background:#1D9E75;border-radius:2px;transition:width .2s"></div></div>
       </div>
+      <div id="wiz-crumbs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
     </div>
-    <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
-      <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
-        <input type="date" id="mob-ed">
-        <input type="time" id="mob-et" value="18:00">
-      </div>
-    </div>
-    <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:#1D9E75;background:#fff;display:none"></div>
-    <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
 
+    <div id="wiz-step-1" class="wiz-step" style="display:none">
+      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken pizza?</div>
+      <div class="mob-section-lbl" style="display:none">Pizzatype</div>
+      <div class="mob-pill-wrap" id="mob-gtype"></div>
+      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
+    </div>
+
+    <div id="wiz-step-2" class="wiz-step" style="display:none">
+      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken metode?</div>
+      <div style="padding:0 1rem .5rem;font-size:11px;color:#6E6E73">Standard fungerer fint om du er usikker</div>
+      <div id="mob-gmet-wrap">
+        <div class="mob-section-lbl" style="display:none">Metode</div>
+        <div class="mob-mcard-wrap" id="mob-gmet"></div>
+      </div>
+      <div id="mob-hsub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
+        <div id="mob-hrows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div id="mob-ksub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
+        <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
+    </div>
+
+    <div id="wiz-step-3" class="wiz-step" style="display:none">
+      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Når vil du spise?</div>
+      <div class="mob-section-lbl" style="display:none">Planlegg fra</div>
+      <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
+        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;color:#888;font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
+      </div>
+      <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+        <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+          <input type="date" id="mob-sd">
+          <input type="time" id="mob-st" value="07:30">
+        </div>
+      </div>
+      <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+        <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+          <input type="date" id="mob-ed">
+          <input type="time" id="mob-et" value="18:00">
+        </div>
+      </div>
+      <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:#1D9E75;background:#fff;display:none"></div>
+      <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
+      <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
+      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="wizGoto('finjuster')" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">⚙️ Finjuster (mel, gjærtype, meltype osv.)</span></div>
+    </div>
+
+    <div id="wiz-finjuster" class="wiz-step" style="display:none">
+      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Finjuster</div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)">
       <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
@@ -3575,6 +3730,8 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div id="mob-govn-wrap">
       <div class="mob-section-lbl">Ovntype</div>
       <div class="mob-pill-wrap" id="mob-govn"></div>
+    </div>
+    <div style="padding:1rem"><button onclick="wizFinish()" style="width:100%;height:40px;border:none;background:transparent;color:#1D9E75;font-size:13px;font-weight:600;cursor:pointer">← Ferdig, se steg for steg</button></div>
     </div>
 
     <div class="mob-section-lbl">Visning</div>
