@@ -366,6 +366,7 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
         <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Følg tidsplanen</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
       </div>
       <div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) ligger bak "⚙️ Avanserte innstillinger" i sidepanelet, hvis du vil finjustere. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "☰ Meny" øverst.</div>
+      <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:13px;font-weight:600;cursor:pointer;margin-top:1rem">Ikke vis igjen</button>
     </div>
   </div>
 </div>
@@ -402,6 +403,7 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
       <span>🍽️ Deiger</span>
       <span id="active-deiger-count" class="cnt" style="display:none">0</span>
     </div>
+    <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none">★ Min favoritt</div>
     <div class="menu-row" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
@@ -475,8 +477,8 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
     <div id="hhint" class="hint"></div>
   </div>
 
-  <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">3 dager</span></div>
-    <div class="sr"><input type="range" id="csl" min="1" max="6" step="1" value="3" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">3 dager</span></div>
+  <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">1 dag</span></div>
+    <div class="sr"><input type="range" id="csl" min="1" max="6" step="1" value="1" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">1 dag</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>1 dag</span><span>6 dager</span></div>
   </div>
 
@@ -532,8 +534,8 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
 
   <div class="brow">
     <button class="bgo" onclick="doReset()" title="Nullstill alle innstillinger">↺ Nullstill</button>
-    <button id="fav-btn" onclick="openFavorite()" title="Åpne din favorittdeig" style="display:none;padding:8px 12px;border:1px solid #EFAB27;border-radius:8px;background:#FFF8EA;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer;align-items:center;gap:5px">★ Min favoritt</button>
   </div>
+  <div id="logged-in-as" style="font-size:11px;color:#8E8E93;text-align:center;padding-top:8px;margin-top:4px;border-top:1px solid #EDEDED"></div>
 </div>
 
 <div class="mn" id="main">
@@ -545,7 +547,7 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
 </div>
 
 <script>
-const DEF={type:'napoletana',method:'standard',cold:3,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,meltype:'doppio_zero',showHelp:true};
+const DEF={type:'napoletana',method:'standard',cold:1,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,meltype:'doppio_zero',showHelp:true};
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
@@ -764,7 +766,7 @@ function doReset(){
   syncSaveBakeLabel();
   document.getElementById('msl').value=500;uMel(500);
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
-  document.getElementById('csl').value=3;uCold(3);
+  document.getElementById('csl').value=1;uCold(1);
   document.getElementById('tsl').value=22;S.temp=22;uTempUI();
   pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
   syncMeltypeSelect();
@@ -1603,6 +1605,25 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '4.3',
+    d: 'juli 2026',
+    changes: [
+      '"★ Min favoritt" er flyttet fra en egen knapp i sidepanelet til en handling i "☰ Meny". Fikset samtidig en underliggende svakhet — å åpne favoritten kunne feile stille hvis "Deiger" aldri var åpnet i økten ennå.',
+      'Guiden vises nå automatisk hver gang du logger inn, helt til du trykker "Ikke vis igjen" — å bare lukke den med ✕ viser den på nytt neste gang.',
+      'Standard kjøleskapsheving er endret fra 3 til 1 dag — 3 dager kombinert med standard meltype (Doppio Zero) ga et gjæringsvarsel til nesten alle nye brukere med en gang, siden 72 timer ligger utenfor Doppio Zero sitt 24-timers vindu. Gjelder også ved Nullstill.'
+    ]
+  },
+  {
+    v: '4.2',
+    d: 'juli 2026',
+    changes: [
+      'Fikset en reell feil: etter å ha lagret en deig på PC, viste appen fortsatt "Ulagret oppsett" til du gjorde en annen endring — lagringen fungerte, men visningen oppdaterte seg ikke med en gang.',
+      'Overskriften viser nå navnet på lagret deig, f.eks. "Langpannepizza · standard · Runes lagrede pizza".',
+      '"Pålogget som [navn]" vises nå nederst i sidepanelet.',
+      'Feedback-skjemaet lukker seg selv kort tid etter vellykket sending, i stedet for at du må trykke ✕ manuelt.'
+    ]
+  },
+  {
     v: '4.1',
     d: 'juli 2026',
     changes: [
@@ -1872,7 +1893,7 @@ async function submitFeedback(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     if(statusEl) statusEl.textContent = '✓ Takk! Sendt.';
     if(ta) ta.value='';
-    setTimeout(()=>{ if(statusEl) statusEl.textContent=''; }, 3000);
+    setTimeout(()=>{ closeFeedbackModal(); }, 1100);
   }catch(e){
     if(statusEl) statusEl.textContent = 'Kunne ikke sende — prøv igjen.';
   }
@@ -1943,7 +1964,7 @@ function gen(){
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
-    <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${methodFlashHTML()}</h2>
+    <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
@@ -1965,7 +1986,7 @@ function hurtigRes(){
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
-    <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${methodFlashHTML()}</h2>
+    <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
@@ -1987,7 +2008,7 @@ function kveldRes(){
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Tidsplan</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
-    <h2>Kveldsdeig <span style="color:#1D9E75;font-weight:500">· ${S.kveldH} timer kjøl</span>${methodFlashHTML()}</h2>
+    <h2>Kveldsdeig <span style="color:#1D9E75;font-weight:500">· ${S.kveldH} timer kjøl</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
@@ -2228,6 +2249,13 @@ function authComplete(id, name){
   try{ localStorage.setItem('pizzaUser', JSON.stringify({id,name})); }catch(e){}
   document.getElementById('auth-overlay').style.display = 'none';
   maybeShowGuideOnLoad();
+  syncLoggedInAs();
+}
+function syncLoggedInAs(){
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem('pizzaUser')); }catch(e){}
+  const el = document.getElementById('logged-in-as');
+  if(el) el.textContent = saved && saved.name ? 'Pålogget som '+saved.name : '';
 }
 function authLogout(){
   try{ localStorage.removeItem('pizzaUser'); }catch(e){}
@@ -2239,6 +2267,7 @@ function checkAuthOnLoad(){
   if(saved && saved.id && saved.name){
     document.getElementById('auth-overlay').style.display = 'none';
     maybeShowGuideOnLoad();
+    syncLoggedInAs();
   }else{
     document.getElementById('auth-body').innerHTML = authNameScreenHTML();
   }
@@ -2543,15 +2572,18 @@ function initAdvancedState(){
 
 function openGuideModal(){
   document.getElementById('guide-modal').style.display = 'flex';
-  try{ localStorage.setItem('pizzaGuideSeen', '1'); }catch(e){}
 }
 function closeGuideModal(){
   document.getElementById('guide-modal').style.display = 'none';
 }
+function dismissGuideForever(){
+  try{ localStorage.setItem('pizzaGuideSeen', '1'); }catch(e){}
+  closeGuideModal();
+}
 function maybeShowGuideOnLoad(){
-  let seen = false;
-  try{ seen = localStorage.getItem('pizzaGuideSeen')==='1'; }catch(e){}
-  if(!seen) openGuideModal();
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem('pizzaGuideSeen')==='1'; }catch(e){}
+  if(!dismissed) openGuideModal();
 }
 
 // ===== KJERNETALL FRA SERVER (salt/olje/gjær/hydrering per pizzatype) =====
@@ -2842,18 +2874,21 @@ async function toggleFavorite(id, currentlyFavorite){
 async function syncFavoriteButton(){
   const bakes = await fetchBakes();
   const fav = bakes ? bakes.find(b=>b.favorite) : null;
-  ['fav-btn','mob-fav-btn'].forEach(id=>{
+  ['fav-menu-row','mob-fav-btn'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display = fav ? 'flex' : 'none';
   });
   window._favoriteId = fav ? fav.id : null;
 }
 
-function openFavorite(){
-  if(window._favoriteId){
-    openBake(window._favoriteId);
-    closeDeigerModal();
+async function openFavorite(){
+  if(!window._favoriteId) return;
+  let b = (window._bakesCache||[]).find(x=>x.id===window._favoriteId);
+  if(!b){
+    const bakes = await fetchBakes();
+    if(bakes){ window._bakesCache = bakes; b = bakes.find(x=>x.id===window._favoriteId); }
   }
+  if(b){ openBake(window._favoriteId); closeDeigerModal(); }
 }
 
 function bakeMetaLine(b){
@@ -2951,8 +2986,6 @@ async function saveBake(){
   try{
     anchorISO = (isMob ? mobGetAnchor(S.mode==='end'?'e':'s') : anc(S.mode==='end'?'e':'s')).toISOString();
   }catch(e){ anchorISO = new Date().toISOString(); }
-  const btn = isMob ? document.getElementById('mob-savebake-btn') : document.getElementById('savebake-btn');
-  const origHTML = btn ? btn.innerHTML : null;
   try{
     let res;
     if(activeId){
@@ -2972,13 +3005,16 @@ async function saveBake(){
     const saved = await res.json();
     window._activeDeigId = saved.id;
     window._activeDeigName = saved.name;
-    if(btn){
-      btn.innerHTML = isMob ? '<i>✓</i>Lagret' : '✓ Lagret!';
-      setTimeout(()=>{ if(btn) btn.innerHTML = origHTML; }, 2000);
-    }
     syncSaveBakeLabel();
     refreshDeigerBanner();
-  syncFavoriteButton();
+    syncFavoriteButton();
+    if(isMob){ mobGen(); } else { gen(); }
+    const freshBtn = isMob ? document.getElementById('mob-savebake-btn') : document.getElementById('savebake-btn');
+    if(freshBtn){
+      const freshOrig = freshBtn.innerHTML;
+      freshBtn.innerHTML = isMob ? '<i>✓</i>Lagret' : '✓ Lagret!';
+      setTimeout(()=>{ if(freshBtn) freshBtn.innerHTML = freshOrig; }, 2000);
+    }
   }catch(e){
     alert('Kunne ikke lagre deig. Sjekk nettforbindelsen og at Netlify-funksjonen er koblet til.\n('+e.message+')');
   }
@@ -3077,6 +3113,9 @@ function showPizzaToast(type){
   }, 2500);
 }
 
+function savedDeigSuffix(){
+  return window._activeDeigId ? ` <span style="color:#8E8E93;font-weight:500">· ${escH(window._activeDeigName||'')}</span>` : '';
+}
 function methodFlashHTML(){
   const changed = window._lastMethod!==undefined && window._lastMethod!==S.method;
   window._lastMethod = S.method;
@@ -3376,8 +3415,8 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-slider-wrap"><input type="range" id="mob-hsl" min="55" max="80" step="1" value="65" oninput="mobUHydro(this.value)"></div>
 
     <div id="mob-cwrap">
-      <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">3 dager</span></div>
-      <div class="mob-slider-wrap"><input type="range" id="mob-csl" min="1" max="6" step="1" value="3" oninput="mobUCold(this.value)"></div>
+      <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">1 dag</span></div>
+      <div class="mob-slider-wrap"><input type="range" id="mob-csl" min="1" max="6" step="1" value="1" oninput="mobUCold(this.value)"></div>
     </div>
 
     <div class="mob-section-lbl">Romtemperatur — <span id="mob-tlbl">22°C</span></div>
