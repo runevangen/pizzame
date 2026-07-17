@@ -1437,6 +1437,23 @@ function toggleHelpFromPlan(){
   gen();
 }
 
+// Hurtigdeig og Kveldsdeig bruker egne gjærkurver (HOPTS/KCOLDMULT), ikke R() sin
+// generelle BYEAST-basert beregning. copyP() må bruke samme kilde som selve
+// stegene faktisk viser, ellers stemmer ikke ingredienslisten med Tidsplan.
+function currentYeastAmount(){
+  if(S.method==='hurtig'){
+    const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3];
+    const f=S.mel/500;
+    const yd=Math.round(o.yp*f*100)/100, yf=Math.round(yd*3*10)/10;
+    return S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+  }
+  if(S.method==='kveld'){
+    const mult=KCOLDMULT[S.kveldH]||2.0;
+    const yd=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100, yf=Math.round(yd*3*10)/10;
+    return S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+  }
+  return yA(R());
+}
 function copyP(steps){
   const r=R(),p=pc();
   const coldLine = S.type==='ingenelting' ? null
@@ -1444,7 +1461,7 @@ function copyP(steps){
     : S.method==='hurtig' ? `Ovn: ${oN()}`
     : `Kjøleskapsheving: ${S.cold} dager · Ovn: ${oN()}`;
   const ovnLine = S.type==='ingenelting' ? `Ovn: Vanlig ovn, 250°C` : null;
-  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.butter?[`Smør: ${r.butter}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${yA(r)}`,'','TIDSPLAN','--------'];
+  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.butter?[`Smør: ${r.butter}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${currentYeastAmount()}`,'','TIDSPLAN','--------'];
   steps.forEach((s,i)=>{
     const locMap={kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'};
     const loc=locMap[s.loc]||s.loc;
@@ -1629,6 +1646,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '4.6',
+    d: 'juli 2026',
+    changes: [
+      'Fikset et avvik i "Kopier"-funksjonen: gjærmengden i ingredienslisten stemte ikke alltid med det som faktisk sto i selve tidsplan-steget for Hurtigdeig og Kveldsdeig, siden kopieringen brukte en annen (generell) beregning enn de to metodene faktisk bruker.'
+    ]
+  },
   {
     v: '4.5',
     d: 'juli 2026',
