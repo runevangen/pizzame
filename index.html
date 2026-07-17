@@ -955,6 +955,18 @@ function waterTempPhrase(){
     ? 'kaldt vann, gjerne rett fra kjøleskapet'
     : 'kjølig eller romtemperert vann (ikke iskaldt)';
 }
+// "Desired Dough Temperature"-formelen bakere bruker for å styre sluttdeigens temperatur:
+// vanntemp = 3×ønsket deigtemp − (romtemp + meltemp + friksjonsfaktor). Meltemp antas lik
+// romtemp (vanlig forenkling når melet oppbevares i samme rom som mikseren). Friksjonsfaktoren
+// varierer med eltemetode — Ankarsrum/hånd gir lite friksjonsvarme, kraftigere eltekroker mer.
+// Mål: ~24°C ferdig deig, uansett hvor lang eller kort gjæringstiden er — det er gjærmengden,
+// ikke vanntemperaturen, som skal styre farten på gjæringen.
+function calcWaterTempC(){
+  const FF = {ankarsrum:8, manuell:4, annen:16}[S.kjokkenmaskin] ?? 10;
+  const target = 24;
+  const t = Math.round(3*target - S.temp - S.temp - FF);
+  return Math.max(4, Math.min(t, 38)); // fornuftige grenser: fra kaldt kjøleskapsvann til lunkent
+}
 function machineLabel(){
   return {ankarsrum:'Ankarsrum',manuell:'For hånd',annen:'kjøkkenmaskinen'}[S.kjokkenmaskin]||'Ankarsrum';
 }
@@ -1130,12 +1142,12 @@ function hurtigSteps(anchor){
   const t0=ie?sM(anchor,30+ba+afm):anchor;
   return{o,w,ya,tmp,ba,afm,p,steps:[
     {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:t0,dur:15,
-      desc:(S.kjokkenmaskin==='ankarsrum'
-        ?`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min.`
+      desc:(()=>{const wt=calcWaterTempC();return S.kjokkenmaskin==='ankarsrum'
+        ?`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min.`
         :S.kjokkenmaskin==='manuell'
-        ?`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
-        :`Hell ${w}g lunkent vann (35–38°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min.`)+langpanneHintText(),
-      why:'Lunkent vann (35–38°C) aktiverer gjæren raskt uansett eltemetode.',
+        ?`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
+        :`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min.`;})()+langpanneHintText(),
+      why:'Vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvor lenge den skal gjære — det er gjærmengden over, ikke vanntemperaturen, som gjør denne varianten rask.',
       tip:S.kjokkenmaskin==='ankarsrum'
         ?'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'
         :S.kjokkenmaskin==='manuell'
@@ -1570,9 +1582,10 @@ function buildTechHTML(){
   if(S.method==='hurtig'){
     return `
     ${machineSeqHTML()}
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor regnet vanntemperatur, ikke bare "lunkent"?</div><div class="sdesc">Vanntemperaturen er beregnet ut fra en formel bakere bruker for å styre sluttdeigens temperatur uansett hvor lenge den skal gjære: <b>3 × ønsket deigtemperatur − (romtemperatur × 2 + friksjon fra eltemetoden)</b>. Målet er ca. 24°C ferdig deig. Ved ${S.temp}°C rom med ${machineLabel()} lander det på ca. ${calcWaterTempC()}°C vann akkurat nå — endrer du romtemperatur eller kjøkkenmaskin i sidepanelet, endrer tallet seg med. Et kaldere rom trenger varmere vann for å nå samme sluttemperatur, og omvendt.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Lunkent vann og mer gjær kompenserer for tiden — resultatet blir godt, men ikke like komplekst i smaken.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Bruk 3× mengden av tørrgjær.'}</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Det er <b>gjærmengden</b> som kompenserer for tiden, ikke vanntemperaturen — vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvilket timevalg du velger, akkurat som ved lengre gjæringer. Resultatet blir godt, men ikke like komplekst i smaken.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs opp en liten del av vannmengden litt lunkent (rundt 35°C) for å få gjæren til å løse seg lett, tilsett så resten av vannet ved den beregnede temperaturen. Bruk 3× mengden av tørrgjær.'}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>`;
   }
   if(S.method==='kveld'){
@@ -1616,6 +1629,14 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '4.5',
+    d: 'juli 2026',
+    changes: [
+      'Hurtigdeig bruker nå en beregnet vanntemperatur i stedet for et fast "lunkent, 35–38°C" — basert på samme "ønsket deigtemperatur"-formel profesjonelle bakere bruker (3 × måltemperatur − romtemperatur × 2 − friksjon fra eltemetoden). Målet er ca. 24°C ferdig deig uansett timevalg, siden det er gjærmengden som skal styre hvor fort deigen går — ikke vanntemperaturen. Tallet endrer seg med romtemperatur og valgt kjøkkenmaskin.',
+      'Ny forklaring i Teknikk om hvorfor vanntemperaturen nå regnes ut i stedet for å være fast.'
+    ]
+  },
   {
     v: '4.4',
     d: 'juli 2026',
