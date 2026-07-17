@@ -1651,6 +1651,14 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.1',
+    d: 'juli 2026',
+    changes: [
+      'Mobilens "Steg for steg"-fane er kortet ned til "Steg" — den forrige teksten ble dårlig wrappet i bunnmenyen.',
+      'Dytt-videre-indikatoren er endret fra en engangs-pulsering til noe varig: den vises nå konsekvent hver gang du er på Innstillinger-fanen (du har nettopp valgt noe, gå videre til Steg), og skjules kun mens du faktisk står i Steg-fanen — ikke en engangsting du kan "bruke opp".'
+    ]
+  },
+  {
     v: '5.0',
     d: 'juli 2026',
     changes: [
@@ -2267,8 +2275,7 @@ function setLayout(mode){
   try{localStorage.setItem('pizzaLayout',mode);}catch(e){}
   if(isMob){
     syncMobControls();mobGen();
-    const dot=document.getElementById('mob-plan-pulse-dot');
-    if(dot) dot.style.display = window._planVisited ? 'none' : 'block';
+    updatePlanPulseDot('settings');
   }
   else{gen();}
 }
@@ -2894,11 +2901,14 @@ function mobShowTab(t){
   });
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
   if(t==='notes')renderNotesPanel('mob-notes-content');
-  if(t==='plan'){
-    window._planVisited=true;
-    const dot=document.getElementById('mob-plan-pulse-dot');
-    if(dot)dot.style.display='none';
-  }
+  updatePlanPulseDot(t);
+}
+// Varig, tilstandsbasert dytt videre — ikke en engangs-pulsering man ser bare første gang.
+// Vises konsekvent hver gang du er på Innstillinger (du har nettopp valgt noe, gå videre til Steg),
+// skjules når du faktisk er på Steg-fanen selv.
+function updatePlanPulseDot(activeTab){
+  const dot=document.getElementById('mob-plan-pulse-dot');
+  if(dot) dot.style.display = activeTab==='settings' ? 'block' : 'none';
 }
 
 function mobGetAnchor(p){
@@ -3636,7 +3646,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <span aria-hidden="true">⚙️</span>Pizzaplanlegger
     </div>
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')" style="position:relative">
-      <span aria-hidden="true">📅</span>Steg for steg
+      <span aria-hidden="true">📅</span>Steg
       <span id="mob-plan-pulse-dot" style="display:none;position:absolute;top:2px;right:18px;width:9px;height:9px;border-radius:50%;background:#1D9E75;animation:pulseDot 1.6s ease-in-out infinite"></span>
     </div>
     <div class="mob-tab" id="mob-tab-recipe" onclick="mobShowTab('recipe')">
