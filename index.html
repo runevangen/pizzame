@@ -388,10 +388,10 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
 <div class="app">
 <div class="sb">
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
-  <div class="logo"><span>🍕</span>
+  <div class="logo" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden"><span>🍕</span>
     <div style="display:flex;flex-direction:column;gap:2px">
       <span>Pizzaplanlegger</span>
-      <span id="build-stamp" onclick="openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#1D9E75;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
+      <span id="build-stamp" onclick="event.stopPropagation();openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#1D9E75;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
@@ -1649,6 +1649,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.4',
+    d: 'juli 2026',
+    changes: [
+      'Trykk på logoen ("🍕 Pizzaplanlegger") for å åpne Guiden — både PC og mobil. Versjonsnummeret under logoen åpner fortsatt "Hva er nytt" som før, uavhengig av dette.'
+    ]
+  },
   {
     v: '5.3',
     d: 'juli 2026',
@@ -3607,7 +3614,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 <div class="mob-layout" id="mob-layout">
 
   <div class="mob-topbar">
-    <div class="mob-topbar-title">
+    <div class="mob-topbar-title" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden">
       <span>🍕 Pizzaplanlegger <b id="mob-name-version" style="font-size:12px;font-weight:600;color:#1D9E75"></b></span>
       <small id="mob-stamp"></small>
     </div>
