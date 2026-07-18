@@ -131,7 +131,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
 .daylbl.today .ddot{background:#1D9E75}
 /* ===== MOBILE LAYOUT ===== */
-.mob-layout{display:none;flex-direction:column;min-height:100vh;background:#FAFAF9}
+.mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;background:#FAFAF9}
 .mob-layout.active{display:flex}
 .app.pc-active{display:grid}
 
@@ -436,6 +436,8 @@ body.fs-xlarge .mob-tab{zoom:0.6897}
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
     <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
+    <div style="height:1px;background:#F2F2F7"></div>
+    <div class="menu-row" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
   </div>
 </div>
 
@@ -2090,18 +2092,19 @@ function buildFeedbackFormHTML(){
       <span id="feedback-status" style="font-size:12px;color:#888"></span>
     </div>
     <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
-      <span onclick="toggleFeedbackList()" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">📋 Se tidligere tilbakemeldinger</span>
-      <div id="feedback-list-wrap" style="display:none;margin-top:.7rem"></div>
+      <div style="font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:.5rem">📋 Tidligere tilbakemeldinger</div>
+      <div id="feedback-list-wrap"></div>
     </div>`;
-}
-function setFeedbackCategory(v){
-  window._feedbackCategory = v;
-  document.querySelectorAll('#feedback-cat-pills .pill').forEach(p=>p.classList.toggle('on', p.dataset.v===v));
 }
 function openFeedbackModal(){
   window._feedbackCategory = 'feil';
   document.getElementById('feedback-modal-body').innerHTML = buildFeedbackFormHTML();
   document.getElementById('feedback-modal').style.display = 'flex';
+  loadFeedbackList();
+}
+function setFeedbackCategory(v){
+  window._feedbackCategory = v;
+  document.querySelectorAll('#feedback-cat-pills .pill').forEach(p=>p.classList.toggle('on', p.dataset.v===v));
 }
 function closeFeedbackModal(){
   document.getElementById('feedback-modal').style.display = 'none';
@@ -2125,16 +2128,31 @@ async function submitFeedback(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     if(statusEl) statusEl.textContent = '✓ Takk! Sendt.';
     if(ta) ta.value='';
+    loadFeedbackList();
     setTimeout(()=>{ closeFeedbackModal(); }, 1100);
   }catch(e){
     if(statusEl) statusEl.textContent = 'Kunne ikke sende — prøv igjen.';
   }
 }
-async function toggleFeedbackList(){
+function feedbackVoterId(){
+  try{
+    const u = JSON.parse(localStorage.getItem('pizzaUser'));
+    if(u && u.id) return u.id;
+  }catch(e){}
+  let anon = null;
+  try{ anon = localStorage.getItem('pizzaAnonVoterId'); }catch(e){}
+  if(!anon){
+    anon = 'anon-'+Math.random().toString(36).slice(2)+Date.now();
+    try{ localStorage.setItem('pizzaAnonVoterId', anon); }catch(e){}
+  }
+  return anon;
+}
+function feedbackVotedSet(){
+  try{ return new Set(JSON.parse(localStorage.getItem('pizzaVotedFeedback'))||[]); }catch(e){ return new Set(); }
+}
+async function loadFeedbackList(){
   const wrap = document.getElementById('feedback-list-wrap');
   if(!wrap) return;
-  if(wrap.style.display==='block'){ wrap.style.display='none'; return; }
-  wrap.style.display='block';
   wrap.innerHTML = '<p style="color:#999;font-size:12px">Laster...</p>';
   try{
     const res = await fetch('/api/feedback');
@@ -2142,10 +2160,17 @@ async function toggleFeedbackList(){
     const data = await res.json();
     const items = data.feedback || [];
     if(!items.length){ wrap.innerHTML = '<p style="color:#999;font-size:12px">Ingen tilbakemeldinger ennå.</p>'; return; }
+    items.sort((a,b)=>(b.votes||0)-(a.votes||0));
+    const isAdmin = !!window._adminPassword;
+    const voted = feedbackVotedSet();
     const catLbl = v => (FEEDBACK_CATEGORIES.find(c=>c.v===v)||{t:v}).t;
     wrap.innerHTML = items.map(it=>{
       let dt=''; try{ dt=fDT(new Date(it.createdAt)); }catch(e){}
       const ctx = it.context||{};
+      const hasVoted = voted.has(it.id);
+      const adminBtns = isAdmin ? `
+            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?'Merk som ulest':'Merk som løst'}" style="padding:3px 7px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
+            <button onclick="deleteFeedbackConfirm('${it.id}')" title="Slett" style="padding:3px 7px;border:1px solid #e0ddd8;border-radius:6px;background:#fff;color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
       return `<div style="border:1px solid #e0ddd8;border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:${it.resolved?'#faf9f6':'#fff'};opacity:${it.resolved?'.7':'1'}">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
@@ -2153,9 +2178,9 @@ async function toggleFeedbackList(){
             <span style="font-size:10px;color:#aaa;margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}</span>
             <div style="font-size:12px;color:#1a1a1a;margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
-          <div style="display:flex;gap:4px;flex-shrink:0">
-            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?'Merk som ulest':'Merk som løst'}" style="padding:3px 7px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
-            <button onclick="deleteFeedbackConfirm('${it.id}')" title="Slett" style="padding:3px 7px;border:1px solid #e0ddd8;border-radius:6px;background:#fff;color:#993C1D;font-size:10px;cursor:pointer">✕</button>
+          <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
+            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?'Du har allerede stemt':'Stem opp'}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#1D9E75':'#d0cdc8'};border-radius:6px;background:${hasVoted?'#E1F5EE':'#fff'};color:${hasVoted?'#0F6E56':'#555'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
+            ${adminBtns}
           </div>
         </div>
       </div>`;
@@ -2164,7 +2189,22 @@ async function toggleFeedbackList(){
     wrap.innerHTML = '<p style="color:#993C1D;font-size:12px">Kunne ikke laste tilbakemeldinger.</p>';
   }
 }
+async function voteFeedback(id){
+  const voted = feedbackVotedSet();
+  if(voted.has(id)) return;
+  try{
+    const res = await fetch('/api/feedback/'+id+'/vote', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({voterId: feedbackVoterId()})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }catch(e){}
+  voted.add(id);
+  try{ localStorage.setItem('pizzaVotedFeedback', JSON.stringify([...voted])); }catch(e){}
+  loadFeedbackList();
+}
 async function toggleFeedbackResolved(id, currentlyResolved){
+  if(!window._adminPassword) return;
   try{
     await fetch('/api/feedback/'+id, {
       method:'PATCH',
@@ -2172,14 +2212,13 @@ async function toggleFeedbackResolved(id, currentlyResolved){
       body: JSON.stringify({resolved: !currentlyResolved})
     });
   }catch(e){}
-  const wrap=document.getElementById('feedback-list-wrap');
-  if(wrap){ wrap.style.display='none'; toggleFeedbackList(); }
+  loadFeedbackList();
 }
 function deleteFeedbackConfirm(id){
+  if(!window._adminPassword) return;
   if(!confirm('Slette denne tilbakemeldingen permanent?')) return;
   fetch('/api/feedback/'+id, {method:'DELETE'}).catch(()=>{}).finally(()=>{
-    const wrap=document.getElementById('feedback-list-wrap');
-    if(wrap){ wrap.style.display='none'; toggleFeedbackList(); }
+    loadFeedbackList();
   });
 }
 
@@ -2485,6 +2524,11 @@ function authComplete(id, name){
   document.getElementById('auth-overlay').style.display = 'none';
   maybeShowGuideOnLoad();
   syncLoggedInAs();
+  // wizEnterSettingsTab() kan allerede ha kjørt (og brukt opp _wizEnteredOnce) mens
+  // auth-overlay fortsatt var oppe, før vi visste hvem brukeren faktisk var. Nå som
+  // innloggingen er reell, la wizarden få avgjøre på nytt med riktig bruker-kontekst.
+  window._wizEnteredOnce = false;
+  if(document.body.classList.contains('mob-mode')) wizEnterSettingsTab();
 }
 function syncLoggedInAs(){
   let saved = null;
@@ -3159,6 +3203,8 @@ function mobShowTab(t){
     const tab=document.getElementById('mob-tab-'+id);
     if(tab)tab.classList.toggle('on',id===t);
   });
+  const activeScr=document.getElementById('mob-'+t);
+  if(activeScr) activeScr.scrollTop=0;
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
   if(t==='notes')renderNotesPanel('mob-notes-content');
   if(t==='settings') wizEnterSettingsTab();
