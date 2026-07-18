@@ -1541,6 +1541,24 @@ function totalFermentHours(){
   const preferment=S.method==='poolish'?14:S.method==='biga'?20:0;
   return preferment+S.cold*24;
 }
+function meltypeWarnSetHydro(newHydro){
+  S.hydro = newHydro;
+  const hslPC = document.getElementById('hsl'); if(hslPC) hslPC.value = newHydro;
+  const hslMob = document.getElementById('mob-hsl'); if(hslMob) hslMob.value = newHydro;
+  uHydroUI();
+  try{ mobHydroUI(); }catch(e){}
+  if(document.body.classList.contains('mob-mode')){ mobGen(); } else { schedNow(); }
+}
+function meltypeWarnSetFlour(flourVal){
+  S.meltype = flourVal;
+  const selPC = document.getElementById('gmel'); if(selPC) selPC.value = flourVal;
+  const selMob = document.getElementById('mob-gmel'); if(selMob) selMob.value = flourVal;
+  updateMeltypeInfo();
+  if(document.body.classList.contains('mob-mode')){ mobGen(); } else { schedNow(); }
+}
+function findBestMatchingFlour(hrs, hydro){
+  return MELTYPER.find(m => hrs>=m.ferm.mn && hrs<=m.ferm.mx && hydro>=m.hydroRange.mn && hydro<=m.hydroRange.mx);
+}
 function meltypeWarningHTML(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return '';
@@ -1559,9 +1577,25 @@ function meltypeWarningHTML(){
     issues.push(`Du har satt ${S.hydro}% hydrering, mens ${flour.t} er beregnet for ${flour.hydro} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}). ${tooLow?'Lavere hydrering enn anbefalt er ikke farlig i seg selv, men gir en fastere, tørrere deig enn melet egentlig er designet for — du utnytter ikke potensialet i det.':'Høyere hydrering enn dette melet er designet for kan gi en for løs, klissete deig som er vanskelig å håndtere, siden det ikke har nok proteinstyrke til å holde på så mye vann.'} Juster hydreringen til ${flour.hydro}, eller bytt til et mel som passer bedre med ${S.hydro}%.`);
   }
   const title = (!fermOk && !hydroOk) ? `${flour.t}: gjæringstid og hydrering stemmer ikke` : (!fermOk ? `${flour.t} er ${hrs<flour.ferm.mn?'ikke gjæret lenge nok':'gjæret lenger enn anbefalt'}` : `${flour.t}: hydreringen stemmer ikke med melet`);
+
+  // Hurtigjustering direkte i varselet — samme funksjoner som Pizzaplanlegger-fanen bruker,
+  // så resultatet blir identisk uansett hvor endringen gjøres fra.
+  const actions=[];
+  if(!hydroOk){
+    const tooLow = S.hydro<flour.hydroRange.mn;
+    const target = tooLow ? flour.hydroRange.mn : flour.hydroRange.mx;
+    actions.push(`<button onclick="meltypeWarnSetHydro(${target})" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Sett hydrering til ${target}%</button>`);
+  }
+  const betterFlour = findBestMatchingFlour(hrs, S.hydro);
+  if(betterFlour && betterFlour.v!==S.meltype){
+    actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:#F2F2F7;color:#1D1D1F;font-size:12px;font-weight:600;cursor:pointer">Bytt til ${betterFlour.t}</button>`);
+  }
+  const actionsHtml = actions.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${actions.join('')}</div>` : '';
+
   return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌾 ${title}</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">${issues.join(' ')}</div>
+    ${actionsHtml}
   </div>`;
 }
 function hurtigWarmRoomWarningHTML(){
@@ -1649,6 +1683,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.5',
+    d: 'juli 2026',
+    changes: [
+      'Meltype-varselet (gjæringstid/hydrering stemmer ikke) har nå hurtigjustering direkte i varselet — "Sett hydrering til X%" og/eller "Bytt til [meltype]" — i stedet for at du må bytte til Pizzaplanlegger-fanen for å justere. Bruker nøyaktig samme funksjoner som selve fanen, så resultatet blir identisk uansett hvor du justerer fra. Fungerer likt på PC og mobil.'
+    ]
+  },
   {
     v: '5.4',
     d: 'juli 2026',
