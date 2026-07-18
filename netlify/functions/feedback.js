@@ -2,10 +2,11 @@ import { getStore } from '@netlify/blobs';
 
 // Delt liste over tilbakemeldinger fra brukere av appen.
 // Ingen pålogging — åpen for alle i familie/vennegruppen som har lenken.
-// GET    /api/feedback       -> liste alle (nyeste først)
-// POST   /api/feedback       -> ny tilbakemelding { category, message, context }
-// PATCH  /api/feedback/:id   -> merk som lest/løst { resolved: true|false }
-// DELETE /api/feedback/:id   -> slette permanent
+// GET    /api/feedback            -> liste alle (nyeste først)
+// POST   /api/feedback            -> ny tilbakemelding { category, message, context }
+// PATCH  /api/feedback/:id        -> merk som lest/løst { resolved: true|false }
+// DELETE /api/feedback/:id        -> slette permanent
+// POST   /api/feedback/:id/vote   -> stem opp { voterId } — én stemme per voterId per sak
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -17,6 +18,15 @@ function json(status, body) {
 function idFromPath(path) {
   const parts = path.split('/').filter(Boolean);
   return parts[parts.length - 1];
+}
+
+function isVotePath(path) {
+  return path.endsWith('/vote');
+}
+
+function idFromVotePath(path) {
+  const parts = path.split('/').filter(Boolean);
+  return parts[parts.length - 2];
 }
 
 const VALID_CATEGORIES = ['mel', 'feil', 'forslag', 'annet'];
@@ -36,6 +46,27 @@ export default async (req, context) => {
       return json(200, { feedback: items.filter(Boolean) });
     }
 
+    if (req.method === 'POST' && isVotePath(url.pathname)) {
+      const id = idFromVotePath(url.pathname);
+      if (!id) return json(400, { error: 'Mangler id' });
+      const existing = await store.get(id, { type: 'json' });
+      if (!existing) return json(404, { error: 'Fant ikke tilbakemelding' });
+      const body = await req.json();
+      const voterId = body.voterId && String(body.voterId).slice(0, 200);
+      if (!voterId) return json(400, { error: 'Mangler voterId' });
+      const voterIds = Array.isArray(existing.voterIds) ? existing.voterIds : [];
+      if (voterIds.includes(voterId)) {
+        return json(200, { id, votes: existing.votes || 0, alreadyVoted: true });
+      }
+      const updated = {
+        ...existing,
+        votes: (existing.votes || 0) + 1,
+        voterIds: [...voterIds, voterId]
+      };
+      await store.setJSON(id, updated);
+      return json(200, { id, votes: updated.votes });
+    }
+
     if (req.method === 'POST' && isCollection) {
       const body = await req.json();
       if (!body.message || !String(body.message).trim()) {
@@ -48,6 +79,8 @@ export default async (req, context) => {
         message: String(body.message).slice(0, 2000),
         context: body.context && typeof body.context === 'object' ? body.context : {},
         resolved: false,
+        votes: 0,
+        voterIds: [],
         createdAt: new Date().toISOString()
       };
       await store.setJSON(id, item);
@@ -79,4 +112,4 @@ export default async (req, context) => {
   }
 };
 
-export const config = { path: ['/api/feedback', '/api/feedback/:id'] };
+export const config = { path: ['/api/feedback', '/api/feedback/:id', '/api/feedback/:id/vote'] };
