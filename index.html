@@ -1723,6 +1723,19 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.7',
+    d: 'juli 2026',
+    changes: [
+      'Wizarden på mobil: "antall pizzaer" er flyttet fra Finjuster til Planlegging-steget, rett under "Når vil du spise?" — melmengde i gram ligger fortsatt alene i Finjuster.',
+      'Lagt til app-ikon for hjemskjerm på iPhone og Android (manifest + apple-touch-icon), slik at "Legg til på Hjem-skjerm" viser et ordentlig ikon og navn i stedet for standard nettleser-favicon.',
+      'Egen avkrysningsboks lagt til venstre for det grønne steg-nummeret i "Steg"-fanen, for å gjøre det tydeligere at steg kan hakes av — hele raden er fortsatt tap-mål for avhaking.',
+      'Fikset en rot-årsak som ga to synlige feil: Kopier/Kalender/Lagre-knapperaden i "Steg"-fanen var ikke reelt sticky (måtte scrolle helt ned for å se den), og fanebytte kunne se tomt ut. Skyldtes at mobil-visningen manglet en avgrenset skjermhøyde, slik at hele siden — ikke den enkelte fanen — scrollet. I samme slengen: navigering mellom wizardens steg (Pizzatype → Metode → Planlegging → Finjuster) nullstiller nå også scroll-posisjonen, og en gammel duplikat-id i markupen (to elementer med samme id) er ryddet opp.',
+      'Fikset en regresjon der nye brukere ikke fikk se wizarden ved aller første innlogging.',
+      'Lagt til "Logg ut" i PC-versjonens ☰ Meny (fantes tidligere kun på mobil).',
+      'Feedback-listen vises nå direkte når du åpner "Feedback", i stedet for bak en "Se tidligere tilbakemeldinger"-toggle. Alle tilbakemeldinger kan nå stemmes opp (👍, én stemme per person per sak). "Merk som løst" og "Slett" er strammet inn til kun å vises for admin — disse var tidligere synlige for alle ved en feil.'
+    ]
+  },
+  {
     v: '5.6',
     d: 'juli 2026',
     changes: [
@@ -3104,6 +3117,8 @@ async function wizDecideStart(){
     document.getElementById('wiz-returning-sub').textContent = hasLastConfig ? wizLastConfigSummary() : 'Du har brukt appen før';
     document.getElementById('wiz-use-last-btn').style.display = hasLastConfig ? 'block' : 'none';
     document.getElementById('wiz-use-fav-btn').style.display = hasFavorite ? 'block' : 'none';
+    const scr=document.getElementById('mob-settings');
+    if(scr) scr.scrollTop=0;
   }else{
     wizGoto(1);
   }
@@ -3153,6 +3168,8 @@ function wizGoto(step){
     const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
   }
   wizRenderHeader(step);
+  const scr=document.getElementById('mob-settings');
+  if(scr) scr.scrollTop=0;
 }
 function wizRenderHeader(step){
   const idx = typeof step==='number' ? step : 4;
@@ -3924,12 +3941,6 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div style="height:80px"></div>
-  </div>
-
-  <!-- TAB: TIDSPLAN -->
-  <div class="mob-screen" id="mob-plan">
-    <div id="mob-plan-content">
-    </div>
   </div>
 
   <!-- TAB: OPPSKRIFT -->
