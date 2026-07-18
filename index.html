@@ -287,21 +287,27 @@ body.fs-xlarge{zoom:1.45}
 .adv-toggle,.tab,.layout-toggle,
 .mb,.sw,input[type=range],
 .snum-btn,.mob-icon-btn,.mob-abtn,
-.mob-tab{zoom:0.8696}
+.mob-tab,.modal-overlay{zoom:0.8696}
 body.fs-large .pill,body.fs-large .mc,body.fs-large .act-btn,body.fs-large .bgo,
 body.fs-large .cbtn,body.fs-large .dropdown-select select,body.fs-large .menu-trigger,
 body.fs-large .menu-dropdown,body.fs-large .fs-seg,body.fs-large #fav-btn,
 body.fs-large .adv-toggle,body.fs-large .tab,body.fs-large .layout-toggle,
 body.fs-large .mb,body.fs-large .sw,body.fs-large input[type=range],
 body.fs-large .snum-btn,body.fs-large .mob-icon-btn,body.fs-large .mob-abtn,
-body.fs-large .mob-tab{zoom:0.7692}
+body.fs-large .mob-tab,body.fs-large .modal-overlay{zoom:0.7692}
 body.fs-xlarge .pill,body.fs-xlarge .mc,body.fs-xlarge .act-btn,body.fs-xlarge .bgo,
 body.fs-xlarge .cbtn,body.fs-xlarge .dropdown-select select,body.fs-xlarge .menu-trigger,
 body.fs-xlarge .menu-dropdown,body.fs-xlarge .fs-seg,body.fs-xlarge #fav-btn,
 body.fs-xlarge .adv-toggle,body.fs-xlarge .tab,body.fs-xlarge .layout-toggle,
 body.fs-xlarge .mb,body.fs-xlarge .sw,body.fs-xlarge input[type=range],
 body.fs-xlarge .snum-btn,body.fs-xlarge .mob-icon-btn,body.fs-xlarge .mob-abtn,
-body.fs-xlarge .mob-tab{zoom:0.6897}
+body.fs-xlarge .mob-tab,body.fs-xlarge .modal-overlay{zoom:0.6897}
+/* Motsatt zoom på selve modal-overlay kansellerer body sin zoom helt for modal-vinduer
+   (Hva er nytt, Formler, Guide, osv.) — uten dette regner "max-height:85dvh" feil i en
+   zoomet kontekst, og modalen kan bli fysisk høyere enn skjermen, slik at toppen (med
+   lukkeknappen) havner utenfor synsfeltet ved "Ekstra stor" skrift. Modaltekst blir
+   dermed en anelse mindre enn resten av appen ved store skriftinnstillinger, samme
+   avveining som allerede gjelder for knapper/faner. */
 .start-hint{display:flex;align-items:center;gap:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.7rem .9rem;margin-bottom:1rem;font-size:13px;color:#633806}
 .start-hint b{color:#4a2a05}
 .start-hint button{flex-shrink:0;padding:6px 12px;border:1px solid #EF9F27;border-radius:8px;background:#fff;color:#633806;font-size:12px;font-weight:600;cursor:pointer}
@@ -1730,6 +1736,7 @@ const CHANGELOG = [
       'Lagt til app-ikon for hjemskjerm på iPhone og Android (manifest + apple-touch-icon), slik at "Legg til på Hjem-skjerm" viser et ordentlig ikon og navn i stedet for standard nettleser-favicon.',
       'Egen avkrysningsboks lagt til venstre for det grønne steg-nummeret i "Steg"-fanen, for å gjøre det tydeligere at steg kan hakes av — hele raden er fortsatt tap-mål for avhaking.',
       'Fikset en rot-årsak som ga to synlige feil: Kopier/Kalender/Lagre-knapperaden i "Steg"-fanen var ikke reelt sticky (måtte scrolle helt ned for å se den, eller den dukket opp midt i steg-listen i stedet for rett over bunn-menyen), og fanebytte kunne se tomt ut. Den fulle årsaken viste seg å være to ting sammen: mobil-visningen manglet en avgrenset skjermhøyde, og selve "Steg"-fanen manglet "min-height:0" som flex-element — uten den vokser fanen seg like høy som innholdet i stedet for å bli klippet til tilgjengelig skjermplass, uansett hvor lang tidsplanen er. Bekreftet rettet med faktiske skjermbilde-tester. I samme slengen: navigering mellom wizardens steg (Pizzatype → Metode → Planlegging → Finjuster) nullstiller nå også scroll-posisjonen, og en gammel duplikat-id i markupen (to elementer med samme id) er ryddet opp.',
+      'Fikset at "Hva er nytt" (og andre modal-vinduer) kunne miste lukkeknappen ved "Ekstra stor" skrift-innstilling — modalen ble da fysisk høyere enn skjermen og sentrerte seg slik at toppen (med ✕-knappen) havnet utenfor synsfeltet. Modal-vinduer bruker nå samme mot-zoom-teknikk som knapper og faner allerede gjorde, slik at de alltid forblir innenfor skjermen uansett skriftstørrelse-innstilling.',
       'Fikset en regresjon der nye brukere ikke fikk se wizarden ved aller første innlogging.',
       'Lagt til "Logg ut" i PC-versjonens ☰ Meny (fantes tidligere kun på mobil).',
       'Feedback-listen vises nå direkte når du åpner "Feedback", i stedet for bak en "Se tidligere tilbakemeldinger"-toggle. Alle tilbakemeldinger kan nå stemmes opp (👍, én stemme per person per sak). "Merk som løst" og "Slett" er strammet inn til kun å vises for admin — disse var tidligere synlige for alle ved en feil.'
