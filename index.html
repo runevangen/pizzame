@@ -116,7 +116,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .wbox{background:#fef3e2;border-left:3px solid #BA7517;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#633806;margin-bottom:.75rem;line-height:1.5}
 .ibox{background:#e8f1fb;border-left:3px solid #185FA5;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#0C447C;margin-bottom:.75rem;line-height:1.5}
 .future-dim{opacity:.45}
-.daylbl{font-size:11px;font-weight:600;color:#6E6E73;margin:.6rem 0 .2rem;display:flex;align-items:center;gap:6px}
+.daylbl{font-size:15px;font-weight:700;color:#1D1D1F;margin:.8rem 0 .3rem;display:flex;align-items:center;gap:6px}
 .daylbl.today{color:#085041}
 .daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
 .daylbl.today .ddot{background:#1D9E75}
@@ -136,7 +136,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 
 /* bottom tab bar */
 .mob-tabbar{background:#fff;border-top:1px solid #EDEDED;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
-.mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:10px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
+.mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:11.5px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
 @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.6}}
 .mob-tab span[aria-hidden]{font-size:18px;line-height:1}
 .mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
@@ -169,7 +169,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .mob-sdesc{font-size:12px;color:#3A3A3C;margin-top:.4rem;line-height:1.6}
 .mob-swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#085041;margin-top:.35rem;line-height:1.5}
 .mob-stip{background:#FAFAF9;border-left:3px solid #ccc;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
-.mob-daylbl{font-size:11px;font-weight:600;color:#6E6E73;margin:.5rem 0 .15rem;display:flex;align-items:center;gap:5px}
+.mob-daylbl{font-size:14px;font-weight:700;color:#1D1D1F;margin:.7rem 0 .25rem;display:flex;align-items:center;gap:5px}
 .mob-daylbl.today{color:#085041}
 .mob-daylbl .ddot{width:6px;height:6px;border-radius:50%;background:#ccc;flex-shrink:0}
 .mob-daylbl.today .ddot{background:#1D9E75}
@@ -258,25 +258,38 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .fs-seg{display:flex;background:#F2F2F7;border-radius:8px;padding:3px;gap:2px}
 .fs-seg .o{flex:1;text-align:center;padding:6px 4px;font-size:11px;font-weight:600;color:#666;border-radius:6px;cursor:pointer}
 .fs-seg .o.on{background:#fff;color:#085041;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-body.fs-large{zoom:1.15}
-body.fs-xlarge{zoom:1.3}
+/* Skriftstørrelse-skalaen er forskjøvet ett hakk opp: "Normal" er nå det som
+   tidligere het "Stor", "Stor" er det som tidligere het "Ekstra stor", og
+   "Ekstra stor" er et helt nytt, enda større nivå. Standarden for nye brukere
+   er nå "Stor" (midterste nivå) — se initFontSize(). */
+body{zoom:1.15}
+body.fs-large{zoom:1.3}
+body.fs-xlarge{zoom:1.45}
 /* Knapper/piller/navigasjon skal ikke vokse med skriftstørrelse-innstillingen —
    kun lesetekst (steg, forklaringer) skal bli større. Motsatt zoom kansellerer
-   ut body sin zoom for disse elementene spesifikt. */
+   ut body sin zoom for disse elementene spesifikt. Gjelder nå også standardnivået,
+   siden det ikke lenger er zoom:1. */
+.pill,.mc,.act-btn,.bgo,
+.cbtn,.dropdown-select select,.menu-trigger,
+.menu-dropdown,.fs-seg,#fav-btn,
+.adv-toggle,.tab,.layout-toggle,
+.mb,.sw,input[type=range],
+.snum-btn,.mob-icon-btn,.mob-abtn,
+.mob-tab{zoom:0.8696}
 body.fs-large .pill,body.fs-large .mc,body.fs-large .act-btn,body.fs-large .bgo,
 body.fs-large .cbtn,body.fs-large .dropdown-select select,body.fs-large .menu-trigger,
 body.fs-large .menu-dropdown,body.fs-large .fs-seg,body.fs-large #fav-btn,
 body.fs-large .adv-toggle,body.fs-large .tab,body.fs-large .layout-toggle,
 body.fs-large .mb,body.fs-large .sw,body.fs-large input[type=range],
 body.fs-large .snum-btn,body.fs-large .mob-icon-btn,body.fs-large .mob-abtn,
-body.fs-large .mob-tab{zoom:0.8696}
+body.fs-large .mob-tab{zoom:0.7692}
 body.fs-xlarge .pill,body.fs-xlarge .mc,body.fs-xlarge .act-btn,body.fs-xlarge .bgo,
 body.fs-xlarge .cbtn,body.fs-xlarge .dropdown-select select,body.fs-xlarge .menu-trigger,
 body.fs-xlarge .menu-dropdown,body.fs-xlarge .fs-seg,body.fs-xlarge #fav-btn,
 body.fs-xlarge .adv-toggle,body.fs-xlarge .tab,body.fs-xlarge .layout-toggle,
 body.fs-xlarge .mb,body.fs-xlarge .sw,body.fs-xlarge input[type=range],
 body.fs-xlarge .snum-btn,body.fs-xlarge .mob-icon-btn,body.fs-xlarge .mob-abtn,
-body.fs-xlarge .mob-tab{zoom:0.7692}
+body.fs-xlarge .mob-tab{zoom:0.6897}
 .start-hint{display:flex;align-items:center;gap:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.7rem .9rem;margin-bottom:1rem;font-size:13px;color:#633806}
 .start-hint b{color:#4a2a05}
 .start-hint button{flex-shrink:0;padding:6px 12px;border:1px solid #EF9F27;border-radius:8px;background:#fff;color:#633806;font-size:12px;font-weight:600;cursor:pointer}
@@ -517,8 +530,11 @@ body.fs-xlarge .mob-tab{zoom:0.7692}
       <select id="gmel">
         <option value="dallari">Dallari pizzamel</option>
         <option value="doppio_zero" selected>Caputo Doppio Zero</option>
+        <option value="regal_pizzamel">Regal Pizzamel</option>
+        <option value="vanlig_hvetemel">Vanlig hvetemel</option>
         <option value="pizzeria">Caputo Pizzeria</option>
         <option value="nuvola">Caputo Nuvola</option>
+        <option value="regal_tipo00">Regal Tipo 00</option>
         <option value="couco">Caputo Couco</option>
         <option value="manitoba">Caputo Manitoba Oro</option>
       </select>
@@ -575,8 +591,11 @@ const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 const MELTYPER=[
   {v:'dallari',t:'Dallari pizzamel',protein:'10,7%',w:'–',hydro:'55–60%',hydroRange:{mn:55,mx:60},ferm:{mn:4,mx:8}},
   {v:'doppio_zero',t:'Caputo Doppio Zero',protein:'11%',w:'220–230',hydro:'60–70%',hydroRange:{mn:60,mx:70},ferm:{mn:6,mx:24}},
+  {v:'regal_pizzamel',t:'Regal Pizzamel',protein:'11%',w:'–',hydro:'60–68%',hydroRange:{mn:60,mx:68},ferm:{mn:6,mx:24},estimated:true},
+  {v:'vanlig_hvetemel',t:'Vanlig hvetemel',protein:'11,2%',w:'–',hydro:'55–63%',hydroRange:{mn:55,mx:63},ferm:{mn:4,mx:10},estimated:true},
   {v:'pizzeria',t:'Caputo Pizzeria',protein:'12,5%',w:'260–270',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:12,mx:48}},
   {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48}},
+  {v:'regal_tipo00',t:'Regal Tipo 00',protein:'13%',w:'–',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48},estimated:true},
   {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:16,mx:54}},
   {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:78}}
 ];
@@ -585,7 +604,8 @@ const MELTYPER=[
 function updateMeltypeInfo(){
   const flour = MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return;
-  const txt = `<b>${escH(flour.t)}</b> · ${flour.protein} protein${flour.w!=='–'?` · W${flour.w}`:''} · ${flour.hydro} hydrering · ${flour.ferm.mn}–${flour.ferm.mx}t fermentering`;
+  const estBadge = flour.estimated ? ` <span style="color:#EFAB27;font-weight:700">(anslått)</span>` : '';
+  const txt = `<b>${escH(flour.t)}</b> · ${flour.protein} protein${flour.w!=='–'?` · W${flour.w}`:''} · ${flour.hydro} hydrering · ${flour.ferm.mn}–${flour.ferm.mx}t fermentering${estBadge}`;
   ['gmel-info','mob-gmel-info'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML = txt;
@@ -806,8 +826,8 @@ function setFontSize(level){
   }
 }
 function initFontSize(){
-  let saved='normal';
-  try{ saved=localStorage.getItem('pizzaFontSize')||'normal'; }catch(e){}
+  let saved='large';
+  try{ saved=localStorage.getItem('pizzaFontSize')||'large'; }catch(e){}
   setFontSize(saved);
 }
 const FS_LEVELS=['normal','large','xlarge'];
@@ -1295,7 +1315,7 @@ function renderSteps(steps, mode='desktop'){
     const done = window._checked && window._checked.has(i);
     const missed = i < curIdx && !done;
     const isNext = i === nextIdx && nextIdx !== curIdx;
-    html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${isDimmed ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
+    html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${(isDimmed && !isNext) ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
       <div class="${C.body}">
         <div class="${C.head}">
           <div class="${C.num} snum-btn ${done ? 'snum-done' : (i===curIdx ? '' : C.numDim)}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">${done ? '✓' : i+1}</div>
@@ -1591,11 +1611,13 @@ function meltypeWarningHTML(){
     actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:#F2F2F7;color:#1D1D1F;font-size:12px;font-weight:600;cursor:pointer">Bytt til ${betterFlour.t}</button>`);
   }
   const actionsHtml = actions.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${actions.join('')}</div>` : '';
+  const estNote = flour.estimated ? `<div style="font-size:11px;color:#8a5a00;margin-top:.4rem;font-style:italic">Gjærings-/hydreringstallene for ${flour.t} er anslått av oss, ikke oppgitt av produsenten.</div>` : '';
 
   return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌾 ${title}</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">${issues.join(' ')}</div>
     ${actionsHtml}
+    ${estNote}
   </div>`;
 }
 function hurtigWarmRoomWarningHTML(){
@@ -1683,6 +1705,22 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.6',
+    d: 'juli 2026',
+    changes: [
+      '"Pizzaplanlegger"-fanen på mobil heter nå "Planlegging".',
+      '"Neste steg å gjøre" vises nå alltid fullt lesbart, selv om du ligger foran skjema og klokken teknisk sett ikke har nådd steget ennå.',
+      'Skriftstørrelse-skalaen er forskjøvet ett hakk opp: "Normal" er nå det som før het "Stor", "Stor" er det som før het "Ekstra stor" (ny standard for alle nye brukere), og "Ekstra stor" er et helt nytt, enda større nivå.',
+      'Dato-overskriften i steg-listen er forstørret, for tydeligere skille mellom dager.',
+      'Litt større skrift på bunn-fanene (Planlegging/Steg/Oppskrift/Notater/Deiger/Om appen).',
+      'Finjuster-skjermen har nå en ekte tilbakepil øverst (går til Planlegging-steget) og en tydelig, fylt "✓ Ferdig — se steg for steg"-knapp nederst — venstrepilen betydde tidligere "avslutt alt", noe som lett kunne forveksles med wizardens vanlige tilbake-navigasjon.',
+      'Fjernet stjerne-ikonet fra vurderings-knappen på ferdige deiger (var forvirrende ved siden av favoritt-stjernen på samme kort) — viser nå konsekvent et blyant-ikon.',
+      'Wizardens fremdriftsindikator er bygget om til en tydelig tidslinje — nummererte/hakede sirkler med linjer mellom, og alle tre stegnavn synlige samtidig (oppdateres til dine faktiske valg etter hvert). Innholdet starter også litt lenger ned fra toppen for mer luft.',
+      '"Starter nå" viser ikke lenger et dato/tid-felt å fylle ut — bruker nåværende tidspunkt stille i bakgrunnen. Feltet finnes fortsatt under "Steketid", der det faktisk gir mening å oppgi et tidspunkt.',
+      'Tre nye meltyper lagt til: Vanlig hvetemel, Regal Pizzamel og Regal Tipo 00 — proteininnhold hentet fra faktisk næringsinnhold, mens hydrerings- og fermenteringstall er merket "(anslått)" siden disse ikke er produsent-oppgitt slik de er for Caputo-melene.'
+    ]
+  },
   {
     v: '5.5',
     d: 'juli 2026',
@@ -2969,7 +3007,7 @@ function mobSetMode(m){
     me.style.color=m==='end'?'#085041':'#888';
     me.style.fontWeight=m==='end'?'600':'400';
   }
-  document.getElementById('mob-bs').style.display=m==='start'?'block':'none';
+  document.getElementById('mob-bs').style.display='none';
   document.getElementById('mob-be').style.display=m==='end'?'block':'none';
   const meh=document.getElementById('mob-earliest-hint');
   if(meh){meh.style.display=m==='end'?'block':'none';if(m==='end'){const earliest=new Date(new Date().getTime()+minBakeMins()*60000);meh.textContent='Tidligst mulig: '+fDT(earliest);}}
@@ -3059,15 +3097,29 @@ function wizGoto(step){
 }
 function wizRenderHeader(step){
   const idx = typeof step==='number' ? step : 4;
-  document.getElementById('wiz-progress-fill').style.width = Math.min(100, idx/3*100)+'%';
   document.getElementById('wiz-back').style.visibility = idx>1 ? 'visible' : 'hidden';
-  const crumbsEl = document.getElementById('wiz-crumbs');
-  crumbsEl.innerHTML = WIZ_STEPS.map(s=>{
+  const tlEl = document.getElementById('wiz-timeline');
+  const dotsHtml = WIZ_STEPS.map((s,i)=>{
+    const done = s.id < idx;
+    const cur = s.id === idx;
+    const dotStyle = done
+      ? 'background:#1D9E75;color:#fff'
+      : cur
+      ? 'background:#1D9E75;color:#fff;box-shadow:0 0 0 3px #E1F5EE'
+      : 'background:#F2F2F7;color:#8E8E93';
+    const dot = `<div onclick="${done?`wizGoto(${s.id})`:''}" style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;cursor:${done?'pointer':'default'};${dotStyle}">${done?'✓':s.id}</div>`;
+    const line = i < WIZ_STEPS.length-1 ? `<div style="flex:1;height:2px;background:${s.id<idx?'#E1F5EE':'#F2F2F7'};margin:0 2px"></div>` : '';
+    return dot + line;
+  }).join('');
+  const labelsHtml = WIZ_STEPS.map(s=>{
     const done = s.id < idx;
     const cur = s.id === idx;
     const txt = (s.id===1 && (done||cur)) ? tnShort(S.type) : (s.id===2 && (done||cur)) ? mN(S.method) : s.label;
-    return `<span onclick="${done?`wizGoto(${s.id})`:''}" style="font-size:10px;padding:3px 8px;border-radius:10px;cursor:${done?'pointer':'default'};background:${cur?'#1D9E75':done?'#E1F5EE':'#F2F2F7'};color:${cur?'#fff':done?'#085041':'#8E8E93'};font-weight:${done||cur?'600':'400'}">${txt}</span>`;
+    const color = cur ? '#1D9E75' : done ? '#085041' : '#8E8E93';
+    const weight = (done||cur) ? '700' : '400';
+    return `<span style="font-size:9px;color:${color};font-weight:${weight};flex:1;text-align:center">${txt}</span>`;
   }).join('');
+  tlEl.innerHTML = `<div style="display:flex;align-items:center">${dotsHtml}</div><div style="display:flex;margin-top:5px">${labelsHtml}</div>`;
 }
 function wizNext(){
   const cur = window._wizStep;
@@ -3106,6 +3158,7 @@ function updatePlanPulseDot(activeTab){
 }
 
 function mobGetAnchor(p){
+  if(p==='s') return new Date(); // "Starter nå" bruker alltid live nåværende tidspunkt — feltet er ikke lenger synlig/redigerbart
   const d=document.getElementById('mob-'+p+'d').value;
   const t=document.getElementById('mob-'+p+'t').value||'08:00';
   return d?new Date(d+'T'+t):new Date();
@@ -3259,7 +3312,7 @@ function bakeCardHTML(b, mob){
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid #d0cdc8;border-radius:8px;background:#fff;color:#555;font-size:11px;cursor:pointer">${b.rating||b.photo?'✏️':'⭐'}</button>
+        <button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid #d0cdc8;border-radius:8px;background:#fff;color:#555;font-size:11px;cursor:pointer" title="${b.rating||b.photo?'Rediger vurdering':'Gi vurdering'}">✏️</button>
         <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #d0cdc8;border-radius:8px;background:#fff;color:#555;font-size:11px;cursor:pointer">Se</button>
         <button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid #e0ddd8;border-radius:8px;background:#fff;color:#993C1D;font-size:11px;cursor:pointer">Slett</button>
       </div>
@@ -3691,23 +3744,22 @@ document.addEventListener('change', firstInteractionCheck, true);
       <button onclick="wizGoto(1)" style="width:100%;height:40px;border:none;background:transparent;color:#1D9E75;font-size:13px;font-weight:600;cursor:pointer">Start noe nytt →</button>
     </div>
 
-    <div id="wiz-header" class="wiz-step" style="display:none;padding:.8rem 1rem .3rem">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:#6E6E73;cursor:pointer;padding:2px 6px">←</span>
-        <div style="flex:1;height:4px;background:#F2F2F7;border-radius:2px;overflow:hidden"><div id="wiz-progress-fill" style="height:100%;width:33%;background:#1D9E75;border-radius:2px;transition:width .2s"></div></div>
+    <div id="wiz-header" class="wiz-step" style="display:none;padding:1.1rem 1rem .8rem">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:#6E6E73;cursor:pointer;padding:2px 6px;flex-shrink:0">←</span>
+        <div id="wiz-timeline" style="flex:1"></div>
       </div>
-      <div id="wiz-crumbs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
     </div>
 
     <div id="wiz-step-1" class="wiz-step" style="display:none">
-      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken pizza?</div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken pizza?</div>
       <div class="mob-section-lbl" style="display:none">Pizzatype</div>
       <div class="mob-pill-wrap" id="mob-gtype"></div>
       <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
     <div id="wiz-step-2" class="wiz-step" style="display:none">
-      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken metode?</div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken metode?</div>
       <div style="padding:0 1rem .5rem;font-size:11px;color:#6E6E73">Standard fungerer fint om du er usikker</div>
       <div id="mob-gmet-wrap">
         <div class="mob-section-lbl" style="display:none">Metode</div>
@@ -3723,7 +3775,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="wiz-step-3" class="wiz-step" style="display:none">
-      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Når vil du spise?</div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Når vil du spise?</div>
       <div class="mob-section-lbl" style="display:none">Planlegg fra</div>
       <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
         <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
@@ -3750,7 +3802,10 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
-      <div style="padding:.3rem 1rem .2rem;font-size:16px;font-weight:700">Finjuster</div>
+      <div style="padding:.8rem 1rem .2rem;display:flex;align-items:center;gap:8px">
+        <span onclick="wizGoto(3)" style="font-size:16px;color:#6E6E73;cursor:pointer;padding:2px 6px" title="Tilbake til Planlegging">←</span>
+        <span style="font-size:16px;font-weight:700">Finjuster</span>
+      </div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)">
       <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
@@ -3789,8 +3844,11 @@ document.addEventListener('change', firstInteractionCheck, true);
       <select id="mob-gmel">
         <option value="dallari">Dallari pizzamel</option>
         <option value="doppio_zero" selected>Caputo Doppio Zero</option>
+        <option value="regal_pizzamel">Regal Pizzamel</option>
+        <option value="vanlig_hvetemel">Vanlig hvetemel</option>
         <option value="pizzeria">Caputo Pizzeria</option>
         <option value="nuvola">Caputo Nuvola</option>
+        <option value="regal_tipo00">Regal Tipo 00</option>
         <option value="couco">Caputo Couco</option>
         <option value="manitoba">Caputo Manitoba Oro</option>
       </select>
@@ -3801,7 +3859,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div class="mob-section-lbl">Ovntype</div>
       <div class="mob-pill-wrap" id="mob-govn"></div>
     </div>
-    <div style="padding:1rem"><button onclick="wizFinish()" style="width:100%;height:40px;border:none;background:transparent;color:#1D9E75;font-size:13px;font-weight:600;cursor:pointer">← Ferdig, se steg for steg</button></div>
+    <div style="padding:1rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">✓ Ferdig — se steg for steg</button></div>
     </div>
 
     <div style="height:80px"></div>
@@ -3872,7 +3930,7 @@ document.addEventListener('change', firstInteractionCheck, true);
   <!-- BOTTOM TAB BAR -->
   <div class="mob-tabbar">
     <div class="mob-tab on" id="mob-tab-settings" onclick="mobShowTab('settings')">
-      <span aria-hidden="true">⚙️</span>Pizzaplanlegger
+      <span aria-hidden="true">⚙️</span>Planlegging
     </div>
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')" style="position:relative">
       <span aria-hidden="true">📅</span>Steg
