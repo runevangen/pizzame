@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Pizzaplanlegger</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pizzaplanlegger">
+<meta name="theme-color" content="#1D9E75">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:#1D1D1F;font-size:16px}
@@ -89,9 +97,11 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .step.now{border-color:#1D9E75;border-width:2px}
 .step.shifted{border-color:#BA7517;border-style:dashed}
 .step-body{padding:.75rem 1rem}
-.sh2{display:flex;align-items:flex-start;gap:9px}
+.sh2{display:flex;align-items:flex-start;gap:9px;cursor:pointer}
 .sn{width:24px;height:24px;border-radius:50%;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
+.stepchk{width:20px;height:20px;border-radius:6px;border:2px solid #d0cdc8;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:#fff}
+.stepchk.on{background:#1D9E75;border-color:#1D9E75}
 .stit{font-size:13px;font-weight:600;color:#1D1D1F}
 .smeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px}
 .stim{font-size:11px;color:#6E6E73}
@@ -154,8 +164,10 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .mob-step.shifted{border-color:#BA7517;border-style:dashed}
 .mob-step.dim{opacity:.4}
 .mob-step-body{padding:.55rem .75rem}
-.mob-sh{display:flex;align-items:flex-start;gap:8px}
+.mob-sh{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
 .mob-sn{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.mob-stepchk{width:18px;height:18px;border-radius:6px;border:2px solid #d0cdc8;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;background:#fff}
+.mob-stepchk.on{background:#1D9E75;border-color:#1D9E75}
 .mob-sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
 .mob-stit{font-size:13px;font-weight:600;color:#1D1D1F;line-height:1.3}
 .mob-smeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
@@ -1258,6 +1270,7 @@ function renderSteps(steps, mode='desktop'){
     body: 'mob-step-body',
     head: 'mob-sh',
     num: 'mob-sn',
+    chk: 'mob-stepchk',
     numDim: 'd',
     title: 'mob-stit',
     meta: 'mob-smeta',
@@ -1279,6 +1292,7 @@ function renderSteps(steps, mode='desktop'){
     body: 'step-body',
     head: 'sh2',
     num: 'sn',
+    chk: 'stepchk',
     numDim: 'd',
     title: 'stit',
     meta: 'smeta',
@@ -1317,8 +1331,9 @@ function renderSteps(steps, mode='desktop'){
     const isNext = i === nextIdx && nextIdx !== curIdx;
     html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${(isDimmed && !isNext) ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
       <div class="${C.body}">
-        <div class="${C.head}">
-          <div class="${C.num} snum-btn ${done ? 'snum-done' : (i===curIdx ? '' : C.numDim)}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">${done ? '✓' : i+1}</div>
+        <div class="${C.head}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">
+          <div class="${C.chk} ${done ? 'on' : ''}">${done ? '✓' : ''}</div>
+          <div class="${C.num} ${i===curIdx ? '' : C.numDim}">${i+1}</div>
           <div style="flex:1;min-width:0">
             <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}</div>
             <div class="${C.meta}">
@@ -3776,8 +3791,9 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="wiz-step-3" class="wiz-step" style="display:none">
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Når vil du spise?</div>
+      <div class="mob-section-lbl">Antall pizzaer</div>
       <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-        <span style="font-size:12px;color:#888" id="mob-pcount-lbl">eller antall pizzaer:</span>
+        <span style="font-size:12px;color:#888;display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
         <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">−</button>
         <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:#1D9E75;min-width:22px;text-align:center">4</span>
         <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">+</button>
