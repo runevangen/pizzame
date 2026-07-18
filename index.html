@@ -3776,6 +3776,16 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="wiz-step-3" class="wiz-step" style="display:none">
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Når vil du spise?</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+        <span style="font-size:12px;color:#888" id="mob-pcount-lbl">eller antall pizzaer:</span>
+        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">−</button>
+        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:#1D9E75;min-width:22px;text-align:center">4</span>
+        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">+</button>
+      </div>
+      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin:0 1rem .65rem;padding:7px 9px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px">
+        <span class="roundup-txt" style="font-size:11px;color:#633806"></span>
+        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #EF9F27;border-radius:6px;background:#fff;color:#633806;font-size:11px;font-weight:600;cursor:pointer"></button>
+      </div>
       <div class="mob-section-lbl" style="display:none">Planlegg fra</div>
       <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
         <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
@@ -3807,18 +3817,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <span style="font-size:16px;font-weight:700">Finjuster</span>
       </div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
-    <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)">
-      <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
-        <span style="font-size:12px;color:#888" id="mob-pcount-lbl">eller antall pizzaer:</span>
-        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">−</button>
-        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:#1D9E75;min-width:22px;text-align:center">4</span>
-        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">+</button>
-      </div>
-      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:7px 9px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px">
-        <span class="roundup-txt" style="font-size:11px;color:#633806"></span>
-        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #EF9F27;border-radius:6px;background:#fff;color:#633806;font-size:11px;font-weight:600;cursor:pointer"></button>
-      </div>
-    </div>
+    <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)"></div>
 
     <div class="mob-section-lbl">Hydrering — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-hsl" min="55" max="80" step="1" value="65" oninput="mobUHydro(this.value)"></div>
