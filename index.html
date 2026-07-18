@@ -152,7 +152,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
 
 /* mob screens */
-.mob-screen{display:none;flex:1;overflow-y:auto;padding-bottom:4px}
+.mob-screen{display:none;flex:1;min-height:0;overflow-y:auto;padding-bottom:4px}
 .mob-screen.active{display:block}
 
 /* mob plan */
@@ -1729,7 +1729,7 @@ const CHANGELOG = [
       'Wizarden på mobil: "antall pizzaer" er flyttet fra Finjuster til Planlegging-steget, rett under "Når vil du spise?" — melmengde i gram ligger fortsatt alene i Finjuster.',
       'Lagt til app-ikon for hjemskjerm på iPhone og Android (manifest + apple-touch-icon), slik at "Legg til på Hjem-skjerm" viser et ordentlig ikon og navn i stedet for standard nettleser-favicon.',
       'Egen avkrysningsboks lagt til venstre for det grønne steg-nummeret i "Steg"-fanen, for å gjøre det tydeligere at steg kan hakes av — hele raden er fortsatt tap-mål for avhaking.',
-      'Fikset en rot-årsak som ga to synlige feil: Kopier/Kalender/Lagre-knapperaden i "Steg"-fanen var ikke reelt sticky (måtte scrolle helt ned for å se den), og fanebytte kunne se tomt ut. Skyldtes at mobil-visningen manglet en avgrenset skjermhøyde, slik at hele siden — ikke den enkelte fanen — scrollet. I samme slengen: navigering mellom wizardens steg (Pizzatype → Metode → Planlegging → Finjuster) nullstiller nå også scroll-posisjonen, og en gammel duplikat-id i markupen (to elementer med samme id) er ryddet opp.',
+      'Fikset en rot-årsak som ga to synlige feil: Kopier/Kalender/Lagre-knapperaden i "Steg"-fanen var ikke reelt sticky (måtte scrolle helt ned for å se den, eller den dukket opp midt i steg-listen i stedet for rett over bunn-menyen), og fanebytte kunne se tomt ut. Den fulle årsaken viste seg å være to ting sammen: mobil-visningen manglet en avgrenset skjermhøyde, og selve "Steg"-fanen manglet "min-height:0" som flex-element — uten den vokser fanen seg like høy som innholdet i stedet for å bli klippet til tilgjengelig skjermplass, uansett hvor lang tidsplanen er. Bekreftet rettet med faktiske skjermbilde-tester. I samme slengen: navigering mellom wizardens steg (Pizzatype → Metode → Planlegging → Finjuster) nullstiller nå også scroll-posisjonen, og en gammel duplikat-id i markupen (to elementer med samme id) er ryddet opp.',
       'Fikset en regresjon der nye brukere ikke fikk se wizarden ved aller første innlogging.',
       'Lagt til "Logg ut" i PC-versjonens ☰ Meny (fantes tidligere kun på mobil).',
       'Feedback-listen vises nå direkte når du åpner "Feedback", i stedet for bak en "Se tidligere tilbakemeldinger"-toggle. Alle tilbakemeldinger kan nå stemmes opp (👍, én stemme per person per sak). "Merk som løst" og "Slett" er strammet inn til kun å vises for admin — disse var tidligere synlige for alle ved en feil.'
