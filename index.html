@@ -1814,6 +1814,13 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.10',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at fanebytte på mobil (spesielt Info-fanen) av og til landet scrollet nedover i stedet for øverst. Rot-årsaken var en kappløps-situasjon: scroll-nullstillingen skjedde synkront rett etter at fanen byttet fra skjult til synlig, og noen ganger rakk ikke nettleseren å oppdatere fanens scroll-område før nullstillingen ble utført, så den ble uten effekt. Nullstillingen skjer nå i neste "frame" i stedet, samme mønster som allerede brukes andre steder i appen for tilsvarende mål-etter-rendring-situasjoner. Samme fiks lagt til i wizardens steg-navigering for konsekvens.'
+    ]
+  },
+  {
     v: '5.9',
     d: 'juli 2026',
     changes: [
@@ -3232,8 +3239,10 @@ async function wizDecideStart(){
     document.getElementById('wiz-returning-sub').textContent = hasLastConfig ? wizLastConfigSummary() : 'Du har brukt appen før';
     document.getElementById('wiz-use-last-btn').style.display = hasLastConfig ? 'block' : 'none';
     document.getElementById('wiz-use-fav-btn').style.display = hasFavorite ? 'block' : 'none';
-    const scr=document.getElementById('mob-settings');
-    if(scr) scr.scrollTop=0;
+    requestAnimationFrame(()=>{
+      const scr=document.getElementById('mob-settings');
+      if(scr) scr.scrollTop=0;
+    });
   }else{
     wizGoto(1);
   }
@@ -3283,8 +3292,10 @@ function wizGoto(step){
     const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
   }
   wizRenderHeader(step);
-  const scr=document.getElementById('mob-settings');
-  if(scr) scr.scrollTop=0;
+  requestAnimationFrame(()=>{
+    const scr=document.getElementById('mob-settings');
+    if(scr) scr.scrollTop=0;
+  });
 }
 function wizRenderHeader(step){
   const idx = typeof step==='number' ? step : 4;
@@ -3335,13 +3346,18 @@ function mobShowTab(t){
     const tab=document.getElementById('mob-tab-'+id);
     if(tab)tab.classList.toggle('on',id===t);
   });
-  const activeScr=document.getElementById('mob-'+t);
-  if(activeScr) activeScr.scrollTop=0;
   if(t==='plan') syncActionBarOffset();
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
   if(t==='notes')renderNotesPanel('mob-notes-content');
   if(t==='settings') wizEnterSettingsTab();
   updatePlanPulseDot(t);
+  // Nullstilles i neste frame, etter display-bytte og evt. re-rendring over —
+  // synkron nullstilling rett etter display:none→block blir av og til uten
+  // effekt før nettleseren har rukket å oppdatere fanens scroll-område.
+  requestAnimationFrame(()=>{
+    const activeScr=document.getElementById('mob-'+t);
+    if(activeScr) activeScr.scrollTop=0;
+  });
 }
 // Varig, tilstandsbasert dytt videre — ikke en engangs-pulsering man ser bare første gang.
 // Vises konsekvent hver gang du er på Innstillinger (du har nettopp valgt noe, gå videre til Steg),
