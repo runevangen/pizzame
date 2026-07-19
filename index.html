@@ -287,27 +287,29 @@ body.fs-xlarge{zoom:1.45}
 .adv-toggle,.tab,.layout-toggle,
 .mb,.sw,input[type=range],
 .snum-btn,.mob-icon-btn,
-.mob-tab,.modal-overlay,.mob-action-bar,.fs-visning-wrap{zoom:0.8696}
+.mob-tab,.mob-action-bar,.fs-visning-wrap{zoom:0.8696}
 body.fs-large .pill,body.fs-large .mc,body.fs-large .act-btn,body.fs-large .bgo,
 body.fs-large .cbtn,body.fs-large .dropdown-select select,body.fs-large .menu-trigger,
 body.fs-large .menu-dropdown,body.fs-large #fav-btn,
 body.fs-large .adv-toggle,body.fs-large .tab,body.fs-large .layout-toggle,
 body.fs-large .mb,body.fs-large .sw,body.fs-large input[type=range],
 body.fs-large .snum-btn,body.fs-large .mob-icon-btn,
-body.fs-large .mob-tab,body.fs-large .modal-overlay,body.fs-large .mob-action-bar,body.fs-large .fs-visning-wrap{zoom:0.7692}
+body.fs-large .mob-tab,body.fs-large .mob-action-bar,body.fs-large .fs-visning-wrap{zoom:0.7692}
 body.fs-xlarge .pill,body.fs-xlarge .mc,body.fs-xlarge .act-btn,body.fs-xlarge .bgo,
 body.fs-xlarge .cbtn,body.fs-xlarge .dropdown-select select,body.fs-xlarge .menu-trigger,
 body.fs-xlarge .menu-dropdown,body.fs-xlarge #fav-btn,
 body.fs-xlarge .adv-toggle,body.fs-xlarge .tab,body.fs-xlarge .layout-toggle,
 body.fs-xlarge .mb,body.fs-xlarge .sw,body.fs-xlarge input[type=range],
 body.fs-xlarge .snum-btn,body.fs-xlarge .mob-icon-btn,
-body.fs-xlarge .mob-tab,body.fs-xlarge .modal-overlay,body.fs-xlarge .mob-action-bar,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
-/* Motsatt zoom på selve modal-overlay kansellerer body sin zoom helt for modal-vinduer
-   (Hva er nytt, Formler, Guide, osv.) — uten dette regner "max-height:85dvh" feil i en
-   zoomet kontekst, og modalen kan bli fysisk høyere enn skjermen, slik at toppen (med
-   lukkeknappen) havner utenfor synsfeltet ved "Ekstra stor" skrift. Modaltekst blir
-   dermed en anelse mindre enn resten av appen ved store skriftinnstillinger, samme
-   avveining som allerede gjelder for knapper/faner. */
+body.fs-xlarge .mob-tab,body.fs-xlarge .mob-action-bar,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
+/* Modal-vinduer (Feedback, Hva er nytt, Formler, Guide, osv.) fikk tidligere samme
+   motsatte zoom som knapper/faner, for å hindre at "max-height:85dvh" ble regnet feil
+   i en zoomet kontekst (kunne gjøre modalen fysisk høyere enn skjermen). Det gjorde
+   derimot at ALL tekst inni modaler — inkludert lesetekst som Feedback-skjemaet —
+   sluttet å vokse med skriftstørrelse-innstillingen, og ble opplevd som for liten.
+   Nå beregnes modal-boksens maks-høyde i stedet med ekte skjerm-piksler via JS
+   (syncModalMaxHeight()), så modalen aldri blir for høy uansett zoom-nivå, samtidig
+   som teksten inni igjen skalerer normalt med skriftstørrelse-innstillingen. */
 .start-hint{display:flex;align-items:center;gap:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.7rem .9rem;margin-bottom:1rem;font-size:13px;color:#633806}
 .start-hint b{color:#4a2a05}
 .start-hint button{flex-shrink:0;padding:6px 12px;border:1px solid #EF9F27;border-radius:8px;background:#fff;color:#633806;font-size:12px;font-weight:600;cursor:pointer}
@@ -845,7 +847,23 @@ function setFontSize(level){
     btn.style.color = level==='normal' ? '#555' : '#085041';
   }
   syncActionBarOffset();
+  syncModalMaxHeight();
 }
+// Regner ut modal-boksens maks-høyde i ekte skjerm-piksler, uavhengig av body sin
+// zoom (brukt til skriftstørrelse-innstillingen). Zoom gjør at CSS-enheter som
+// "85dvh" ikke lenger stemmer med skjermen, så vi regner selv: 85% av vinduets
+// reelle høyde, omgjort til enheter FØR zoom (siden modal-boksen fortsatt ligger i
+// den zoomede sammenhengen — bare uten sin egen motsatte zoom lenger).
+const FS_ZOOM={normal:1.15,large:1.3,xlarge:1.45};
+function syncModalMaxHeight(){
+  requestAnimationFrame(()=>{
+    const z=FS_ZOOM[currentFontLevel()]||1.15;
+    const realPx=Math.floor(window.innerHeight*0.85);
+    const cssPx=Math.floor(realPx/z);
+    document.querySelectorAll('.modal-box').forEach(box=>{ box.style.maxHeight=cssPx+'px'; });
+  });
+}
+window.addEventListener('resize', syncModalMaxHeight);
 // Måler fanelinjas FAKTISKE, rendrede høyde (ekte skjerm-piksler) og setter
 // knapperadens sticky-avstand ut fra det — i stedet for et antatt, hardkodet
 // 56px-tall. CSS sin "zoom" (brukt til skriftstørrelse-innstillingen) gjør at
@@ -1796,6 +1814,29 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.9',
+    d: 'juli 2026',
+    changes: [
+      'Fikset et ekte tilfelle av toppfeltet på mobil som overlappet innholdet under (f.eks. et meltype-varsel) — toppfeltet hadde fast høyde og rakk ikke plass til både navn/versjon og tidsstempel på to linjer. Toppfeltet vokser nå naturlig ved behov i stedet for å klippe/overlappe. Bekreftet med skjermbilde-mål.',
+      'Meltype-varselet (gjæringstid/hydrering stemmer ikke) har nå også en hurtigknapp for selve gjæringstiden — "Øk hevetiden"/"Reduser hevetiden" — i tillegg til hydrerings- og melbytte-knappene som fantes fra før. Justerer time-/dags-innstillingen for gjeldende metode (Hurtigdeig, Kveldsdeig, eller kjøleskapsdager for Standard/Poolish/Biga), og bytter om nødvendig bort fra en fordeig-metode hvis selve fordeigen alene bruker mer tid enn melet tåler.',
+      'Fjernet to overflødige elementer fra mobilvisningen: "startoppsett"-varselet ("Velg pizzatype... eller åpne en lagret deig") som overlappet med badgen på 🍽️ Mine deiger-knappen i toppen, og stjerne/favoritt-snarveien i toppen (favorittdeigen er fortsatt tilgjengelig via "Mine deiger"-listen, og via ★ Min favoritt i PC-menyen).',
+      'Fikset at tekst inni modal-vinduer (Feedback, Formler, Hva er nytt, Guide) sluttet å vokse med skriftstørrelse-innstillingen, og dermed ble merkbart mindre enn resten av appen — spesielt tydelig på Feedback-siden. Dette var en bevisst, men for streng, avveining fra v5.8 sin fiks (se under) som skulle hindre at modalen ble høyere enn skjermen. Modal-boksens maks-høyde regnes nå ut i ekte skjerm-piksler via JavaScript i stedet for CSS zoom-kansellering, så teksten kan skalere normalt igjen samtidig som lukkeknappen garantert forblir synlig uansett skriftstørrelse. Bekreftet med skjermbilder og faktiske mål på alle tre nivåer.'
+    ]
+  },
+  {
+    v: '5.8',
+    d: 'juli 2026',
+    changes: [
+      'Større font og ikon på bunn-menyfanene (mobil) — lettere å lese/treffe uansett skriftstørrelse-innstilling.',
+      'Fikset tomrommet mellom Kopier/Kalender/Lagre-raden og bunn-fanelinja på "Steg"-fanen, som varierte med skriftstørrelse-innstillingen. Rot-årsaken var strukturell: knapperaden var "sticky" i forhold til selve fane-innholdet (som må kunne vokse med skriftstørrelsen for lesbarhet), mens bunn-menyen er sticky i forhold til hele siden — to ulike referanserammer som ikke alltid stemte overens. Knapperaden er nå "fixed" i forhold til selve skjermen, med posisjonen regnet ut i ekte skjerm-piksler via JavaScript, uavhengig av skriftstørrelse-innstillingen.',
+      'Chicago sitt "Rund godt med begge hender"-steg presiserer nå at emnet presses ut i den runde jernpanna ved steking — samme presisering som Langpanne allerede hadde, for å unngå misforståelsen om at Chicago formes fritt for hånd som en napoletansk pizza.',
+      '"Om appen" heter nå "Info" i bunn-menyen på mobil.',
+      '"Tips og teknikk" er nå en egen knapp i Info-fanen (ved siden av Guide) i stedet for å alltid vises øverst — fanen blir kortere og ryddigere, og du slår opp teknikk-tipsene når du faktisk vil ha dem.',
+      'Ryddet opp Info-fanen: gruppert i Hjelp (Guide/Tips og teknikk/Feedback), Admin (Formler/Admin) og Konto (Logg ut), med pil (›) på klikkbare rader. Versjonsnummer og "Hva er nytt" flyttet fra toppen til en rolig fotnote nederst.',
+      'Forsøkt rettet: skriftstørrelse-kontrollen kunne overlappe radene under på enkelte enheter — flyttet mot-zoom-korreksjonen fra selve kontrollen til hele omsluttende boks, samme mønster som løste knapperad-avviket. Ikke bekreftet på ekte enhet ennå.'
+    ]
+  },
+  {
     v: '5.7',
     d: 'juli 2026',
     changes: [
@@ -1803,17 +1844,7 @@ const CHANGELOG = [
       'Lagt til app-ikon for hjemskjerm på iPhone og Android (manifest + apple-touch-icon), slik at "Legg til på Hjem-skjerm" viser et ordentlig ikon og navn i stedet for standard nettleser-favicon.',
       'Egen avkrysningsboks lagt til venstre for det grønne steg-nummeret i "Steg"-fanen, for å gjøre det tydeligere at steg kan hakes av — hele raden er fortsatt tap-mål for avhaking.',
       'Fikset en rot-årsak som ga to synlige feil: Kopier/Kalender/Lagre-knapperaden i "Steg"-fanen var ikke reelt sticky (måtte scrolle helt ned for å se den, eller den dukket opp midt i steg-listen i stedet for rett over bunn-menyen), og fanebytte kunne se tomt ut. Den fulle årsaken viste seg å være to ting sammen: mobil-visningen manglet en avgrenset skjermhøyde, og selve "Steg"-fanen manglet "min-height:0" som flex-element — uten den vokser fanen seg like høy som innholdet i stedet for å bli klippet til tilgjengelig skjermplass, uansett hvor lang tidsplanen er. Bekreftet rettet med faktiske skjermbilde-tester. I samme slengen: navigering mellom wizardens steg (Pizzatype → Metode → Planlegging → Finjuster) nullstiller nå også scroll-posisjonen, og en gammel duplikat-id i markupen (to elementer med samme id) er ryddet opp.',
-      'Fikset at "Hva er nytt" (og andre modal-vinduer) kunne miste lukkeknappen ved "Ekstra stor" skrift-innstilling — modalen ble da fysisk høyere enn skjermen og sentrerte seg slik at toppen (med ✕-knappen) havnet utenfor synsfeltet. Modal-vinduer bruker nå samme mot-zoom-teknikk som knapper og faner allerede gjorde, slik at de alltid forblir innenfor skjermen uansett skriftstørrelse-innstilling.',
-      'Større font og ikon på bunn-menyfanene (mobil) — lettere å lese/treffe uansett skriftstørrelse-innstilling.',
-      'Fikset tomrommet mellom Kopier/Kalender/Lagre-raden og bunn-fanelinja på "Steg"-fanen, som varierte med skriftstørrelse-innstillingen. Rot-årsaken var strukturell: knapperaden var "sticky" i forhold til selve fane-innholdet (som må kunne vokse med skriftstørrelsen for lesbarhet), mens bunn-menyen er sticky i forhold til hele siden — to ulike referanserammer som ikke alltid stemte overens. Knapperaden er nå "fixed" i forhold til selve skjermen, med posisjonen regnet ut i ekte skjerm-piksler via JavaScript, uavhengig av skriftstørrelse-innstillingen.',
-      'Chicago sitt "Rund godt med begge hender"-steg presiserer nå at emnet presses ut i den runde jernpanna ved steking — samme presisering som Langpanne allerede hadde, for å unngå misforståelsen om at Chicago formes fritt for hånd som en napoletansk pizza.',
-      '"Om appen" heter nå "Info" i bunn-menyen på mobil.',
-      '"Tips og teknikk" er nå en egen knapp i Info-fanen (ved siden av Guide) i stedet for å alltid vises øverst — fanen blir kortere og ryddigere, og du slår opp teknikk-tipsene når du faktisk vil ha dem.',
-      'Ryddet opp Info-fanen: gruppert i Hjelp (Guide/Tips og teknikk/Feedback), Admin (Formler/Admin) og Konto (Logg ut), med pil (›) på klikkbare rader. Versjonsnummer og "Hva er nytt" flyttet fra toppen til en rolig fotnote nederst.',
-      'Forsøkt rettet: skriftstørrelse-kontrollen kunne overlappe radene under på enkelte enheter — flyttet mot-zoom-korreksjonen fra selve kontrollen til hele omsluttende boks, samme mønster som løste knapperad-avviket. Ikke bekreftet på ekte enhet ennå.',
-      'Fikset et ekte tilfelle av toppfeltet på mobil som overlappet innholdet under (f.eks. et meltype-varsel) — toppfeltet hadde fast høyde og rakk ikke plass til både navn/versjon og tidsstempel på to linjer. Toppfeltet vokser nå naturlig ved behov i stedet for å klippe/overlappe. Bekreftet med skjermbilde-mål.',
-      'Meltype-varselet (gjæringstid/hydrering stemmer ikke) har nå også en hurtigknapp for selve gjæringstiden — "Øk hevetiden"/"Reduser hevetiden" — i tillegg til hydrerings- og melbytte-knappene som fantes fra før. Justerer time-/dags-innstillingen for gjeldende metode (Hurtigdeig, Kveldsdeig, eller kjøleskapsdager for Standard/Poolish/Biga), og bytter om nødvendig bort fra en fordeig-metode hvis selve fordeigen alene bruker mer tid enn melet tåler.',
-      'Fjernet to overflødige elementer fra mobilvisningen: "startoppsett"-varselet ("Velg pizzatype... eller åpne en lagret deig") som overlappet med badgen på 🍽️ Mine deiger-knappen i toppen, og stjerne/favoritt-snarveien i toppen (favorittdeigen er fortsatt tilgjengelig via "Mine deiger"-listen, og via ★ Min favoritt i PC-menyen).',
+      'Fikset at "Hva er nytt" (og andre modal-vinduer) kunne miste lukkeknappen ved "Ekstra stor" skrift-innstilling — modalen ble da fysisk høyere enn skjermen og sentrerte seg slik at toppen (med ✕-knappen) havnet utenfor synsfeltet. Modal-vinduer bruker nå samme mot-zoom-teknikk som knapper og faner allerede gjorde, slik at de alltid forblir innenfor skjermen uansett skriftstørrelse-innstilling. (Denne teknikken ble senere forbedret i v5.9 — se over.)',
       'Fikset en regresjon der nye brukere ikke fikk se wizarden ved aller første innlogging.',
       'Lagt til "Logg ut" i PC-versjonens ☰ Meny (fantes tidligere kun på mobil).',
       'Feedback-listen vises nå direkte når du åpner "Feedback", i stedet for bak en "Se tidligere tilbakemeldinger"-toggle. Alle tilbakemeldinger kan nå stemmes opp (👍, én stemme per person per sak). "Merk som løst" og "Slett" er strammet inn til kun å vises for admin — disse var tidligere synlige for alle ved en feil.'
