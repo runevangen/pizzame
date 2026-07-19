@@ -11,8 +11,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Pizzaplanlegger">
-<meta name="theme-color" content="#1D9E75">
+<meta name="theme-color" content="#e8590c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
+:root{
+  /* ===== Forno — designtokens (bunnstruktur for restylingen) ===== */
+  --forno-bg:#181310;
+  --forno-bg-raised:#231a14;
+  --forno-bg-sunken:#1f1712;
+  --forno-border:#3a2a1d;
+  --forno-border-soft:#33261c;
+  --forno-text:#f4ece0;
+  --forno-text-muted:#b8a58f;
+  --forno-text-faint:#9c8a78;
+  --forno-accent:#e8590c;
+  --forno-accent-soft:#2a1c0f;
+  --forno-accent-text:#e8a06e;
+  --forno-font-display:'Archivo Black',sans-serif;
+  --forno-font-body:'Archivo',sans-serif;
+  --forno-font-mono:'IBM Plex Mono',monospace;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:#1D1D1F;font-size:16px}
 .app{display:grid;grid-template-columns:295px 1fr;min-height:100vh}
@@ -132,27 +151,37 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .daylbl.today .ddot{background:#1D9E75}
 /* ===== MOBILE LAYOUT ===== */
 .mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;background:#FAFAF9}
+body.mob-mode .mob-layout{background:var(--forno-bg);color:var(--forno-text);font-family:var(--forno-font-body)}
 .mob-layout.active{display:flex}
 .app.pc-active{display:grid}
 
 /* top bar */
 .mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:.4rem 1rem;display:flex;align-items:center;justify-content:space-between;min-height:56px;position:sticky;top:0;z-index:50}
+body.mob-mode .mob-topbar{background:var(--forno-bg-sunken);border-bottom-color:var(--forno-border-soft)}
 .mob-topbar-title{display:flex;flex-direction:column;gap:1px}
 .mob-topbar-title span{font-size:15px;font-weight:600}
+body.mob-mode .mob-topbar-title span{font-family:var(--forno-font-display);font-size:14px;letter-spacing:.01em;color:var(--forno-text)}
 .mob-topbar-title small{font-size:10px;color:#aaa;font-weight:400}
+body.mob-mode .mob-topbar-title small{color:var(--forno-text-faint);font-family:var(--forno-font-mono)}
 .mob-topbar-actions{display:flex;align-items:center;gap:8px}
 .mob-icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid #EDEDED;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#3A3A3C}
+body.mob-mode .mob-icon-btn{background:var(--forno-bg-raised);border-color:var(--forno-border);color:var(--forno-accent-text)}
 .mob-icon-btn:hover{background:#F2F2F7}
+body.mob-mode .mob-icon-btn:hover{background:var(--forno-border)}
 
 /* bottom tab bar */
 .mob-tabbar{background:#fff;border-top:1px solid #EDEDED;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
+body.mob-mode .mob-tabbar{background:var(--forno-bg-sunken);border-top-color:var(--forno-border-soft)}
 .mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:13px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
+body.mob-mode .mob-tab{color:var(--forno-text-faint);font-family:var(--forno-font-body)}
 @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.6}}
 .mob-tab span[aria-hidden]{font-size:22px;line-height:1}
 .mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
+body.mob-mode .mob-tab.on{color:var(--forno-accent);border-top-color:var(--forno-accent)}
 
 /* mob screens */
-.mob-screen{display:none;flex:1;min-height:0;overflow-y:auto;padding-bottom:4px}
+.mob-screen{display:none;flex:1;min-height:0;overflow-y:auto;overflow-anchor:none;padding-bottom:4px}
+body.mob-mode .mob-screen{background:var(--forno-bg)}
 .mob-screen.active{display:block}
 
 /* mob plan */
@@ -160,48 +189,79 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 
 /* mob steps — compact */
 .mob-step{border-radius:14px;overflow:hidden;margin-bottom:.5rem;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+body.mob-mode .mob-step{background:var(--forno-bg-raised);border:1px solid var(--forno-border);box-shadow:none}
 .mob-step.now{border-color:#1D9E75;border-width:2px}
+body.mob-mode .mob-step.now{border-color:var(--forno-accent)}
 .mob-step.shifted{border-color:#BA7517;border-style:dashed}
 .mob-step.dim{opacity:.4}
 .mob-step-body{padding:.55rem .75rem}
 .mob-sh{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
 .mob-sn{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+body.mob-mode .mob-sn{background:var(--forno-border);color:var(--forno-accent-text);font-family:var(--forno-font-mono)}
+body.mob-mode .mob-step.now .mob-sn{background:var(--forno-accent);color:#1a1512}
 .mob-stepchk{width:18px;height:18px;border-radius:6px;border:2px solid #d0cdc8;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;background:#fff}
+body.mob-mode .mob-stepchk{border-color:var(--forno-border);background:transparent}
 .mob-stepchk.on{background:#1D9E75;border-color:#1D9E75}
+body.mob-mode .mob-stepchk.on{background:var(--forno-accent);border-color:var(--forno-accent)}
 .mob-sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
+body.mob-mode .mob-sn.d{background:transparent;color:var(--forno-text-faint);border-color:var(--forno-border)}
 .mob-stit{font-size:13px;font-weight:600;color:#1D1D1F;line-height:1.3}
+body.mob-mode .mob-stit{color:var(--forno-text);font-family:var(--forno-font-body)}
 .mob-smeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
 .mob-stim{font-size:11px;color:#6E6E73}
+body.mob-mode .mob-stim{color:var(--forno-text-faint);font-family:var(--forno-font-mono)}
 .mob-stim.late{color:#BA7517;font-weight:600}
 .mob-sloc{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
 .mob-sloc.k{color:#185FA5}.mob-sloc.r{color:#0F6E56}.mob-sloc.o{color:#993C1D}
+body.mob-mode .mob-sloc.o{color:var(--forno-accent-text)}
 .mob-swait{display:flex;align-items:center;gap:6px;padding:.35rem .75rem;background:#FAFAF9;border-top:1px solid #EDEDED;font-size:11px;color:#666}
+body.mob-mode .mob-swait{background:var(--forno-bg-sunken);border-top-color:var(--forno-border-soft);color:var(--forno-text-faint)}
 .mob-swait b{color:#1D1D1F}
+body.mob-mode .mob-swait b{color:var(--forno-text)}
 .mob-snote{background:#fef3e2;border-left:3px solid #BA7517;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#633806;margin-top:.35rem;line-height:1.5}
+body.mob-mode .mob-snote{background:var(--forno-accent-soft);border-left-color:#BA7517;color:var(--forno-accent-text)}
 .mob-sdesc{font-size:12px;color:#3A3A3C;margin-top:.4rem;line-height:1.6}
+body.mob-mode .mob-sdesc{color:var(--forno-text-muted)}
 .mob-swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#085041;margin-top:.35rem;line-height:1.5}
+body.mob-mode .mob-swhy{background:var(--forno-accent-soft);border-left-color:var(--forno-accent);color:var(--forno-accent-text)}
 .mob-stip{background:#FAFAF9;border-left:3px solid #ccc;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
 .mob-daylbl{font-size:14px;font-weight:700;color:#1D1D1F;margin:.7rem 0 .25rem;display:flex;align-items:center;gap:5px}
+body.mob-mode .mob-daylbl{color:var(--forno-text);font-family:var(--forno-font-body);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
 .mob-daylbl.today{color:#085041}
+body.mob-mode .mob-daylbl.today{color:var(--forno-accent-text)}
 .mob-daylbl .ddot{width:6px;height:6px;border-radius:50%;background:#ccc;flex-shrink:0}
+body.mob-mode .mob-daylbl .ddot{background:var(--forno-border)}
 .mob-daylbl.today .ddot{background:#1D9E75}
+body.mob-mode .mob-daylbl.today .ddot{background:var(--forno-accent);box-shadow:0 0 6px var(--forno-accent)}
 .mob-action-bar{display:flex;gap:6px;padding:.6rem 1rem;background:#fff;border-top:1px solid #EDEDED;position:fixed;left:0;right:0;z-index:40}
+body.mob-mode .mob-action-bar{background:var(--forno-bg-sunken);border-top-color:var(--forno-border-soft)}
 .mob-abtn{flex:1;height:44px;border:none;border-radius:10px;font-size:11px;text-align:center;background:transparent;color:#1D9E75;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+body.mob-mode .mob-abtn{color:var(--forno-accent-text);font-family:var(--forno-font-body)}
 .mob-abtn i{font-size:16px}
 .mob-abtn.pri{background:#1D9E75;color:#fff}
+body.mob-mode .mob-abtn.pri{background:var(--forno-accent);color:#1a1512}
 .mob-abtn:hover:not(.pri){background:#F2F2F7}
+body.mob-mode .mob-abtn:hover:not(.pri){background:var(--forno-bg-raised)}
 
 /* mob settings */
 .mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
+body.mob-mode .mob-section-lbl{color:var(--forno-accent-text);font-family:var(--forno-font-body)}
 @keyframes finjuster-highlight-flash{0%{background:#FFF4E0}70%{background:#FFF4E0}100%{background:transparent}}
 .finjuster-highlight{animation:finjuster-highlight-flash 2.2s ease-out;border-radius:8px}
 .mob-setting-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;background:#fff;border-bottom:1px solid #F2F2F7}
+body.mob-mode .mob-setting-row{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
 .mob-setting-row:first-of-type{border-top:1px solid #EDEDED}
+body.mob-mode .mob-setting-row:first-of-type{border-top-color:var(--forno-border-soft)}
 .mob-slabel{font-size:13px;color:#1D1D1F}
+body.mob-mode .mob-slabel{color:var(--forno-text)}
 .mob-sval{font-size:13px;color:#6E6E73}
+body.mob-mode .mob-sval{color:var(--forno-text-faint);font-family:var(--forno-font-mono)}
 .mob-slider-wrap{background:#fff;padding:.1rem 1rem .55rem;border-bottom:1px solid #EDEDED}
+body.mob-mode .mob-slider-wrap{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
 .mob-slider-wrap input[type=range]{width:100%;accent-color:#1D9E75}
+body.mob-mode .mob-slider-wrap input[type=range]{accent-color:var(--forno-accent)}
 .mob-pill-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #EDEDED}
+body.mob-mode .mob-pill-wrap{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
 .mob-pill-wrap.mob-segctrl{flex-wrap:nowrap;background:#F2F2F7;border-radius:10px;margin:.4rem 1rem .65rem;padding:2px;gap:2px}
 .mob-mcard-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #EDEDED}
 
@@ -213,8 +273,10 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .mob-pcc .ps{font-size:10px;color:#8E8E93;margin-top:1px}
 .mob-rec{border-radius:14px;overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 .mob-rrow{display:flex;justify-content:space-between;padding:9px 12px;font-size:13px;border-bottom:1px solid #F2F2F7;background:#fff}
+body.mob-mode .mob-rrow{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft);color:var(--forno-text)}
 .mob-rrow:last-child{border-bottom:none}
 .mob-rval{font-weight:600;color:#1D9E75}
+body.mob-mode .mob-rval{color:var(--forno-accent-text);font-family:var(--forno-font-mono)}
 
 /* layout toggle btn */
 
@@ -252,11 +314,17 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .sidenav-item .cnt{background:#1D9E75;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px))}
 .modal-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:85vh;max-height:85dvh;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);display:flex;flex-direction:column}
+body.mob-mode .modal-box{background:var(--forno-bg-raised);color:var(--forno-text)}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:max(.85rem,env(safe-area-inset-top,0px)) 1.1rem .85rem;border-bottom:1px solid #EDEDED;flex-shrink:0}
+body.mob-mode .modal-head{border-bottom-color:var(--forno-border-soft)}
 .modal-head b{font-size:15px}
+body.mob-mode .modal-head b{font-family:var(--forno-font-display);font-size:14px;color:var(--forno-text)}
 .modal-x{width:26px;height:26px;border-radius:50%;background:#F2F2F7;border:none;font-size:14px;color:#6E6E73;cursor:pointer;flex-shrink:0}
+body.mob-mode .modal-x{background:var(--forno-border);color:var(--forno-text-muted)}
 .modal-x:hover{background:#e5e2dc}
+body.mob-mode .modal-x:hover{background:var(--forno-accent-soft)}
 .modal-body{padding:1rem 1.1rem;overflow-y:auto}
+body.mob-mode .modal-body{color:var(--forno-text-muted)}
 .snum-btn{cursor:pointer;transition:background .15s,transform .1s;user-select:none}
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
@@ -1841,6 +1909,34 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.15',
+    d: 'juli 2026',
+    changes: [
+      'Fullført Forno-restylingen av wizarden (Pizzatype → Metode → Planlegging → Finjuster), som brukte fargekoder direkte i HTML-en (ikke CSS-klasser) og derfor ikke arvet tokens automatisk fra forrige runde. Nå Forno-stylet: alle knapper og kort, metode-valg-kortene, pizza-teller, "Starter nå"/"Steketid"-bryteren, dato-/tidsfeltene, Finjuster sine seksjoner, og oppskrift-fanens ingrediensliste. Bekreftet med fargemålinger for alle wizard-steg.'
+    ]
+  },
+  {
+    v: '5.14',
+    d: 'juli 2026',
+    changes: [
+      'Startet restylingen til "Forno"-retningen (valgt av to skisserte alternativer): kullsvart bunn, ember-oransje aksent, Archivo Black/IBM Plex Mono-typografi. Bygget som en tokens-basert bunnstruktur (CSS-variabler for farger/fonter definert ett sted, arvet automatisk) fremfor å style hver fane for seg. Dekker foreløpig: hele mobil-skallet (toppfelt, bunn-menyfaner, fane-bakgrunn), steg-kortene i "Steg"-fanen (den mest brukte skjermen), dag-overskrifter, innstillings-rader/slidere, og alle modal-vinduer (Feedback/Formler/Hva er nytt/Guide). Bekreftet med fargemålinger i headless nettleser. PC-visningen og enkelte inline-stylede detaljer i wizarden (pizza-teller, metode-kort) er ikke omfattet ennå — naturlig neste steg.'
+    ]
+  },
+  {
+    v: '5.13',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet "Aa"-knappen (hurtig skriftstørrelse-bytte) fra toppen av mobilvisningen, i forkant av en større restyling av appen. Skriftstørrelse kan fortsatt justeres via segmentert-kontrollen i Info-fanen.'
+    ]
+  },
+  {
+    v: '5.12',
+    d: 'juli 2026',
+    changes: [
+      'Styrket scroll-nullstillingen ved bytte av wizard-steg og faner ytterligere (dobbel animasjonsramme + en liten etterfølgende sjekk), samt lagt til "overflow-anchor:none" som ekstra sikring mot at nettleseren selv justerer scroll-posisjonen når innhold endrer størrelse rett etter et fanebytte. Gjelder spesielt "Planlegging"-steget i wizarden, som kan bli høyere enn skjermen på ekte telefon (native dato-/tidsfelt rendres ofte høyere på iOS enn i vanlige testverktøy) uten at det alltid lot seg gjenskape i testing her.'
+    ]
+  },
+  {
     v: '5.11',
     d: 'juli 2026',
     changes: [
@@ -3180,8 +3276,8 @@ function mobMethodCards(){
   ].forEach(({v,t,s,hc})=>{
     const el=document.createElement('div');
     const isOn=S.method===v;
-    el.style.cssText=`border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${isOn?(hc?'#BA7517':'#1D9E75'):(hc?'#FFF4E5':'#F2F2F7')}`;
-    el.innerHTML=`<div style="font-size:13px;font-weight:600;color:${isOn?'#fff':'#1D1D1F'}">${t}</div><div style="font-size:11px;color:${isOn?'rgba(255,255,255,.85)':'#6E6E73'};margin-top:1px">${s}</div>`;
+    el.style.cssText=`border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${isOn?(hc?'#BA7517':'var(--forno-accent)'):(hc?'var(--forno-accent-soft)':'var(--forno-bg-raised)')}`;
+    el.innerHTML=`<div style="font-size:13px;font-weight:600;color:${isOn?'#1a1512':'var(--forno-text)'}">${t}</div><div style="font-size:11px;color:${isOn?'rgba(26,21,18,.75)':'var(--forno-text-faint)'};margin-top:1px">${s}</div>`;
     el.onclick=()=>{
       S.method=v;mobMethodCards();
       document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';
@@ -3195,12 +3291,12 @@ function mobMethodCards(){
 
 function mobBuildHrows(){
   const b=document.getElementById('mob-hrows');if(!b)return;
-  b.innerHTML=HOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.hurtigH?'#085041':'#555'};background:${o.h===S.hurtigH?'#e8f7f1':'transparent'};font-weight:${o.h===S.hurtigH?600:400}" onclick="mobSetH(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.hurtigH?'#1D9E75':'#ccc'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+  b.innerHTML=HOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.hurtigH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.hurtigH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.hurtigH?600:400}" onclick="mobSetH(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.hurtigH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
 }
 function mobSetH(h){S.hurtigH=h;mobBuildHrows();mobGen();}
 function mobBuildKrows(){
   const b=document.getElementById('mob-krows');if(!b)return;
-  b.innerHTML=KOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.kveldH?'#085041':'#555'};background:${o.h===S.kveldH?'#e8f7f1':'transparent'};font-weight:${o.h===S.kveldH?600:400}" onclick="mobSetK(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.kveldH?'#1D9E75':'#ccc'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+  b.innerHTML=KOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.kveldH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.kveldH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.kveldH?600:400}" onclick="mobSetK(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.kveldH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
 }
 function mobSetK(h){S.kveldH=h;mobBuildKrows();mobGen();}
 
@@ -3226,13 +3322,13 @@ function mobSetMode(m){
   S.mode=m;
   const ms=document.getElementById('mob-ms'),me=document.getElementById('mob-me');
   if(ms&&me){
-    ms.style.border=m==='start'?'2px solid #1D9E75':'1px solid #d0cdc8';
-    ms.style.background=m==='start'?'#e8f7f1':'#fff';
-    ms.style.color=m==='start'?'#085041':'#888';
+    ms.style.border=m==='start'?'2px solid var(--forno-accent)':'1px solid var(--forno-border)';
+    ms.style.background=m==='start'?'var(--forno-accent-soft)':'var(--forno-bg)';
+    ms.style.color=m==='start'?'var(--forno-accent-text)':'var(--forno-text-faint)';
     ms.style.fontWeight=m==='start'?'600':'400';
-    me.style.border=m==='end'?'2px solid #1D9E75':'1px solid #d0cdc8';
-    me.style.background=m==='end'?'#e8f7f1':'#fff';
-    me.style.color=m==='end'?'#085041':'#888';
+    me.style.border=m==='end'?'2px solid var(--forno-accent)':'1px solid var(--forno-border)';
+    me.style.background=m==='end'?'var(--forno-accent-soft)':'var(--forno-bg)';
+    me.style.color=m==='end'?'var(--forno-accent-text)':'var(--forno-text-faint)';
     me.style.fontWeight=m==='end'?'600':'400';
   }
   document.getElementById('mob-bs').style.display='none';
@@ -3273,10 +3369,12 @@ async function wizDecideStart(){
     document.getElementById('wiz-returning-sub').textContent = hasLastConfig ? wizLastConfigSummary() : 'Du har brukt appen før';
     document.getElementById('wiz-use-last-btn').style.display = hasLastConfig ? 'block' : 'none';
     document.getElementById('wiz-use-fav-btn').style.display = hasFavorite ? 'block' : 'none';
+    const resetReturningScroll=()=>{ const scr=document.getElementById('mob-settings'); if(scr) scr.scrollTop=0; };
     requestAnimationFrame(()=>{
-      const scr=document.getElementById('mob-settings');
-      if(scr) scr.scrollTop=0;
+      resetReturningScroll();
+      requestAnimationFrame(resetReturningScroll);
     });
+    setTimeout(resetReturningScroll, 150);
   }else{
     wizGoto(1);
   }
@@ -3326,10 +3424,12 @@ function wizGoto(step){
     const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
   }
   wizRenderHeader(step);
+  const resetScroll=()=>{ const scr=document.getElementById('mob-settings'); if(scr) scr.scrollTop=0; };
   requestAnimationFrame(()=>{
-    const scr=document.getElementById('mob-settings');
-    if(scr) scr.scrollTop=0;
+    resetScroll();
+    requestAnimationFrame(resetScroll);
   });
+  setTimeout(resetScroll, 150);
 }
 function wizRenderHeader(step){
   const idx = typeof step==='number' ? step : 4;
@@ -3387,11 +3487,15 @@ function mobShowTab(t){
   updatePlanPulseDot(t);
   // Nullstilles i neste frame, etter display-bytte og evt. re-rendring over —
   // synkron nullstilling rett etter display:none→block blir av og til uten
-  // effekt før nettleseren har rukket å oppdatere fanens scroll-område.
+  // effekt før nettleseren har rukket å oppdatere fanens scroll-område. To rammer
+  // pluss en liten etterfølgende sjekk dekker tregere rendring på ekte enheter
+  // (f.eks. native dato-/tidsfelt som bruker litt tid på å legge seg).
+  const resetTabScroll=()=>{ const activeScr=document.getElementById('mob-'+t); if(activeScr) activeScr.scrollTop=0; };
   requestAnimationFrame(()=>{
-    const activeScr=document.getElementById('mob-'+t);
-    if(activeScr) activeScr.scrollTop=0;
+    resetTabScroll();
+    requestAnimationFrame(resetTabScroll);
   });
+  setTimeout(resetTabScroll, 150);
 }
 // Varig, tilstandsbasert dytt videre — ikke en engangs-pulsering man ser bare første gang.
 // Vises konsekvent hver gang du er på Innstillinger (du har nettopp valgt noe, gå videre til Steg),
@@ -3947,12 +4051,11 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <div class="mob-topbar">
     <div class="mob-topbar-title" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden">
-      <span>🍕 Pizzaplanlegger <b id="mob-name-version" style="font-size:12px;font-weight:600;color:#1D9E75"></b></span>
+      <span>🍕 Pizzaplanlegger <b id="mob-name-version" style="font-size:12px;font-weight:600;color:var(--forno-accent)"></b></span>
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
-      <button class="mob-icon-btn" id="mob-fontsize-btn" onclick="cycleFontSize()" title="Endre skriftstørrelse" style="font-weight:700">Aa</button>
-      <button class="mob-icon-btn" id="mob-active-deiger-btn" onclick="jumpToDeiger()" title="Mine deiger" style="display:none;position:relative">🍽️<span id="mob-active-deiger-count" style="position:absolute;top:-4px;right:-4px;background:#1D9E75;color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;line-height:14px;min-width:14px;text-align:center">0</span></button>
+      <button class="mob-icon-btn" id="mob-active-deiger-btn" onclick="jumpToDeiger()" title="Mine deiger" style="display:none;position:relative">🍽️<span id="mob-active-deiger-count" style="position:absolute;top:-4px;right:-4px;background:var(--forno-accent);color:#1a1512;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;line-height:14px;min-width:14px;text-align:center">0</span></button>
       <button class="layout-toggle mob-style" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
     </div>
   </div>
@@ -3974,85 +4077,85 @@ document.addEventListener('change', firstInteractionCheck, true);
   <!-- TAB: INNSTILLINGER -->
   <div class="mob-screen active" id="mob-settings">
     <div id="wiz-returning" class="wiz-step" style="display:none;padding:2rem 1.2rem;text-align:center">
-      <div style="font-size:17px;font-weight:700;margin-bottom:.3rem">Hei igjen! 👋</div>
-      <div id="wiz-returning-sub" style="font-size:12px;color:#6E6E73;margin-bottom:1.3rem"></div>
-      <button id="wiz-use-last-btn" onclick="wizUseLastConfig()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">🔁 Bruk samme som sist</button>
-      <button id="wiz-use-fav-btn" onclick="wizOpenFavoriteFromWizard()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">⭐ Åpne favoritten min</button>
-      <button onclick="wizGoto(1)" style="width:100%;height:40px;border:none;background:transparent;color:#1D9E75;font-size:13px;font-weight:600;cursor:pointer">Start noe nytt →</button>
+      <div style="font-size:17px;font-weight:700;margin-bottom:.3rem;font-family:var(--forno-font-display,inherit)">Hei igjen! 👋</div>
+      <div id="wiz-returning-sub" style="font-size:12px;color:var(--forno-text-faint);margin-bottom:1.3rem"></div>
+      <button id="wiz-use-last-btn" onclick="wizUseLastConfig()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">🔁 Bruk samme som sist</button>
+      <button id="wiz-use-fav-btn" onclick="wizOpenFavoriteFromWizard()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised);color:var(--forno-text);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">⭐ Åpne favoritten min</button>
+      <button onclick="wizGoto(1)" style="width:100%;height:40px;border:none;background:transparent;color:var(--forno-accent-text);font-size:13px;font-weight:600;cursor:pointer">Start noe nytt →</button>
     </div>
 
     <div id="wiz-header" class="wiz-step" style="display:none;padding:1.1rem 1rem .8rem">
       <div style="display:flex;align-items:center;gap:8px">
-        <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:#6E6E73;cursor:pointer;padding:2px 6px;flex-shrink:0">←</span>
+        <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px;flex-shrink:0">←</span>
         <div id="wiz-timeline" style="flex:1"></div>
       </div>
     </div>
 
     <div id="wiz-step-1" class="wiz-step" style="display:none">
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken pizza?</div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken pizza?</div>
       <div class="mob-section-lbl" style="display:none">Pizzatype</div>
       <div class="mob-pill-wrap" id="mob-gtype"></div>
-      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
+      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
     <div id="wiz-step-2" class="wiz-step" style="display:none">
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Hvilken metode?</div>
-      <div style="padding:0 1rem .5rem;font-size:11px;color:#6E6E73">Standard fungerer fint om du er usikker</div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken metode?</div>
+      <div style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Standard fungerer fint om du er usikker</div>
       <div id="mob-gmet-wrap">
         <div class="mob-section-lbl" style="display:none">Metode</div>
         <div class="mob-mcard-wrap" id="mob-gmet"></div>
       </div>
-      <div id="mob-hsub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div id="mob-hsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-hrows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
       </div>
-      <div id="mob-ksub" style="display:none;background:#fff;border-bottom:1px solid #e0ddd8">
+      <div id="mob-ksub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
       </div>
-      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
+      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
     <div id="wiz-step-3" class="wiz-step" style="display:none">
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700">Når vil du spise?</div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Når vil du spise?</div>
       <div class="mob-section-lbl">Antall pizzaer</div>
-      <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-        <span style="font-size:12px;color:#888;display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
-        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">−</button>
-        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:#1D9E75;min-width:22px;text-align:center">4</span>
-        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:16px;color:#555">+</button>
+      <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <span style="font-size:12px;color:var(--forno-text-faint);display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
+        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
+        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:22px;text-align:center;font-family:var(--forno-font-mono)">4</span>
+        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
       </div>
-      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin:0 1rem .65rem;padding:7px 9px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px">
-        <span class="roundup-txt" style="font-size:11px;color:#633806"></span>
-        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #EF9F27;border-radius:6px;background:#fff;color:#633806;font-size:11px;font-weight:600;cursor:pointer"></button>
+      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin:0 1rem .65rem;padding:7px 9px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:8px">
+        <span class="roundup-txt" style="font-size:11px;color:var(--forno-accent-text)"></span>
+        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #BA7517;border-radius:6px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:600;cursor:pointer"></button>
       </div>
       <div class="mob-section-lbl" style="display:none">Planlegg fra</div>
-      <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #1D9E75;background:#e8f7f1;color:#085041;font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
-        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #d0cdc8;background:#fff;color:#888;font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
+      <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
+        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
       </div>
-      <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-        <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
+      <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div style="font-size:10px;font-weight:600;color:var(--forno-text-faint);text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
           <input type="date" id="mob-sd">
           <input type="time" id="mob-st" value="07:30">
         </div>
       </div>
-      <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-        <div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+      <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div style="font-size:10px;font-weight:600;color:var(--forno-text-faint);text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
           <input type="date" id="mob-ed">
           <input type="time" id="mob-et" value="18:00">
         </div>
       </div>
-      <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:#1D9E75;background:#fff;display:none"></div>
+      <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:var(--forno-accent-text);background:var(--forno-bg-raised);display:none"></div>
       <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
-      <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
-      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="wizGoto('finjuster')" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">⚙️ Finjuster (mel, gjærtype, meltype osv.)</span></div>
+      <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
+      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="wizGoto('finjuster')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">⚙️ Finjuster (mel, gjærtype, meltype osv.)</span></div>
     </div>
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
       <div style="padding:.8rem 1rem .2rem;display:flex;align-items:center;gap:8px">
-        <span onclick="wizGoto(3)" style="font-size:16px;color:#6E6E73;cursor:pointer;padding:2px 6px" title="Tilbake til Planlegging">←</span>
-        <span style="font-size:16px;font-weight:700">Finjuster</span>
+        <span onclick="wizGoto(3)" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px" title="Tilbake til Planlegging">←</span>
+        <span style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Finjuster</span>
       </div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)"></div>
@@ -4092,13 +4195,13 @@ document.addEventListener('change', firstInteractionCheck, true);
         <option value="manitoba">Caputo Manitoba Oro</option>
       </select>
     </div>
-    <div id="mob-gmel-info" style="margin:2px 1rem 8px;font-size:12px;color:#6E6E73;background:#F2F2F7;border-radius:6px;padding:6px 9px;line-height:1.4"></div>
+    <div id="mob-gmel-info" style="margin:2px 1rem 8px;font-size:12px;color:var(--forno-text-faint);background:var(--forno-bg-raised);border-radius:6px;padding:6px 9px;line-height:1.4"></div>
 
     <div id="mob-govn-wrap">
       <div class="mob-section-lbl">Ovntype</div>
       <div class="mob-pill-wrap" id="mob-govn"></div>
     </div>
-    <div style="padding:1rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">✓ Ferdig — se steg for steg</button></div>
+    <div style="padding:1rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer">✓ Ferdig — se steg for steg</button></div>
     </div>
 
     <div style="height:80px"></div>
@@ -4180,7 +4283,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')" style="position:relative">
       <span aria-hidden="true">📅</span>Steg
-      <span id="mob-plan-pulse-dot" style="display:none;position:absolute;top:2px;right:18px;width:9px;height:9px;border-radius:50%;background:#1D9E75;animation:pulseDot 1.6s ease-in-out infinite"></span>
+      <span id="mob-plan-pulse-dot" style="display:none;position:absolute;top:2px;right:18px;width:9px;height:9px;border-radius:50%;background:var(--forno-accent);animation:pulseDot 1.6s ease-in-out infinite"></span>
     </div>
     <div class="mob-tab" id="mob-tab-recipe" onclick="mobShowTab('recipe')">
       <span aria-hidden="true">🍕</span>Oppskrift
