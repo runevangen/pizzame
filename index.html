@@ -136,7 +136,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .app.pc-active{display:grid}
 
 /* top bar */
-.mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:0 1rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50}
+.mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:.4rem 1rem;display:flex;align-items:center;justify-content:space-between;min-height:56px;position:sticky;top:0;z-index:50}
 .mob-topbar-title{display:flex;flex-direction:column;gap:1px}
 .mob-topbar-title span{font-size:15px;font-weight:600}
 .mob-topbar-title small{font-size:10px;color:#aaa;font-weight:400}
@@ -1606,6 +1606,48 @@ function totalFermentHours(){
   const preferment=S.method==='poolish'?14:S.method==='biga'?20:0;
   return preferment+S.cold*24;
 }
+function meltypeWarnReduceFerment(){
+  const flour=MELTYPER.find(m=>m.v===S.meltype);
+  if(!flour) return;
+  const hrs=totalFermentHours();
+  const target = hrs<flour.ferm.mn ? flour.ferm.mn : flour.ferm.mx;
+  if(S.method==='hurtig'){
+    const best=[...HOPTS].reverse().find(o=>o.h<=target) || HOPTS[0];
+    S.hurtigH=best.h;
+    try{ buildHrows(); }catch(e){}
+    try{ mobBuildHrows(); }catch(e){}
+  }else if(S.method==='kveld'){
+    const best=[...KOPTS].reverse().find(o=>o.h<=target) || KOPTS[0];
+    S.kveldH=best.h;
+    try{ buildKrows(); }catch(e){}
+    try{ mobBuildKrows(); }catch(e){}
+  }else if(S.method!=='ingenelting'){
+    let method=S.method;
+    let preferment=method==='poolish'?14:method==='biga'?20:0;
+    let days=Math.floor((target-preferment)/24);
+    if(days<1){
+      // Forspillet alene bruker mer tid enn målet tillater — bytt til standardmetoden
+      // (uten fordeig) så selve kjøleskaps-dagene faktisk kan nå målet.
+      method='standard';
+      preferment=0;
+      days=Math.floor(target/24);
+    }
+    days=Math.max(1,Math.min(6,days));
+    S.method=method;
+    S.cold=days;
+    const t=days+' dag'+(days>1?'er':'');
+    const csl=document.getElementById('csl'); if(csl) csl.value=days;
+    const mobCsl=document.getElementById('mob-csl'); if(mobCsl) mobCsl.value=days;
+    const cdisp=document.getElementById('cdisp'); if(cdisp) cdisp.textContent=t;
+    const clbl=document.getElementById('clbl'); if(clbl) clbl.textContent=t;
+    const mobClbl=document.getElementById('mob-clbl'); if(mobClbl) mobClbl.textContent=t;
+    try{ mCards(); }catch(e){}
+    try{ mobMethodCards(); }catch(e){}
+    try{ applyTypeUI(); }catch(e){}
+    try{ applyMobTypeUI(); }catch(e){}
+  }
+  if(document.body.classList.contains('mob-mode')){ mobGen(); } else { schedNow(); }
+}
 function meltypeWarnSetHydro(newHydro){
   S.hydro = newHydro;
   const hslPC = document.getElementById('hsl'); if(hslPC) hslPC.value = newHydro;
@@ -1646,6 +1688,9 @@ function meltypeWarningHTML(){
   // Hurtigjustering direkte i varselet — samme funksjoner som Pizzaplanlegger-fanen bruker,
   // så resultatet blir identisk uansett hvor endringen gjøres fra.
   const actions=[];
+  if(!fermOk && S.type!=='ingenelting'){
+    actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?'Øk hevetiden':'Reduser hevetiden'}</button>`);
+  }
   if(!hydroOk){
     const tooLow = S.hydro<flour.hydroRange.mn;
     const target = tooLow ? flour.hydroRange.mn : flour.hydroRange.mx;
@@ -1766,6 +1811,8 @@ const CHANGELOG = [
       '"Tips og teknikk" er nå en egen knapp i Info-fanen (ved siden av Guide) i stedet for å alltid vises øverst — fanen blir kortere og ryddigere, og du slår opp teknikk-tipsene når du faktisk vil ha dem.',
       'Ryddet opp Info-fanen: gruppert i Hjelp (Guide/Tips og teknikk/Feedback), Admin (Formler/Admin) og Konto (Logg ut), med pil (›) på klikkbare rader. Versjonsnummer og "Hva er nytt" flyttet fra toppen til en rolig fotnote nederst.',
       'Forsøkt rettet: skriftstørrelse-kontrollen kunne overlappe radene under på enkelte enheter — flyttet mot-zoom-korreksjonen fra selve kontrollen til hele omsluttende boks, samme mønster som løste knapperad-avviket. Ikke bekreftet på ekte enhet ennå.',
+      'Fikset et ekte tilfelle av toppfeltet på mobil som overlappet innholdet under (f.eks. et meltype-varsel) — toppfeltet hadde fast høyde og rakk ikke plass til både navn/versjon og tidsstempel på to linjer. Toppfeltet vokser nå naturlig ved behov i stedet for å klippe/overlappe. Bekreftet med skjermbilde-mål.',
+      'Meltype-varselet (gjæringstid/hydrering stemmer ikke) har nå også en hurtigknapp for selve gjæringstiden — "Øk hevetiden"/"Reduser hevetiden" — i tillegg til hydrerings- og melbytte-knappene som fantes fra før. Justerer time-/dags-innstillingen for gjeldende metode (Hurtigdeig, Kveldsdeig, eller kjøleskapsdager for Standard/Poolish/Biga), og bytter om nødvendig bort fra en fordeig-metode hvis selve fordeigen alene bruker mer tid enn melet tåler.',
       'Fikset en regresjon der nye brukere ikke fikk se wizarden ved aller første innlogging.',
       'Lagt til "Logg ut" i PC-versjonens ☰ Meny (fantes tidligere kun på mobil).',
       'Feedback-listen vises nå direkte når du åpner "Feedback", i stedet for bak en "Se tidligere tilbakemeldinger"-toggle. Alle tilbakemeldinger kan nå stemmes opp (👍, én stemme per person per sak). "Merk som løst" og "Slett" er strammet inn til kun å vises for admin — disse var tidligere synlige for alle ved en feil.'
