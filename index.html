@@ -193,6 +193,8 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 
 /* mob settings */
 .mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
+@keyframes finjuster-highlight-flash{0%{background:#FFF4E0}70%{background:#FFF4E0}100%{background:transparent}}
+.finjuster-highlight{animation:finjuster-highlight-flash 2.2s ease-out;border-radius:8px}
 .mob-setting-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;background:#fff;border-bottom:1px solid #F2F2F7}
 .mob-setting-row:first-of-type{border-top:1px solid #EDEDED}
 .mob-slabel{font-size:13px;color:#1D1D1F}
@@ -1624,6 +1626,29 @@ function totalFermentHours(){
   const preferment=S.method==='poolish'?14:S.method==='biga'?20:0;
   return preferment+S.cold*24;
 }
+function meltypeWarnOpenFinjuster(){
+  const flour=MELTYPER.find(m=>m.v===S.meltype);
+  let targetId=null;
+  if(flour){
+    const hrs=totalFermentHours();
+    const fermOk = hrs>=flour.ferm.mn && hrs<=flour.ferm.mx;
+    const hydroOk = !flour.hydroRange || (S.hydro>=flour.hydroRange.mn && S.hydro<=flour.hydroRange.mx);
+    if(!hydroOk) targetId='finjuster-hydro-section';
+    else if(!fermOk && (S.method==='standard'||S.method==='poolish'||S.method==='biga')) targetId='mob-cwrap';
+  }
+  wizGoto('finjuster');
+  if(targetId){
+    requestAnimationFrame(()=>{
+      const el=document.getElementById(targetId);
+      if(!el) return;
+      el.scrollIntoView({behavior:'smooth', block:'center'});
+      el.classList.remove('finjuster-highlight');
+      void el.offsetWidth; // restart animasjonen selv om samme seksjon fremheves flere ganger på rad
+      el.classList.add('finjuster-highlight');
+      setTimeout(()=>el.classList.remove('finjuster-highlight'), 2300);
+    });
+  }
+}
 function meltypeWarnReduceFerment(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return;
@@ -1719,12 +1744,14 @@ function meltypeWarningHTML(){
     actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:#F2F2F7;color:#1D1D1F;font-size:12px;font-weight:600;cursor:pointer">Bytt til ${betterFlour.t}</button>`);
   }
   const actionsHtml = actions.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${actions.join('')}</div>` : '';
+  const finjusterLink = `<div style="margin-top:.5rem"><span onclick="meltypeWarnOpenFinjuster()" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>`;
   const estNote = flour.estimated ? `<div style="font-size:11px;color:#8a5a00;margin-top:.4rem;font-style:italic">Gjærings-/hydreringstallene for ${flour.t} er anslått av oss, ikke oppgitt av produsenten.</div>` : '';
 
   return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌾 ${title}</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">${issues.join(' ')}</div>
     ${actionsHtml}
+    ${finjusterLink}
     ${estNote}
   </div>`;
 }
@@ -1813,6 +1840,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.11',
+    d: 'juli 2026',
+    changes: [
+      'Meltype-varselet har nå en "⚙️ Se i Finjuster"-lenke i tillegg til hurtigknappene, for de som heller vil forstå og justere selv i stedet for å bruke en hurtigknapp. Den relevante seksjonen (Hydrering, eller Kjøleskapsheving ved gjæringstid-avvik) markeres kort med en gul fremheving og scrolles til automatisk, så du raskt ser hvor endringen bør gjøres.'
+    ]
+  },
   {
     v: '5.10',
     d: 'juli 2026',
@@ -4023,8 +4057,10 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)"></div>
 
+    <div id="finjuster-hydro-section">
     <div class="mob-section-lbl">Hydrering — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-hsl" min="55" max="80" step="1" value="65" oninput="mobUHydro(this.value)"></div>
+    </div>
 
     <div id="mob-cwrap">
       <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">1 dag</span></div>
