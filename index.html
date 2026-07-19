@@ -283,25 +283,25 @@ body.fs-xlarge{zoom:1.45}
    siden det ikke lenger er zoom:1. */
 .pill,.mc,.act-btn,.bgo,
 .cbtn,.dropdown-select select,.menu-trigger,
-.menu-dropdown,.fs-seg,#fav-btn,
+.menu-dropdown,#fav-btn,
 .adv-toggle,.tab,.layout-toggle,
 .mb,.sw,input[type=range],
 .snum-btn,.mob-icon-btn,
-.mob-tab,.modal-overlay,.mob-action-bar{zoom:0.8696}
+.mob-tab,.modal-overlay,.mob-action-bar,.fs-visning-wrap{zoom:0.8696}
 body.fs-large .pill,body.fs-large .mc,body.fs-large .act-btn,body.fs-large .bgo,
 body.fs-large .cbtn,body.fs-large .dropdown-select select,body.fs-large .menu-trigger,
-body.fs-large .menu-dropdown,body.fs-large .fs-seg,body.fs-large #fav-btn,
+body.fs-large .menu-dropdown,body.fs-large #fav-btn,
 body.fs-large .adv-toggle,body.fs-large .tab,body.fs-large .layout-toggle,
 body.fs-large .mb,body.fs-large .sw,body.fs-large input[type=range],
 body.fs-large .snum-btn,body.fs-large .mob-icon-btn,
-body.fs-large .mob-tab,body.fs-large .modal-overlay,body.fs-large .mob-action-bar{zoom:0.7692}
+body.fs-large .mob-tab,body.fs-large .modal-overlay,body.fs-large .mob-action-bar,body.fs-large .fs-visning-wrap{zoom:0.7692}
 body.fs-xlarge .pill,body.fs-xlarge .mc,body.fs-xlarge .act-btn,body.fs-xlarge .bgo,
 body.fs-xlarge .cbtn,body.fs-xlarge .dropdown-select select,body.fs-xlarge .menu-trigger,
-body.fs-xlarge .menu-dropdown,body.fs-xlarge .fs-seg,body.fs-xlarge #fav-btn,
+body.fs-xlarge .menu-dropdown,body.fs-xlarge #fav-btn,
 body.fs-xlarge .adv-toggle,body.fs-xlarge .tab,body.fs-xlarge .layout-toggle,
 body.fs-xlarge .mb,body.fs-xlarge .sw,body.fs-xlarge input[type=range],
 body.fs-xlarge .snum-btn,body.fs-xlarge .mob-icon-btn,
-body.fs-xlarge .mob-tab,body.fs-xlarge .modal-overlay,body.fs-xlarge .mob-action-bar{zoom:0.6897}
+body.fs-xlarge .mob-tab,body.fs-xlarge .modal-overlay,body.fs-xlarge .mob-action-bar,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 /* Motsatt zoom på selve modal-overlay kansellerer body sin zoom helt for modal-vinduer
    (Hva er nytt, Formler, Guide, osv.) — uten dette regner "max-height:85dvh" feil i en
    zoomet kontekst, og modalen kan bli fysisk høyere enn skjermen, slik at toppen (med
@@ -1764,6 +1764,8 @@ const CHANGELOG = [
       'Chicago sitt "Rund godt med begge hender"-steg presiserer nå at emnet presses ut i den runde jernpanna ved steking — samme presisering som Langpanne allerede hadde, for å unngå misforståelsen om at Chicago formes fritt for hånd som en napoletansk pizza.',
       '"Om appen" heter nå "Info" i bunn-menyen på mobil.',
       '"Tips og teknikk" er nå en egen knapp i Info-fanen (ved siden av Guide) i stedet for å alltid vises øverst — fanen blir kortere og ryddigere, og du slår opp teknikk-tipsene når du faktisk vil ha dem.',
+      'Ryddet opp Info-fanen: gruppert i Hjelp (Guide/Tips og teknikk/Feedback), Admin (Formler/Admin) og Konto (Logg ut), med pil (›) på klikkbare rader. Versjonsnummer og "Hva er nytt" flyttet fra toppen til en rolig fotnote nederst.',
+      'Forsøkt rettet: skriftstørrelse-kontrollen kunne overlappe radene under på enkelte enheter — flyttet mot-zoom-korreksjonen fra selve kontrollen til hele omsluttende boks, samme mønster som løste knapperad-avviket. Ikke bekreftet på ekte enhet ennå.',
       'Fikset en regresjon der nye brukere ikke fikk se wizarden ved aller første innlogging.',
       'Lagt til "Logg ut" i PC-versjonens ☰ Meny (fantes tidligere kun på mobil).',
       'Feedback-listen vises nå direkte når du åpner "Feedback", i stedet for bak en "Se tidligere tilbakemeldinger"-toggle. Alle tilbakemeldinger kan nå stemmes opp (👍, én stemme per person per sak). "Merk som løst" og "Slett" er strammet inn til kun å vises for admin — disse var tidligere synlige for alle ved en feil.'
@@ -3994,7 +3996,7 @@ document.addEventListener('change', firstInteractionCheck, true);
   <div class="mob-screen" id="mob-tips">
 
     <div class="mob-section-lbl">Visning</div>
-    <div style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
+    <div class="fs-visning-wrap" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
       <div style="font-size:11px;color:#888;margin-bottom:4px">Skriftstørrelse</div>
       <div class="fs-seg" id="mob-fs-seg">
         <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
@@ -4003,25 +4005,38 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
     </div>
 
-    <div class="mob-section-lbl">Info</div>
-    <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:#888">Pizzaplanlegger <b id="mob-footer-version" style="color:#555"></b></span>
-      <span style="font-size:12px;color:#1D9E75;font-weight:600" onclick="openChangelogModal()">Hva er nytt?</span>
+    <div class="mob-section-lbl">Hjelp</div>
+    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openGuideModal()">
+      <span style="font-size:13px;color:#1a1a1a;font-weight:500">❓ Guide</span>
+      <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
-    <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:#888;font-weight:600" onclick="openGuideModal()">❓ Guide</span>
-      <span style="font-size:12px;color:#888;font-weight:600" onclick="openTechModal()">💡 Tips og teknikk</span>
+    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openTechModal()">
+      <span style="font-size:13px;color:#1a1a1a;font-weight:500">💡 Tips og teknikk</span>
+      <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
-    <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:#888;font-weight:600" onclick="openFeedbackModal()">💬 Feedback</span>
+    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openFeedbackModal()">
+      <span style="font-size:13px;color:#1a1a1a;font-weight:500">💬 Feedback</span>
+      <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
-    <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:#993C1D;font-weight:600" onclick="authLogout()">Logg ut</span>
+
+    <div class="mob-section-lbl">Admin</div>
+    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openFormlerModal()">
+      <span style="font-size:13px;color:#1a1a1a;font-weight:500">📊 Formler</span>
+      <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
-    <div style="height:1px;background:#e0ddd8;margin:0 1rem"></div>
-    <div style="padding:.6rem 1rem .7rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:#888;font-weight:600" onclick="openFormlerModal()">📊 Formler</span>
-      <span style="font-size:12px;color:#888;font-weight:600" onclick="openAdminLogin()">🔒 Admin</span>
+    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openAdminLogin()">
+      <span style="font-size:13px;color:#1a1a1a;font-weight:500">🔒 Admin</span>
+      <span style="color:#c4c1ba;font-size:14px">›</span>
+    </div>
+
+    <div class="mob-section-lbl">Konto</div>
+    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="authLogout()">
+      <span style="font-size:13px;color:#993C1D;font-weight:600">Logg ut</span>
+    </div>
+
+    <div style="text-align:center;padding:1.1rem 1rem .5rem">
+      <span style="font-size:11px;color:#aaa">Pizzaplanlegger <span id="mob-footer-version"></span> · </span>
+      <span style="font-size:11px;color:#1D9E75;font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
     </div>
 
     <div style="height:80px"></div>
