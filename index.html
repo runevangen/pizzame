@@ -219,13 +219,14 @@ body.mob-mode .mob-sloc.o{color:var(--forno-accent-text)}
 body.mob-mode .mob-swait{background:var(--forno-bg-sunken);border-top-color:var(--forno-border-soft);color:var(--forno-text-faint)}
 .mob-swait b{color:#1D1D1F}
 body.mob-mode .mob-swait b{color:var(--forno-text)}
-.mob-snote{background:#fef3e2;border-left:3px solid #BA7517;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#633806;margin-top:.35rem;line-height:1.5}
-body.mob-mode .mob-snote{background:var(--forno-accent-soft);border-left-color:#BA7517;color:var(--forno-accent-text)}
+.mob-snote{border-left:2px solid #BA7517;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#633806;margin-top:.35rem;line-height:1.5}
+body.mob-mode .mob-snote{border-left-color:#6b4a1f;color:var(--forno-text-muted)}
 .mob-sdesc{font-size:12px;color:#3A3A3C;margin-top:.4rem;line-height:1.6}
 body.mob-mode .mob-sdesc{color:var(--forno-text-muted)}
-.mob-swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#085041;margin-top:.35rem;line-height:1.5}
-body.mob-mode .mob-swhy{background:var(--forno-accent-soft);border-left-color:var(--forno-accent);color:var(--forno-accent-text)}
-.mob-stip{background:#FAFAF9;border-left:3px solid #ccc;padding:5px 8px;border-radius:0 4px 4px 0;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
+.mob-swhy{border-left:2px solid #1D9E75;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#0a6b52;margin-top:.35rem;line-height:1.5}
+body.mob-mode .mob-swhy{border-left-color:var(--forno-border);color:var(--forno-text-muted)}
+.mob-stip{border-left:2px solid #B4B2A9;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
+body.mob-mode .mob-stip{border-left-color:var(--forno-border);color:var(--forno-text-muted)}
 .mob-daylbl{font-size:14px;font-weight:700;color:#1D1D1F;margin:.7rem 0 .25rem;display:flex;align-items:center;gap:5px}
 body.mob-mode .mob-daylbl{color:var(--forno-text);font-family:var(--forno-font-body);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
 .mob-daylbl.today{color:#085041}
@@ -1908,6 +1909,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.18',
+    d: 'juli 2026',
+    changes: [
+      'Dempet "Hvorfor"/"Tips"-boksene i "Steg"-fanen, som følte seg for kraftige og stjal oppmerksomhet fra selve steget. Byttet fra fylt bakgrunnsfarge til en tynn kantstrek uten fyll (ett av tre skisserte alternativer) — beholder nok visuell distinksjon til å skille tilleggsinfo fra hovedteksten, uten å konkurrere med steget selv.'
+    ]
+  },
   {
     v: '5.17',
     d: 'juli 2026',
