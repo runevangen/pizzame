@@ -1910,6 +1910,13 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.19',
+    d: 'juli 2026',
+    changes: [
+      'Fikset en variant av wizard-regresjonen fra tidligere: en ny bruker på en nettleser/enhet som tidligere er brukt av en annen konto kunne bli møtt med "Hei igjen!" og feil favoritt-status. Årsaken var beslektet med forrige fiks, men på et annet felt — syncFavoriteButton() kjørte ved sideinnlasting, før innlogging var reell, og window._favoriteId ble aldri hentet på nytt etter at den faktiske brukeren logget inn. Nå henter authComplete() riktig favoritt-status før wizarden avgjør noe.'
+    ]
+  },
+  {
     v: '5.18',
     d: 'juli 2026',
     changes: [
@@ -2806,15 +2813,18 @@ async function authSubmitPin(){
     if(errEl) errEl.textContent = 'Fikk ikke kontakt — prøv igjen.';
   }
 }
-function authComplete(id, name){
+async function authComplete(id, name){
   try{ localStorage.setItem('pizzaUser', JSON.stringify({id,name})); }catch(e){}
   document.getElementById('auth-overlay').style.display = 'none';
   maybeShowGuideOnLoad();
   syncLoggedInAs();
-  // wizEnterSettingsTab() kan allerede ha kjørt (og brukt opp _wizEnteredOnce) mens
-  // auth-overlay fortsatt var oppe, før vi visste hvem brukeren faktisk var. Nå som
-  // innloggingen er reell, la wizarden få avgjøre på nytt med riktig bruker-kontekst.
+  // wizEnterSettingsTab() OG syncFavoriteButton() kan begge allerede ha kjørt
+  // (helt nederst i scriptet, ved sideinnlasting) før vi visste hvem brukeren
+  // faktisk var — window._favoriteId kan da stå igjen med feil/gammel verdi.
+  // Nå som innloggingen er reell, hent riktig favoritt-status FØR wizarden
+  // avgjør noe, ellers kan en fersk bruker feilaktig bli møtt med "Hei igjen!".
   window._wizEnteredOnce = false;
+  await syncFavoriteButton();
   if(document.body.classList.contains('mob-mode')) wizEnterSettingsTab();
 }
 function syncLoggedInAs(){
