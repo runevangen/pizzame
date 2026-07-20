@@ -181,6 +181,7 @@ body.mob-mode .mob-tab.on{color:var(--forno-accent);border-top-color:var(--forno
 
 /* mob screens */
 .mob-screen{display:none;flex:1;min-height:0;overflow-y:auto;overflow-anchor:none;padding-bottom:4px}
+.mob-screen.settling{opacity:0}
 body.mob-mode .mob-screen{background:var(--forno-bg)}
 .mob-screen.active{display:block}
 
@@ -1704,18 +1705,17 @@ function meltypeWarnOpenFinjuster(){
     if(!hydroOk) targetId='finjuster-hydro-section';
     else if(!fermOk && (S.method==='standard'||S.method==='poolish'||S.method==='biga')) targetId='mob-cwrap';
   }
-  wizGoto('finjuster');
-  if(targetId){
-    requestAnimationFrame(()=>{
-      const el=document.getElementById(targetId);
-      if(!el) return;
-      el.scrollIntoView({behavior:'smooth', block:'center'});
-      el.classList.remove('finjuster-highlight');
-      void el.offsetWidth; // restart animasjonen selv om samme seksjon fremheves flere ganger på rad
-      el.classList.add('finjuster-highlight');
-      setTimeout(()=>el.classList.remove('finjuster-highlight'), 2300);
-    });
-  }
+  const highlight=()=>{
+    if(!targetId) return;
+    const el=document.getElementById(targetId);
+    if(!el) return;
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.classList.remove('finjuster-highlight');
+    void el.offsetWidth; // restart animasjonen selv om samme seksjon fremheves flere ganger på rad
+    el.classList.add('finjuster-highlight');
+    setTimeout(()=>el.classList.remove('finjuster-highlight'), 2300);
+  };
+  wizGoto('finjuster', targetId ? highlight : null);
 }
 function meltypeWarnReduceFerment(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
@@ -1908,6 +1908,20 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.17',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at fanebytte og wizard-navigering kunne vise en synlig hopp-bevegelse i scroll-posisjonen ("starter litt opp og ned"). Den forrige fiksen rettet selve sluttresultatet, men kunne fortsatt vise et kort, forvirrende hopp underveis. Fanen holdes nå usynlig helt til scroll-posisjonen er bekreftet på plass, i stedet for å vise feil posisjon og så korrigere den — brukeren ser aldri lenger selve hoppet. Samme forbedring gjort for wizard-steg-navigering, med en liten justering slik at "Se i Finjuster"-fremhevingen fortsatt fungerer korrekt sammen med det.'
+    ]
+  },
+  {
+    v: '5.16',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at en ny bruker på samme nettleser/enhet kunne bli møtt med "Hei igjen!" og en annen brukers siste innstillinger. Årsaken var at "sist brukte oppsett" ble lagret under én delt nøkkel i nettleserens lokale lagring, uten kobling til hvilken bruker som faktisk var innlogget — nå lagres og leses dette per bruker-id, så en fersk registrering på samme enhet aldri lenger arver en annen brukers historikk. Bekreftet med to simulerte brukere på samme nettleser.'
+    ]
+  },
   {
     v: '5.15',
     d: 'juli 2026',
@@ -3354,6 +3368,16 @@ function wizEnterSettingsTab(){
   wizDecideStart();
 }
 
+// Nøkkel for "siste oppsett" må være knyttet til hvilken bruker som faktisk er
+// innlogget — ellers arver en ny bruker forrige brukers siste deig på samme enhet.
+function lastConfigKey(){
+  try{
+    const u = JSON.parse(localStorage.getItem('pizzaUser'));
+    if(u && u.id) return 'pizzaLastConfig_'+u.id;
+  }catch(e){}
+  return 'pizzaLastConfig'; // reserve, brukes kun hvis vi av en eller annen grunn ikke finner bruker-id
+}
+
 async function wizDecideStart(){
   const hasFavorite = !!window._favoriteId;
   let hasSavedDough = false;
@@ -3362,19 +3386,25 @@ async function wizDecideStart(){
     hasSavedDough = Array.isArray(bakes) && bakes.some(b=>b.status==='active');
   }catch(e){}
   let hasLastConfig = false;
-  try{ hasLastConfig = !!localStorage.getItem('pizzaLastConfig'); }catch(e){}
+  try{ hasLastConfig = !!localStorage.getItem(lastConfigKey()); }catch(e){}
   if(hasFavorite || hasSavedDough || hasLastConfig){
     wizHideAllSteps();
     document.getElementById('wiz-returning').style.display='block';
     document.getElementById('wiz-returning-sub').textContent = hasLastConfig ? wizLastConfigSummary() : 'Du har brukt appen før';
     document.getElementById('wiz-use-last-btn').style.display = hasLastConfig ? 'block' : 'none';
     document.getElementById('wiz-use-fav-btn').style.display = hasFavorite ? 'block' : 'none';
-    const resetReturningScroll=()=>{ const scr=document.getElementById('mob-settings'); if(scr) scr.scrollTop=0; };
-    requestAnimationFrame(()=>{
-      resetReturningScroll();
-      requestAnimationFrame(resetReturningScroll);
-    });
-    setTimeout(resetReturningScroll, 150);
+    const scr=document.getElementById('mob-settings');
+    if(scr){
+      scr.classList.add('settling');
+      scr.scrollTop=0;
+      requestAnimationFrame(()=>{
+        scr.scrollTop=0;
+        requestAnimationFrame(()=>{
+          scr.scrollTop=0;
+          scr.classList.remove('settling');
+        });
+      });
+    }
   }else{
     wizGoto(1);
   }
@@ -3382,7 +3412,7 @@ async function wizDecideStart(){
 
 function wizLastConfigSummary(){
   try{
-    const cfg = JSON.parse(localStorage.getItem('pizzaLastConfig'));
+    const cfg = JSON.parse(localStorage.getItem(lastConfigKey()));
     return 'Sist bakte du '+tnShort(cfg.type)+' med '+mN(cfg.method)+'-metoden';
   }catch(e){ return 'Du har brukt appen før'; }
 }
@@ -3398,7 +3428,7 @@ function wizHideAllSteps(){
 
 function wizUseLastConfig(){
   try{
-    const cfg = JSON.parse(localStorage.getItem('pizzaLastConfig'));
+    const cfg = JSON.parse(localStorage.getItem(lastConfigKey()));
     Object.assign(S, cfg);
   }catch(e){}
   mobShowTab('plan');
@@ -3413,7 +3443,7 @@ const WIZ_STEPS = [
   {id:2, label:'Metode'},
   {id:3, label:'Når?'}
 ];
-function wizGoto(step){
+function wizGoto(step, onSettled){
   window._wizStep = step;
   document.getElementById('wiz-returning').style.display='none';
   wizHideAllSteps();
@@ -3424,12 +3454,19 @@ function wizGoto(step){
     const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
   }
   wizRenderHeader(step);
-  const resetScroll=()=>{ const scr=document.getElementById('mob-settings'); if(scr) scr.scrollTop=0; };
-  requestAnimationFrame(()=>{
-    resetScroll();
-    requestAnimationFrame(resetScroll);
-  });
-  setTimeout(resetScroll, 150);
+  const scr=document.getElementById('mob-settings');
+  if(scr){
+    scr.classList.add('settling');
+    scr.scrollTop=0;
+    requestAnimationFrame(()=>{
+      scr.scrollTop=0;
+      requestAnimationFrame(()=>{
+        scr.scrollTop=0;
+        scr.classList.remove('settling');
+        if(onSettled) onSettled();
+      });
+    });
+  }else if(onSettled){ onSettled(); }
 }
 function wizRenderHeader(step){
   const idx = typeof step==='number' ? step : 4;
@@ -3469,7 +3506,7 @@ function wizBack(){
   else if(cur===2) wizGoto(1);
 }
 function wizFinish(){
-  try{ localStorage.setItem('pizzaLastConfig', JSON.stringify({...S})); }catch(e){}
+  try{ localStorage.setItem(lastConfigKey(), JSON.stringify({...S})); }catch(e){}
   mobShowTab('plan');
 }
 
@@ -3485,17 +3522,21 @@ function mobShowTab(t){
   if(t==='notes')renderNotesPanel('mob-notes-content');
   if(t==='settings') wizEnterSettingsTab();
   updatePlanPulseDot(t);
-  // Nullstilles i neste frame, etter display-bytte og evt. re-rendring over —
-  // synkron nullstilling rett etter display:none→block blir av og til uten
-  // effekt før nettleseren har rukket å oppdatere fanens scroll-område. To rammer
-  // pluss en liten etterfølgende sjekk dekker tregere rendring på ekte enheter
-  // (f.eks. native dato-/tidsfelt som bruker litt tid på å legge seg).
-  const resetTabScroll=()=>{ const activeScr=document.getElementById('mob-'+t); if(activeScr) activeScr.scrollTop=0; };
-  requestAnimationFrame(()=>{
-    resetTabScroll();
-    requestAnimationFrame(resetTabScroll);
-  });
-  setTimeout(resetTabScroll, 150);
+  // Fanen holdes usynlig (opacity:0) helt til scroll-posisjonen er bekreftet
+  // øverst, i stedet for å vise feil posisjon og så hoppe til riktig — det er
+  // selve hoppet brukeren opplever som forvirrende, ikke bare sluttresultatet.
+  const activeScr=document.getElementById('mob-'+t);
+  if(activeScr){
+    activeScr.classList.add('settling');
+    activeScr.scrollTop=0;
+    requestAnimationFrame(()=>{
+      activeScr.scrollTop=0;
+      requestAnimationFrame(()=>{
+        activeScr.scrollTop=0;
+        activeScr.classList.remove('settling');
+      });
+    });
+  }
 }
 // Varig, tilstandsbasert dytt videre — ikke en engangs-pulsering man ser bare første gang.
 // Vises konsekvent hver gang du er på Innstillinger (du har nettopp valgt noe, gå videre til Steg),
