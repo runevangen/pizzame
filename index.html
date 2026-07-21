@@ -327,6 +327,16 @@ body.mob-mode .modal-x{background:var(--forno-border);color:var(--forno-text-mut
 body.mob-mode .modal-x:hover{background:var(--forno-accent-soft)}
 .modal-body{padding:1rem 1.1rem;overflow-y:auto}
 body.mob-mode .modal-body{color:var(--forno-text-muted)}
+.admin-card{border:1px solid #e0ddd8;border-radius:8px;padding:.6rem .7rem;margin-bottom:8px}
+body.mob-mode .admin-card{border-color:var(--forno-border)}
+.admin-uname{font-size:13px;font-weight:600;color:#1a1a1a}
+body.mob-mode .admin-uname{color:var(--forno-text)}
+.admin-umeta{font-size:11px;color:#888;margin-top:2px}
+body.mob-mode .admin-umeta{color:var(--forno-text-faint)}
+.admin-btn{padding:5px 9px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;color:#333}
+body.mob-mode .admin-btn{background:var(--forno-bg);border-color:var(--forno-border);color:var(--forno-text-muted)}
+.admin-btn.danger{color:#993C1D;border-color:#e0ddd8}
+body.mob-mode .admin-btn.danger{color:#e07856;border-color:var(--forno-border)}
 .snum-btn{cursor:pointer;transition:background .15s,transform .1s;user-select:none}
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
@@ -1910,6 +1920,14 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.22',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at brukernavnene i Admin-visningen var usynlige på mobil — teksten hadde hardkodet mørk farge fra før restylingen, som forsvant mot den nye mørke modal-bakgrunnen. Admin-listen bruker nå farger som tilpasser seg både lys (PC) og mørk (mobil) visning. Samme feil rettet i Notater-fanens overskrift.',
+      'Lagrede deiger og notater viser nå hvem som står bak: deig-kortene i "Mine deiger" viser "av [navn]" på deiger lagret fra nå av, og notater viser "sist lagret av [navn]" (og en signaturlinje under notatet på ferdige deiger). Eldre deiger og notater lagret før denne versjonen har ikke navn registrert, og vises uten.'
+    ]
+  },
+  {
     v: '5.21',
     d: 'juli 2026',
     changes: [
@@ -2698,8 +2716,9 @@ async function renderNotesPanel(targetId){
     return;
   }
   const statusTxt = b.status==='finished' ? 'Ferdig' : 'Aktiv';
+  const noteByTxt = b.noteBy ? ` · sist lagret av ${escH(b.noteBy)}` : '';
   el.innerHTML = `
-    <div style="font-size:12px;color:#888;margin-bottom:.5rem">Notater for: <b style="color:#1a1a1a">${escH(b.name)}</b> <span style="color:#1D9E75">· ${statusTxt}</span></div>
+    <div style="font-size:12px;color:#888;margin-bottom:.5rem">Notater for: <b class="admin-uname" style="font-size:12px">${escH(b.name)}</b> <span style="color:#1D9E75">· ${statusTxt}</span>${noteByTxt}</div>
     <textarea id="${inputId}" rows="6" placeholder="Hvordan gikk det? Smak, heving, justeringer til neste gang..." style="width:100%;border:1px solid #d0cdc8;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box">${escH(b.note||'')}</textarea>
     <div style="margin-top:.5rem;display:flex;gap:10px;align-items:center">
       <button onclick="saveDeigNote('${inputId}','${statusId}')" style="padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">💾 Lagre notat</button>
@@ -2718,10 +2737,10 @@ async function saveDeigNote(inputId, statusId){
     const res = await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({note: val})
+      body: JSON.stringify({note: val, noteBy: currentUserName()})
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    if(window._bakesCache){ const b=window._bakesCache.find(x=>x.id===id); if(b) b.note=val; }
+    if(window._bakesCache){ const b=window._bakesCache.find(x=>x.id===id); if(b){ b.note=val; b.noteBy=currentUserName(); } }
     if(statusEl){ statusEl.textContent='✓ Lagret'; setTimeout(()=>{ if(statusEl) statusEl.textContent=''; }, 2000); }
   }catch(e){
     alert('Kunne ikke lagre notat. Sjekk nettforbindelsen. ('+e.message+')');
@@ -2895,15 +2914,15 @@ function renderAdminModal(users){
   body.innerHTML = users.map(u=>{
     let created=''; try{ created=fDT(new Date(u.createdAt)); }catch(e){}
     let lastLogin=''; try{ lastLogin=fDT(new Date(u.lastLoginAt)); }catch(e){}
-    return `<div style="border:1px solid #e0ddd8;border-radius:8px;padding:.6rem .7rem;margin-bottom:8px">
+    return `<div class="admin-card">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <div style="min-width:0">
-          <div style="font-size:13px;font-weight:600;color:#1a1a1a">${escH(u.name)}</div>
-          <div style="font-size:11px;color:#888;margin-top:2px">Registrert: ${created} · Sist inne: ${lastLogin}</div>
+          <div class="admin-uname">${escH(u.name)}</div>
+          <div class="admin-umeta">Registrert: ${created} · Sist inne: ${lastLogin}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button onclick="adminResetPin('${u.id}','${escAttr(u.name)}')" style="padding:5px 9px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:11px;cursor:pointer">Ny PIN</button>
-          <button onclick="adminDeleteUser('${u.id}','${escAttr(u.name)}')" style="padding:5px 9px;border:1px solid #e0ddd8;border-radius:6px;background:#fff;color:#993C1D;font-size:11px;cursor:pointer">Slett</button>
+          <button onclick="adminResetPin('${u.id}','${escAttr(u.name)}')" class="admin-btn">Ny PIN</button>
+          <button onclick="adminDeleteUser('${u.id}','${escAttr(u.name)}')" class="admin-btn danger">Slett</button>
         </div>
       </div>
     </div>`;
@@ -3416,6 +3435,13 @@ function lastConfigKey(){
   }catch(e){}
   return 'pizzaLastConfig'; // reserve, brukes kun hvis vi av en eller annen grunn ikke finner bruker-id
 }
+function currentUserName(){
+  try{
+    const u = JSON.parse(localStorage.getItem('pizzaUser'));
+    if(u && u.name) return u.name;
+  }catch(e){}
+  return null;
+}
 
 async function wizDecideStart(){
   // VIKTIG: deig-lageret (/api/bakes) er DELT for hele gruppen — at det finnes
@@ -3710,7 +3736,7 @@ function bakeCardHTML(b, mob){
           ${starBtn}
           <div>
             <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
-            <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)}</div>
+            <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)}${b.savedBy?' · av '+escH(b.savedBy):''}</div>
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
@@ -3729,10 +3755,10 @@ function bakeCardHTML(b, mob){
         ${starBtn}
         <div style="flex:1;min-width:0">
           <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
-          <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)} · Ferdig: ${finDt}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)}${b.savedBy?' · av '+escH(b.savedBy):''} · Ferdig: ${finDt}</div>
           ${ratingHtml}
           ${photoHtml}
-          ${b.note?`<div style="font-size:12px;color:#1a1a1a;margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>`:''}
+          ${b.note?`<div style="font-size:12px;color:#1a1a1a;margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>${b.noteBy?`<div style="font-size:10px;color:#999;margin-top:2px">— ${escH(b.noteBy)}</div>`:''}`:''}
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
@@ -3798,7 +3824,7 @@ async function saveBake(){
       res = await fetch('/api/bakes', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])] })
+        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])], savedBy: currentUserName() })
       });
     }
     if(!res.ok) throw new Error('HTTP '+res.status);
