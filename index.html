@@ -24,8 +24,8 @@
   --forno-border:#3a2a1d;
   --forno-border-soft:#33261c;
   --forno-text:#f4ece0;
-  --forno-text-muted:#b8a58f;
-  --forno-text-faint:#9c8a78;
+  --forno-text-muted:#c9b8a4;
+  --forno-text-faint:#ab9985;
   --forno-accent:#e8590c;
   --forno-accent-soft:#2a1c0f;
   --forno-accent-text:#e8a06e;
@@ -43,7 +43,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .lbl{font-size:12px;font-weight:600;color:#6E6E73;margin-bottom:6px;letter-spacing:-.01em}
 .pills{display:flex;flex-wrap:wrap;gap:4px}
 .pill{padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:#F2F2F7;color:var(--dyn-text);transition:background .15s;white-space:nowrap;user-select:none;display:inline-flex;align-items:center;height:34px}
+body.mob-mode .pill{background:var(--forno-bg);border:1px solid var(--forno-border)}
 .pill.on{background:#1D9E75;color:#fff;font-weight:600}
+body.mob-mode .pill.on{background:var(--forno-accent);color:#1a1512;border-color:var(--forno-accent)}
 .pill:hover:not(.on){background:#EDEDED}
 .segctrl{background:#F2F2F7;border-radius:10px;padding:2px;gap:2px}
 .segctrl .pill{flex:1;justify-content:center;border-radius:8px;background:transparent;height:32px}
@@ -86,6 +88,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .mb:hover:not(.on){background:#F2F2F7}
 .dtg{display:grid;grid-template-columns:1fr 110px;gap:5px;margin-bottom:3px}
 input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #E5E5EA;border-radius:6px;font-size:12px;background:#fff;color:var(--dyn-text);outline:none;min-width:0;font-family:inherit}
+body.mob-mode input[type=date],body.mob-mode input[type=time]{background:var(--forno-bg);border-color:var(--forno-border);color-scheme:dark}
 input[type=date]:focus,input[type=time]:focus{border-color:#1D9E75;outline:2px solid #1D9E7530}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
@@ -267,7 +270,9 @@ body.mob-mode .mob-slider-wrap input[type=range]{accent-color:var(--forno-accent
 .mob-pill-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #EDEDED}
 body.mob-mode .mob-pill-wrap{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
 .mob-pill-wrap.mob-segctrl{flex-wrap:nowrap;background:#F2F2F7;border-radius:10px;margin:.4rem 1rem .65rem;padding:2px;gap:2px}
+body.mob-mode .mob-pill-wrap.mob-segctrl{background:var(--forno-bg)}
 .mob-mcard-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #EDEDED}
+body.mob-mode .mob-mcard-wrap{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
 
 /* mob recipe */
 .mob-pcbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:.5rem 0 .75rem}
@@ -357,8 +362,11 @@ body.mob-mode .guide-txt b{color:var(--forno-text)}
 .clog-ver ul{margin:0;padding-left:1.1rem}
 .clog-ver li{font-size:12px;color:#444;margin-bottom:.3rem;line-height:1.5}
 .fs-seg{display:flex;background:#F2F2F7;border-radius:8px;padding:3px;gap:2px}
+body.mob-mode .fs-seg{background:var(--forno-bg)}
 .fs-seg .o{flex:1;text-align:center;padding:6px 4px;font-size:11px;font-weight:600;color:#666;border-radius:6px;cursor:pointer}
+body.mob-mode .fs-seg .o{color:var(--forno-text-faint)}
 .fs-seg .o.on{background:#fff;color:#085041;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+body.mob-mode .fs-seg .o.on{background:var(--forno-accent);color:#1a1512}
 /* Skriftstørrelse-skalaen er forskjøvet ett hakk opp: "Normal" er nå det som
    tidligere het "Stor", "Stor" er det som tidligere het "Ekstra stor", og
    "Ekstra stor" er et helt nytt, enda større nivå. Standarden for nye brukere
@@ -409,6 +417,7 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .mob-action-bar,body.fs-xlarge .fs-visnin
 .next-flag{display:inline-block;font-size:10px;font-weight:600;color:#1257A0;background:#E3F0FD;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .pizza-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;background:#fff;border:1px solid #EDEDED;border-radius:12px;padding:.7rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;z-index:300;transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:min(90vw,360px)}
+body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--forno-border)}
 .pizza-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .pizza-toast-emoji{font-size:30px;line-height:1;flex-shrink:0;display:inline-block}
 .pizza-toast-text{font-size:13px;font-weight:600;color:var(--dyn-text);line-height:1.35}
@@ -1927,6 +1936,20 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.25',
+    d: 'juli 2026',
+    changes: [
+      'Lysnet den dempede/svake tekstfargen (brukt på etiketter, tidsstempler og sekundær tekst gjennom hele mobilvisningen) — teknisk sett innenfor tilgjengelighetskravene fra før, men for svak til å lese komfortabelt i praksis, spesielt i liten skriftstørrelse. Kontrasten er nå 6,2:1 (opp fra 5,1:1).'
+    ]
+  },
+  {
+    v: '5.24',
+    d: 'juli 2026',
+    changes: [
+      'Fikset den andre halvparten av v5.23-bugen: forrige fiks gjorde riktignok teksten lys, men flere av radene/boksene den satt på (Info-fanens menyrader, skriftstørrelse-velgeren, valg-boblene for gjærtype/kjøkkenmaskin/ovntype/pizzatype i wizarden, dato-/tidsfeltene) hadde fortsatt hvit bakgrunn — så lys tekst på hvit bunn ble like usynlig, bare omvendt. Alle disse er nå rettet til å bruke mørk bunn på mobil. Fant også separate, litt andre farge-instanser i wizardens JavaScript-genererte valg-bobler som ikke hang sammen med v5.23-fiksen i det hele tatt — samme rettet.'
+    ]
+  },
+  {
     v: '5.23',
     d: 'juli 2026',
     changes: [
@@ -3335,9 +3358,9 @@ function mobPillGroup(id,key){
     el.className='pill'+(S[key]===v?' on':'');
     el.textContent=t;
     if(isSeg){
-      el.style.cssText='flex:1;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'#fff':'transparent')+';color:var(--dyn-text);box-shadow:'+(S[key]===v?'0 1px 2px rgba(0,0,0,.1)':'none');
+      el.style.cssText='flex:1;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'var(--forno-accent)':'transparent')+';color:'+(S[key]===v?'#1a1512':'var(--dyn-text)')+';box-shadow:'+(S[key]===v?'0 1px 2px rgba(0,0,0,.1)':'none');
     }else{
-      el.style.cssText='padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'#1D9E75':'#F2F2F7')+';color:'+(S[key]===v?'#fff':'#1D1D1F');
+      el.style.cssText='padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'var(--forno-accent)':'var(--forno-bg,#F2F2F7)')+';color:'+(S[key]===v?'#1a1512':'var(--dyn-text)');
     }
     el.onclick=()=>{
       const changed = S[key] !== v;
@@ -4343,8 +4366,8 @@ document.addEventListener('change', firstInteractionCheck, true);
   <div class="mob-screen" id="mob-tips">
 
     <div class="mob-section-lbl">Visning</div>
-    <div class="fs-visning-wrap" style="padding:.5rem 1rem .65rem;background:#fff;border-bottom:1px solid #e0ddd8">
-      <div style="font-size:11px;color:#888;margin-bottom:4px">Skriftstørrelse</div>
+    <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.5rem 1rem .65rem">
+      <div style="font-size:11px;color:var(--forno-text-faint,#888);margin-bottom:4px">Skriftstørrelse</div>
       <div class="fs-seg" id="mob-fs-seg">
         <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
         <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
@@ -4353,37 +4376,37 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div class="mob-section-lbl">Hjelp</div>
-    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openGuideModal()">
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openGuideModal()">
       <span style="font-size:13px;color:var(--dyn-text);font-weight:500">❓ Guide</span>
-      <span style="color:#c4c1ba;font-size:14px">›</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
-    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openTechModal()">
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openTechModal()">
       <span style="font-size:13px;color:var(--dyn-text);font-weight:500">💡 Tips og teknikk</span>
-      <span style="color:#c4c1ba;font-size:14px">›</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
-    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openFeedbackModal()">
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openFeedbackModal()">
       <span style="font-size:13px;color:var(--dyn-text);font-weight:500">💬 Feedback</span>
-      <span style="color:#c4c1ba;font-size:14px">›</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
 
     <div class="mob-section-lbl">Admin</div>
-    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openFormlerModal()">
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openFormlerModal()">
       <span style="font-size:13px;color:var(--dyn-text);font-weight:500">📊 Formler</span>
-      <span style="color:#c4c1ba;font-size:14px">›</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
-    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openAdminLogin()">
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openAdminLogin()">
       <span style="font-size:13px;color:var(--dyn-text);font-weight:500">🔒 Admin</span>
-      <span style="color:#c4c1ba;font-size:14px">›</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
 
     <div class="mob-section-lbl">Konto</div>
-    <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="authLogout()">
+    <div class="mob-setting-row" style="cursor:pointer" onclick="authLogout()">
       <span style="font-size:13px;color:#993C1D;font-weight:600">Logg ut</span>
     </div>
 
     <div style="text-align:center;padding:1.1rem 1rem .5rem">
-      <span style="font-size:11px;color:#aaa">Pizzaplanlegger <span id="mob-footer-version"></span> · </span>
-      <span style="font-size:11px;color:#1D9E75;font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
+      <span style="font-size:11px;color:var(--forno-text-faint,#aaa)">Pizzaplanlegger <span id="mob-footer-version"></span> · </span>
+      <span style="font-size:11px;color:var(--forno-accent,#1D9E75);font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
     </div>
 
     <div style="height:80px"></div>
