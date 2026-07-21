@@ -3,8 +3,8 @@ import { getStore } from '@netlify/blobs';
 // Delt liste over aktive og ferdige bakster.
 // Ingen pålogging — åpen for alle i familie/vennegruppen som har lenken.
 // GET    /api/bakes          -> liste alle
-// POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO, checkedSteps?, checkedIngredients? }
-// PATCH  /api/bakes/:id      -> merk ferdig + kommentar { note } eller gjenåpne { status:'active' },
+// POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO, checkedSteps?, checkedIngredients?, savedBy? }
+// PATCH  /api/bakes/:id      -> merk ferdig + kommentar { note, noteBy? } eller gjenåpne { status:'active' },
 //                                sett/fjern favoritt { favorite: true|false } (kun én favoritt om gangen),
 //                                huske avhaket steg/ingredienser { checkedSteps, checkedIngredients },
 //                                eller sette vurdering/bilde på ferdig deig { rating: 1-5|null, photo: base64-string|null }
@@ -54,6 +54,7 @@ export default async (req, context) => {
         config: body.config,
         anchorMode: body.anchorMode === 'end' ? 'end' : 'start',
         anchorISO: body.anchorISO,
+        savedBy: typeof body.savedBy === 'string' && body.savedBy.trim() ? body.savedBy.trim().slice(0, 40) : null,
         savedAt: new Date().toISOString(),
         finishedAt: null,
         note: '',
@@ -80,7 +81,13 @@ export default async (req, context) => {
         updated.status = 'active';
         updated.finishedAt = null;
       }
-      if (typeof body.note === 'string') updated.note = body.note.slice(0, 2000);
+      if (typeof body.note === 'string') {
+        updated.note = body.note.slice(0, 2000);
+        // Hvem som sist lagret notatet — sendes sammen med note fra front-end.
+        if (typeof body.noteBy === 'string' && body.noteBy.trim()) {
+          updated.noteBy = body.noteBy.trim().slice(0, 40);
+        }
+      }
       if (typeof body.name === 'string' && body.name.trim()) updated.name = body.name.trim().slice(0, 60);
       if (body.config) updated.config = body.config;
       if (body.anchorMode) updated.anchorMode = body.anchorMode === 'end' ? 'end' : 'start';
