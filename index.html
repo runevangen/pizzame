@@ -16,6 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{
+  --dyn-text:#1a1a1a;
   /* ===== Forno — designtokens (bunnstruktur for restylingen) ===== */
   --forno-bg:#181310;
   --forno-bg-raised:#231a14;
@@ -33,36 +34,36 @@
   --forno-font-mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:#1D1D1F;font-size:16px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:var(--dyn-text);font-size:16px}
 .app{display:grid;grid-template-columns:295px 1fr;min-height:100vh}
 .sb{background:#FAFAF9;border-right:1px solid #EDEDED;padding:1rem;display:flex;flex-direction:column;gap:.8rem;overflow-y:auto;position:sticky;top:0;height:100vh}
 .mn{background:#fff;padding:1.5rem;overflow-y:auto}
-.logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:7px;color:#1D1D1F}
+.logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:7px;color:var(--dyn-text)}
 .logo span{font-size:20px}
 .lbl{font-size:12px;font-weight:600;color:#6E6E73;margin-bottom:6px;letter-spacing:-.01em}
 .pills{display:flex;flex-wrap:wrap;gap:4px}
-.pill{padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:#F2F2F7;color:#1D1D1F;transition:background .15s;white-space:nowrap;user-select:none;display:inline-flex;align-items:center;height:34px}
+.pill{padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:#F2F2F7;color:var(--dyn-text);transition:background .15s;white-space:nowrap;user-select:none;display:inline-flex;align-items:center;height:34px}
 .pill.on{background:#1D9E75;color:#fff;font-weight:600}
 .pill:hover:not(.on){background:#EDEDED}
 .segctrl{background:#F2F2F7;border-radius:10px;padding:2px;gap:2px}
 .segctrl .pill{flex:1;justify-content:center;border-radius:8px;background:transparent;height:32px}
-.segctrl .pill.on{background:#fff;color:#1D1D1F;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.segctrl .pill.on{background:#fff;color:var(--dyn-text);box-shadow:0 1px 2px rgba(0,0,0,.1)}
 .segctrl .pill:hover:not(.on){background:rgba(0,0,0,.04)}
 .dropdown-select{position:relative}
-.dropdown-select select{width:100%;height:38px;padding:0 32px 0 12px;border-radius:10px;border:none;background:#F2F2F7;font-size:13px;font-weight:500;color:#1D1D1F;-webkit-appearance:none;appearance:none;cursor:pointer;font-family:inherit}
+.dropdown-select select{width:100%;height:38px;padding:0 32px 0 12px;border-radius:10px;border:none;background:#F2F2F7;font-size:13px;font-weight:500;color:var(--dyn-text);-webkit-appearance:none;appearance:none;cursor:pointer;font-family:inherit}
 .dropdown-select::after{content:'⌄';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:#6E6E73;pointer-events:none}
 .menu-wrap{position:relative}
-.menu-trigger{display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 12px;border-radius:10px;background:#F2F2F7;font-size:13px;font-weight:600;color:#1D1D1F;cursor:pointer}
+.menu-trigger{display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 12px;border-radius:10px;background:#F2F2F7;font-size:13px;font-weight:600;color:var(--dyn-text);cursor:pointer}
 .menu-trigger:hover{background:#EDEDED}
 .menu-dropdown{position:absolute;top:44px;left:0;right:0;z-index:60;margin-top:0;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.15);overflow:hidden}
-.menu-row{display:flex;align-items:center;justify-content:space-between;height:38px;padding:0 12px;font-size:13px;font-weight:500;color:#1D1D1F;cursor:pointer}
+.menu-row{display:flex;align-items:center;justify-content:space-between;height:38px;padding:0 12px;font-size:13px;font-weight:500;color:var(--dyn-text);cursor:pointer}
 .menu-row:hover{background:#FAFAF9}
 .mcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .mc{border-radius:12px;padding:.6rem .7rem;cursor:pointer;transition:all .15s;background:#F2F2F7}
 .mc.on{background:#1D9E75}
 .mc.hc{background:#FFF4E5}
 .mc.hc.on{background:#BA7517}
-.mc-t{font-size:12px;font-weight:600;color:#1D1D1F}
+.mc-t{font-size:12px;font-weight:600;color:var(--dyn-text)}
 .mc.on .mc-t{color:#fff}
 .mc.hc.on .mc-t{color:#fff}
 .mc-s{font-size:11px;color:#6E6E73;margin-top:1px}
@@ -78,13 +79,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .gcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .divl{height:1px;background:#EDEDED;flex-shrink:0}
 .tbox{background:#fff;border-radius:14px;padding:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
-.tbox-t{font-size:12px;font-weight:600;margin-bottom:.55rem;display:flex;align-items:center;gap:5px;color:#1D1D1F}
+.tbox-t{font-size:12px;font-weight:600;margin-bottom:.55rem;display:flex;align-items:center;gap:5px;color:var(--dyn-text)}
 .mbtns{display:flex;gap:5px;margin-bottom:.6rem}
 .mb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:8px;border:2px solid #E5E5EA;cursor:pointer;background:#fff;color:#6E6E73;transition:all .15s;font-size:11px;text-align:center;line-height:1.3;user-select:none}
 .mb.on{border-color:#1D9E75;background:#e8f7f1;color:#085041;font-weight:600}
 .mb:hover:not(.on){background:#F2F2F7}
 .dtg{display:grid;grid-template-columns:1fr 110px;gap:5px;margin-bottom:3px}
-input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #E5E5EA;border-radius:6px;font-size:12px;background:#fff;color:#1D1D1F;outline:none;min-width:0;font-family:inherit}
+input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #E5E5EA;border-radius:6px;font-size:12px;background:#fff;color:var(--dyn-text);outline:none;min-width:0;font-family:inherit}
 input[type=date]:focus,input[type=time]:focus{border-color:#1D9E75;outline:2px solid #1D9E7530}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
@@ -106,12 +107,12 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .pcbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1rem}
 .pcc{background:#FAFAF9;border-radius:8px;padding:.55rem .7rem;text-align:center}
 .pcc .pl{font-size:11px;color:#6E6E73;margin-bottom:2px}
-.pcc .pv{font-size:15px;font-weight:600;color:#1D1D1F}
+.pcc .pv{font-size:15px;font-weight:600;color:var(--dyn-text)}
 .pcc .ps{font-size:10px;color:#8E8E93;margin-top:1px}
 .topnav{display:flex;gap:4px;background:#fff;border-bottom:1px solid #EDEDED;padding:.5rem 1.5rem;position:sticky;top:0;z-index:50;margin:-1.5rem -1.5rem 1.1rem}
 .tab{padding:7px 15px;font-size:13px;cursor:pointer;color:#666;border-radius:8px}
 .tab.on{background:#085041;color:#fff;font-weight:600}
-.tab:hover:not(.on){background:#F2F2F7;color:#1D1D1F}
+.tab:hover:not(.on){background:#F2F2F7;color:var(--dyn-text)}
 .step{border-radius:14px;overflow:hidden;margin-bottom:.6rem;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 .step.now{border-color:#1D9E75;border-width:2px}
 .step.shifted{border-color:#BA7517;border-style:dashed}
@@ -121,7 +122,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
 .stepchk{width:20px;height:20px;border-radius:6px;border:2px solid #d0cdc8;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:#fff}
 .stepchk.on{background:#1D9E75;border-color:#1D9E75}
-.stit{font-size:13px;font-weight:600;color:#1D1D1F}
+.stit{font-size:13px;font-weight:600;color:var(--dyn-text)}
 .smeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px}
 .stim{font-size:11px;color:#6E6E73}
 .stim.late{color:#BA7517;font-weight:600}
@@ -134,7 +135,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .swait{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;background:#FAFAF9;border-top:1px solid #EDEDED}
 .swait i{font-size:14px;color:#8E8E93}
 .swait-txt{font-size:12px;color:#666}
-.swait-val{font-size:12px;font-weight:600;color:#1D1D1F}
+.swait-val{font-size:12px;font-weight:600;color:var(--dyn-text)}
 .rec{background:#F2F2F7;border-radius:14px;padding:.9rem 1rem;margin-bottom:.9rem}
 .rrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #EDEDED}
 .ing-check{width:18px;height:18px;border-radius:50%;border:2px solid #D1D1D6;flex-shrink:0;display:inline-block}
@@ -145,13 +146,14 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .wbox{background:#fef3e2;border-left:3px solid #BA7517;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#633806;margin-bottom:.75rem;line-height:1.5}
 .ibox{background:#e8f1fb;border-left:3px solid #185FA5;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#0C447C;margin-bottom:.75rem;line-height:1.5}
 .future-dim{opacity:.45}
-.daylbl{font-size:15px;font-weight:700;color:#1D1D1F;margin:.8rem 0 .3rem;display:flex;align-items:center;gap:6px}
+.daylbl{font-size:15px;font-weight:700;color:var(--dyn-text);margin:.8rem 0 .3rem;display:flex;align-items:center;gap:6px}
 .daylbl.today{color:#085041}
 .daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
 .daylbl.today .ddot{background:#1D9E75}
 /* ===== MOBILE LAYOUT ===== */
 .mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;background:#FAFAF9}
 body.mob-mode .mob-layout{background:var(--forno-bg);color:var(--forno-text);font-family:var(--forno-font-body)}
+body.mob-mode{--dyn-text:var(--forno-text);}
 .mob-layout.active{display:flex}
 .app.pc-active{display:grid}
 
@@ -206,7 +208,7 @@ body.mob-mode .mob-stepchk{width:24px;height:24px;border-radius:7px;border-color
 body.mob-mode .mob-stepchk.on{background:var(--forno-accent);border-color:var(--forno-accent);color:#1a1512}
 .mob-sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
 body.mob-mode .mob-sn.d{background:transparent;color:var(--forno-text-faint);border-color:var(--forno-border)}
-.mob-stit{font-size:13px;font-weight:600;color:#1D1D1F;line-height:1.3}
+.mob-stit{font-size:13px;font-weight:600;color:var(--dyn-text);line-height:1.3}
 body.mob-mode .mob-stit{color:var(--forno-text);font-family:var(--forno-font-body)}
 .mob-smeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
 .mob-stim{font-size:11px;color:#6E6E73}
@@ -217,7 +219,7 @@ body.mob-mode .mob-stim{color:var(--forno-text-faint);font-family:var(--forno-fo
 body.mob-mode .mob-sloc.o{color:var(--forno-accent-text)}
 .mob-swait{display:flex;align-items:center;gap:6px;padding:.35rem .75rem;background:#FAFAF9;border-top:1px solid #EDEDED;font-size:11px;color:#666}
 body.mob-mode .mob-swait{background:var(--forno-bg-sunken);border-top-color:var(--forno-border-soft);color:var(--forno-text-faint)}
-.mob-swait b{color:#1D1D1F}
+.mob-swait b{color:var(--dyn-text)}
 body.mob-mode .mob-swait b{color:var(--forno-text)}
 .mob-snote{border-left:2px solid #BA7517;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#633806;margin-top:.35rem;line-height:1.5}
 body.mob-mode .mob-snote{border-left-color:#6b4a1f;color:var(--forno-text-muted)}
@@ -227,7 +229,7 @@ body.mob-mode .mob-sdesc{color:var(--forno-text-muted)}
 body.mob-mode .mob-swhy{border-left-color:var(--forno-border);color:var(--forno-text-muted)}
 .mob-stip{border-left:2px solid #B4B2A9;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
 body.mob-mode .mob-stip{border-left-color:var(--forno-border);color:var(--forno-text-muted)}
-.mob-daylbl{font-size:14px;font-weight:700;color:#1D1D1F;margin:.7rem 0 .25rem;display:flex;align-items:center;gap:5px}
+.mob-daylbl{font-size:14px;font-weight:700;color:var(--dyn-text);margin:.7rem 0 .25rem;display:flex;align-items:center;gap:5px}
 body.mob-mode .mob-daylbl{color:var(--forno-text);font-family:var(--forno-font-body);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
 .mob-daylbl.today{color:#085041}
 body.mob-mode .mob-daylbl.today{color:var(--forno-accent-text)}
@@ -254,7 +256,7 @@ body.mob-mode .mob-section-lbl{color:var(--forno-accent-text);font-family:var(--
 body.mob-mode .mob-setting-row{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
 .mob-setting-row:first-of-type{border-top:1px solid #EDEDED}
 body.mob-mode .mob-setting-row:first-of-type{border-top-color:var(--forno-border-soft)}
-.mob-slabel{font-size:13px;color:#1D1D1F}
+.mob-slabel{font-size:13px;color:var(--dyn-text)}
 body.mob-mode .mob-slabel{color:var(--forno-text)}
 .mob-sval{font-size:13px;color:#6E6E73}
 body.mob-mode .mob-sval{color:var(--forno-text-faint);font-family:var(--forno-font-mono)}
@@ -271,7 +273,7 @@ body.mob-mode .mob-pill-wrap{background:var(--forno-bg-raised);border-bottom-col
 .mob-pcbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:.5rem 0 .75rem}
 .mob-pcc{background:#FAFAF9;border-radius:8px;padding:.5rem .65rem}
 .mob-pcc .pl{font-size:10px;color:#6E6E73;margin-bottom:2px}
-.mob-pcc .pv{font-size:18px;font-weight:600;color:#1D1D1F}
+.mob-pcc .pv{font-size:18px;font-weight:600;color:var(--dyn-text)}
 .mob-pcc .ps{font-size:10px;color:#8E8E93;margin-top:1px}
 .mob-rec{border-radius:14px;overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 .mob-rrow{display:flex;justify-content:space-between;padding:9px 12px;font-size:13px;border-bottom:1px solid #F2F2F7;background:#fff}
@@ -284,7 +286,7 @@ body.mob-mode .mob-rval{color:var(--forno-accent-text);font-family:var(--forno-f
 
 .layout-toggle{display:flex;align-items:center;gap:4px;padding:4px 8px;border:1px solid #E5E5EA;border-radius:14px;background:#fff;cursor:pointer;font-size:10px;color:#666}
 .layout-toggle:hover{background:#F2F2F7}
-.layout-toggle.mob-style{background:#1D1D1F;color:#fff;border-color:#1D1D1F}
+.layout-toggle.mob-style{background:#1D1D1F;color:#fff;border-color:var(--dyn-text)}
 
 @media(max-width:767px){
   body:not(.pc-mode) .app{display:none}
@@ -296,7 +298,7 @@ body.pc-mode .app{display:grid!important}
 body.pc-mode .mob-layout{display:none!important}
 @media(max-width:767px){body{font-size:17px}}
 .swrow{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-.swlbl{font-size:13px;color:#1D1D1F}
+.swlbl{font-size:13px;color:var(--dyn-text)}
 .sw{width:36px;height:20px;border-radius:10px;background:#c9c6c0;position:relative;flex-shrink:0;transition:background .15s}
 .sw.on{background:#1D9E75}
 .sw::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
@@ -329,7 +331,7 @@ body.mob-mode .modal-x:hover{background:var(--forno-accent-soft)}
 body.mob-mode .modal-body{color:var(--forno-text-muted)}
 .admin-card{border:1px solid #e0ddd8;border-radius:8px;padding:.6rem .7rem;margin-bottom:8px}
 body.mob-mode .admin-card{border-color:var(--forno-border)}
-.admin-uname{font-size:13px;font-weight:600;color:#1a1a1a}
+.admin-uname{font-size:13px;font-weight:600;color:var(--dyn-text)}
 body.mob-mode .admin-uname{color:var(--forno-text)}
 .admin-umeta{font-size:11px;color:#888;margin-top:2px}
 body.mob-mode .admin-umeta{color:var(--forno-text-faint)}
@@ -337,6 +339,11 @@ body.mob-mode .admin-umeta{color:var(--forno-text-faint)}
 body.mob-mode .admin-btn{background:var(--forno-bg);border-color:var(--forno-border);color:var(--forno-text-muted)}
 .admin-btn.danger{color:#993C1D;border-color:#e0ddd8}
 body.mob-mode .admin-btn.danger{color:#e07856;border-color:var(--forno-border)}
+.guide-num{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+body.mob-mode .guide-num{background:var(--forno-accent);color:#1a1512}
+.guide-txt{font-size:13px;color:var(--dyn-text);line-height:1.4}
+body.mob-mode .guide-txt{color:var(--forno-text-muted)}
+body.mob-mode .guide-txt b{color:var(--forno-text)}
 .snum-btn{cursor:pointer;transition:background .15s,transform .1s;user-select:none}
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
@@ -345,7 +352,7 @@ body.mob-mode .admin-btn.danger{color:#e07856;border-color:var(--forno-border)}
 .clog-ver{margin-bottom:1.1rem}
 .clog-ver:last-child{margin-bottom:0}
 .clog-ver .vh{display:flex;align-items:baseline;gap:8px;margin-bottom:.4rem}
-.clog-ver .vh b{font-size:14px;color:#1D1D1F}
+.clog-ver .vh b{font-size:14px;color:var(--dyn-text)}
 .clog-ver .vh span{font-size:11px;color:#8E8E93}
 .clog-ver ul{margin:0;padding-left:1.1rem}
 .clog-ver li{font-size:12px;color:#444;margin-bottom:.3rem;line-height:1.5}
@@ -404,7 +411,7 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .mob-action-bar,body.fs-xlarge .fs-visnin
 .pizza-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;background:#fff;border:1px solid #EDEDED;border-radius:12px;padding:.7rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;z-index:300;transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:min(90vw,360px)}
 .pizza-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .pizza-toast-emoji{font-size:30px;line-height:1;flex-shrink:0;display:inline-block}
-.pizza-toast-text{font-size:13px;font-weight:600;color:#1D1D1F;line-height:1.35}
+.pizza-toast-text{font-size:13px;font-weight:600;color:var(--dyn-text);line-height:1.35}
 @keyframes toastWiggle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
 @keyframes toastBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes toastKnead{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
@@ -426,7 +433,7 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .mob-action-bar,body.fs-xlarge .fs-visnin
 <div id="auth-overlay" style="position:fixed;inset:0;background:#f5f4f0;z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem">
   <div style="background:#fff;border-radius:14px;padding:1.5rem 1.3rem;max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.15)">
     <div style="text-align:center;font-size:32px;margin-bottom:.3rem">🍕</div>
-    <div style="text-align:center;font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:1rem">Pizzaplanlegger</div>
+    <div style="text-align:center;font-size:16px;font-weight:700;color:var(--dyn-text);margin-bottom:1rem">Pizzaplanlegger</div>
     <div id="auth-body"></div>
     <div style="text-align:center;margin-top:1rem">
       <span onclick="openAdminLogin()" style="font-size:11px;color:#aaa;cursor:pointer;text-decoration:underline">admin</span>
@@ -469,20 +476,20 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .mob-action-bar,body.fs-xlarge .fs-visnin
     <div class="modal-head"><b>👋 Slik fungerer appen</b><button class="modal-x" onclick="closeGuideModal()" aria-label="Lukk">✕</button></div>
     <div class="modal-body" id="guide-modal-body">
       <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
-        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
-        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Velg pizzatype</b>Napoletansk, New York, Chicago, Langpanne eller Ingen elting.</div>
+        <div class="guide-num">1</div>
+        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Velg pizzatype</b>Napoletansk, New York, Chicago, Langpanne eller Ingen elting.</div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
-        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
-        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Velg metode (valgfritt)</b>Standard fungerer fint til å begynne med — bytt senere når du vil eksperimentere.</div>
+        <div class="guide-num">2</div>
+        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Velg metode (valgfritt)</b>Standard fungerer fint til å begynne med — bytt senere når du vil eksperimentere.</div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
-        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
-        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Sett når du vil spise</b>Appen regner bakover og viser nøyaktig når du må starte.</div>
+        <div class="guide-num">3</div>
+        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Sett når du vil spise</b>Appen regner bakover og viser nøyaktig når du må starte.</div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:.3rem;align-items:flex-start">
-        <div style="width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div>
-        <div style="font-size:13px;color:#1a1a1a;line-height:1.4"><b style="display:block;font-size:14px;margin-bottom:1px">Følg steg for steg</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
+        <div class="guide-num">4</div>
+        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Følg steg for steg</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
       </div>
       <div id="guide-modal-footer"></div>
     </div>
@@ -983,7 +990,7 @@ function fontSizeStepperHTML(){
     <span style="font-size:11px;color:#888">Skriftstørrelse</span>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
       <button onclick="stepFontSize(-1)" title="Mindre skrift" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">−</button>
-      <span style="font-size:12px;font-weight:600;color:#1a1a1a;min-width:74px;text-align:center">${FS_LABELS[cur]}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--dyn-text);min-width:74px;text-align:center">${FS_LABELS[cur]}</span>
       <button onclick="stepFontSize(1)" title="Større skrift" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">+</button>
     </div>
   </div>`;
@@ -1820,7 +1827,7 @@ function meltypeWarningHTML(){
   }
   const betterFlour = findBestMatchingFlour(hrs, S.hydro);
   if(betterFlour && betterFlour.v!==S.meltype){
-    actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:#F2F2F7;color:#1D1D1F;font-size:12px;font-weight:600;cursor:pointer">Bytt til ${betterFlour.t}</button>`);
+    actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:#F2F2F7;color:var(--dyn-text);font-size:12px;font-weight:600;cursor:pointer">Bytt til ${betterFlour.t}</button>`);
   }
   const actionsHtml = actions.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${actions.join('')}</div>` : '';
   const finjusterLink = `<div style="margin-top:.5rem"><span onclick="meltypeWarnOpenFinjuster()" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>`;
@@ -1919,6 +1926,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.23',
+    d: 'juli 2026',
+    changes: [
+      'Fant og rettet en systemisk variant av admin-fargefeilen fra forrige versjon: Guide-teksten, Info-sidens menyrader, Formler-tabellen, Feedback-listen, deig-kortene og flere andre steder brukte alle den samme hardkodede mørke tekstfargen fra før restylingen — usynlig mot den nye mørke mobilbakgrunnen. I stedet for å lappe hvert sted for seg, er dette nå rettet med én delt fargevariabel (47 steder samtidig) som automatisk følger lys/mørk-modus riktig — PC-visningen er bekreftet uendret.'
+    ]
+  },
   {
     v: '5.22',
     d: 'juli 2026',
@@ -2389,7 +2403,7 @@ function buildChangelogHTML(){
     <div class="clog-ver">
       <div class="vh"><b>v${entry.v}</b><span>${entry.d}</span></div>
       <ul>${entry.changes.map(c => `<li>${c}</li>`).join('')}</ul>
-    </div>`).join('') + `<button onclick="closeChangelogModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:14px;font-weight:600;cursor:pointer;margin-top:1rem">Lukk</button>`;
+    </div>`).join('') + `<button onclick="closeChangelogModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:#F2F2F7;color:var(--dyn-text);font-size:14px;font-weight:600;cursor:pointer;margin-top:1rem">Lukk</button>`;
 }
 function openChangelogModal(){
   document.getElementById('changelog-modal-body').innerHTML = buildChangelogHTML();
@@ -2420,7 +2434,7 @@ function buildFeedbackFormHTML(){
       <span id="feedback-status" style="font-size:12px;color:#888"></span>
     </div>
     <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
-      <div style="font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:.5rem">📋 Tidligere tilbakemeldinger</div>
+      <div style="font-size:12px;font-weight:600;color:var(--dyn-text);margin-bottom:.5rem">📋 Tidligere tilbakemeldinger</div>
       <div id="feedback-list-wrap"></div>
     </div>`;
 }
@@ -2504,7 +2518,7 @@ async function loadFeedbackList(){
           <div style="min-width:0">
             <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
             <span style="font-size:10px;color:#aaa;margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}</span>
-            <div style="font-size:12px;color:#1a1a1a;margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
+            <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
             <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?'Du har allerede stemt':'Stem opp'}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#1D9E75':'#d0cdc8'};border-radius:6px;background:${hasVoted?'#E1F5EE':'#fff'};color:${hasVoted?'#0F6E56':'#555'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
@@ -2781,7 +2795,7 @@ function authNameScreenHTML(){
 }
 function authPinScreenHTML(name, isNew){
   return `
-    <div style="font-size:13px;color:#1a1a1a;margin-bottom:.2rem;text-align:center;font-weight:600">Hei, ${escH(name)}!</div>
+    <div style="font-size:13px;color:var(--dyn-text);margin-bottom:.2rem;text-align:center;font-weight:600">Hei, ${escH(name)}!</div>
     <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">${isNew?'Lag en 4-sifret PIN-kode':'Skriv inn PIN-koden din'}</div>
     <input id="auth-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')${isNew?'authSubmitNewPin()':'authSubmitPin()'}">
     ${isNew?`<input id="auth-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Gjenta PIN" autocomplete="off" style="width:100%;margin-top:.5rem;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')authSubmitNewPin()">`:''}
@@ -2992,12 +3006,12 @@ function buildFormlerHTML(values){
         ? `<div style="font-size:9px;color:#aaa;margin-top:1px">forrige: ${entry.previous}${isAdmin?` <span onclick="formlerRevert('${t}','${f}')" style="color:#1D9E75;cursor:pointer;text-decoration:underline">↺ angre</span>`:''}</div>`
         : '';
       return `<td style="padding:.4rem .5rem;text-align:center;border-bottom:1px solid #f0ede8">
-        <div style="font-size:13px;font-weight:600;color:#1a1a1a">${entry.current}${f==='hydro'||f==='salt'||f==='oil'||f==='yeast'?'%':''}${isAdmin?` <span onclick="formlerEdit('${t}','${f}',${entry.current})" style="cursor:pointer;color:#1D9E75;font-size:11px">✏️</span>`:''}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--dyn-text)">${entry.current}${f==='hydro'||f==='salt'||f==='oil'||f==='yeast'?'%':''}${isAdmin?` <span onclick="formlerEdit('${t}','${f}',${entry.current})" style="cursor:pointer;color:#1D9E75;font-size:11px">✏️</span>`:''}</div>
         ${formlerGramEquiv(f, entry.current)}
         ${prevHtml}
       </td>`;
     }).join('');
-    return `<tr><td style="padding:.4rem .5rem;font-size:12px;font-weight:600;color:#1a1a1a;border-bottom:1px solid #f0ede8">${FORMLER_TYPE_LABELS[t]}</td>${cells}</tr>`;
+    return `<tr><td style="padding:.4rem .5rem;font-size:12px;font-weight:600;color:var(--dyn-text);border-bottom:1px solid #f0ede8">${FORMLER_TYPE_LABELS[t]}</td>${cells}</tr>`;
   }).join('');
   const header = `<tr>${['Pizzatype',...fields.map(f=>FORMLER_FIELD_LABELS[f])].map(h=>`<th style="padding:.4rem .5rem;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#888;text-align:${h==='Pizzatype'?'left':'center'}">${h}</th>`).join('')}</tr>`;
   let html = `
@@ -3125,7 +3139,7 @@ async function loadSuggestionsIntoWrap(wrap){
     wrap.innerHTML = items.map(s=>{
       let dt=''; try{ dt=fDT(new Date(s.createdAt)); }catch(e){}
       return `<div style="border:1px solid #e0ddd8;border-radius:8px;padding:.55rem .7rem;margin-bottom:6px">
-        <div style="font-size:12px;color:#1a1a1a"><b>${escH(FORMLER_TYPE_LABELS[s.type]||s.type)} — ${escH(FORMLER_FIELD_LABELS[s.field]||s.field)}</b>: ${escH(String(s.currentValue))} → <b>${escH(String(s.suggestedValue))}</b></div>
+        <div style="font-size:12px;color:var(--dyn-text)"><b>${escH(FORMLER_TYPE_LABELS[s.type]||s.type)} — ${escH(FORMLER_FIELD_LABELS[s.field]||s.field)}</b>: ${escH(String(s.currentValue))} → <b>${escH(String(s.suggestedValue))}</b></div>
         ${s.reasoning?`<div style="font-size:11px;color:#666;margin-top:3px;white-space:pre-wrap">${escH(s.reasoning)}</div>`:''}
         <div style="font-size:10px;color:#aaa;margin-top:3px">${dt}</div>
         <div style="display:flex;gap:6px;margin-top:6px">
@@ -3189,11 +3203,11 @@ function initAdvancedState(){
 function openGuideModal(){
   const isMob = document.body.classList.contains('mob-mode');
   document.getElementById('guide-modal-footer').innerHTML = isMob
-    ? `<div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) finner du bak "⚙️ Finjuster" på siste steg. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "Info"-fanen.</div>
-      <button onclick="wizTryNowFromGuide()" style="width:100%;height:38px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:13px;font-weight:600;cursor:pointer;margin-top:.8rem">Prøv det nå →</button>
-      <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px">Ikke vis igjen</button>`
+    ? `<div style="font-size:11px;color:var(--forno-text-faint);margin-top:.9rem;padding-top:.7rem;border-top:1px solid var(--forno-border-soft)">Flere valg (Kjøkkenmaskin, Meltype osv.) finner du bak "⚙️ Finjuster" på siste steg. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "Info"-fanen.</div>
+      <button onclick="wizTryNowFromGuide()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:600;cursor:pointer;margin-top:.8rem">Prøv det nå →</button>
+      <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--forno-bg-raised);color:var(--forno-text);border:1px solid var(--forno-border);font-size:13px;font-weight:600;cursor:pointer;margin-top:8px">Ikke vis igjen</button>`
     : `<div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) ligger bak "⚙️ Avanserte innstillinger" i sidepanelet, hvis du vil finjustere. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "☰ Meny" øverst.</div>
-      <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:13px;font-weight:600;cursor:pointer;margin-top:1rem">Ikke vis igjen</button>`;
+      <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:var(--dyn-text);font-size:13px;font-weight:600;cursor:pointer;margin-top:1rem">Ikke vis igjen</button>`;
   document.getElementById('guide-modal').style.display = 'flex';
 }
 function wizTryNowFromGuide(){
@@ -3321,7 +3335,7 @@ function mobPillGroup(id,key){
     el.className='pill'+(S[key]===v?' on':'');
     el.textContent=t;
     if(isSeg){
-      el.style.cssText='flex:1;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'#fff':'transparent')+';color:#1D1D1F;box-shadow:'+(S[key]===v?'0 1px 2px rgba(0,0,0,.1)':'none');
+      el.style.cssText='flex:1;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'#fff':'transparent')+';color:var(--dyn-text);box-shadow:'+(S[key]===v?'0 1px 2px rgba(0,0,0,.1)':'none');
     }else{
       el.style.cssText='padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:'+(S[key]===v?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(S[key]===v?'#1D9E75':'#F2F2F7')+';color:'+(S[key]===v?'#fff':'#1D1D1F');
     }
@@ -3735,7 +3749,7 @@ function bakeCardHTML(b, mob){
         <div style="min-width:0;display:flex;gap:6px;align-items:flex-start">
           ${starBtn}
           <div>
-            <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
+            <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}</div>
             <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)}${b.savedBy?' · av '+escH(b.savedBy):''}</div>
           </div>
         </div>
@@ -3754,11 +3768,11 @@ function bakeCardHTML(b, mob){
       <div style="min-width:0;display:flex;gap:6px;align-items:flex-start;flex:1">
         ${starBtn}
         <div style="flex:1;min-width:0">
-          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:#1a1a1a">${escH(b.name)}</div>
+          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}</div>
           <div style="font-size:11px;color:#888;margin-top:2px">${bakeMetaLine(b)}${b.savedBy?' · av '+escH(b.savedBy):''} · Ferdig: ${finDt}</div>
           ${ratingHtml}
           ${photoHtml}
-          ${b.note?`<div style="font-size:12px;color:#1a1a1a;margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>${b.noteBy?`<div style="font-size:10px;color:#999;margin-top:2px">— ${escH(b.noteBy)}</div>`:''}`:''}
+          ${b.note?`<div style="font-size:12px;color:var(--dyn-text);margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>${b.noteBy?`<div style="font-size:10px;color:#999;margin-top:2px">— ${escH(b.noteBy)}</div>`:''}`:''}
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
@@ -4049,7 +4063,7 @@ function buildFinishBakeFormHTML(alreadyFinished){
     <div style="text-align:center;margin-bottom:1rem" id="finish-stars">${stars}</div>
     <div id="finish-photo-preview" style="margin-bottom:.8rem;text-align:center">${photo?`<img src="${photo}" style="max-width:100%;max-height:200px;border-radius:10px">`:''}</div>
     <input type="file" accept="image/*" id="finish-photo-input" onchange="handlePhotoUpload(event)" style="display:none">
-    <button onclick="document.getElementById('finish-photo-input').click()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:#1D1D1F;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:.8rem">📷 ${photo?'Bytt bilde':'Legg til bilde'}</button>
+    <button onclick="document.getElementById('finish-photo-input').click()" style="width:100%;height:38px;border:none;border-radius:10px;background:#F2F2F7;color:var(--dyn-text);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:.8rem">📷 ${photo?'Bytt bilde':'Legg til bilde'}</button>
     <div style="display:flex;gap:8px">
       <button onclick="confirmFinishBake(${alreadyFinished})" style="flex:1;height:38px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${alreadyFinished?'Lagre':'Merk som ferdig'}</button>
       ${alreadyFinished?'':'<button onclick="confirmFinishBake(false,true)" style="flex-shrink:0;height:38px;padding:0 14px;border:none;border-radius:10px;background:transparent;color:#6E6E73;font-size:13px;cursor:pointer">Hopp over</button>'}
@@ -4340,25 +4354,25 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div class="mob-section-lbl">Hjelp</div>
     <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openGuideModal()">
-      <span style="font-size:13px;color:#1a1a1a;font-weight:500">❓ Guide</span>
+      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">❓ Guide</span>
       <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
     <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openTechModal()">
-      <span style="font-size:13px;color:#1a1a1a;font-weight:500">💡 Tips og teknikk</span>
+      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">💡 Tips og teknikk</span>
       <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
     <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openFeedbackModal()">
-      <span style="font-size:13px;color:#1a1a1a;font-weight:500">💬 Feedback</span>
+      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">💬 Feedback</span>
       <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
 
     <div class="mob-section-lbl">Admin</div>
     <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openFormlerModal()">
-      <span style="font-size:13px;color:#1a1a1a;font-weight:500">📊 Formler</span>
+      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">📊 Formler</span>
       <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
     <div style="padding:.65rem 1rem;background:#fff;border-bottom:1px solid #e0ddd8;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="openAdminLogin()">
-      <span style="font-size:13px;color:#1a1a1a;font-weight:500">🔒 Admin</span>
+      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">🔒 Admin</span>
       <span style="color:#c4c1ba;font-size:14px">›</span>
     </div>
 
