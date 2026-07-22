@@ -258,6 +258,11 @@ body.mob-mode .mob-abtn:hover:not(.pri){background:var(--forno-bg-raised)}
 
 /* mob settings */
 .mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
+.wiz-qhead{display:flex;align-items:center;gap:7px;padding:.65rem 1rem .3rem}
+.wiz-qnum{width:18px;height:18px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+body.mob-mode .wiz-qnum{background:var(--forno-accent);color:#1a1512}
+.wiz-qlbl{font-size:12px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:.04em}
+body.mob-mode .wiz-qlbl{color:var(--forno-accent-text)}
 body.mob-mode .mob-section-lbl{color:var(--forno-accent-text);font-family:var(--forno-font-body)}
 @keyframes finjuster-highlight-flash{0%{background:#FFF4E0}70%{background:#FFF4E0}100%{background:transparent}}
 .finjuster-highlight{animation:finjuster-highlight-flash 2.2s ease-out;border-radius:8px}
@@ -959,7 +964,28 @@ function setFontSize(level){
   }
   syncActionBarOffset();
   syncModalMaxHeight();
+  syncMobLayoutHeight();
 }
+// ROT-ÅRSAK til flere "må scrolle for å finne resten"-bugs på mobil: CSS zoom
+// (brukt til skriftstørrelse-innstillingen) skalerer alt SYNLIG innhold opp med
+// zoom-faktoren, men "100dvh" regner ut fra den EKTE, uskalerte skjermhøyden.
+// Resultatet: .mob-layout sin CSS-høyde stemmer på papiret (100dvh = vindushøyden),
+// men blir malt/vist zoom-faktoren ganger for høy — f.eks. 1,3× for "Stor" skrift.
+// Da blir HELE SIDEN (ikke bare det enkelte fane-innholdet) høyere enn skjermen,
+// og en hvilken som helst ting som trigger sidescroll (f.eks. et fokusert
+// dato-/tidsfelt som skal vises) kan scrolle bort toppen av wizard-steget.
+// Fiksen: sett .mob-layout sin høyde eksplisitt i PIKSLER-FØR-ZOOM (delt på
+// zoom-faktoren), så den etter oppskalering treffer nøyaktig skjermhøyden.
+function syncMobLayoutHeight(){
+  requestAnimationFrame(()=>{
+    const layout=document.getElementById('mob-layout');
+    if(!layout) return;
+    const z=FS_ZOOM[currentFontLevel()]||1.15;
+    const cssPx=Math.floor(window.innerHeight/z);
+    layout.style.height=cssPx+'px';
+  });
+}
+window.addEventListener('resize', syncMobLayoutHeight);
 // Regner ut modal-boksens maks-høyde i ekte skjerm-piksler, uavhengig av body sin
 // zoom (brukt til skriftstørrelse-innstillingen). Zoom gjør at CSS-enheter som
 // "85dvh" ikke lenger stemmer med skjermen, så vi regner selv: 85% av vinduets
@@ -1983,6 +2009,23 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.32',
+    d: 'juli 2026',
+    changes: [
+      'Gjort det tydeligere at wizardens Metode- og Planlegging-steg begge har to separate valg: hvert valg har nå en liten nummerert markør ("①"/"②") foran en kort overskrift, samme mønster på begge sider.',
+      'Rettet rekkefølgen på Planlegging-steget slik at "Når vil du spise?" kommer først (matcher tittelen), og "Antall pizzaer" kommer etter — som Metode-steget sitt mønster.',
+      'Ryddet opp i "Når vil du spise?"-valget: for Standard/Poolish/Biga (lang gjæring) er "Starter nå" fjernet helt — det ga ikke mening der. For Hurtigdeig/Kveldsdeig beholdes begge alternativene, men spørsmålet er nå det nøytrale "Planlegg fra:", med "🍕 Når jeg vil spise" og "▶ Nå" som to likestilte svar.',
+      'Kjøleskapsheving er nå synlig direkte i Planlegging-steget for Standard/Poolish/Biga (i tillegg til i Finjuster), sammen med en ny "🌙 Maks smak"-knapp — den setter automatisk lengst trygge kjøleskapstid, begrenset av enten tiden du har til spisetidspunktet eller hva valgt meltype tåler, og forteller alltid hvilken av de to som faktisk var flaskehalsen.'
+    ]
+  },
+  {
+    v: '5.31',
+    d: 'juli 2026',
+    changes: [
+      'Fant den egentlige, underliggende årsaken til flere runder med "må scrolle for å finne resten"-bugs på mobil, som har dukket opp flere steder over tid: CSS zoom (brukt til skriftstørrelse-innstillingen) skalerer alt synlig innhold opp med zoom-faktoren, men "100dvh" — som hele mobilvisningens høyde er satt til — regnes ut fra den ekte, uskalerte skjermhøyden. Resultatet: hele siden ble malt zoom-faktoren ganger for høy (f.eks. 30% for høy ved "Stor" skrift), som gjorde HELE siden — ikke bare enkeltfaner — scrollbar, og en hvilken som helst ting som trigget sidescroll (som et fokusert dato-/tidsfelt) kunne skyve toppen av et wizard-steg ut av syne. Bekreftet med Chrome sin mobil-emulering (samme miljø som avslørte feilen), og fikset ved å regne ut mobilvisningens høyde eksplisitt i ekte skjerm-piksler, uavhengig av zoom-nivå.'
+    ]
+  },
   {
     v: '5.30',
     d: 'juli 2026',
@@ -3495,7 +3538,64 @@ function mobSetK(h){S.kveldH=h;mobBuildKrows();mobGen();}
 
 function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=v+'g';const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=v+'g';mobGen();}
 function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
-function mobUCold(v){S.cold=parseInt(v);const t=v+' dag'+(v>1?'er':'');document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;mobGen();}
+function mobUCold(v){S.cold=parseInt(v);const t=v+' dag'+(v>1?'er':'');document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();}
+function stepColdWiz(delta){
+  const next=Math.max(1,Math.min(6,(S.cold||1)+delta));
+  mobUCold(next);
+}
+function maksSmakApply(){
+  const flour=MELTYPER.find(m=>m.v===S.meltype);
+  const preferment=S.method==='poolish'?14:S.method==='biga'?20:0;
+  let maxByFlour=6;
+  if(flour) maxByFlour=Math.max(1,Math.floor((flour.ferm.mx-preferment)/24));
+  let maxByTime=6;
+  const dEl=document.getElementById('mob-ed'),tEl=document.getElementById('mob-et');
+  if(S.mode==='end' && dEl && dEl.value){
+    try{
+      const eatTime=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'18:00'));
+      if(!isNaN(eatTime.getTime())){
+        const availableHours=(eatTime.getTime()-Date.now())/3600000-preferment;
+        maxByTime=Math.max(1,Math.floor(availableHours/24));
+      }
+    }catch(e){}
+  }
+  const days=Math.max(1,Math.min(6,maxByFlour,maxByTime));
+  mobUCold(days);
+  const reasonEl=document.getElementById('mob-maks-smak-reason');
+  if(reasonEl){
+    reasonEl.textContent = (maxByTime<=maxByFlour)
+      ? 'Begrenset av tiden du har, ikke melet'
+      : 'Begrenset av hva '+(flour?flour.t:'melet')+' tåler, ikke tiden din';
+  }
+}
+// Steg 3 tilpasser seg valgt metode: lange metoder (Standard/Poolish/Biga) spør
+// alltid "Når vil du spise?" uten "Starter nå" (gir ikke mening ved flere dagers
+// kjøleskapsheving — man har uansett alltid et måltidspunkt i tankene), og viser
+// kjøleskapsdager + Maks smak. Raske metoder (Hurtigdeig/Kveldsdeig) beholder
+// begge alternativene, med et nøytralt spørsmål siden begge faktisk svarer på det.
+function wizStep3Refresh(){
+  const isShort = (S.method==='hurtig' || S.method==='kveld');
+  const toggle=document.getElementById('mob-anchor-toggle');
+  const titleEl=document.getElementById('wiz-step3-title');
+  const q1lbl=document.getElementById('wiz-step3-q1-lbl');
+  const coldWrap=document.getElementById('mob-cold-wiz-wrap');
+  if(isShort){
+    if(toggle) toggle.style.display='flex';
+    if(titleEl) titleEl.textContent='Planlegg fra:';
+    if(q1lbl) q1lbl.textContent='Planlegg fra';
+    mobSetMode(S.mode==='start' ? 'start' : 'end');
+  }else{
+    if(toggle) toggle.style.display='none';
+    if(titleEl) titleEl.textContent='Når vil du spise?';
+    if(q1lbl) q1lbl.textContent='Når vil du spise?';
+    mobSetMode('end');
+  }
+  if(coldWrap) coldWrap.style.display = isShort ? 'none' : 'block';
+  if(!isShort){
+    const d=document.getElementById('mob-cold-wiz-disp');
+    if(d) d.textContent=(S.cold||1)+' dag'+((S.cold||1)>1?'er':'');
+  }
+}
 function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=v+'°C';const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
 
 function mobHydroUI(){
@@ -3524,7 +3624,7 @@ function mobSetMode(m){
     me.style.color=m==='end'?'var(--forno-accent-text)':'var(--forno-text-faint)';
     me.style.fontWeight=m==='end'?'600':'400';
   }
-  document.getElementById('mob-bs').style.display='none';
+  document.getElementById('mob-bs').style.display=m==='start'?'block':'none';
   document.getElementById('mob-be').style.display=m==='end'?'block':'none';
   const meh=document.getElementById('mob-earliest-hint');
   if(meh){meh.style.display=m==='end'?'block':'none';if(m==='end'){const earliest=new Date(new Date().getTime()+minBakeMins()*60000);meh.textContent='Tidligst mulig: '+fDT(earliest);}}
@@ -3637,6 +3737,7 @@ function wizGoto(step, onSettled){
   }else{
     const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
   }
+  if(step===3) wizStep3Refresh();
   wizRenderHeader(step);
   const scr=document.getElementById('mob-settings');
   if(scr){
@@ -4326,8 +4427,8 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div id="wiz-step-2" class="wiz-step" style="display:none">
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken metode?</div>
       <div style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Standard fungerer fint om du er usikker</div>
+      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl">Metode</div></div>
       <div id="mob-gmet-wrap">
-        <div class="mob-section-lbl" style="display:none">Metode</div>
         <div class="mob-mcard-wrap" id="mob-gmet"></div>
       </div>
       <div id="mob-hsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
@@ -4336,7 +4437,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-ksub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
       </div>
-      <div class="mob-section-lbl">Meltype</div>
+      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Meltype</div></div>
       <div class="dropdown-select" style="margin:0 1rem .4rem">
         <select id="mob-gmel">
           <option value="dallari">Dallari pizzamel</option>
@@ -4355,22 +4456,12 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="wiz-step-3" class="wiz-step" style="display:none">
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Når vil du spise?</div>
-      <div class="mob-section-lbl">Antall pizzaer</div>
-      <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <span style="font-size:12px;color:var(--forno-text-faint);display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
-        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
-        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:22px;text-align:center;font-family:var(--forno-font-mono)">4</span>
-        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
-      </div>
-      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin:0 1rem .65rem;padding:7px 9px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:8px">
-        <span class="roundup-txt" style="font-size:11px;color:var(--forno-accent-text)"></span>
-        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #BA7517;border-radius:6px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:600;cursor:pointer"></button>
-      </div>
-      <div class="mob-section-lbl" style="display:none">Planlegg fra</div>
-      <div style="display:flex;gap:6px;padding:.4rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">▶ Starter nå</div>
-        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">🍕 Steketid</div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)" id="wiz-step3-title">Når vil du spise?</div>
+
+      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-step3-q1-lbl">Når vil du spise?</div></div>
+      <div id="mob-anchor-toggle" style="display:flex;gap:6px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🍕 Når jeg vil spise</div>
+        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">▶ Nå</div>
       </div>
       <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div style="font-size:10px;font-weight:600;color:var(--forno-text-faint);text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
@@ -4388,6 +4479,35 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
       <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:var(--forno-accent-text);background:var(--forno-bg-raised);display:none"></div>
       <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
+
+      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Antall pizzaer</div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <span style="font-size:12px;color:var(--forno-text-faint);display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
+        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
+        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:22px;text-align:center;font-family:var(--forno-font-mono)">4</span>
+        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
+      </div>
+      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin:0 1rem .65rem;padding:7px 9px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:8px">
+        <span class="roundup-txt" style="font-size:11px;color:var(--forno-accent-text)"></span>
+        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #BA7517;border-radius:6px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:600;cursor:pointer"></button>
+      </div>
+
+      <div id="mob-cold-wiz-wrap" style="display:none">
+        <div class="mob-section-lbl">Kjøleskapsheving</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .5rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+          <button onclick="stepColdWiz(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
+          <span id="mob-cold-wiz-disp" style="font-family:var(--forno-font-mono);font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:70px;text-align:center">1 dag</span>
+          <button onclick="stepColdWiz(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
+        </div>
+        <div style="margin:0 1rem .65rem;padding:9px 10px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--forno-accent-text)">🌙 Maks smak</div>
+            <div id="mob-maks-smak-reason" style="font-size:10.5px;color:var(--forno-text-faint);margin-top:2px;line-height:1.4">Setter lengst trygge heving</div>
+          </div>
+          <button onclick="maksSmakApply()" style="flex-shrink:0;background:var(--forno-accent);color:#1a1512;font-size:11px;font-weight:700;padding:7px 12px;border:none;border-radius:8px;cursor:pointer" id="mob-maks-smak-btn">Bruk</button>
+        </div>
+      </div>
+
       <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
       <div style="padding:0 1rem .8rem;text-align:center"><span onclick="wizGoto('finjuster')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">⚙️ Finjuster (mel, gjærtype, meltype osv.)</span></div>
     </div>
