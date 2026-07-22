@@ -17,6 +17,10 @@
 <style>
 :root{
   --dyn-text:#1a1a1a;
+  --dyn-surface:#fff;
+  --dyn-border:#e0ddd8;
+  --dyn-faint:#aaa;
+  --dyn-btn-bg:#fff;
   /* ===== Forno — designtokens (bunnstruktur for restylingen) ===== */
   --forno-bg:#181310;
   --forno-bg-raised:#231a14;
@@ -158,7 +162,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 /* ===== MOBILE LAYOUT ===== */
 .mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;background:#FAFAF9}
 body.mob-mode .mob-layout{background:var(--forno-bg);color:var(--forno-text);font-family:var(--forno-font-body)}
-body.mob-mode{--dyn-text:var(--forno-text);}
+body.mob-mode{--dyn-text:var(--forno-text);--dyn-surface:var(--forno-bg-raised);--dyn-border:var(--forno-border);--dyn-faint:var(--forno-text-faint);--dyn-btn-bg:var(--forno-bg);}
 .mob-layout.active{display:flex}
 .app.pc-active{display:grid}
 
@@ -1751,6 +1755,10 @@ function meltypeWarnOpenFinjuster(){
     el.classList.add('finjuster-highlight');
     setTimeout(()=>el.classList.remove('finjuster-highlight'), 2300);
   };
+  // wizGoto('finjuster') forbereder Finjuster-innholdet, men bytter ikke selve
+  // fanen — uten dette blir endringen usynlig hvis man klikker lenken fra
+  // "Steg"-fanen (der meltype-varselet faktisk vises).
+  mobShowTab('settings');
   wizGoto('finjuster', targetId ? highlight : null);
 }
 function meltypeWarnReduceFerment(){
@@ -1975,6 +1983,20 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.30',
+    d: 'juli 2026',
+    changes: [
+      '"Se i Finjuster"-lenken i meltype-varselet (Steg-fanen) gjorde ingenting synlig — den forberedte Finjuster-innholdet bak kulissene, men byttet aldri selve fanen til Innstillinger, hvor Finjuster faktisk bor. Lenken bytter nå fane først, så du faktisk ser endringen.'
+    ]
+  },
+  {
+    v: '5.29',
+    d: 'juli 2026',
+    changes: [
+      'Fikset selve feedback-listen (de innsendte tilbakemeldingene, ikke bare kategori-boblene) som var nesten uleselig — kortene rundt hver tilbakemelding hadde fortsatt hvit bakgrunn, mens teksten inni allerede var riktig lysnet, altså lys tekst på hvit bunn. Siden denne listen deles mellom PC og mobil, er den nå fikset med ordentlige delte fargevariabler (samme mønster som resten av appen) i stedet for en snarvei — bekreftet at mobil viser mørkt kort/lys tekst og PC fortsatt viser hvitt kort/mørk tekst, helt uendret.'
+    ]
+  },
   {
     v: '5.28',
     d: 'juli 2026',
@@ -2580,13 +2602,13 @@ function feedbackVotedSet(){
 async function loadFeedbackList(){
   const wrap = document.getElementById('feedback-list-wrap');
   if(!wrap) return;
-  wrap.innerHTML = '<p style="color:#999;font-size:12px">Laster...</p>';
+  wrap.innerHTML = '<p style="color:var(--dyn-faint);font-size:12px">Laster...</p>';
   try{
     const res = await fetch('/api/feedback');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     const items = data.feedback || [];
-    if(!items.length){ wrap.innerHTML = '<p style="color:#999;font-size:12px">Ingen tilbakemeldinger ennå.</p>'; return; }
+    if(!items.length){ wrap.innerHTML = '<p style="color:var(--dyn-faint);font-size:12px">Ingen tilbakemeldinger ennå.</p>'; return; }
     items.sort((a,b)=>(b.votes||0)-(a.votes||0));
     const isAdmin = !!window._adminPassword;
     const voted = feedbackVotedSet();
@@ -2596,17 +2618,17 @@ async function loadFeedbackList(){
       const ctx = it.context||{};
       const hasVoted = voted.has(it.id);
       const adminBtns = isAdmin ? `
-            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?'Merk som ulest':'Merk som løst'}" style="padding:3px 7px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
-            <button onclick="deleteFeedbackConfirm('${it.id}')" title="Slett" style="padding:3px 7px;border:1px solid #e0ddd8;border-radius:6px;background:#fff;color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
-      return `<div style="border:1px solid #e0ddd8;border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:${it.resolved?'#faf9f6':'#fff'};opacity:${it.resolved?'.7':'1'}">
+            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?'Merk som ulest':'Merk som løst'}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
+            <button onclick="deleteFeedbackConfirm('${it.id}')" title="Slett" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
+      return `<div style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
             <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
-            <span style="font-size:10px;color:#aaa;margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}</span>
+            <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}</span>
             <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
-            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?'Du har allerede stemt':'Stem opp'}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#1D9E75':'#d0cdc8'};border-radius:6px;background:${hasVoted?'#E1F5EE':'#fff'};color:${hasVoted?'#0F6E56':'#555'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
+            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?'Du har allerede stemt':'Stem opp'}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#1D9E75':'var(--dyn-border)'};border-radius:6px;background:${hasVoted?'#E1F5EE':'var(--dyn-btn-bg)'};color:${hasVoted?'#0F6E56':'var(--dyn-text)'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
             ${adminBtns}
           </div>
         </div>
