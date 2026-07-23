@@ -2132,22 +2132,44 @@ function findBestFreeWindowCombo(anchor){
   if(!(S.method==='poolish'||S.method==='biga')) return null;
   const isPoolish=S.method==='poolish';
   const prefField=isPoolish?'poolishH':'bigaH';
-  const origPref=S[prefField], origCold=S.cold, origMode=S.mode;
+  const origPref=S[prefField], origCold=S.cold, origMode=S.mode, origPoolishCold=S.poolishCold;
   S.mode='end';
-  const prefRange = isPoolish ? (S.poolishCold?range(12,48,6):[12,13,14,15,16]) : [16,18,20,22,24];
   const coldRange=range(24,96,6);
-  let best=null;
-  outer:
-  for(const pref of prefRange){
-    for(const cold of coldRange){
-      S[prefField]=pref; S.cold=cold;
-      const steps=rawSteps(anchor);
-      const {violations,firstBad}=scoreFreeWindows(steps);
-      if(!best || violations<best.violations) best={pref,cold,violations,firstBad};
-      if(violations===0) break outer;
+  function searchRange(prefRange){
+    let best=null;
+    outer:
+    for(const pref of prefRange){
+      for(const cold of coldRange){
+        S[prefField]=pref; S.cold=cold;
+        const steps=rawSteps(anchor);
+        const {violations,firstBad}=scoreFreeWindows(steps);
+        if(!best || violations<best.violations) best={pref,cold,violations,firstBad};
+        if(violations===0) break outer;
+      }
     }
+    return best;
   }
-  S[prefField]=origPref; S.cold=origCold; S.mode=origMode;
+  let best;
+  if(isPoolish){
+    // Romtemperatur-poolish har bare 12–16t justeringsrom — ofte for smalt til
+    // å unngå kollisjon i det hele tatt. Prøv derfor alltid kjøleskaps-varianten
+    // (12–48t) også, og bruk den hvis den faktisk finner en bedre løsning, i
+    // stedet for å vise frem "minst ille" fra et vindu som uansett ikke strekker til.
+    S.poolishCold=false;
+    const rtBest=searchRange([12,13,14,15,16]);
+    if(rtBest.violations===0){
+      best={...rtBest, poolishCold:false};
+    }else{
+      S.poolishCold=true;
+      const coldBest=searchRange(range(12,48,6));
+      best = coldBest.violations<rtBest.violations
+        ? {...coldBest, poolishCold:true}
+        : {...rtBest, poolishCold:false};
+    }
+  }else{
+    best={...searchRange([16,18,20,22,24])};
+  }
+  S[prefField]=origPref; S.cold=origCold; S.mode=origMode; S.poolishCold=origPoolishCold;
   return best;
 }
 window._fasteTidspunkterResults=[];
@@ -2168,7 +2190,7 @@ function renderFasteTidspunkter(){
       const ok=b && b.violations===0;
       let subTxt='';
       if(!b) subTxt='Kun Poolish/Biga';
-      else if(ok) subTxt='Alt passer ✓';
+      else if(ok) subTxt = (S.method==='poolish' && b.poolishCold) ? 'Alt passer ✓ (krever ❄️ Kjøleskap-poolish)' : 'Alt passer ✓';
       else{
         const at=b.firstBad.at;
         subTxt=`${escH(b.firstBad.title)} kl. ${String(at.getHours()).padStart(2,'0')}:${String(at.getMinutes()).padStart(2,'0')} passer ikke`;
@@ -2196,6 +2218,7 @@ function applyFastTidspunkt(idx){
   const prefField=S.method==='poolish'?'poolishH':'bigaH';
   S[prefField]=t.best.pref;
   S.cold=t.best.cold;
+  if(S.method==='poolish'){ S.poolishCold=!!t.best.poolishCold; setPoolishCold(S.poolishCold); }
   mobSetMode('end');
   mobGen();
   mobShowTab('plan');
@@ -2347,6 +2370,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.45',
+    d: 'juli 2026',
+    changes: [
+      '"Mine faste tidspunkter" fant tidligere en løsning uten reelle konflikter for lørdag/søndag 19:00 — men romtemperatur-Poolish sitt smale 12-16 timers justeringsrom var noen ganger for trangt til at NOEN verdi unngikk natt-kollisjon ("Lag poolish" kl. 05:40 var "minst ille", ikke en reell løsning). Søket prøver nå automatisk kjøleskaps-varianten (12-48t) også når romtemperatur ikke strekker til, og bruker den hvis den faktisk finner noe bedre — vises som "Alt passer ✓ (krever ❄️ Kjøleskap-poolish)". Fant en reell løsning for lørdag 19:00 som tidligere manglet.'
+    ]
+  },
   {
     v: '5.44',
     d: 'juli 2026',
