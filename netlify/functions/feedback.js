@@ -3,7 +3,7 @@ import { getStore } from '@netlify/blobs';
 // Delt liste over tilbakemeldinger fra brukere av appen.
 // Ingen pålogging — åpen for alle i familie/vennegruppen som har lenken.
 // GET    /api/feedback            -> liste alle (nyeste først)
-// POST   /api/feedback            -> ny tilbakemelding { category, message, context }
+// POST   /api/feedback            -> ny tilbakemelding { category, message, submittedBy?, context }
 // PATCH  /api/feedback/:id        -> merk som lest/løst { resolved: true|false }
 // DELETE /api/feedback/:id        -> slette permanent
 // POST   /api/feedback/:id/vote   -> stem opp { voterId } — én stemme per voterId per sak
@@ -77,6 +77,7 @@ export default async (req, context) => {
         id,
         category: VALID_CATEGORIES.includes(body.category) ? body.category : 'annet',
         message: String(body.message).slice(0, 2000),
+        submittedBy: typeof body.submittedBy === 'string' && body.submittedBy.trim() ? body.submittedBy.trim().slice(0, 40) : null,
         context: body.context && typeof body.context === 'object' ? body.context : {},
         resolved: false,
         votes: 0,
