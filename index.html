@@ -632,7 +632,7 @@ body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--
   </div>
 
   <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">1 dag</span></div>
-    <div class="sr"><input type="range" id="csl" min="1" max="6" step="1" value="1" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">1 dag</span></div>
+    <div class="sr"><input type="range" id="csl" min="24" max="144" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">1 dag</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>1 dag</span><span>6 dager</span></div>
   </div>
 
@@ -701,13 +701,43 @@ body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--
 </div>
 
 <script>
-const DEF={type:'napoletana',method:'standard',cold:1,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,meltype:'doppio_zero',showHelp:true};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,meltype:'doppio_zero',showHelp:true};
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
 // (som er kalibrert for 1–6 DAGER). Reell usikkerhet i kilder (2–3× vs. opptil 6× tregere enn
 // romtemp) — disse tallene er et fornuftig midtpunkt, ikke en eksakt fasit. Juster ved behov.
 const KOPTS=[{h:5,b:'Kveld til morgen'},{h:8,b:'Anbefalt'},{h:10,b:'Over natta'},{h:12,b:'Lang natt'},{h:15,b:'Kveld til sen kveld'},{h:18,b:'Lang kveld'},{h:24,b:'Ekte kveld-til-kveld'}];
+// Poolish/biga sin forspill-varighet var tidligere et fast tall (14t/18t) i koden.
+// Nå justerbar innenfor spekteret appens egne tips allerede har lovet (12–16t /
+// 16–24t) — samme mønster som HOPTS/KOPTS. Gjær-multiplikatoren under er en
+// fornuftig, men IKKE kilde-verifisert antagelse (i motsetning til COLDMULT, som
+// er bevart fra tidligere, uttestede verdier) — kortere forspill trenger noe mer
+// gjær, lengre forspill noe mindre, med 14t/18t (dagens standard) som uendret
+// 1,0×-referansepunkt, slik at ingen som ikke rører denne innstillingen merker
+// noen endring i oppskriften sin.
+const POOLISH_OPTS=[{h:12,b:'Kortere, mildere smak'},{h:13,b:'Kort'},{h:14,b:'Anbefalt'},{h:15,b:'Lang'},{h:16,b:'Lengst, mest smak'}];
+const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak'},{h:18,b:'Anbefalt'},{h:20,b:'Lang'},{h:22,b:'Lengre'},{h:24,b:'Lengst, mest smak'}];
+function prefermentYeastMult(){
+  if(S.method==='poolish'){
+    const pts=[[12,1.2],[14,1.0],[16,0.85]];
+    return interpLin(pts,S.poolishH);
+  }
+  if(S.method==='biga'){
+    const pts=[[16,1.15],[18,1.0],[20,0.92],[22,0.85],[24,0.8]];
+    return interpLin(pts,S.bigaH);
+  }
+  return 1.0;
+}
+function interpLin(pts,x){
+  if(x<=pts[0][0]) return pts[0][1];
+  if(x>=pts[pts.length-1][0]) return pts[pts.length-1][1];
+  for(let i=0;i<pts.length-1;i++){
+    const [x0,y0]=pts[i],[x1,y1]=pts[i+1];
+    if(x>=x0&&x<=x1) return Math.round((y0+(y1-y0)*(x-x0)/(x1-x0))*1000)/1000;
+  }
+  return 1.0;
+}
 const KCOLDMULT={5:2.3,8:1.9,10:1.65,12:1.5,15:1.35,18:1.2,24:1.0};
 let HREC={napoletana:65,newyork:63,langpanne:70,chicago:55,ingenelting:75};
 const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:48,mx:60},ingenelting:{mn:70,mx:82}};
@@ -721,6 +751,27 @@ let BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:0.
 // lange kaldhevinger (0,1-0,2% fersk gjær for 48-72t), men vi holder oss til en mer praktisk
 // mellomting som ikke krever en presisjonsvekt for hjemmebakere. Samme prinsipp som Kveldsdeig.
 const COLDMULT={1:1.5,2:1.05,3:0.75,4:0.59,5:0.45,6:0.38};
+// S.cold ble endret fra hele dager til timer (finere steg). Gjærmengden var
+// koblet direkte til COLDMULT (kun 6 diskrete dags-verdier) — denne interpolerer
+// jevnt mellom de SAMME, allerede uttestede punktene, omregnet til timer, slik at
+// gjærmengden også blir riktig for alt som ikke er et helt døgn.
+const COLDMULT_HOURS=[[24,1.5],[48,1.05],[72,0.75],[96,0.59],[120,0.45],[144,0.38]];
+function coldMultForHours(h){
+  const pts=COLDMULT_HOURS;
+  if(h<=pts[0][0]) return pts[0][1];
+  if(h>=pts[pts.length-1][0]) return pts[pts.length-1][1];
+  for(let i=0;i<pts.length-1;i++){
+    const [h0,m0]=pts[i],[h1,m1]=pts[i+1];
+    if(h>=h0&&h<=h1) return Math.round((m0+(m1-m0)*(h-h0)/(h1-h0))*1000)/1000;
+  }
+  return 1.0;
+}
+// Leselig visningstekst for kjøleskapstid i timer — viser dager når det treffer
+// pent, ellers timer, slik at 24t/48t fortsatt leses som "1 dag"/"2 dager".
+function coldTimeLabel(h){
+  if(h%24===0) return (h/24)+' dag'+(h/24>1?'er':'');
+  return h+' timer';
+}
 const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 
 // Meltyper med anbefalt fermenteringsvindu (fra meny.no/italiensk-pizza/riktig-mel-til-pizza,
@@ -782,7 +833,7 @@ function initD(){
   const n=new Date();
   document.getElementById('sd').value=fd(n);
   document.getElementById('st').value=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
-  const l=new Date(n.getTime()+S.cold*86400000+14400000);
+  const l=new Date(n.getTime()+S.cold*3600000+14400000);
   document.getElementById('ed').value=fd(l);
   document.getElementById('et').value='18:00';
 }
@@ -859,6 +910,8 @@ function applyTypeUI(){
   const gow=document.getElementById('govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
   const ksub=document.getElementById('ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
+  const psub=document.getElementById('psub');if(psub)psub.style.display=(!isIE&&S.method==='poolish')?'block':'none';
+  const bsub=document.getElementById('bsub');if(bsub)bsub.style.display=(!isIE&&S.method==='biga')?'block':'none';
 }
 function applyMobTypeUI(){
   const isIE = S.type==='ingenelting';
@@ -869,6 +922,8 @@ function applyMobTypeUI(){
   const gow=g('mob-govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
   const ksub=g('mob-ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
+  const psub=g('mob-psub');if(psub)psub.style.display=(!isIE&&S.method==='poolish')?'block':'none';
+  const bsub=g('mob-bsub');if(bsub)bsub.style.display=(!isIE&&S.method==='biga')?'block':'none';
 }
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
 pgrp('ggj','gjaer');
@@ -879,7 +934,7 @@ mCards();buildHrows();buildKrows();
 
 function uMel(v){S.mel=parseInt(v);document.getElementById('mdisp').textContent=v+'g';sched();}
 function uHydro(v){S.hydro=parseInt(v);uHydroUI();sched();}
-function uCold(v){S.cold=parseInt(v);const t=v+' dag'+(v>1?'er':'');document.getElementById('clbl').textContent=t;document.getElementById('cdisp').textContent=t;sched();}
+function uCold(v){S.cold=parseInt(v);const t=coldTimeLabel(S.cold);document.getElementById('clbl').textContent=t;document.getElementById('cdisp').textContent=t;sched();}
 function uTemp(v){S.temp=parseInt(v);uTempUI();sched();}
 
 function uHydroUI(){
@@ -1084,10 +1139,10 @@ function cycleFontSize(){
 
 
 function minBakeMins(){
-  const rt=rtM(60),cM=S.cold*24*60;
+  const rt=rtM(60),cM=S.cold*60;
   if(S.method==='standard') return 45+rt+cM;
-  if(S.method==='poolish')  return 14*60+20+rt+cM;
-  if(S.method==='biga')     return 18*60+20+Math.round(rt*1.5)+cM;
+  if(S.method==='poolish')  return S.poolishH*60+20+rt+cM;
+  if(S.method==='biga')     return S.bigaH*60+20+Math.round(rt*1.5)+cM;
   if(S.method==='hurtig')   return 30+Math.round(S.hurtigH*0.6*60*tf())+Math.round((S.hurtigH-S.hurtigH*0.6-0.25)*60);
   return 0;
 }
@@ -1107,7 +1162,7 @@ function fDT(d){
 function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
 function R(){
-  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:(COLDMULT[S.cold]||1))*100)/100,yf=Math.round(yd*3*10)/10;
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:coldMultForHours(S.cold)*prefermentYeastMult())*100)/100,yf=Math.round(yd*3*10)/10;
   const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
   return{name:ns[S.type],flour:m,water:w,salt:sa,oil:oi,butter:bu,sugar:su,yDry:yd,yFresh:yf};
 }
@@ -1206,7 +1261,7 @@ function langpanneHintText(){
 }
 
 function rawSteps(a){
-  const r=R(),c=S.cold,ie=S.mode==='end',cM2=c*24*60,rt=rtM(60),tp=S.type;
+  const r=R(),c=S.cold,ie=S.mode==='end',cM2=c*60,rt=rtM(60),tp=S.type;
   if(S.type==='ingenelting'){
     // Verdens enkleste pizzadeig: bland med skje, ingen elting, én lang romtemperert heving.
     // Ingen kjøleskapsdager, ingen kjøkkenmaskin, ingen ovntype-valg — dette er en fast prosess
@@ -1256,7 +1311,7 @@ function rawSteps(a){
         why:WHY.fk,
         tip:'Bruk bokser med lokk — klede tørker ut overflaten og lager skorpe.'},
       {title:'Kjøleskapsheiving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
-        desc:`La emnene stå urørt i kjøleskapet i ca. ${c} dag${c>1?'er':''}. Ikke åpne boksene.`,
+        desc:`La emnene stå urørt i kjøleskapet i ca. ${coldTimeLabel(c)}. Ikke åpne boksene.`,
         why:WHY.fk},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
         desc:'Ta deigemnene ut. La stå dekket ved romtemperatur i 4 timer. Ikke åpne boksene ennå.',
@@ -1302,9 +1357,9 @@ function rawSteps(a){
   }
   if(S.method==='poolish'){
     const r2=R();
-    // Fremover: poolish starter ved a. Bakover: form = stek - cM2, deigmiks = form - (20+rt), poolish = miks - 14t.
-    const pa=ie?sM(sM(sM(a,cM2),20+rt),14*60):a;
-    const rdy=aM(pa,14*60);
+    // Fremover: poolish starter ved a. Bakover: form = stek - cM2, deigmiks = form - (20+rt), poolish = miks - S.poolishH timer.
+    const pa=ie?sM(sM(sM(a,cM2),20+rt),S.poolishH*60):a;
+    const rdy=aM(pa,S.poolishH*60);
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
@@ -1312,8 +1367,8 @@ function rawSteps(a){
           :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
         why:WHY.pl,
         tip:S.kjokkenmaskin==='ankarsrum'
-          ?'Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'
-          :'La stå 12–16 timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.'},
+          ?`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`
+          :`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
         desc:S.kjokkenmaskin==='ankarsrum'
           ?`Sett rullekniv og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`
@@ -1328,13 +1383,13 @@ function rawSteps(a){
   }
   if(S.method==='biga'){
     const r3=R(),bm=Math.round(r3.flour*0.6),bv=Math.round(bm*0.44),rtB=Math.round(rt*1.5);
-    const ba2=ie?sM(sM(sM(a,cM2),20+rtB),18*60):a;
-    const rdy=aM(ba2,18*60);
+    const ba2=ie?sM(sM(sM(a,cM2),20+rtB),S.bigaH*60):a;
+    const rdy=aM(ba2,S.bigaH*60);
     return[
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
         desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${r3.yDry}g tørrgjær til klumpete, tørr konsistens — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Ikke bland for mye.${langpanneHintText()}`,
         why:WHY.bi,
-        tip:'La stå 16–24 timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.'},
+        tip:`La stå ca. ${S.bigaH} timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.`},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
         desc:S.kjokkenmaskin==='ankarsrum'
           ?`Legg bigaen i Ankarsrum-bollen. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Start trinn 1–2. Tilsett ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?` og ${r3.oil}g olje etter halvparten av melet`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}. Tilsett ${r3.salt}g salt etter 5 min. Øk til trinn 3–4. Elt totalt 12–15 min til deigen er smidig og slipper bollen.`
@@ -1682,7 +1737,7 @@ function copyP(steps){
   const coldLine = S.type==='ingenelting' ? null
     : S.method==='kveld' ? `Kjøleskapsheving: ${S.kveldH} timer · Ovn: ${oN()}`
     : S.method==='hurtig' ? `Ovn: ${oN()}`
-    : `Kjøleskapsheving: ${S.cold} dager · Ovn: ${oN()}`;
+    : `Kjøleskapsheving: ${coldTimeLabel(S.cold)} · Ovn: ${oN()}`;
   const ovnLine = S.type==='ingenelting' ? `Ovn: Vanlig ovn, 250°C` : null;
   const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.butter?[`Smør: ${r.butter}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${currentYeastAmount()}`,'','TIDSPLAN','--------'];
   steps.forEach((s,i)=>{
@@ -1754,12 +1809,21 @@ function chicagoButterHTML(){
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">Ekte Chicago deep dish er kjent for en flakete, nesten butterdeig-aktig skorpe — det kommer fra en fettmengde godt over det du finner i andre pizzastiler. Denne oppskriften bruker olje og smeltet smør sammen for å komme nærmere den karakteristiske teksturen. Vil du ha den ekstra flakete varianten mange Chicago-oppskrifter bruker: rull ut deigen tynt, smør et tynt lag mykt (ikke smeltet) smør utover, rull sammen som en kanelsnurr, og la hvile 15 min før du former den i formen igjen.</div>
   </div>`;
 }
+// Delt hjelper: fast tid FØR selve kjøleskapsdagene begynner å telle (forspill +
+// romtemperaturheving). Brukt både i totalFermentHours() og i hurtigknappene
+// (meltypeWarnReduceFerment/maksSmakApply) — tidligere hardkodet i flere separate
+// steder med et avvik (biga=20t ett sted, 18t et annet), som gjorde dem inkonsekvente.
+function fixedFermOverheadHours(method){
+  const m=method||S.method;
+  const preferment=m==='poolish'?S.poolishH:m==='biga'?S.bigaH:0;
+  const bulkRiseMin=m==='biga' ? rtM(60)*1.5 : rtM(60);
+  return preferment+bulkRiseMin/60;
+}
 function totalFermentHours(){
   if(S.type==='ingenelting') return 15;
   if(S.method==='hurtig') return S.hurtigH;
   if(S.method==='kveld') return S.kveldH;
-  const preferment=S.method==='poolish'?14:S.method==='biga'?20:0;
-  return preferment+S.cold*24;
+  return fixedFermOverheadHours()+S.cold;
 }
 function meltypeWarnOpenFinjuster(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
@@ -1804,21 +1868,19 @@ function meltypeWarnReduceFerment(){
     try{ mobBuildKrows(); }catch(e){}
   }else if(S.method!=='ingenelting'){
     let method=S.method;
-    let preferment=method==='poolish'?14:method==='biga'?20:0;
-    let days=Math.floor((target-preferment)/24);
-    if(days<1){
+    let hours=Math.floor((target-fixedFermOverheadHours(method))/6)*6;
+    if(hours<24){
       // Forspillet alene bruker mer tid enn målet tillater — bytt til standardmetoden
-      // (uten fordeig) så selve kjøleskaps-dagene faktisk kan nå målet.
+      // (uten fordeig) så selve kjøleskaps-tiden faktisk kan nå målet.
       method='standard';
-      preferment=0;
-      days=Math.floor(target/24);
+      hours=Math.floor((target-fixedFermOverheadHours(method))/6)*6;
     }
-    days=Math.max(1,Math.min(6,days));
+    hours=Math.max(24,Math.min(144,hours));
     S.method=method;
-    S.cold=days;
-    const t=days+' dag'+(days>1?'er':'');
-    const csl=document.getElementById('csl'); if(csl) csl.value=days;
-    const mobCsl=document.getElementById('mob-csl'); if(mobCsl) mobCsl.value=days;
+    S.cold=hours;
+    const t=coldTimeLabel(hours);
+    const csl=document.getElementById('csl'); if(csl) csl.value=hours;
+    const mobCsl=document.getElementById('mob-csl'); if(mobCsl) mobCsl.value=hours;
     const cdisp=document.getElementById('cdisp'); if(cdisp) cdisp.textContent=t;
     const clbl=document.getElementById('clbl'); if(clbl) clbl.textContent=t;
     const mobClbl=document.getElementById('mob-clbl'); if(mobClbl) mobClbl.textContent=t;
@@ -1933,17 +1995,15 @@ function hurtigWarmRoomWarningHTML(){
 }
 function overfermentWarningHTML(){
   if(S.method==='hurtig' || S.type==='ingenelting') return '';
-  // Forgjæring legges til kjøleskapsdagene for å få total EFFEKTIV gjæringstid —
-  // poolish/biga har allerede gjæret lenge før kjøleskapsfasen i det hele tatt starter.
-  const preferHours = {poolish:14, biga:20}[S.method] || 0;
-  const coldHours = S.cold*24;
-  const totalHours = preferHours + coldHours;
+  // Forgjæring + bulkheving legges til kjøleskapstiden for å få total EFFEKTIV
+  // gjæringstid — samme delte regnestykke som meltype-varselet og Maks smak bruker.
+  const totalHours = fixedFermOverheadHours()+S.cold;
   const threshold = S.method==='biga' ? 92 : 96;
   if(totalHours < threshold) return '';
   const totalDays = (Math.round(totalHours/24*10)/10).toString().replace('.',',');
-  const methodTxt = S.method==='poolish' ? ` (${S.cold} dager kjøleskap + ca. 14t poolish-forgjæring)`
-    : S.method==='biga' ? ` (${S.cold} dager kjøleskap + ca. 20t biga-forgjæring)`
-    : ` (${S.cold} dager kjøleskap)`;
+  const methodTxt = S.method==='poolish' ? ` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.poolishH}t poolish-forgjæring)`
+    : S.method==='biga' ? ` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.bigaH}t biga-forgjæring)`
+    : ` (${coldTimeLabel(S.cold)} kjøleskap)`;
   return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⚠️ Lang gjæringstid — fare for overfermentering</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">Total effektiv gjæringstid er ca. ${totalDays} døgn${methodTxt}. Ved denne lengden bryter enzymer gradvis ned glutenstrukturen mer enn de bygger den — deigen kan bli slapp, klissete og vanskelig å forme, med en flat, tydelig sur smak. Sjekk deigen jevnlig mot slutten, og vær klar til å bake litt tidligere enn planlagt hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).</div>
@@ -2009,6 +2069,27 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.35',
+    d: 'juli 2026',
+    changes: [
+      'Poolish og Biga sin forspill-varighet er nå justerbar (12–16t for Poolish, 16–24t for Biga, med navngitte alternativer — samme mønster som Hurtigdeig/Kveldsdeig), i stedet for fast 14t/18t. Gjærmengden i forspillet skaleres automatisk med valgt varighet. Standardverdiene (14t/18t) gir nøyaktig samme oppskrift som før — ingen endring for deg som ikke rører denne nye innstillingen. Motivert av at kontroll på nettopp denne fasen (den minst fleksible, siden forspill og ferdig-blanding er rigid låst til hverandre) lar deg justere når disse to øyeblikkene faktisk havner på klokka. Foreløpig kun på mobil — PC-visningen bruker fortsatt de faste standardverdiene.'
+    ]
+  },
+  {
+    v: '5.34',
+    d: 'juli 2026',
+    changes: [
+      'Kjøleskapsheving for Standard/Poolish/Biga er byttet fra hele dager til timer, med finere 6-timers steg — samme presisjonsnivå som Hurtigdeig/Kveldsdeig allerede hadde. Gjærmengde-tabellen som var koblet til antall dager er bygget om til en jevnt interpolert versjon i timer, basert på nøyaktig de samme, allerede uttestede verdiene som før — ingen ny gjetning, bare finere oppløsning mellom de kjente punktene. "Maks smak" utnytter nå melets faktiske gjæringsgrense mye bedre: f.eks. Caputo Nuvola (maks 48t) fikk tidligere kun 24t foreslått siden systemet rundet ned til hele døgn — nå foreslår den 42t. Fant og rettet samtidig en tredje, uavhengig kopi av gjæringstid-regnestykket i overmodning-varselet som ikke ble fanget opp i forrige versjon.'
+    ]
+  },
+  {
+    v: '5.33',
+    d: 'juli 2026',
+    changes: [
+      'Gjæringstid-regnestykket (brukt av meltype-varselet og "Maks smak") tok ikke med romtemperaturhevingen FØR kjøleskapet — bare forspill (Poolish/Biga) og kjøleskapsdager ble talt. Lagt til, og samtidig rettet et lite avvik der Biga sitt forspill ble regnet som 20 timer ett sted i koden og 18 timer et annet — alt bruker nå samme, delte regnestykke, så det aldri kan drive fra hverandre igjen.'
+    ]
+  },
   {
     v: '5.32',
     d: 'juli 2026',
@@ -2719,7 +2800,7 @@ function gen(){
   if(S.type!=='ingenelting' && S.method==='kveld'){kveldRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
   const rs=rawSteps(a),steps=rs,r=R();
-  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   window._steps=steps;
   document.getElementById('main').innerHTML=`
     ${startHintHTML()}
@@ -3438,7 +3519,7 @@ function syncMobControls(){
   const t=(id,val)=>{const el=g(id);if(el)el.textContent=val;};
   s('mob-msl',S.mel);t('mob-mdisp',S.mel+'g');
   s('mob-hsl',S.hydro);
-  s('mob-csl',S.cold);t('mob-clbl',S.cold+' dag'+(S.cold>1?'er':''));
+  s('mob-csl',S.cold);t('mob-clbl',coldTimeLabel(S.cold));
   s('mob-tsl',S.temp);t('mob-tlbl',S.temp+'°C');
   mobHydroUI();
   mobPillGroup('mob-gtype','type');
@@ -3449,10 +3530,12 @@ function syncMobControls(){
   mobMethodCards();
   mobBuildHrows();
   mobBuildKrows();
+  mobBuildProws();
+  mobBuildBrows();
   const now=new Date();
   s('mob-sd',fd(now));
   s('mob-st',String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
-  const later=new Date(now.getTime()+S.cold*86400000+14400000);
+  const later=new Date(now.getTime()+S.cold*3600000+14400000);
   s('mob-ed',fd(later));
   s('mob-et','18:00');
   applyMobTypeUI();
@@ -3518,6 +3601,8 @@ function mobMethodCards(){
       S.method=v;mobMethodCards();
       document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';
       document.getElementById('mob-ksub').style.display=v==='kveld'?'block':'none';
+      document.getElementById('mob-psub').style.display=v==='poolish'?'block':'none';
+      document.getElementById('mob-bsub').style.display=v==='biga'?'block':'none';
       document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='kveld')?'none':'block';
       mobGen();
     };
@@ -3534,33 +3619,44 @@ function mobBuildKrows(){
   const b=document.getElementById('mob-krows');if(!b)return;
   b.innerHTML=KOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.kveldH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.kveldH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.kveldH?600:400}" onclick="mobSetK(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.kveldH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
 }
+function mobBuildProws(){
+  const b=document.getElementById('mob-prows');if(!b)return;
+  b.innerHTML=POOLISH_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.poolishH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.poolishH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.poolishH?600:400}" onclick="mobSetP(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.poolishH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+}
+function mobSetP(h){S.poolishH=h;mobBuildProws();mobGen();}
+function mobBuildBrows(){
+  const b=document.getElementById('mob-brows');if(!b)return;
+  b.innerHTML=BIGA_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.bigaH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.bigaH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.bigaH?600:400}" onclick="mobSetB(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.bigaH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+}
+function mobSetB(h){S.bigaH=h;mobBuildBrows();mobGen();}
 function mobSetK(h){S.kveldH=h;mobBuildKrows();mobGen();}
 
 function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=v+'g';const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=v+'g';mobGen();}
 function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
-function mobUCold(v){S.cold=parseInt(v);const t=v+' dag'+(v>1?'er':'');document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();}
+function mobUCold(v){S.cold=parseInt(v);const t=coldTimeLabel(S.cold);document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();}
 function stepColdWiz(delta){
-  const next=Math.max(1,Math.min(6,(S.cold||1)+delta));
+  const next=Math.max(24,Math.min(144,(S.cold||24)+delta*6));
   mobUCold(next);
 }
 function maksSmakApply(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
-  const preferment=S.method==='poolish'?14:S.method==='biga'?20:0;
-  let maxByFlour=6;
-  if(flour) maxByFlour=Math.max(1,Math.floor((flour.ferm.mx-preferment)/24));
-  let maxByTime=6;
+  const overhead=fixedFermOverheadHours();
+  const roundDown6=h=>Math.floor(h/6)*6;
+  let maxByFlour=144;
+  if(flour) maxByFlour=Math.max(24,roundDown6(flour.ferm.mx-overhead));
+  let maxByTime=144;
   const dEl=document.getElementById('mob-ed'),tEl=document.getElementById('mob-et');
   if(S.mode==='end' && dEl && dEl.value){
     try{
       const eatTime=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'18:00'));
       if(!isNaN(eatTime.getTime())){
-        const availableHours=(eatTime.getTime()-Date.now())/3600000-preferment;
-        maxByTime=Math.max(1,Math.floor(availableHours/24));
+        const availableHours=(eatTime.getTime()-Date.now())/3600000-overhead;
+        maxByTime=Math.max(24,roundDown6(availableHours));
       }
     }catch(e){}
   }
-  const days=Math.max(1,Math.min(6,maxByFlour,maxByTime));
-  mobUCold(days);
+  const hours=Math.max(24,Math.min(144,maxByFlour,maxByTime));
+  mobUCold(hours);
   const reasonEl=document.getElementById('mob-maks-smak-reason');
   if(reasonEl){
     reasonEl.textContent = (maxByTime<=maxByFlour)
@@ -3593,7 +3689,7 @@ function wizStep3Refresh(){
   if(coldWrap) coldWrap.style.display = isShort ? 'none' : 'block';
   if(!isShort){
     const d=document.getElementById('mob-cold-wiz-disp');
-    if(d) d.textContent=(S.cold||1)+' dag'+((S.cold||1)>1?'er':'');
+    if(d) d.textContent=coldTimeLabel(S.cold||24);
   }
 }
 function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=v+'°C';const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
@@ -3874,7 +3970,7 @@ function mobGen(){
   const p=pc();
   document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
-  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:`${S.cold} dag${S.cold>1?'er':''}`}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
+  const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rr)}</div><div class="mob-swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
 
   updatePcountDisp();
@@ -4127,9 +4223,9 @@ async function refreshDeigerBanner(){
 
 function methodMetaLabel(){
   if(S.type==='ingenelting') return 'Ingen elting, ~16t rom';
-  const c=S.cold+' dag'+(S.cold>1?'er':'')+' kjøl';
-  if(S.method==='poolish') return 'Poolish 12–16t + '+c;
-  if(S.method==='biga') return 'Biga 16–24t + '+c;
+  const c=coldTimeLabel(S.cold)+' kjøl';
+  if(S.method==='poolish') return 'Poolish '+S.poolishH+'t + '+c;
+  if(S.method==='biga') return 'Biga '+S.bigaH+'t + '+c;
   if(S.method==='standard') return c;
   return '';
 }
@@ -4198,7 +4294,7 @@ function syncDesktopControls(){
   const hsl=document.getElementById('hsl');if(hsl)hsl.value=S.hydro;
   uHydroUI();
   const csl=document.getElementById('csl');if(csl)csl.value=S.cold;
-  const ct=S.cold+' dag'+(S.cold>1?'er':'');
+  const ct=coldTimeLabel(S.cold);
   const clbl=document.getElementById('clbl');if(clbl)clbl.textContent=ct;
   const cdisp=document.getElementById('cdisp');if(cdisp)cdisp.textContent=ct;
   const tsl=document.getElementById('tsl');if(tsl)tsl.value=S.temp;
@@ -4437,6 +4533,14 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-ksub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
       </div>
+      <div id="mob-psub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Forspill-varighet</div>
+        <div id="mob-prows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div id="mob-bsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Forspill-varighet</div>
+        <div id="mob-brows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
       <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Meltype</div></div>
       <div class="dropdown-select" style="margin:0 1rem .4rem">
         <select id="mob-gmel">
@@ -4527,7 +4631,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="mob-cwrap">
       <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">1 dag</span></div>
-      <div class="mob-slider-wrap"><input type="range" id="mob-csl" min="1" max="6" step="1" value="1" oninput="mobUCold(this.value)"></div>
+      <div class="mob-slider-wrap"><input type="range" id="mob-csl" min="24" max="144" step="6" value="24" oninput="mobUCold(this.value)"></div>
     </div>
 
     <div class="mob-section-lbl">Romtemperatur — <span id="mob-tlbl">22°C</span></div>
