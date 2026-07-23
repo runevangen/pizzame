@@ -2120,16 +2120,33 @@ function renderFasteTidspunkter(){
   ];
   el.innerHTML='<div style="font-size:10px;color:var(--forno-text-faint);margin-bottom:6px">Sjekket mot din nåværende metode/hevetid — endrer ingenting før du trykker på et av dem</div>'
     + targets.map(t=>{
+      // rawSteps() leser S.mode direkte (ikke som parameter) for å avgjøre om
+      // ankeret er et start- eller spisetidspunkt. Disse målene er ALLTID
+      // spisetidspunkt, så vi må tvinge 'end' her uansett hva brukeren står i
+      // akkurat nå — ellers tolkes f.eks. "fredag 19:00" som et STARTtidspunkt
+      // hvis brukeren står i "Starter nå", og hele forhåndsvisningen blir feil.
+      const origMode=S.mode;
+      S.mode='end';
       const steps=rawSteps(t.d);
-      let bad=null;
-      for(const s of steps){
-        if(s.passive) continue;
-        let at=s.at; if(!(at instanceof Date)) at=new Date(at);
-        if(!inMyFreeWindows(at.getHours(),at.getMinutes())){ bad={title:s.title, at}; break; }
+      S.mode=origMode;
+      const firstActive=steps.find(s=>!s.passive);
+      let tooLate=false;
+      if(firstActive){
+        let firstAt=firstActive.at; if(!(firstAt instanceof Date)) firstAt=new Date(firstAt);
+        if(firstAt.getTime() < Date.now()) tooLate=true;
       }
-      const ok=!bad;
+      let bad=null;
+      if(!tooLate){
+        for(const s of steps){
+          if(s.passive) continue;
+          let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+          if(!inMyFreeWindows(at.getHours(),at.getMinutes())){ bad={title:s.title, at}; break; }
+        }
+      }
+      const ok=!bad && !tooLate;
       let dtIso=''; try{ dtIso=t.d.toISOString().slice(0,16); }catch(e){}
-      const badTxt = bad ? `${escH(bad.title)} kl. ${String(bad.at.getHours()).padStart(2,'0')}:${String(bad.at.getMinutes()).padStart(2,'0')}` : '';
+      const badTxt = tooLate ? 'For kort varsel — måtte startet i fortiden'
+        : bad ? `${escH(bad.title)} kl. ${String(bad.at.getHours()).padStart(2,'0')}:${String(bad.at.getMinutes()).padStart(2,'0')}` : '';
       return `<div onclick="applyFastTidspunkt('${t.d.toISOString()}')" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--forno-bg-raised);border:1px solid var(--forno-border);margin-bottom:5px;cursor:pointer">
         <div style="min-width:0">
           <div style="font-size:12px;font-weight:600;color:var(--forno-text)">${t.label}</div>
@@ -2300,6 +2317,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.41',
+    d: 'juli 2026',
+    changes: [
+      'Fikset "Mine faste tidspunkter": den sjekket bare om steg havnet innenfor dine ledige vinduer, men aldri om planen faktisk var mulig å starte FRA NÅ — et mål bare timer unna (som fredag når det allerede er torsdag) kunne be deg starte poolishen tidligere på dagen enn klokka faktisk er, altså i fortiden. Vises nå tydelig som "For kort varsel" i stedet for en misvisende status. Rettet samtidig en beslektet risiko: forhåndsvisningen leste ikke "Starter nå/Steketid"-valget riktig for Hurtigdeig/Kveldsdeig, som kunne gitt feil resultat der også.'
+    ]
+  },
   {
     v: '5.40',
     d: 'juli 2026',
