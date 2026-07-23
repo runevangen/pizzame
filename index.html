@@ -123,6 +123,9 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .tab.on{background:#085041;color:#fff;font-weight:600}
 .tab:hover:not(.on){background:#F2F2F7;color:var(--dyn-text)}
 .step{border-radius:14px;overflow:hidden;margin-bottom:.6rem;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+body.mob-mode .step{background:var(--forno-bg-raised);box-shadow:none;border:1px solid var(--forno-border)}
+.session-banner{background:#f4f0ea;border:1px dashed #d0cdc8;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:11px;color:#888;display:flex;align-items:center;gap:6px}
+body.mob-mode .session-banner{background:var(--forno-bg-raised);border-color:var(--forno-border);color:var(--forno-text-faint)}
 .step.now{border-color:#1D9E75;border-width:2px}
 .step.shifted{border-color:#BA7517;border-style:dashed}
 .step-body{padding:.75rem 1rem}
@@ -138,6 +141,7 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .sloc{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
 .sloc.k{color:#185FA5}.sloc.r{color:#0F6E56}.sloc.o{color:#993C1D}
 .sdesc{font-size:12px;color:#3A3A3C;margin-top:.45rem;line-height:1.65}
+body.mob-mode .sdesc{color:var(--forno-text-muted)}
 .swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#085041;margin-top:.45rem;line-height:1.5}
 .stip{background:#FAFAF9;border-left:3px solid #ccc;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#3A3A3C;margin-top:.4rem;line-height:1.5}
 .snote{background:#fef3e2;border-left:3px solid #BA7517;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#633806;margin-top:.4rem;line-height:1.5}
@@ -346,7 +350,7 @@ body.mob-mode .modal-head b{font-family:var(--forno-font-display);font-size:14px
 body.mob-mode .modal-x{background:var(--forno-border);color:var(--forno-text-muted)}
 .modal-x:hover{background:#e5e2dc}
 body.mob-mode .modal-x:hover{background:var(--forno-accent-soft)}
-.modal-body{padding:1rem 1.1rem;overflow-y:auto}
+.modal-body{padding:1rem 1.1rem;overflow-y:auto;overscroll-behavior:contain}
 body.mob-mode .modal-body{color:var(--forno-text-muted)}
 .admin-card{border:1px solid #e0ddd8;border-radius:8px;padding:.6rem .7rem;margin-bottom:8px}
 body.mob-mode .admin-card{border-color:var(--forno-border)}
@@ -771,6 +775,13 @@ function coldMultForHours(h){
 // Hurtigdeig/Kveldsdeig, Maks smak) som allerede viser timer gjennomgående.
 function coldTimeLabel(h){
   return h+' timer';
+}
+// Leselig "Xt Ym"-tekst for øktbanneret (steg 2-4-i-én-økt).
+function fmtSessionDur(mins){
+  const h=Math.floor(mins/60), m=Math.round(mins%60);
+  if(h<=0) return m+' min';
+  if(m===0) return h+'t';
+  return h+'t '+m+'m';
 }
 const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 
@@ -1246,7 +1257,7 @@ function machineLabel(){
 function whyAu(){
   if(S.kjokkenmaskin==='manuell') return 'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting — spesielt nyttig ved håndelting, siden autolysen gjør mye av jobben før du i det hele tatt begynner.';
   if(S.kjokkenmaskin==='annen') return 'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting, og kortere eltetid i maskinen — nyttig siden kjøkkenmaskiner lett overvarmer deigen ved lang eltetid.';
-  return 'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting. I Ankarsrum: autolyse er ekstra effektiv fordi rullekniven allerede har fordelt vannet jevnt i melet.';
+  return 'Glutennettverket dannes naturlig når mel og vann hviler. Gir smidigere deig med mindre elting. I Ankarsrum: autolyse er ekstra effektiv fordi deigrullen allerede har fordelt vannet jevnt i melet.';
 }
 function whySg(){
   if(S.kjokkenmaskin==='manuell') return 'Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. Ved håndelting: bland saltet inn sammen med gjæren fra start — du styrer selv tempoet, så det er ikke samme fare for at saltet møter uutviklet gluten som i en maskin.';
@@ -1325,6 +1336,7 @@ function rawSteps(a){
     const t0=ie?sM(sM(sM(a,cM2),rt),45):a;
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland og autolyse':S.kjokkenmaskin==='manuell'?'Bland for hånd og autolyse':'Kjøkkenmaskin — bland og autolyse',loc:'benk',at:t0,dur:30,
+        sessionNote:`Sett av ca. ${fmtSessionDur(60+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
         desc:(S.kjokkenmaskin==='ankarsrum'
           ?`Hell ${r.water}g ${waterTempPhrase()} i Ankarsrum-bollen. Start maskinen på trinn 1 og tilsett ${r.flour}g mel gradvis i 3–4 omganger. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`
           :S.kjokkenmaskin==='manuell'
@@ -1332,7 +1344,7 @@ function rawSteps(a){
           :`Hell ${r.water}g ${waterTempPhrase()} i bollen på kjøkkenmaskinen. Sett i eltekroken, kjør på laveste hastighet og tilsett ${r.flour}g mel gradvis. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`)+langpanneHintText(),
         why:whyAu(),
         tip:S.kjokkenmaskin==='ankarsrum'
-          ?'Ankarsrum liker væske i bunnen — melet trekkes jevnt inn under rullekniven. Ikke overfyll på én gang.'
+          ?'Ankarsrum liker væske i bunnen — melet trekkes jevnt inn under deigrullen. Ikke overfyll på én gang.'
           :S.kjokkenmaskin==='manuell'
           ?'Ingen grunn til å skynde seg her — bare bland til det ikke er tørt mel igjen. Autolysen gjør mye av arbeidet for deg.'
           :'Kjør kun på laveste hastighet i denne fasen — høyere hastighet før autolysen varmer opp deigen unødvendig mye.'},
@@ -1363,15 +1375,16 @@ function rawSteps(a){
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
-          ?`Ta av rullekniv og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
+          ?`Ta av deigrulle og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
           :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
         why:WHY.pl,
         tip:S.kjokkenmaskin==='ankarsrum'
           ?`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`
           :`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
+        sessionNote:`Sett av ca. ${fmtSessionDur(35+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
         desc:S.kjokkenmaskin==='ankarsrum'
-          ?`Sett rullekniv og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`
+          ?`Sett deigrulle og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`
           :S.kjokkenmaskin==='manuell'
           ?`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`
           :`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,
@@ -1391,6 +1404,7 @@ function rawSteps(a){
         why:WHY.bi,
         tip:`La stå ca. ${S.bigaH} timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.`},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
+        sessionNote:`Sett av ca. ${fmtSessionDur(35+rtB)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
         desc:S.kjokkenmaskin==='ankarsrum'
           ?`Legg bigaen i Ankarsrum-bollen. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Start trinn 1–2. Tilsett ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?` og ${r3.oil}g olje etter halvparten av melet`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}. Tilsett ${r3.salt}g salt etter 5 min. Øk til trinn 3–4. Elt totalt 12–15 min til deigen er smidig og slipper bollen.`
           :S.kjokkenmaskin==='manuell'
@@ -1569,6 +1583,9 @@ function renderSteps(steps, mode='desktop'){
     const done = window._checked && window._checked.has(i);
     const missed = i < curIdx && !done;
     const isNext = i === nextIdx && nextIdx !== curIdx;
+    if(s.sessionNote){
+      html += `<div class="session-banner">⏱️ ${escH(s.sessionNote)}</div>`;
+    }
     html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${(isDimmed && !isNext) ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
       <div class="${C.body}">
         <div class="${C.head}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">
@@ -1955,6 +1972,57 @@ function meltypeWarningHTML(){
     ${estNote}
   </div>`;
 }
+// Generalisert varsel: sjekker om noen AKTIVE steg (alt uten passive:true —
+// altså steg som faktisk krever at du gjør noe, ikke bare venter) havner i et
+// tidsvindu du sannsynligvis ikke vil bli forstyrret i. Natt er universell og
+// hardkodet trygt; arbeidstid er individuelt og hardkodet KUN som et første
+// steg (admin-innstilling senere). Samme mekanisme for begge.
+const ACTIVE_STEP_TIME_WINDOWS=[
+  {id:'night', test:h=>h>=23||h<6, label:'natten', icon:'🌙'},
+  {id:'work', test:h=>h>=8&&h<16, label:'arbeidstiden din', icon:'💼'}
+];
+function activeStepTimeWarningHTML(){
+  const steps=window._steps||[];
+  if(!steps.length) return '';
+  for(const s of steps){
+    if(s.passive) continue;
+    let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+    if(isNaN(at.getTime())) continue;
+    const h=at.getHours();
+    const win=ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(h));
+    if(!win) continue;
+    let dt=''; try{ dt=fDT(at); }catch(e){}
+    const isShort=(S.method==='hurtig'||S.method==='kveld');
+    let prefBtn='';
+    if(S.method==='poolish') prefBtn=`<button onclick="activeStepWarnGoTo('poolish')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Juster hevetid i Poolish</button>`;
+    else if(S.method==='biga') prefBtn=`<button onclick="activeStepWarnGoTo('biga')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Juster hevetid i Biga</button>`;
+    const coldBtn=(!isShort && S.type!=='ingenelting') ? `<button onclick="activeStepWarnGoTo('cold')" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Juster kjøleskapstid</button>` : '';
+    if(!prefBtn && !coldBtn) continue; // ingenting å foreslå å justere for denne metoden
+    return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+      <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} Et steg havner i ${win.label}</div>
+      <div style="font-size:12px;color:#4a2a05;line-height:1.5"><b>${escH(s.title)}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${prefBtn}${coldBtn}</div>
+    </div>`;
+  }
+  return '';
+}
+function activeStepWarnGoTo(which){
+  mobShowTab('settings');
+  if(which==='cold'){
+    wizGoto(3, ()=>highlightWizEl('mob-cold-wiz-wrap'));
+  }else{
+    wizGoto(2, ()=>highlightWizEl(which==='poolish'?'mob-psub':'mob-bsub'));
+  }
+}
+function highlightWizEl(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  el.classList.remove('finjuster-highlight');
+  void el.offsetWidth;
+  el.classList.add('finjuster-highlight');
+  setTimeout(()=>el.classList.remove('finjuster-highlight'), 2300);
+}
 function methodTimeWarningHTML(){
   if(S.mode!=='end') return ''; // kun relevant når man planlegger bakover fra et spisetidspunkt
   if(S.method!=='hurtig' && S.method!=='kveld') return '';
@@ -2046,6 +2114,7 @@ function buildTechHTML(){
     ${waterTempTechHTML()}
     ${S.method==='poolish'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Poolish</div><div class="sdesc">${WHY.pl} Poolishen fermenterer i egen bolle uansett kjøkkenmaskin — det er først når du blander ferdig deig at maskinvalget spiller inn.</div></div>`:''}
     ${S.method==='biga'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Biga</div><div class="sdesc">${WHY.bi} Biga lages alltid for hånd — konsistensen er for tørr og klumpete for maskinelting, uansett hvilken maskin du ellers bruker. Legg ferdig biga i bollen og tilsett resten av ingrediensene.</div></div>`:''}
+    ${(S.method==='poolish'||S.method==='biga')?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Kjøleskapspause hvis livet kommer i veien</div><div class="sdesc">Kommer du ikke tilbake akkurat når forspillet er klart, kan du sette bollen i kjøleskapet en stund — kulda bremser gjæringen kraftig ned uten å stoppe den helt. Ta den ut igjen når du er klar, og la den gjerne stå litt ved romtemperatur først hvis den er blitt veldig kald. Proffe bakere gjør dette rutinemessig i stedet for å la seg binde av et stivt klokkeslett.</div></div>`:''}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Romtemperatur og hevingstid</div><div class="sdesc">Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min. Deigen skal doble seg — ikke mer. Overheving gir flat, sur pizza.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Holdbarhet: 2–3 uker i kjøleskap. Bruk 3× mengden av tørrgjær.'}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet — legg til ekstra vann gradvis mot slutten av eltingen til deigen kjennes riktig. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.<br><br><b>Viktig ved lang gjæring:</b> jo lenger deigen gjærer, jo mer krever det av glutenstyrken i melet. Siktet norsk hvete og sammalt/fullkorn har svakere gluten enn Tipo 00, og bryter lettere ned til en slapp, klissete deig ved flere dagers kjøleskapsheving. Skal du gjære lenge (4+ dager, eller biga/poolish generelt), er Tipo 00 eller sterkt brødmel det tryggeste valget — spar svakere mel til kortere hevetider.</div></div>
@@ -2069,6 +2138,21 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.37',
+    d: 'juli 2026',
+    changes: [
+      'Nytt varsel i Steg-fanen hvis et steg som faktisk krever at du gjør noe (blande, forme, ta ut av kjøleskap, steke — ikke bare vente) havner midt på natten (23:00–06:00) eller i arbeidstiden din (08:00–16:00, hardkodet foreløpig), med hurtigknapper for å justere hevetid (Poolish/Biga) eller kjøleskapstid direkte.',
+      'Live forhåndsvisning av beregnet starttidspunkt når du justerer hevetid i Poolish/Biga eller kjøleskapstid i Planlegging — slipper å bla til Steg-fanen for å sjekke.',
+      'Standard/Poolish/Biga sine tre første aktive steg (bland, la heve, form emner) er nå tydelig merket som én sammenhengende arbeidsøkt, med et lite banner som viser hvor lang tid du bør sette av.',
+      'Rettet Ankarsrum-terminologi i tekstene — "rullekniv" fantes ikke, riktig er "deigrullen" (ruller) og "deigkniv"/skraper (to separate deler brukt sammen).',
+      'Nytt tips: "Kjøleskapspause" for Poolish/Biga — hvordan pause et forspill i kjøleskapet hvis livet kommer i veien.',
+      'Feedback viser nå hvem som sendte den inn, samme mønster som lagrede deiger og notater.',
+      'Fikset at bakgrunnen kunne scrolle gjennom modaler (Admin og andre) på mobil — manglende overscroll-behation er nå satt.',
+      'Fikset at overskriftene i Tips og teknikk var lyse og uleselige — samme mangel på mørk-modus som flere tidligere runder.',
+      'LØST en ekte backend-bug: sletting av bruker og "Ny PIN" i Admin-visningen brukte feil lagringsnøkkel og virket aldri, selv om ingen feilmelding vistes — brukere lagres med normalisert navn som nøkkel, ikke intern id. Krever ny users.js på serveren.'
+    ]
+  },
   {
     v: '5.36',
     d: 'juli 2026',
@@ -2702,6 +2786,7 @@ async function submitFeedback(){
       body: JSON.stringify({
         category: window._feedbackCategory,
         message: msg,
+        submittedBy: currentUserName(),
         context: {version: CHANGELOG[0].v, type: S.type, method: S.method, meltype: S.meltype, kjokkenmaskin: S.kjokkenmaskin}
       })
     });
@@ -2755,7 +2840,7 @@ async function loadFeedbackList(){
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
             <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
-            <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}</span>
+            <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}${it.submittedBy?' · av '+escH(it.submittedBy):''}</span>
             <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
@@ -3612,6 +3697,8 @@ function mobMethodCards(){
       document.getElementById('mob-bsub').style.display=v==='biga'?'block':'none';
       document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='kveld')?'none':'block';
       mobGen();
+      if(v==='poolish') updateStartPreview('mob-p-start-preview');
+      if(v==='biga') updateStartPreview('mob-b-start-preview');
     };
     wrap.appendChild(el);
   });
@@ -3630,17 +3717,29 @@ function mobBuildProws(){
   const b=document.getElementById('mob-prows');if(!b)return;
   b.innerHTML=POOLISH_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.poolishH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.poolishH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.poolishH?600:400}" onclick="mobSetP(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.poolishH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
 }
-function mobSetP(h){S.poolishH=h;mobBuildProws();mobGen();}
+function mobSetP(h){S.poolishH=h;mobBuildProws();mobGen();updateStartPreview('mob-p-start-preview');}
 function mobBuildBrows(){
   const b=document.getElementById('mob-brows');if(!b)return;
   b.innerHTML=BIGA_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.bigaH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.bigaH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.bigaH?600:400}" onclick="mobSetB(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.bigaH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
 }
-function mobSetB(h){S.bigaH=h;mobBuildBrows();mobGen();}
+function mobSetB(h){S.bigaH=h;mobBuildBrows();mobGen();updateStartPreview('mob-b-start-preview');}
 function mobSetK(h){S.kveldH=h;mobBuildKrows();mobGen();}
 
 function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=v+'g';const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=v+'g';mobGen();}
 function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
-function mobUCold(v){S.cold=parseInt(v);const t=coldTimeLabel(S.cold);document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();}
+function mobUCold(v){S.cold=parseInt(v);const t=coldTimeLabel(S.cold);document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();updateStartPreview('mob-cold-start-preview');}
+// Live forhåndsvisning av beregnet starttidspunkt — så man slipper å bla til
+// Steg-fanen for å sjekke hva en justering her faktisk fører til.
+function updateStartPreview(elId){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const steps=window._steps||[];
+  if(!steps.length){ el.textContent=''; return; }
+  let at=steps[0].at; if(!(at instanceof Date)) at=new Date(at);
+  if(isNaN(at.getTime())){ el.textContent=''; return; }
+  let dt=''; try{ dt=fDT(at); }catch(e){}
+  el.textContent = dt ? 'Da starter du: '+dt : '';
+}
 function stepColdWiz(delta){
   const next=Math.max(24,Math.min(144,(S.cold||24)+delta*6));
   mobUCold(next);
@@ -3697,6 +3796,7 @@ function wizStep3Refresh(){
   if(!isShort){
     const d=document.getElementById('mob-cold-wiz-disp');
     if(d) d.textContent=coldTimeLabel(S.cold||24);
+    updateStartPreview('mob-cold-start-preview');
   }
 }
 function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=v+'°C';const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
@@ -3954,7 +4054,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     const rrH=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${w2}g (${S.hydro}%)`},{k:'Salt',v:`${r2.salt}g`},...(r2.oil?[{k:'Olivenolje',v:`${r2.oil}g`}]:[]),...(r2.butter?[{k:'Smør',v:`${r2.butter}g`}]:[]),...(r2.sugar?[{k:'Sukker',v:`${r2.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Steking',v:tmp}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rrH)}</div></div>`;
@@ -3964,7 +4064,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='kveld'){
     const {ya,steps}=kveldSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
     const r2=R(),p=pc();
     const rrK=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${r2.water}g (${S.hydro}%)`},{k:'Salt',v:`${r2.salt}g`},...(r2.oil?[{k:'Olivenolje',v:`${r2.oil}g`}]:[]),...(r2.butter?[{k:'Smør',v:`${r2.butter}g`}]:[]),...(r2.sugar?[{k:'Sukker',v:`${r2.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Kjøleskap',v:`${S.kveldH}t`}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rrK)}</div></div>`;
@@ -3975,7 +4075,7 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[{k:'Mel',v:`${r.flour}g`},{k:'Vann',v:`${r.water}g (${S.hydro}%)`},{k:'Salt',v:`${r.salt}g`},...(r.oil?[{k:'Olivenolje',v:`${r.oil}g`}]:[]),...(r.butter?[{k:'Smør',v:`${r.butter}g`}]:[]),...(r.sugar?[{k:'Sukker',v:`${r.sugar}g`}]:[]),{k:'Gjær',v:yA(r)},...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemp',v:`${S.temp}°C · heving ca. ${rtM(60)} min`},{k:'Ovn',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rr)}</div><div class="mob-swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
@@ -4543,10 +4643,12 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-psub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Forspill-varighet</div>
         <div id="mob-prows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+        <div id="mob-p-start-preview" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-accent-text)"></div>
       </div>
       <div id="mob-bsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Forspill-varighet</div>
         <div id="mob-brows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+        <div id="mob-b-start-preview" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-accent-text)"></div>
       </div>
       <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Meltype</div></div>
       <div class="dropdown-select" style="margin:0 1rem .4rem">
@@ -4610,6 +4712,7 @@ document.addEventListener('change', firstInteractionCheck, true);
           <span id="mob-cold-wiz-disp" style="font-family:var(--forno-font-mono);font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:70px;text-align:center">24 timer</span>
           <button onclick="stepColdWiz(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
         </div>
+        <div id="mob-cold-start-preview" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-accent-text)"></div>
         <div style="margin:0 1rem .65rem;padding:9px 10px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
           <div style="min-width:0">
             <div style="font-size:12px;font-weight:700;color:var(--forno-accent-text)">🌙 Maks smak</div>
