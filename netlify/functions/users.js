@@ -37,6 +37,22 @@ function idFromPath(path) {
   return parts[parts.length - 1];
 }
 
+// Brukere lagres med normalisert navn som selve Blob-nøkkelen (se registrering
+// under), ikke med den interne "id"-en. Admin sender inn "id" fra listen den
+// fikk fra GET /admin — så DELETE/PATCH må først finne fram til den EKTE
+// nøkkelen (normalisert navn) ved å lete gjennom listen, i stedet for å anta
+// at "id" er nøkkelen direkte. Uten dette treffer store.delete(id)/store.get(id)
+// aldri noen faktisk blob, og operasjonen feiler stille (DELETE: sletter
+// ingenting men rapporterer suksess; PATCH: gir alltid "Fant ikke bruker").
+async function keyForUserId(store, id) {
+  const { blobs } = await store.list();
+  for (const b of blobs) {
+    const u = await store.get(b.key, { type: 'json' });
+    if (u && u.id === id) return b.key;
+  }
+  return null;
+}
+
 function normalizeName(name) {
   return String(name || '').trim().toLowerCase();
 }
@@ -66,10 +82,12 @@ export default async (req, context) => {
       const body = await req.json();
       if (!checkAdminPassword(body.password)) return json(401, { error: 'Feil passord' });
       if (!/^\d{4}$/.test(String(body.newPin || ''))) return json(400, { error: 'PIN må være 4 siffer' });
-      const existing = await store.get(id, { type: 'json' });
+      const key = await keyForUserId(store, id);
+      if (!key) return json(404, { error: 'Fant ikke bruker' });
+      const existing = await store.get(key, { type: 'json' });
       if (!existing) return json(404, { error: 'Fant ikke bruker' });
       existing.pinHash = hash(body.newPin);
-      await store.setJSON(id, existing);
+      await store.setJSON(key, existing);
       return json(200, { ok: true });
     }
 
@@ -78,7 +96,9 @@ export default async (req, context) => {
       const id = idFromPath(url.pathname);
       const password = url.searchParams.get('password');
       if (!checkAdminPassword(password)) return json(401, { error: 'Feil passord' });
-      await store.delete(id);
+      const key = await keyForUserId(store, id);
+      if (!key) return json(404, { error: 'Fant ikke bruker' });
+      await store.delete(key);
       return json(200, { deleted: id });
     }
 
