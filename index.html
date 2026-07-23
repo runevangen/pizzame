@@ -631,9 +631,9 @@ body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--
     <div id="hhint" class="hint"></div>
   </div>
 
-  <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">1 dag</span></div>
-    <div class="sr"><input type="range" id="csl" min="24" max="144" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">1 dag</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>1 dag</span><span>6 dager</span></div>
+  <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">24 timer</span></div>
+    <div class="sr"><input type="range" id="csl" min="24" max="144" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">24 timer</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span>144 timer</span></div>
   </div>
 
   <div><div class="lbl">Romtemperatur — <span id="tlbl">22°C</span></div>
@@ -766,10 +766,10 @@ function coldMultForHours(h){
   }
   return 1.0;
 }
-// Leselig visningstekst for kjøleskapstid i timer — viser dager når det treffer
-// pent, ellers timer, slik at 24t/48t fortsatt leses som "1 dag"/"2 dager".
+// Leselig visningstekst for kjøleskapstid — alltid i timer, aldri "dager", for
+// konsekvens med resten av det time-baserte systemet (Poolish/Biga-valgene,
+// Hurtigdeig/Kveldsdeig, Maks smak) som allerede viser timer gjennomgående.
 function coldTimeLabel(h){
-  if(h%24===0) return (h/24)+' dag'+(h/24>1?'er':'');
   return h+' timer';
 }
 const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
@@ -2069,6 +2069,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.36',
+    d: 'juli 2026',
+    changes: [
+      'Kjøleskapsheving viste "dager" i stedet for timer når verdien tilfeldigvis traff et helt døgn (f.eks. "1 dag" for 24 timer) — inkonsekvent med resten av det nye time-baserte systemet. Viser nå alltid timer, overalt.'
+    ]
+  },
   {
     v: '5.35',
     d: 'juli 2026',
@@ -4600,7 +4607,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div class="mob-section-lbl">Kjøleskapsheving</div>
         <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .5rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
           <button onclick="stepColdWiz(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
-          <span id="mob-cold-wiz-disp" style="font-family:var(--forno-font-mono);font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:70px;text-align:center">1 dag</span>
+          <span id="mob-cold-wiz-disp" style="font-family:var(--forno-font-mono);font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:70px;text-align:center">24 timer</span>
           <button onclick="stepColdWiz(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
         </div>
         <div style="margin:0 1rem .65rem;padding:9px 10px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -4630,7 +4637,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="mob-cwrap">
-      <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">1 dag</span></div>
+      <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">24 timer</span></div>
       <div class="mob-slider-wrap"><input type="range" id="mob-csl" min="24" max="144" step="6" value="24" oninput="mobUCold(this.value)"></div>
     </div>
 
