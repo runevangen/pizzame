@@ -2080,6 +2080,79 @@ function findBestWeekendCombo(){
   S[prefField]=origPref; S.cold=origCold;
   return best;
 }
+// "Mine faste tidspunkter" — egen, isolert konsept-test, rører IKKE det
+// generelle natt/arbeidstid-varselet. Bruker sine egne, hardkodede ledige
+// vinduer (16:00–23:30 og 06:30–08:00, hver dag) i stedet for en generell
+// regel, og sjekker fem faste mål (fre/lør/søn kl. 19/16) mot NÅVÆRENDE
+// metode/hevetid/kjøleskapstid — endrer ingenting automatisk.
+const MY_FREE_WINDOWS=[[16*60,23*60+30],[6*60+30,8*60]];
+function inMyFreeWindows(hh,mm){
+  const t=hh*60+mm;
+  return MY_FREE_WINDOWS.some(([a,b])=>t>=a&&t<=b);
+}
+function nextWeekdayAt(targetDay,hh,mm){
+  const now=new Date();
+  const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hh,mm,0,0);
+  const diff=(targetDay-now.getDay()+7)%7;
+  d.setDate(d.getDate()+diff);
+  if(d.getTime()<=now.getTime()) d.setDate(d.getDate()+7);
+  return d;
+}
+function toggleFasteTidspunkter(){
+  const el=document.getElementById('mob-faste-tidspunkter');
+  if(!el) return;
+  if(el.style.display==='none'){
+    el.style.display='block';
+    renderFasteTidspunkter();
+  }else{
+    el.style.display='none';
+  }
+}
+function renderFasteTidspunkter(){
+  const el=document.getElementById('mob-faste-tidspunkter');
+  if(!el) return;
+  const targets=[
+    {label:'Fredag 19:00', d:nextWeekdayAt(5,19,0)},
+    {label:'Lørdag 16:00', d:nextWeekdayAt(6,16,0)},
+    {label:'Lørdag 19:00', d:nextWeekdayAt(6,19,0)},
+    {label:'Søndag 16:00', d:nextWeekdayAt(0,16,0)},
+    {label:'Søndag 19:00', d:nextWeekdayAt(0,19,0)}
+  ];
+  el.innerHTML='<div style="font-size:10px;color:var(--forno-text-faint);margin-bottom:6px">Sjekket mot din nåværende metode/hevetid — endrer ingenting før du trykker på et av dem</div>'
+    + targets.map(t=>{
+      const steps=rawSteps(t.d);
+      let bad=null;
+      for(const s of steps){
+        if(s.passive) continue;
+        let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+        if(!inMyFreeWindows(at.getHours(),at.getMinutes())){ bad={title:s.title, at}; break; }
+      }
+      const ok=!bad;
+      let dtIso=''; try{ dtIso=t.d.toISOString().slice(0,16); }catch(e){}
+      const badTxt = bad ? `${escH(bad.title)} kl. ${String(bad.at.getHours()).padStart(2,'0')}:${String(bad.at.getMinutes()).padStart(2,'0')}` : '';
+      return `<div onclick="applyFastTidspunkt('${t.d.toISOString()}')" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--forno-bg-raised);border:1px solid var(--forno-border);margin-bottom:5px;cursor:pointer">
+        <div style="min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--forno-text)">${t.label}</div>
+          ${!ok?`<div style="font-size:10px;color:#e8a06e;margin-top:1px">${badTxt}</div>`:''}
+        </div>
+        <div style="font-size:14px;flex-shrink:0">${ok?'✅':'⚠️'}</div>
+      </div>`;
+    }).join('');
+}
+function applyFastTidspunkt(iso){
+  const d=new Date(iso);
+  if(isNaN(d.getTime())) return;
+  S.mode='end';
+  const pad=n=>String(n).padStart(2,'0');
+  const dateStr=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const timeStr=pad(d.getHours())+':'+pad(d.getMinutes());
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  if(dEl) dEl.value=dateStr;
+  if(tEl) tEl.value=timeStr;
+  mobSetMode('end');
+  mobGen();
+  mobShowTab('plan');
+}
 function activeStepWarnTryKveld(){
   S.method='kveld';
   mobMethodCards();
@@ -2227,6 +2300,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.40',
+    d: 'juli 2026',
+    changes: [
+      'Ny konsept-test i Planlegging-fanen: "🍕 Mine faste tidspunkter" — en snarvei som viser om nåværende metode/hevetid passer med fem faste mål (fre 19:00, lør 16:00/19:00, søn 16:00/19:00), sjekket mot dine egne, hardkodede ledige tidsvinduer (16:00–23:30 og 06:30–08:00). ✅/⚠️ per mål, trykk for å sette opp akkurat den planen direkte. Helt isolert fra det generelle natt/arbeidstid-varselet — endrer ingenting automatisk, kun en rask oversikt du kan hente frem når du vil.'
+    ]
+  },
   {
     v: '5.39',
     d: 'juli 2026',
@@ -4872,6 +4952,8 @@ document.addEventListener('change', firstInteractionCheck, true);
 
       <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
       <div style="padding:0 1rem .8rem;text-align:center"><span onclick="wizGoto('finjuster')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">⚙️ Finjuster (mel, gjærtype, meltype osv.)</span></div>
+      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="toggleFasteTidspunkter()" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🍕 Mine faste tidspunkter</span></div>
+      <div id="mob-faste-tidspunkter" style="display:none;margin:0 1rem .8rem"></div>
     </div>
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
