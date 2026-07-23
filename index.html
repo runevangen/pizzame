@@ -1991,8 +1991,8 @@ function meltypeWarningHTML(){
 // hardkodet trygt; arbeidstid er individuelt og hardkodet KUN som et første
 // steg (admin-innstilling senere). Samme mekanisme for begge.
 const ACTIVE_STEP_TIME_WINDOWS=[
-  {id:'night', test:h=>h>=23||h<6, label:'natten', icon:'🌙'},
-  {id:'work', test:h=>h>=8&&h<16, label:'arbeidstiden din', icon:'💼'}
+  {id:'night', test:(h,day)=>h>=23||h<6, label:'natten', icon:'🌙'},
+  {id:'work', test:(h,day)=>h>=8&&h<16&&day>=1&&day<=5, label:'arbeidstiden din', icon:'💼'}
 ];
 function activeStepTimeWarningHTML(){
   const steps=window._steps||[];
@@ -2001,8 +2001,8 @@ function activeStepTimeWarningHTML(){
     if(s.passive) continue;
     let at=s.at; if(!(at instanceof Date)) at=new Date(at);
     if(isNaN(at.getTime())) continue;
-    const h=at.getHours();
-    const win=ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(h));
+    const h=at.getHours(), day=at.getDay();
+    const win=ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(h,day));
     if(!win) continue;
     let dt=''; try{ dt=fDT(at); }catch(e){}
     const isShort=(S.method==='hurtig'||S.method==='kveld');
@@ -2227,6 +2227,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.39',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at "arbeidstid"-varselet feilaktig fyrte i helgen — det sjekket bare klokkeslettet, ikke ukedagen, i motsetning til "Finn beste kombinasjon" som allerede korrekt utelot lørdag/søndag. De to var ikke enige med hverandre; nå bruker begge samme regel.'
+    ]
+  },
   {
     v: '5.38',
     d: 'juli 2026',
