@@ -705,7 +705,7 @@ body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--
 </div>
 
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,meltype:'doppio_zero',showHelp:true};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,meltype:'doppio_zero',showHelp:true};
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
@@ -724,6 +724,13 @@ const POOLISH_OPTS=[{h:12,b:'Kortere, mildere smak'},{h:13,b:'Kort'},{h:14,b:'An
 const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak'},{h:18,b:'Anbefalt'},{h:20,b:'Lang'},{h:22,b:'Lengre'},{h:24,b:'Lengst, mest smak'}];
 function prefermentYeastMult(){
   if(S.method==='poolish'){
+    if(S.poolishCold){
+      // Kjøleskaps-poolish: mesteparten av tiden er ved kjøleskapstemperatur, ikke
+      // romtemperatur — gjæraktiviteten er langt roligere enn en tilsvarende lang
+      // romtemperatur-poolish ville gitt (som uansett ikke er trygg utover ~16t).
+      const pts=[[12,1.2],[16,1.0],[24,0.85],[36,0.65],[48,0.5]];
+      return interpLin(pts,S.poolishH);
+    }
     const pts=[[12,1.2],[14,1.0],[16,0.85]];
     return interpLin(pts,S.poolishH);
   }
@@ -782,6 +789,12 @@ function fmtSessionDur(mins){
   if(h<=0) return m+' min';
   if(m===0) return h+'t';
   return h+'t '+m+'m';
+}
+function poolishRestText(){
+  if(S.poolishCold){
+    return `La stå i romtemperatur i ca. 1,5 time til den bobler litt, sett den så i kjøleskapet i resten av tiden (til sammen ca. ${S.poolishH} timer fra start). Klar når overflaten bobler aktivt og lukter lett syrlig.`;
+  }
+  return `La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`;
 }
 const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 
@@ -1379,8 +1392,8 @@ function rawSteps(a){
           :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
         why:WHY.pl,
         tip:S.kjokkenmaskin==='ankarsrum'
-          ?`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`
-          :`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`},
+          ?`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. ${poolishRestText()}`
+          :poolishRestText()},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
         sessionNote:`Sett av ca. ${fmtSessionDur(35+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
         desc:S.kjokkenmaskin==='ankarsrum'
@@ -1997,14 +2010,90 @@ function activeStepTimeWarningHTML(){
     if(S.method==='poolish') prefBtn=`<button onclick="activeStepWarnGoTo('poolish')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Juster hevetid i Poolish</button>`;
     else if(S.method==='biga') prefBtn=`<button onclick="activeStepWarnGoTo('biga')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Juster hevetid i Biga</button>`;
     const coldBtn=(!isShort && S.type!=='ingenelting') ? `<button onclick="activeStepWarnGoTo('cold')" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Juster kjøleskapstid</button>` : '';
+    const findBestBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnFindBest()" style="padding:6px 12px;border:none;border-radius:8px;background:#8a5a00;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🔍 Finn beste kombinasjon</button>` : '';
+    const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Prøv Kveldsdeig i stedet</button>` : '';
     if(!prefBtn && !coldBtn) continue; // ingenting å foreslå å justere for denne metoden
     return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
       <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} Et steg havner i ${win.label}</div>
       <div style="font-size:12px;color:#4a2a05;line-height:1.5"><b>${escH(s.title)}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${prefBtn}${coldBtn}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${prefBtn}${coldBtn}${findBestBtn}</div>
+      ${kveldBtn?`<div style="margin-top:6px">${kveldBtn}</div>`:''}
     </div>`;
   }
   return '';
+}
+function range(a,b,step){ const r=[]; for(let x=a;x<=b;x+=step) r.push(x); return r; }
+// Proaktiv påminnelse: hvis man velger Poolish/Biga midt i uka (ons-fre), er
+// sjansen stor for at man planlegger helgepizza — foreslå å starte tidlig for
+// mest fleksibilitet, i stedet for å bare håndtere problemet når det oppstår.
+function showEarlyPlanningHint(elId){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  const day=new Date().getDay();
+  if(day>=3 && day<=5){
+    el.textContent='💡 Planlegger du helgepizza? Start så tidlig du kan for mest fleksibilitet på tidspunkt.';
+    el.style.display='block';
+  }else{
+    el.style.display='none';
+  }
+}
+function scoreActiveSteps(steps){
+  let score=0;
+  for(const s of steps){
+    if(s.passive) continue;
+    let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+    const h=at.getHours(), day=at.getDay();
+    if(h>=23||h<6) score+=2; // natt teller verre enn arbeidstid
+    else if(h>=8&&h<16&&day>=1&&day<=5) score+=1;
+  }
+  return score;
+}
+// Søker gjennom mulige kombinasjoner av poolish/biga-varighet og kjøleskapstid
+// og finner den med færrest natt/arbeidstid-konflikter for det valgte spisetids-
+// punktet. Bruker rawSteps() direkte (ingen DOM-skriving) for rask, ren
+// simulering — kaller den 60-100 ganger uten at brukeren ser noe før resultatet
+// er klart og faktisk brukes.
+function findBestWeekendCombo(){
+  if(!(S.method==='poolish'||S.method==='biga')) return null;
+  if(S.mode!=='end') return null;
+  const anchor=mobGetAnchor('e');
+  if(isNaN(anchor.getTime())) return null;
+  const isPoolish=S.method==='poolish';
+  const prefField=isPoolish?'poolishH':'bigaH';
+  const origPref=S[prefField], origCold=S.cold;
+  const prefRange = isPoolish ? (S.poolishCold ? range(12,48,6) : [12,13,14,15,16]) : [16,18,20,22,24];
+  const coldRange = range(24,96,6);
+  let best=null;
+  for(const pref of prefRange){
+    for(const cold of coldRange){
+      S[prefField]=pref; S.cold=cold;
+      const steps=rawSteps(anchor);
+      const firstActive=steps.find(s=>!s.passive);
+      if(firstActive){
+        let firstAt=firstActive.at; if(!(firstAt instanceof Date)) firstAt=new Date(firstAt);
+        if(firstAt.getTime() < Date.now()-5*60000) continue; // urealistisk — ville krevd oppstart i fortiden
+      }
+      const score=scoreActiveSteps(steps);
+      if(!best || score<best.score) best={pref,cold,score};
+    }
+  }
+  S[prefField]=origPref; S.cold=origCold;
+  return best;
+}
+function activeStepWarnTryKveld(){
+  S.method='kveld';
+  mobMethodCards();
+  applyMobTypeUI();
+  mobGen();
+  mobShowTab('plan');
+}
+function activeStepWarnFindBest(){
+  const best=findBestWeekendCombo();
+  if(!best) return;
+  const prefField=S.method==='poolish'?'poolishH':'bigaH';
+  S[prefField]=best.pref; S.cold=best.cold;
+  mobGen();
+  mobShowTab('plan');
 }
 function activeStepWarnGoTo(which){
   mobShowTab('settings');
@@ -2114,7 +2203,7 @@ function buildTechHTML(){
     ${waterTempTechHTML()}
     ${S.method==='poolish'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Poolish</div><div class="sdesc">${WHY.pl} Poolishen fermenterer i egen bolle uansett kjøkkenmaskin — det er først når du blander ferdig deig at maskinvalget spiller inn.</div></div>`:''}
     ${S.method==='biga'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Biga</div><div class="sdesc">${WHY.bi} Biga lages alltid for hånd — konsistensen er for tørr og klumpete for maskinelting, uansett hvilken maskin du ellers bruker. Legg ferdig biga i bollen og tilsett resten av ingrediensene.</div></div>`:''}
-    ${(S.method==='poolish'||S.method==='biga')?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Kjøleskapspause hvis livet kommer i veien</div><div class="sdesc">Kommer du ikke tilbake akkurat når forspillet er klart, kan du sette bollen i kjøleskapet en stund — kulda bremser gjæringen kraftig ned uten å stoppe den helt. Ta den ut igjen når du er klar, og la den gjerne stå litt ved romtemperatur først hvis den er blitt veldig kald. Proffe bakere gjør dette rutinemessig i stedet for å la seg binde av et stivt klokkeslett.</div></div>`:''}
+    ${(S.method==='poolish'||S.method==='biga')?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Kjøleskapspause hvis livet kommer i veien</div><div class="sdesc">Kommer du ikke tilbake akkurat når poolishen/bigaen er klar, kan du sette bollen i kjøleskapet en stund — kulda bremser gjæringen kraftig ned uten å stoppe den helt. Ta den ut igjen når du er klar, og la den gjerne stå litt ved romtemperatur først hvis den er blitt veldig kald. Proffe bakere gjør dette rutinemessig i stedet for å la seg binde av et stivt klokkeslett.</div></div>`:''}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Romtemperatur og hevingstid</div><div class="sdesc">Ved ${S.temp}°C tar romtemperaturheving ca. ${rtM(60)} min. Deigen skal doble seg — ikke mer. Overheving gir flat, sur pizza.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først. Holdbarhet: 2–3 uker i kjøleskap. Bruk 3× mengden av tørrgjær.'}</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet — legg til ekstra vann gradvis mot slutten av eltingen til deigen kjennes riktig. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.<br><br><b>Viktig ved lang gjæring:</b> jo lenger deigen gjærer, jo mer krever det av glutenstyrken i melet. Siktet norsk hvete og sammalt/fullkorn har svakere gluten enn Tipo 00, og bryter lettere ned til en slapp, klissete deig ved flere dagers kjøleskapsheving. Skal du gjære lenge (4+ dager, eller biga/poolish generelt), er Tipo 00 eller sterkt brødmel det tryggeste valget — spar svakere mel til kortere hevetider.</div></div>
@@ -2138,6 +2227,16 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.38',
+    d: 'juli 2026',
+    changes: [
+      'Nytt alternativ for Poolish: "❄️ Kjøleskap" ved siden av "🌡️ Romtemperatur" i Metode-steget. Med kjøleskap-varianten blander du poolishen 1,5t i romtemperatur for å sette i gang gjæren, deretter i kjøleskap i en mye bredere og friere periode (12–48t i steg à 6t, i stedet for det smale 12–16t-vinduet) — nøyaktig klokkeslett blir langt mindre kritisk, siden kulda holder poolishen stabil til du er klar for neste steg.',
+      '"🔍 Finn beste kombinasjon"-knapp lagt til i natt/arbeidstid-varselet for Poolish/Biga — søker gjennom hevetid og kjøleskapstid og finner alternativet med færrest forstyrrelser, i stedet for at du må teste deg fram manuelt.',
+      '"Prøv Kveldsdeig i stedet"-knapp lagt til samme sted — et reelt alternativ når ingen Poolish/Biga-kombinasjon blir god nok innenfor tiden du har.',
+      'Ny påminnelse når du velger Poolish/Biga onsdag–fredag: "Planlegger du helgepizza? Start så tidlig du kan for mest fleksibilitet."'
+    ]
+  },
   {
     v: '5.37',
     d: 'juli 2026',
@@ -3622,7 +3721,7 @@ function syncMobControls(){
   mobMethodCards();
   mobBuildHrows();
   mobBuildKrows();
-  mobBuildProws();
+  setPoolishCold(S.poolishCold);
   mobBuildBrows();
   const now=new Date();
   s('mob-sd',fd(now));
@@ -3697,7 +3796,8 @@ function mobMethodCards(){
       document.getElementById('mob-bsub').style.display=v==='biga'?'block':'none';
       document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='kveld')?'none':'block';
       mobGen();
-      if(v==='poolish') updateStartPreview('mob-p-start-preview');
+      if(v==='poolish'){ updateStartPreview('mob-p-start-preview'); showEarlyPlanningHint('mob-p-early-hint'); }
+      if(v==='biga'){ showEarlyPlanningHint('mob-b-early-hint'); }
       if(v==='biga') updateStartPreview('mob-b-start-preview');
     };
     wrap.appendChild(el);
@@ -3718,6 +3818,35 @@ function mobBuildProws(){
   b.innerHTML=POOLISH_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.poolishH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.poolishH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.poolishH?600:400}" onclick="mobSetP(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.poolishH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
 }
 function mobSetP(h){S.poolishH=h;mobBuildProws();mobGen();updateStartPreview('mob-p-start-preview');}
+// Kjøleskaps-poolish: mye bredere, friere varighet (12–48t) enn den navngitte
+// romtemperatur-listen (12–16t), siden kulda gjør nøyaktig klokkeslett langt
+// mindre kritisk — løser nettopp "jeg vet ikke når jeg får tid til å blande
+// ferdig deig"-problemet som gjorde helgeplanlegging med Poolish vanskelig.
+function setPoolishCold(cold){
+  S.poolishCold=cold;
+  const rtBtn=document.getElementById('mob-p-rt-btn'), coldBtn=document.getElementById('mob-p-cold-btn');
+  const hint=document.getElementById('mob-p-cold-hint');
+  const rows=document.getElementById('mob-prows'), stepper=document.getElementById('mob-p-cold-stepper');
+  if(rtBtn) rtBtn.style.cssText=`flex:1;padding:8px;border-radius:8px;font-weight:${cold?400:600};font-size:12px;text-align:center;cursor:pointer;${cold?'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)':'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text)'}`;
+  if(coldBtn) coldBtn.style.cssText=`flex:1;padding:8px;border-radius:8px;font-weight:${cold?600:400};font-size:12px;text-align:center;cursor:pointer;${cold?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text)':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)'}`;
+  if(hint) hint.style.display=cold?'block':'none';
+  if(rows) rows.style.display=cold?'none':'flex';
+  if(stepper) stepper.style.display=cold?'flex':'none';
+  if(cold && (S.poolishH<12 || S.poolishH>16)){ /* behold verdi hvis allerede satt av stepperen */ }
+  else if(cold && S.poolishH<=16){ S.poolishH=24; } // fornuftig startpunkt for kjøleskapsvarianten
+  else if(!cold && S.poolishH>16){ S.poolishH=14; } // tilbake til et gyldig romtemperatur-alternativ
+  const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=S.poolishH+' timer';
+  mobBuildProws();
+  mobGen();
+  updateStartPreview('mob-p-start-preview');
+}
+function stepPoolishCold(delta){
+  const next=Math.max(12,Math.min(48,(S.poolishH||24)+delta*6));
+  S.poolishH=next;
+  const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=next+' timer';
+  mobGen();
+  updateStartPreview('mob-p-start-preview');
+}
 function mobBuildBrows(){
   const b=document.getElementById('mob-brows');if(!b)return;
   b.innerHTML=BIGA_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.bigaH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.bigaH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.bigaH?600:400}" onclick="mobSetB(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.bigaH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
@@ -4641,14 +4770,26 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
       </div>
       <div id="mob-psub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Forspill-varighet</div>
+        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish-varighet</div>
+        <div style="display:flex;gap:6px;padding:.3rem 1rem .5rem">
+          <div id="mob-p-rt-btn" onclick="setPoolishCold(false)" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🌡️ Romtemperatur</div>
+          <div id="mob-p-cold-btn" onclick="setPoolishCold(true)" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">❄️ Kjøleskap</div>
+        </div>
+        <div id="mob-p-cold-hint" style="display:none;padding:0 1rem .4rem;font-size:11px;color:var(--forno-text-faint);line-height:1.4">Bland når det passer deg — 1,5t romtemperatur for å sette i gang gjæren, deretter kjøleskap. Mye friere tidspunkt enn ren romtemperatur.</div>
         <div id="mob-prows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+        <div id="mob-p-cold-stepper" style="display:none;align-items:center;gap:10px;padding:.3rem 1rem .5rem">
+          <button onclick="stepPoolishCold(-1)" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:15px;color:var(--forno-text-muted)">−</button>
+          <span id="mob-p-cold-disp" style="font-family:var(--forno-font-mono);font-size:14px;color:var(--forno-accent-text);min-width:70px;text-align:center">24 timer</span>
+          <button onclick="stepPoolishCold(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:15px;color:var(--forno-text-muted)">+</button>
+        </div>
         <div id="mob-p-start-preview" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-accent-text)"></div>
+        <div id="mob-p-early-hint" style="display:none;padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
       </div>
       <div id="mob-bsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Forspill-varighet</div>
+        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Biga-varighet</div>
         <div id="mob-brows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
         <div id="mob-b-start-preview" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-accent-text)"></div>
+        <div id="mob-b-early-hint" style="display:none;padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
       </div>
       <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Meltype</div></div>
       <div class="dropdown-select" style="margin:0 1rem .4rem">
