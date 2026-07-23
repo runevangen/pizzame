@@ -2082,13 +2082,16 @@ function findBestWeekendCombo(){
 }
 // "Mine faste tidspunkter" — egen, isolert konsept-test, rører IKKE det
 // generelle natt/arbeidstid-varselet. Bruker sine egne, hardkodede ledige
-// vinduer (16:00–23:30 og 06:30–08:00, hver dag) i stedet for en generell
-// regel, og sjekker fem faste mål (fre/lør/søn kl. 19/16) mot NÅVÆRENDE
-// metode/hevetid/kjøleskapstid — endrer ingenting automatisk.
-const MY_FREE_WINDOWS=[[16*60,23*60+30],[6*60+30,8*60]];
-function inMyFreeWindows(hh,mm){
+// vinduer i stedet for en generell regel, og sjekker fem faste mål (fre/lør/søn
+// kl. 19/16) mot NÅVÆRENDE metode/hevetid/kjøleskapstid — endrer ingenting
+// automatisk. Helg (lør/søn) er ledig hele dagen bortsett fra natt (23–06) —
+// en helt annen (og enklere) regel enn hverdager, som kun har to smale vinduer.
+const MY_FREE_WINDOWS_WEEKDAY=[[16*60,23*60+30],[6*60+30,8*60]];
+function inMyFreeWindows(hh,mm,day){
   const t=hh*60+mm;
-  return MY_FREE_WINDOWS.some(([a,b])=>t>=a&&t<=b);
+  const isWeekend=(day===0||day===6);
+  if(isWeekend) return t>=6*60 && t<23*60; // ledig hele dagen, unntatt natt
+  return MY_FREE_WINDOWS_WEEKDAY.some(([a,b])=>t>=a&&t<=b);
 }
 function nextWeekdayAt(targetDay,hh,mm){
   const now=new Date();
@@ -2108,6 +2111,46 @@ function toggleFasteTidspunkter(){
     el.style.display='none';
   }
 }
+function scoreFreeWindows(steps){
+  let violations=0, firstBad=null;
+  for(const s of steps){
+    if(s.passive) continue;
+    let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+    if(!inMyFreeWindows(at.getHours(),at.getMinutes(),at.getDay())){
+      violations++;
+      if(!firstBad) firstBad={title:s.title, at};
+    }
+  }
+  return {violations, firstBad};
+}
+// Søker gjennom hevetid × kjøleskapstid for å finne kombinasjonen som får flest
+// mulig aktive steg til å havne i brukerens egne ledige vinduer. Bryr seg IKKE
+// om dagens dato — bekreftet ønsket: dette er et rent, tidløst oppslagsverk for
+// "sånn ser den beste planen ut for dette spisetidspunktet", uansett når man
+// faktisk slår det opp.
+function findBestFreeWindowCombo(anchor){
+  if(!(S.method==='poolish'||S.method==='biga')) return null;
+  const isPoolish=S.method==='poolish';
+  const prefField=isPoolish?'poolishH':'bigaH';
+  const origPref=S[prefField], origCold=S.cold, origMode=S.mode;
+  S.mode='end';
+  const prefRange = isPoolish ? (S.poolishCold?range(12,48,6):[12,13,14,15,16]) : [16,18,20,22,24];
+  const coldRange=range(24,96,6);
+  let best=null;
+  outer:
+  for(const pref of prefRange){
+    for(const cold of coldRange){
+      S[prefField]=pref; S.cold=cold;
+      const steps=rawSteps(anchor);
+      const {violations,firstBad}=scoreFreeWindows(steps);
+      if(!best || violations<best.violations) best={pref,cold,violations,firstBad};
+      if(violations===0) break outer;
+    }
+  }
+  S[prefField]=origPref; S.cold=origCold; S.mode=origMode;
+  return best;
+}
+window._fasteTidspunkterResults=[];
 function renderFasteTidspunkter(){
   const el=document.getElementById('mob-faste-tidspunkter');
   if(!el) return;
@@ -2118,47 +2161,31 @@ function renderFasteTidspunkter(){
     {label:'Søndag 16:00', d:nextWeekdayAt(0,16,0)},
     {label:'Søndag 19:00', d:nextWeekdayAt(0,19,0)}
   ];
-  el.innerHTML='<div style="font-size:10px;color:var(--forno-text-faint);margin-bottom:6px">Sjekket mot din nåværende metode/hevetid — endrer ingenting før du trykker på et av dem</div>'
-    + targets.map(t=>{
-      // rawSteps() leser S.mode direkte (ikke som parameter) for å avgjøre om
-      // ankeret er et start- eller spisetidspunkt. Disse målene er ALLTID
-      // spisetidspunkt, så vi må tvinge 'end' her uansett hva brukeren står i
-      // akkurat nå — ellers tolkes f.eks. "fredag 19:00" som et STARTtidspunkt
-      // hvis brukeren står i "Starter nå", og hele forhåndsvisningen blir feil.
-      const origMode=S.mode;
-      S.mode='end';
-      const steps=rawSteps(t.d);
-      S.mode=origMode;
-      const firstActive=steps.find(s=>!s.passive);
-      let tooLate=false;
-      if(firstActive){
-        let firstAt=firstActive.at; if(!(firstAt instanceof Date)) firstAt=new Date(firstAt);
-        if(firstAt.getTime() < Date.now()) tooLate=true;
+  window._fasteTidspunkterResults=targets.map(t=>({...t, best:findBestFreeWindowCombo(t.d)}));
+  el.innerHTML='<div style="font-size:10px;color:var(--forno-text-faint);margin-bottom:6px">Beste hevetid/kjøleskapstid for hvert mål, i dine ledige vinduer — trykk for å sette den opp</div>'
+    + window._fasteTidspunkterResults.map((t,i)=>{
+      const b=t.best;
+      const ok=b && b.violations===0;
+      let subTxt='';
+      if(!b) subTxt='Kun Poolish/Biga';
+      else if(ok) subTxt='Alt passer ✓';
+      else{
+        const at=b.firstBad.at;
+        subTxt=`${escH(b.firstBad.title)} kl. ${String(at.getHours()).padStart(2,'0')}:${String(at.getMinutes()).padStart(2,'0')} passer ikke`;
       }
-      let bad=null;
-      if(!tooLate){
-        for(const s of steps){
-          if(s.passive) continue;
-          let at=s.at; if(!(at instanceof Date)) at=new Date(at);
-          if(!inMyFreeWindows(at.getHours(),at.getMinutes())){ bad={title:s.title, at}; break; }
-        }
-      }
-      const ok=!bad && !tooLate;
-      let dtIso=''; try{ dtIso=t.d.toISOString().slice(0,16); }catch(e){}
-      const badTxt = tooLate ? 'For kort varsel — måtte startet i fortiden'
-        : bad ? `${escH(bad.title)} kl. ${String(bad.at.getHours()).padStart(2,'0')}:${String(bad.at.getMinutes()).padStart(2,'0')}` : '';
-      return `<div onclick="applyFastTidspunkt('${t.d.toISOString()}')" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--forno-bg-raised);border:1px solid var(--forno-border);margin-bottom:5px;cursor:pointer">
+      return `<div onclick="applyFastTidspunkt(${i})" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--forno-bg-raised);border:1px solid var(--forno-border);margin-bottom:5px;cursor:pointer">
         <div style="min-width:0">
           <div style="font-size:12px;font-weight:600;color:var(--forno-text)">${t.label}</div>
-          ${!ok?`<div style="font-size:10px;color:#e8a06e;margin-top:1px">${badTxt}</div>`:''}
+          <div style="font-size:10px;color:${ok?'var(--forno-text-faint)':'#e8a06e'};margin-top:1px">${subTxt}</div>
         </div>
         <div style="font-size:14px;flex-shrink:0">${ok?'✅':'⚠️'}</div>
       </div>`;
     }).join('');
 }
-function applyFastTidspunkt(iso){
-  const d=new Date(iso);
-  if(isNaN(d.getTime())) return;
+function applyFastTidspunkt(idx){
+  const t=window._fasteTidspunkterResults[idx];
+  if(!t || !t.best) return;
+  const d=t.d;
   S.mode='end';
   const pad=n=>String(n).padStart(2,'0');
   const dateStr=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -2166,6 +2193,9 @@ function applyFastTidspunkt(iso){
   const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
   if(dEl) dEl.value=dateStr;
   if(tEl) tEl.value=timeStr;
+  const prefField=S.method==='poolish'?'poolishH':'bigaH';
+  S[prefField]=t.best.pref;
+  S.cold=t.best.cold;
   mobSetMode('end');
   mobGen();
   mobShowTab('plan');
@@ -2317,6 +2347,27 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.44',
+    d: 'juli 2026',
+    changes: [
+      'Rettet "Mine faste tidspunkter": helger (lørdag/søndag) er ledige hele dagen bortsett fra natt — en helt annen, enklere regel enn hverdagenes to smale vinduer. Tidligere ble den samme, smale hverdags-regelen brukt for alle dager, som gjorde at "Ta ut av kjøleskap" feilaktig ble markert som et problem midt på lørdags-/søndagsettermiddagen. Alle fire helgemålene viser nå riktig "Alt passer ✓".'
+    ]
+  },
+  {
+    v: '5.43',
+    d: 'juli 2026',
+    changes: [
+      '"Mine faste tidspunkter" gjort om fra rent oppslagsverk til reell søking: for hvert av de fem målene finner den nå den beste kombinasjonen av hevetid og kjøleskapstid som får flest mulig steg til å havne i dine egne ledige vinduer (16:00–23:30 og 06:30–08:00) — helt uavhengig av dagens dato, som avtalt. Trykk på et mål for å sette opp akkurat den kombinasjonen direkte. Avdekket samtidig en strukturell begrensning: "Ta ut av kjøleskap" ligger alltid fast 4 timer før spisetidspunktet uansett hva som justeres, og havner for alle fem målene midt i hullet mellom vinduene dine (12:00–15:00) — ingen kombinasjon kan fikse akkurat det steget per i dag.'
+    ]
+  },
+  {
+    v: '5.42',
+    d: 'juli 2026',
+    changes: [
+      'Forenklet "Mine faste tidspunkter" kraftig: fjernet ✅/⚠️-vurderingen og "for kort varsel"-sjekken helt. Den er nå et rent oppslagsverk — viser bare beregnet starttidspunkt for hvert av de fem faste målene med din nåværende metode/hevetid, uten å dømme om det er lurt eller mulig.'
+    ]
+  },
   {
     v: '5.41',
     d: 'juli 2026',
