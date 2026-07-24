@@ -27,6 +27,8 @@ SCENARIOS = [
     {"name":"standard_napoletana", "method":"standard","type":"napoletana","mel":500,"hydro":65,"cold":48,"temp":22,"meltype":"doppio_zero"},
     {"name":"poolish_roomtemp",    "method":"poolish","type":"napoletana","mel":500,"hydro":65,"poolishCold":False,"poolishH":14,"cold":24,"temp":22,"meltype":"doppio_zero"},
     {"name":"poolish_cold",        "method":"poolish","type":"napoletana","mel":500,"hydro":65,"poolishCold":True,"poolishH":36,"cold":48,"temp":22,"meltype":"couco"},
+    {"name":"poolish_cold_short",  "method":"poolish","type":"napoletana","mel":500,"hydro":65,"poolishCold":True,"poolishH":12,"cold":24,"temp":22,"meltype":"doppio_zero"},
+    {"name":"poolish_cold_long",   "method":"poolish","type":"napoletana","mel":500,"hydro":65,"poolishCold":True,"poolishH":48,"cold":24,"temp":22,"meltype":"couco"},
     {"name":"biga",                "method":"biga","type":"napoletana","mel":500,"hydro":65,"bigaH":18,"cold":48,"temp":22,"meltype":"doppio_zero"},
     {"name":"mania",               "method":"mania","type":"napoletana","mel":500,"temp":22},
     {"name":"hurtig",              "method":"hurtig","type":"napoletana","mel":500,"hydro":65,"hurtigH":4,"temp":22},
@@ -70,6 +72,42 @@ def run_scenario(page, sc):
       }};
     }})()""")
 
+def run_behavioral_tests(page):
+    """
+    Tester som ikke passer inn i frys-tallene-mønsteret over — de sjekker
+    ATFERD (hvilket valg søket gjør), ikke bare rene tall. Hver av disse
+    kom fra en reell bug funnet og fikset i samtalen.
+    """
+    results = []
+
+    # Bug: kryss-metode-søket (Beta-fanen) må foretrekke Kveldsdeig for et
+    # stramt fredag-mål, siden ingen Poolish/Biga-kombinasjon rekker det uten
+    # konflikt. Fant dette manuelt tidligere — fryser det som en ekte test nå.
+    r = page.evaluate("""(() => {
+      const anchor = nextWeekdayAt(5,19,0);
+      const results = searchAllMethods(anchor);
+      return { topLabel: results[0].label, topViolations: results[0].violations };
+    })()""")
+    ok = (r['topLabel'] == 'Kveldsdeig' and r['topViolations'] == 0)
+    results.append(('search_prefers_kveld_for_tight_friday', ok, r))
+
+    # Bug: søket foreslo en gang oppstart FØR dagens dato (umulig å følge).
+    # Sjekk at ALDRI noe forslag har startIso i fortiden.
+    r2 = page.evaluate("""(() => {
+      const anchor = new Date(Date.now() + 2*24*3600000);
+      const results = searchAllMethods(anchor);
+      const top = results[0];
+      return { startIso: top.startIso, feasible: top.feasible, nowIso: new Date().toISOString() };
+    })()""")
+    from datetime import datetime, timezone
+    start_dt = datetime.fromisoformat(r2['startIso'].replace('Z', '+00:00'))
+    now_dt = datetime.fromisoformat(r2['nowIso'].replace('Z', '+00:00'))
+    ok2 = (start_dt >= now_dt and r2['feasible'] is True)
+    results.append(('search_never_suggests_past_start', ok2, r2))
+
+    return results
+
+
 def main():
     index_path = sys.argv[1] if len(sys.argv) > 1 else "index.html"
     index_dir = os.path.dirname(os.path.abspath(index_path)) or "."
@@ -111,15 +149,27 @@ def main():
             else:
                 print(f"✅ {name}: OK")
 
+        print()
+        print("Atferdstester (fra tidligere funnede bugs):")
+        behavioral = run_behavioral_tests(page)
+        total_behavioral = len(behavioral)
+        for name, ok, detail in behavioral:
+            if ok:
+                print(f"✅ {name}: OK")
+            else:
+                failures.append((name, [("detail", "OK", detail)]))
+                print(f"❌ {name}: FEILET — {detail}")
+
         browser.close()
     httpd.shutdown()
 
     print()
+    total = len(SCENARIOS) + len(behavioral)
     if failures:
-        print(f"{len(failures)} av {len(SCENARIOS)} scenarioer feilet.")
+        print(f"{len(failures)} av {total} tester feilet.")
         sys.exit(1)
     else:
-        print(f"Alle {len(SCENARIOS)} scenarioer OK.")
+        print(f"Alle {total} tester OK.")
         sys.exit(0)
 
 if __name__ == "__main__":

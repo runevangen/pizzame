@@ -250,5 +250,67 @@
       "Ta ut av kjøleskap",
       "Strekk og stek 🔥"
     ]
+  },
+  "poolish_cold_short": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 1.35,
+      "yFresh": 4.1
+    },
+    "firstStep": {
+      "title": "Lag poolish i Ankarsrum-bollen",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-03T05:20:00.000Z"
+    },
+    "stepCount": 7,
+    "stepTitles": [
+      "Lag poolish i Ankarsrum-bollen",
+      "Ankarsrum — bland ferdig deig",
+      "Romtemperaturheving",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheiving",
+      "Ta ut av kjøleskap",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "poolish_cold_long": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 0.56,
+      "yFresh": 1.7
+    },
+    "firstStep": {
+      "title": "Lag poolish i Ankarsrum-bollen",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-04T17:20:00.000Z"
+    },
+    "stepCount": 7,
+    "stepTitles": [
+      "Lag poolish i Ankarsrum-bollen",
+      "Ankarsrum — bland ferdig deig",
+      "Romtemperaturheving",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheiving",
+      "Ta ut av kjøleskap",
+      "Strekk og stek 🔥"
+    ]
   }
 }
