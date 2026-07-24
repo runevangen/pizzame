@@ -105,6 +105,24 @@ def run_behavioral_tests(page):
     ok2 = (start_dt >= now_dt and r2['feasible'] is True)
     results.append(('search_never_suggests_past_start', ok2, r2))
 
+    # v5.64: stegpunktene i wizarden skal være klikkbare BEGGE veier, ikke
+    # bare tilbake til besøkte steg. Simulerer et ekte DOM-klikk på steg 3
+    # sitt punkt mens man står på steg 1 — det punktet hadde tidligere ikke
+    # noe onclick i det hele tatt.
+    r3 = page.evaluate("""() => {
+      wizGoto(1);
+      const dots = document.querySelectorAll('#wiz-timeline > div > div');
+      const dot3 = dots[4];
+      dot3.click();
+      const afterForward = window._wizStep;
+      dots0 = document.querySelectorAll('#wiz-timeline > div > div');
+      dots0[0].click();
+      const afterBack = window._wizStep;
+      return { afterForward, afterBack };
+    }""")
+    ok3 = (r3['afterForward'] == 3 and r3['afterBack'] == 1)
+    results.append(('wizard_step_dots_clickable_both_directions', ok3, r3))
+
     return results
 
 
@@ -123,12 +141,14 @@ def run_render_layer_tests(page, baseline):
         ("standard_mobil", "standard", True, "#mob-recipe-content .mob-rec"),
         ("hurtig_pc", "hurtig", False, "#p-recipe .rec"),
         ("hurtig_mobil", "hurtig", True, "#mob-recipe-content .mob-rec"),
+        ("kveld_pc", "kveld", False, "#p-recipe .rec"),
+        ("kveld_mobil", "kveld", True, "#mob-recipe-content .mob-rec"),
     ]
     for key, method, mob, selector in cases:
         setup = f"""() => {{
           S.mode='start'; S.type='napoletana'; S.method='{method}';
           S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.meltype='doppio_zero';
-          S.hurtigH=4;
+          S.hurtigH=4; S.kveldH=10;
           setLayout('{"mob" if mob else "pc"}');
         }}"""
         page.evaluate(setup)
@@ -136,6 +156,20 @@ def run_render_layer_tests(page, baseline):
         expected = baseline.get("_render_layer", {}).get(key)
         ok = (html == expected)
         results.append((f"render_{key}_matches_baseline", ok, {"got_len": len(html or ""), "expected_len": len(expected or "")}))
+
+    # PC/mobil 1:1-invariant (Runes krav 24.07.2026): innholdet (rader, labels,
+    # verdier) skal være identisk — kun CSS-klassenavn (rrow/mob-rrow osv.) og
+    # et harmløst tomt class=""-attributt på mobil-siden skal skille dem.
+    import re as _re
+    def _normalize(html):
+        html = (html or '').replace('mob-rrow', 'rrow').replace('mob-rval', 'rval')
+        html = html.replace(' class=""', '')
+        return _re.sub(r'\s+', ' ', html).strip()
+    for method in ("standard", "hurtig", "kveld"):
+        pc_html = baseline.get("_render_layer", {}).get(f"{method}_pc")
+        mob_html = baseline.get("_render_layer", {}).get(f"{method}_mobil")
+        ok = (_normalize(pc_html) == _normalize(mob_html))
+        results.append((f"pc_mobil_1to1_{method}", ok, {"note": "innhold må matche på tvers av platform"}))
     return results
 
 
