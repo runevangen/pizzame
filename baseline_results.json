@@ -1,0 +1,254 @@
+{
+  "standard_napoletana": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 0.79,
+      "yFresh": 2.4
+    },
+    "firstStep": {
+      "title": "Ankarsrum — bland og autolyse",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-03T17:45:00.000Z"
+    },
+    "stepCount": 7,
+    "stepTitles": [
+      "Ankarsrum — bland og autolyse",
+      "Tilsett gjær og salt — elt ferdig",
+      "Romtemperaturheving",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheiving",
+      "Ta ut av kjøleskap",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "poolish_roomtemp": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 1.13,
+      "yFresh": 3.4
+    },
+    "firstStep": {
+      "title": "Lag poolish i Ankarsrum-bollen",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-03T07:20:00.000Z"
+    },
+    "stepCount": 7,
+    "stepTitles": [
+      "Lag poolish i Ankarsrum-bollen",
+      "Ankarsrum — bland ferdig deig",
+      "Romtemperaturheving",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheiving",
+      "Ta ut av kjøleskap",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "poolish_cold": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 0.51,
+      "yFresh": 1.5
+    },
+    "firstStep": {
+      "title": "Lag poolish i Ankarsrum-bollen",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-05T05:20:00.000Z"
+    },
+    "stepCount": 7,
+    "stepTitles": [
+      "Lag poolish i Ankarsrum-bollen",
+      "Ankarsrum — bland ferdig deig",
+      "Romtemperaturheving",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheiving",
+      "Ta ut av kjøleskap",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "biga": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 0.79,
+      "yFresh": 2.4
+    },
+    "firstStep": {
+      "title": "Lag biga (for hånd)",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-04T11:50:00.000Z"
+    },
+    "stepCount": 7,
+    "stepTitles": [
+      "Lag biga (for hånd)",
+      "Ankarsrum — bland ferdig deig",
+      "Romtemperaturheving",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheiving",
+      "Ta ut av kjøleskap",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "mania": {
+    "recipe": {
+      "poolishMel": 250,
+      "poolishVann": 250,
+      "poolishYd": 0.28,
+      "poolishYf": 0.62,
+      "hovedMel": 250,
+      "vann1": 50,
+      "vann2": 20,
+      "salt": 15,
+      "hovedYd": 0.57,
+      "hovedYf": 0.45,
+      "totalMel": 500,
+      "totalYd": 0.85,
+      "totalYf": 1.07
+    },
+    "firstStep": {
+      "title": "Bland poolish",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-03T04:10:00.000Z"
+    },
+    "stepCount": 11,
+    "stepTitles": [
+      "Bland poolish",
+      "Poolish gjærer",
+      "Poolish kjøles ned",
+      "Nedkjøling",
+      "Bland hoveddeig",
+      "Hvile i ro",
+      "Form til bolle → romtemperatur",
+      "Kjøleskapsheving (udelt)",
+      "Del i emner",
+      "Romtemperaturheving (delt)",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "hurtig": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 0.75,
+      "yFresh": 2.3
+    },
+    "firstStep": {
+      "title": "Ankarsrum — bland deig raskt",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-01T20:15:00.000Z"
+    },
+    "stepCount": 5,
+    "stepTitles": [
+      "Ankarsrum — bland deig raskt",
+      "Bulk-heving (ca. 2.4t)",
+      "Form emner",
+      "Etterheving + forvarme (81 min)",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "kveld": {
+    "recipe": {
+      "name": "Napoletansk pizza",
+      "flour": 500,
+      "water": 325,
+      "salt": 14,
+      "oil": 0,
+      "butter": 0,
+      "sugar": 0,
+      "yDry": 0.75,
+      "yFresh": 2.3
+    },
+    "firstStep": {
+      "title": "Ankarsrum — bland deig",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-02T04:00:00.000Z"
+    },
+    "stepCount": 5,
+    "stepTitles": [
+      "Ankarsrum — bland deig",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheving (10t)",
+      "Ta ut og temperer",
+      "Strekk og stek 🔥"
+    ]
+  },
+  "chicago_biga": {
+    "recipe": {
+      "name": "Chicago deep dish",
+      "flour": 600,
+      "water": 360,
+      "salt": 12,
+      "oil": 36,
+      "butter": 72,
+      "sugar": 0,
+      "yDry": 0.9,
+      "yFresh": 2.7
+    },
+    "firstStep": {
+      "title": "Lag biga (for hånd)",
+      "iso": "2026-08-01T16:00:00.000Z"
+    },
+    "lastStep": {
+      "title": "Strekk og stek 🔥",
+      "iso": "2026-08-05T11:50:00.000Z"
+    },
+    "stepCount": 7,
+    "stepTitles": [
+      "Lag biga (for hånd)",
+      "Ankarsrum — bland ferdig deig",
+      "Romtemperaturheving",
+      "Form emner → kjøleskap",
+      "Kjøleskapsheiving",
+      "Ta ut av kjøleskap",
+      "Strekk og stek 🔥"
+    ]
+  }
+}

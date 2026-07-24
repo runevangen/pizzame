@@ -941,7 +941,7 @@ function applyMobTypeUI(){
   const isIE = S.type==='ingenelting';
   const g=id=>document.getElementById(id);
   const gmw=g('mob-gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
-  const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig'||S.method==='kveld')?'none':'block';
+  const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig'||S.method==='kveld'||S.method==='mania')?'none':'block';
   const gkw=g('mob-gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
   const gow=g('mob-govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
@@ -1190,13 +1190,43 @@ function R(){
   const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
   return{name:ns[S.type],flour:m,water:w,salt:sa,oil:oi,butter:bu,sugar:su,yDry:yd,yFresh:yf};
 }
+// Mania-poolish (oppkalt etter Pizzamania, som la ut oppskriften): egne faste
+// prosenter fra kilden, uavhengig av S.type sine BSALT/BYEAST-tabeller — boka
+// spesifiserer sin egen, komplette oppskrift (64% hydrering, poolish = 50% av
+// mel/vann i 1:1-forhold), ikke en variant av appens øvrige pizzatyper.
+function maniaRecipe(){
+  const m=S.mel;
+  const poolishMel=Math.round(m*0.5);
+  const poolishVann=Math.round(m*0.5);
+  const poolishYd=Math.round(m*0.000557*100)/100;
+  const poolishYf=Math.round(m*0.001231*100)/100;
+  const hovedMel=m-poolishMel;
+  const vann1=Math.round(m*0.09957);
+  const vann2=Math.round(m*0.04069);
+  const salt=Math.round(m*0.03*10)/10;
+  const hovedYd=Math.round(m*0.001146*100)/100;
+  const hovedYf=Math.round(m*0.000899*100)/100;
+  return {
+    poolishMel,poolishVann,poolishYd,poolishYf,
+    hovedMel,vann1,vann2,salt,hovedYd,hovedYf,
+    totalMel:m, totalYd:Math.round((poolishYd+hovedYd)*100)/100, totalYf:Math.round((poolishYf+hovedYf)*100)/100
+  };
+}
 function yA(r){return S.gjaer==='torr'?`${r.yDry}g tørrgjær`:`${r.yFresh}g fersk gjær`;}
 function pc(){
   // Langpanne/IngenElting: 0,7g deig per cm² formflate (standard focaccia-tommelfingerregel),
   // 30×40cm langpanne = 1200cm² => ca. 840g fyller én panne godt.
-  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:(S.type==='langpanne'||S.type==='ingenelting')?840:500,r=R();
-  const td=Math.round(r.flour+r.water+r.salt+r.oil+(r.butter||0)+(r.sugar||0)),cnt=Math.max(1,Math.round(td/eg));
-  return{count:cnt,perPizza:Math.round(td/cnt),totalDough:td,melPer:Math.round(r.flour/cnt)};
+  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:(S.type==='langpanne'||S.type==='ingenelting')?840:500;
+  let td;
+  if(S.method==='mania'){
+    const rm=maniaRecipe();
+    td=Math.round(rm.poolishMel+rm.poolishVann+rm.hovedMel+rm.vann1+rm.vann2+rm.salt+rm.poolishYd+rm.hovedYd);
+  }else{
+    const r=R();
+    td=Math.round(r.flour+r.water+r.salt+r.oil+(r.butter||0)+(r.sugar||0));
+  }
+  const cnt=Math.max(1,Math.round(td/eg));
+  return{count:cnt,perPizza:Math.round(td/cnt),totalDough:td,melPer:Math.round((S.method==='mania'?S.mel:R().flour)/cnt)};
 }
 function pcUnitLabel(plural){
   const isPan = S.type==='langpanne' || S.type==='ingenelting';
@@ -1427,6 +1457,64 @@ function rawSteps(a){
         tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW(rtB)},
       ...tailSteps(aM(rdy,20+rtB))
+    ];
+  }
+  if(S.method==='mania'){
+    const rm=maniaRecipe();
+    const CHILL=120, MIX_DUR=25, RISE1=30, ROOMTEMP1=75, COLDBULK=600, FINAL_PROOF=600;
+    let poolishAt,chillAt,mixAt,shapeAt,coldBulkStart,divideAt,bakeAt;
+    if(ie){
+      bakeAt=a;
+      divideAt=sM(bakeAt,FINAL_PROOF);
+      coldBulkStart=sM(divideAt,COLDBULK);
+      shapeAt=sM(coldBulkStart,ROOMTEMP1);
+      const restStart=sM(shapeAt,RISE1);
+      mixAt=sM(restStart,MIX_DUR);
+      chillAt=sM(mixAt,CHILL);
+      poolishAt=sM(chillAt,720);
+    }else{
+      poolishAt=a;
+      chillAt=aM(poolishAt,720);
+      mixAt=aM(chillAt,CHILL);
+      const restStart=aM(mixAt,MIX_DUR);
+      shapeAt=aM(restStart,RISE1);
+      coldBulkStart=aM(shapeAt,ROOMTEMP1);
+      divideAt=aM(coldBulkStart,COLDBULK);
+      bakeAt=aM(divideAt,FINAL_PROOF);
+    }
+    return[
+      {title:'Bland poolish',loc:'benk',at:poolishAt,dur:8,
+        desc:`Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C). Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt. Dekk til med lokk eller plastfolie.`,
+        why:'Halvparten av oppskriftens mel og vann fermenterer for seg selv i mange timer før resten av deigen i det hele tatt blandes — poolishen bygger opp mesteparten av smaken.',
+        tip:'La stå ved 18–21°C.'},
+      {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:'La stå i romtemperatur i 12 timer.'},
+      {title:'Poolish kjøles ned',loc:'kjol',at:chillAt,dur:0,
+        desc:'Sett poolishen i kjøleskapet for nedkjøling.',
+        tip:'Minimum 1 time er nok, men det gjør ikke noe om den står 3–4 timer om du ikke rekker neste steg med det samme — dette steget er fleksibelt.'},
+      {title:'Nedkjøling',loc:'kjol',at:chillAt,dur:CHILL,passive:true,desc:'La stå kaldt i minst 2 timer.'},
+      {title:'Bland hoveddeig',loc:'benk',at:mixAt,dur:MIX_DUR,
+        sessionNote:`Sett av ca. ${fmtSessionDur(MIX_DUR+RISE1+15)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
+        desc:`Hell avkjølt poolish i bollen. Ha i ${rm.hovedMel}g mel, ${rm.hovedYd}g tørrgjær og ${rm.vann1}g kaldt vann (4–6°C) direkte i bollen — ingen forblanding av gjæren nødvendig. Kjør på lav hastighet til blandet. Tilsett resten av vannet (${rm.vann2}g) i dråper, vent til absorbert mellom hver — hold igjen 1/3 til slutt sammen med saltet. Etter ca. 15 min: tilsett ${rm.salt}g salt og resten av vannet. Kjør videre 5 min til smidig deig.`,
+        why:'To-trinns vanntilsetning gir kontroll over glutenutviklingen mens deigen absorberer alt vannet, uten å bli overarbeidet.',
+        tip:'Deigtemp bør ligge 20–24°C — gå ikke over 26°C, aldri over 28°C. Da blir gjæringen ukontrollert og deigen kan bli ødelagt.'},
+      {title:'Hvile i ro',loc:'benk',at:aM(mixAt,MIX_DUR),dur:RISE1,passive:true,
+        desc:'Smør et tynt lag olivenolje på kjøkkenbenken og over deigen. Dekk til (brødpose eller plastfolie) og la ligge urørt.'},
+      {title:'Form til bolle → romtemperatur',loc:'rom',at:shapeAt,dur:ROOMTEMP1,passive:false,
+        desc:'Brett deigen noen ganger og lag en stram, rund bolle. Legg i bakebolle eller lignende, dekk med lokk eller plastfolie.',
+        why:'Formingen bygger opp spenning i deigoverflaten, som gir bedre holdbarhet og struktur gjennom den lange kalde hevingen som følger.',
+        tip:`La stå i romtemperatur i ca. ${Math.round(ROOMTEMP1/60*10)/10} time før kjøleskapet.`},
+      {title:'Kjøleskapsheving (udelt)',loc:'kjol',at:coldBulkStart,dur:COLDBULK,passive:true,
+        desc:'Hele deigen kjøleskapheves samlet, udelt — deles i emner først etterpå.',
+        why:'Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.'},
+      {title:'Del i emner',loc:'benk',at:divideAt,dur:15,
+        desc:'Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.',
+        tip:'Baller som er formet stramt holder seg bedre gjennom neste, lange romtemperaturheving.'},
+      {title:'Romtemperaturheving (delt)',loc:'rom',at:aM(divideAt,15),dur:FINAL_PROOF-15,passive:true,
+        desc:`La emnene heve i romtemperatur ved ${S.temp}°C.`,
+        tip:'Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.'},
+      {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
+        desc:oN()+'.',
+        tip:'Pizzastein/-stål MÅ varmes minst 45 min.'}
     ];
   }
   return[];
@@ -1853,6 +1941,7 @@ function totalFermentHours(){
   if(S.type==='ingenelting') return 15;
   if(S.method==='hurtig') return S.hurtigH;
   if(S.method==='kveld') return S.kveldH;
+  if(S.method==='mania') return 720/60 + 120/60 + 25/60 + 30/60 + 75/60 + 600/60 + (600-15)/60; // fast struktur, ~36,6t
   return fixedFermOverheadHours()+S.cold;
 }
 function meltypeWarnOpenFinjuster(){
@@ -1884,6 +1973,7 @@ function meltypeWarnOpenFinjuster(){
 function meltypeWarnReduceFerment(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return;
+  if(S.method==='mania') return; // fast, ikke-justerbar gjæringstid — ingen kjøleskapstid å skru på
   const hrs=totalFermentHours();
   const target = hrs<flour.ferm.mn ? flour.ferm.mn : flour.ferm.mx;
   if(S.method==='hurtig'){
@@ -1961,7 +2051,7 @@ function meltypeWarningHTML(){
   // Hurtigjustering direkte i varselet — samme funksjoner som Pizzaplanlegger-fanen bruker,
   // så resultatet blir identisk uansett hvor endringen gjøres fra.
   const actions=[];
-  if(!fermOk && S.type!=='ingenelting'){
+  if(!fermOk && S.type!=='ingenelting' && S.method!=='mania'){
     actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?'Øk hevetiden':'Reduser hevetiden'}</button>`);
   }
   if(!hydroOk){
@@ -2370,6 +2460,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.46',
+    d: 'juli 2026',
+    changes: [
+      'Ny metode: Mania-poolish (oppkalt etter Pizzamania, kilden til oppskriften) — et eget metodekort ved siden av Poolish/Biga. Strukturelt annerledes enn de andre: poolish gjæres 12t romtemperatur og kjøles ned FØR den blandes inn i hoveddeigen, hele deigen kjøleskapheves udelt i 10t og deles i emner ETTERPÅ, med en lang 10-timers romtemperaturheving til slutt (i stedet for kort etterheving) — total gjæringstid ca. 37 timer. Egen, korrekt oppskrift (64% hydrering, todelt Poolish/Hoveddeig-ingrediensliste) i Oppskrift-fanen, ikke den generiske beregningen.'
+    ]
+  },
   {
     v: '5.45',
     d: 'juli 2026',
@@ -3973,6 +4070,7 @@ function mobMethodCards(){
   [{v:'standard',t:'Standard',s:'Direkte + kjøleskapsheving',hc:false},
    {v:'poolish',t:'Poolish',s:'Løs fordeig, 12–16t',hc:false},
    {v:'biga',t:'Biga',s:'Fast fordeig, 16–24t',hc:false},
+   {v:'mania',t:'Mania-poolish',s:'To-trinns, udelt kald heving',hc:false},
    {v:'hurtig',t:'Hurtigdeig',s:'2–16 timer, romtemperatur',hc:true},
    {v:'kveld',t:'Kveldsdeig',s:'5–24 timer i kjøleskap',hc:true}
   ].forEach(({v,t,s,hc})=>{
@@ -3986,7 +4084,7 @@ function mobMethodCards(){
       document.getElementById('mob-ksub').style.display=v==='kveld'?'block':'none';
       document.getElementById('mob-psub').style.display=v==='poolish'?'block':'none';
       document.getElementById('mob-bsub').style.display=v==='biga'?'block':'none';
-      document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='kveld')?'none':'block';
+      document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='kveld'||v==='mania')?'none':'block';
       mobGen();
       if(v==='poolish'){ updateStartPreview('mob-p-start-preview'); showEarlyPlanningHint('mob-p-early-hint'); }
       if(v==='biga'){ showEarlyPlanningHint('mob-b-early-hint'); }
@@ -4389,6 +4487,17 @@ function mobGen(){
     const r2=R(),p=pc();
     const rrK=[{k:'Mel',v:`${S.mel}g`},{k:'Vann',v:`${r2.water}g (${S.hydro}%)`},{k:'Salt',v:`${r2.salt}g`},...(r2.oil?[{k:'Olivenolje',v:`${r2.oil}g`}]:[]),...(r2.butter?[{k:'Smør',v:`${r2.butter}g`}]:[]),...(r2.sugar?[{k:'Sukker',v:`${r2.sugar}g`}]:[]),{k:'Gjær',v:ya},{k:'Kjøleskap',v:`${S.kveldH}t`}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${mobRecipeRowsHTML(rrK)}</div></div>`;
+    return;
+  }
+
+  if(S.method==='mania'){
+    const steps=rawSteps(anchor);
+    window._steps=steps;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${mobStepH(steps)}</div>`;
+    const rm=maniaRecipe(),p=pc();
+    const rrPoolish=[{k:'Mel',v:`${rm.poolishMel}g`},{k:'Vann',v:`${rm.poolishVann}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.poolishYd}g tørrgjær`:`${rm.poolishYf}g fersk gjær`}];
+    const rrHoved=[{k:'Poolish',v:'Hele poolishen over'},{k:'Mel',v:`${rm.hovedMel}g`},{k:'Vann del 1',v:`${rm.vann1}g`},{k:'Vann del 2',v:`${rm.vann2}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.hovedYd}g tørrgjær`:`${rm.hovedYf}g fersk gjær`},{k:'Salt',v:`${rm.salt}g`}];
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Hydrering</div><div class="pv">64%</div><div class="ps">total</div></div></div><div class="mob-section-lbl">Poolish</div><div class="mob-rec">${mobRecipeRowsHTML(rrPoolish)}</div><div class="mob-section-lbl">Hoveddeig</div><div class="mob-rec">${mobRecipeRowsHTML(rrHoved)}</div><div class="mob-swhy"><b>Mania-poolish:</b> To-trinns metode fra Pizzamania — poolish gjæres for seg i 12t, kjøles ned, blandes så inn i hoveddeigen. Hele deigen kjøleskapheves udelt i 10t før den deles i emner.</div></div>`;
     return;
   }
 
