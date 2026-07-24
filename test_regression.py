@@ -108,6 +108,37 @@ def run_behavioral_tests(page):
     return results
 
 
+def run_render_layer_tests(page, baseline):
+    """
+    Fryser HTML-utdataen fra oppskrift-rad-rendringen (recipeRowsHTML +
+    baseIngredientRows), for både PC og mobil, for to metoder som har ulikt
+    antall hale-rader (standard: kjøleskap+romtemp+ovn; hurtig: steking+
+    romtemp+ovn på PC, kun steking på mobil). Lagt til i forbindelse med
+    v5.62-sammenslåingen av recipeRowsHTML/mobRecipeRowsHTML, som var det
+    laget uten testdekning i den arkitektoniske gjennomgangen 24.07.2026.
+    """
+    results = []
+    cases = [
+        ("standard_pc", "standard", False, "#p-recipe .rec"),
+        ("standard_mobil", "standard", True, "#mob-recipe-content .mob-rec"),
+        ("hurtig_pc", "hurtig", False, "#p-recipe .rec"),
+        ("hurtig_mobil", "hurtig", True, "#mob-recipe-content .mob-rec"),
+    ]
+    for key, method, mob, selector in cases:
+        setup = f"""() => {{
+          S.mode='start'; S.type='napoletana'; S.method='{method}';
+          S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.meltype='doppio_zero';
+          S.hurtigH=4;
+          setLayout('{"mob" if mob else "pc"}');
+        }}"""
+        page.evaluate(setup)
+        html = page.eval_on_selector(selector, "el => el.innerHTML")
+        expected = baseline.get("_render_layer", {}).get(key)
+        ok = (html == expected)
+        results.append((f"render_{key}_matches_baseline", ok, {"got_len": len(html or ""), "expected_len": len(expected or "")}))
+    return results
+
+
 def main():
     index_path = sys.argv[1] if len(sys.argv) > 1 else "index.html"
     index_dir = os.path.dirname(os.path.abspath(index_path)) or "."
@@ -152,8 +183,17 @@ def main():
         print()
         print("Atferdstester (fra tidligere funnede bugs):")
         behavioral = run_behavioral_tests(page)
-        total_behavioral = len(behavioral)
         for name, ok, detail in behavioral:
+            if ok:
+                print(f"✅ {name}: OK")
+            else:
+                failures.append((name, [("detail", "OK", detail)]))
+                print(f"❌ {name}: FEILET — {detail}")
+
+        print()
+        print("Rendringslag (PC + mobil, fryser HTML-utdata):")
+        render_tests = run_render_layer_tests(page, baseline)
+        for name, ok, detail in render_tests:
             if ok:
                 print(f"✅ {name}: OK")
             else:
@@ -164,7 +204,7 @@ def main():
     httpd.shutdown()
 
     print()
-    total = len(SCENARIOS) + len(behavioral)
+    total = len(SCENARIOS) + len(behavioral) + len(render_tests)
     if failures:
         print(f"{len(failures)} av {total} tester feilet.")
         sys.exit(1)
