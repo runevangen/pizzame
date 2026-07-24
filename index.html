@@ -2028,8 +2028,16 @@ function searchAllMethods(anchor){
   S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
   S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold;
 
-  candidates.sort((a,b)=> a.violations!==b.violations ? a.violations-b.violations : b.totalHrs-a.totalHrs);
-  return candidates;
+  // En kombinasjon som ber deg starte FØR akkurat nå er ikke en reell løsning —
+  // uansett hvor bra den ellers scorer. Prioriter alltid gjennomførbare
+  // kombinasjoner; fall bare tilbake til de umulige hvis absolutt ingenting
+  // annet finnes (så resultatet i det minste er ærlig, ikke tomt).
+  const now=Date.now();
+  const feasible=candidates.filter(c=>new Date(c.startIso).getTime()>=now);
+  const pool=feasible.length ? feasible : candidates;
+  pool.forEach(c=>{ c.feasible=new Date(c.startIso).getTime()>=now; });
+  pool.sort((a,b)=> a.violations!==b.violations ? a.violations-b.violations : b.totalHrs-a.totalHrs);
+  return pool;
 }
 // Mel varieres ikke i søket — i stedet: hvilke registrerte meltyper tolererer
 // FAKTISK den totale gjæringstiden resultatet endte opp med.
@@ -2099,7 +2107,11 @@ function renderResultBlock(containerId, label, anchorIso){
   let startTxt='', bakeTxt='';
   try{ startTxt=fDT(new Date(top.startIso)); }catch(e){}
   try{ bakeTxt=fDT(new Date(top.bakeIso)); }catch(e){}
+  const tooLateWarning = !top.feasible
+    ? `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:7px 9px;margin-bottom:6px;font-size:11px;color:#633806">⏱️ Ingen kombinasjon rekker fra akkurat nå — denne krever oppstart som allerede er passert. Vurder et senere spisetidspunkt.</div>`
+    : '';
   el.innerHTML=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:10px;margin-top:6px">
+    ${tooLateWarning}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
       <div style="font-size:13px;font-weight:700;color:var(--forno-text)">${escH(label)}</div>
       <div style="font-size:14px">${ok?'✅':'⚠️'}</div>
@@ -2716,6 +2728,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.52',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at Beta-fanens søk kunne foreslå en oppskrift som krevde oppstart FØR akkurat nå — matematisk "riktig" ut fra reglene, men umulig å faktisk følge. Søket prioriterer nå alltid kombinasjoner du faktisk rekker å starte, og faller kun tilbake til de umulige (med en tydelig advarsel) hvis absolutt ingenting annet finnes.'
+    ]
+  },
   {
     v: '5.51',
     d: 'juli 2026',
