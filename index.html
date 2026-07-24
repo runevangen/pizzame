@@ -2729,6 +2729,13 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
   {
+    v: '5.54',
+    d: 'juli 2026',
+    changes: [
+      'Deig-statuslinjen (oppstart + steketid) er nå også synlig i wizardens Metode-steg, Planlegging-steg og Finjuster — ikke bare i Steg-fanen. Oppdateres live idet du justerer noe, slik at du ser konsekvensen med en gang i stedet for å måtte bytte fane.'
+    ]
+  },
+  {
     v: '5.53',
     d: 'juli 2026',
     changes: [
@@ -4683,6 +4690,7 @@ function wizGoto(step, onSettled){
     const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
   }
   if(step===3) wizStep3Refresh();
+  try{ renderWizStatusBar(); }catch(e){}
   wizRenderHeader(step);
   const scr=document.getElementById('mob-settings');
   if(scr){
@@ -4789,9 +4797,27 @@ function mobStepH(steps){
   return renderSteps(steps, 'mobile');
 }
 
+// Deler steg-utregningen med wizardens statuslinje, så begge alltid viser
+// nøyaktig samme oppstart/steketid uten å duplisere selve valg-logikken.
+function computeCurrentSteps(){
+  const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
+  if(S.type!=='ingenelting' && S.method==='hurtig') return hurtigSteps(anchor).steps;
+  if(S.type!=='ingenelting' && S.method==='kveld') return kveldSteps(anchor).steps;
+  return rawSteps(anchor);
+}
+function renderWizStatusBar(){
+  let steps=[];
+  try{ steps=computeCurrentSteps(); }catch(e){}
+  const html=deigStatusBarHTML(steps);
+  ['wiz-status-step2','wiz-status-step3','wiz-status-finjuster'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=html;
+  });
+}
 function mobGen(){
   const mobEl=document.getElementById('mob-layout');
   if(!mobEl||!mobEl.classList.contains('active'))return;
+  renderWizStatusBar();
   const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
 
   if(S.type!=='ingenelting' && S.method==='hurtig'){
@@ -5412,6 +5438,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="wiz-step-2" class="wiz-step" style="display:none">
+      <div id="wiz-status-step2"></div>
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken metode?</div>
       <div style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Standard fungerer fint om du er usikker</div>
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl">Metode</div></div>
@@ -5465,6 +5492,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="wiz-step-3" class="wiz-step" style="display:none">
+      <div id="wiz-status-step3"></div>
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)" id="wiz-step3-title">Når vil du spise?</div>
 
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-step3-q1-lbl">Når vil du spise?</div></div>
@@ -5529,6 +5557,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <span style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Finjuster</span>
         <button id="wiz-finjuster-back-to-plan" onclick="mobGen();mobShowTab('plan')" style="display:none;margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Se steg →</button>
       </div>
+      <div id="wiz-status-finjuster"></div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)"></div>
 
