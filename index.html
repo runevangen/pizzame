@@ -2142,14 +2142,35 @@ function renderBetaFasteTider(){
   const el=document.getElementById('mob-beta-faste');
   if(!el) return;
   el.innerHTML=targets.map((t,i)=>`<div id="mob-beta-faste-${i}"></div>`).join('');
-  targets.forEach((t,i)=>renderResultBlock(`mob-beta-faste-${i}`, t.label, t.d.toISOString()));
+  targets.forEach((t,i)=>{
+    try{
+      renderResultBlock(`mob-beta-faste-${i}`, t.label, t.d.toISOString());
+    }catch(e){
+      const box=document.getElementById(`mob-beta-faste-${i}`);
+      if(box) box.innerHTML=`<div style="padding:8px;font-size:11px;color:#e8a06e">${escH(t.label)}: noe gikk galt under søket.</div>`;
+      console.error('Faste tider-søk feilet for', t.label, e);
+    }
+  });
 }
 function runBetaSearch(){
   const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
-  if(!dEl||!dEl.value) return;
+  const resultEl=document.getElementById('mob-beta-result');
+  if(!dEl||!dEl.value){
+    if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:#e8a06e">Sett en dato først.</div>';
+    return;
+  }
   const anchor=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'19:00'));
-  if(isNaN(anchor.getTime())) return;
-  renderResultBlock('mob-beta-result', fDT(anchor), anchor.toISOString());
+  if(isNaN(anchor.getTime())){
+    if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:#e8a06e">Ugyldig dato/klokkeslett.</div>';
+    return;
+  }
+  if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:var(--forno-text-faint)">Søker …</div>';
+  try{
+    renderResultBlock('mob-beta-result', fDT(anchor), anchor.toISOString());
+  }catch(e){
+    if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:#e8a06e">Noe gikk galt under søket. Prøv igjen, eller si fra hvis det gjentar seg.</div>';
+    console.error('Beta-søk feilet:', e);
+  }
 }
 
 
@@ -2682,6 +2703,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.48',
+    d: 'juli 2026',
+    changes: [
+      'Beta-fanens "Finn oppskrift"-knapp kunne feile stille (ingenting synlig skjedde) hvis datofeltet var tomt/ugyldig, eller hvis noe uventet gikk galt under selve søket. Viser nå alltid en tydelig tilbakemelding — "Sett en dato først", "Ugyldig dato/klokkeslett", eller en feilmelding hvis søket faktisk krasjer — i stedet for å bare ikke gjøre noe. Samme robusthet lagt til for "Faste tider"-listen.'
+    ]
+  },
   {
     v: '5.47',
     d: 'juli 2026',
