@@ -2167,6 +2167,7 @@ function runBetaSearch(){
   if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:var(--forno-text-faint)">Søker …</div>';
   try{
     renderResultBlock('mob-beta-result', fDT(anchor), anchor.toISOString());
+    if(resultEl) resultEl.scrollIntoView({behavior:'smooth', block:'center'});
   }catch(e){
     if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:#e8a06e">Noe gikk galt under søket. Prøv igjen, eller si fra hvis det gjentar seg.</div>';
     console.error('Beta-søk feilet:', e);
@@ -2703,6 +2704,13 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.49',
+    d: 'juli 2026',
+    changes: [
+      'Fant den faktiske årsaken til at "Finn oppskrift" i Beta-fanen så ut til å ikke gjøre noe: resultatet vises ikke lenger nederst under hele "Faste tider"-listen (fem kort du måtte scrolle forbi) — det vises nå rett under selve knappen, og scrolles automatisk inn i synsfeltet.'
+    ]
+  },
   {
     v: '5.48',
     d: 'juli 2026',
@@ -5558,12 +5566,12 @@ document.addEventListener('change', firstInteractionCheck, true);
           <input type="time" id="mob-beta-et" value="19:00">
         </div>
         <button onclick="runBetaSearch()" style="width:100%;height:40px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:600;cursor:pointer">🔍 Finn oppskrift</button>
+        <div id="mob-beta-result"></div>
       </div>
 
       <div class="mob-section-lbl">Faste tider</div>
       <div id="mob-beta-faste" style="padding:.3rem 1rem .8rem"></div>
 
-      <div id="mob-beta-result" style="padding:0 1rem .8rem"></div>
       <div style="height:80px"></div>
     </div>
   </div>
