@@ -1992,9 +1992,16 @@ function searchAllMethods(anchor){
         origBigaH=S.bigaH, origHurtigH=S.hurtigH, origKveldH=S.kveldH, origPoolishCold=S.poolishCold;
   S.mode='end';
   const candidates=[];
+  function timesOf(steps){
+    const firstActive=steps.find(s=>!s.passive)||steps[0];
+    const last=steps[steps.length-1];
+    let startAt=firstActive.at; if(!(startAt instanceof Date)) startAt=new Date(startAt);
+    let bakeAt=last.at; if(!(bakeAt instanceof Date)) bakeAt=new Date(bakeAt);
+    return {startIso:startAt.toISOString(), bakeIso:bakeAt.toISOString()};
+  }
   function evalCombo(label, snapshot){
     const steps=rawSteps(anchor);
-    candidates.push({label, violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{...snapshot}});
+    candidates.push({label, violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{...snapshot}, ...timesOf(steps)});
   }
   // Standard
   S.method='standard';
@@ -2010,13 +2017,13 @@ function searchAllMethods(anchor){
   for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
   // Hurtigdeig — bruker HOPTS sine faste alternativer
   S.method='hurtig';
-  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:'Hurtigdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}}); }
+  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:'Hurtigdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
   // Kveldsdeig — bruker KOPTS sine faste alternativer
   S.method='kveld';
-  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:'Kveldsdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}}); }
+  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:'Kveldsdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
   // Mania-poolish — fast struktur, ingenting å søke i, bare mål den ene planen
   S.method='mania';
-  { const steps=rawSteps(anchor); candidates.push({label:'Mania-poolish', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}}); }
+  { const steps=rawSteps(anchor); candidates.push({label:'Mania-poolish', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
 
   S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
   S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold;
@@ -2089,13 +2096,18 @@ function renderResultBlock(containerId, label, anchorIso){
       </div>`).join('');
   const el=document.getElementById(containerId);
   if(!el) return;
+  let startTxt='', bakeTxt='';
+  try{ startTxt=fDT(new Date(top.startIso)); }catch(e){}
+  try{ bakeTxt=fDT(new Date(top.bakeIso)); }catch(e){}
   el.innerHTML=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:10px;margin-top:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
       <div style="font-size:13px;font-weight:700;color:var(--forno-text)">${escH(label)}</div>
       <div style="font-size:14px">${ok?'✅':'⚠️'}</div>
     </div>
     <div style="font-size:12px;color:var(--forno-accent-text);font-weight:600">${escH(top.label)}</div>
-    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:2px">${ok?'Alt passer':top.violations+' steg utenfor ledig tid'} · ~${Math.round(top.totalHrs)}t total gjæring</div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">🚀 Oppstartstid: <b style="color:var(--forno-text)">${escH(startTxt)}</b></div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">🍕 Planlagt steketid: <b style="color:var(--forno-text)">${escH(bakeTxt)}</b></div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${ok?'Alt passer':top.violations+' steg utenfor ledig tid'} · ~${Math.round(top.totalHrs)}t total gjæring</div>
     <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">Mel som passer: ${escH(flourTxt)}</div>
     <button onclick="applyBetaResult(${regId},0)" style="width:100%;margin-top:8px;height:34px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Bruk denne</button>
     ${altList?`<div style="text-align:center;margin-top:6px"><span onclick="this.parentElement.nextElementSibling.style.display='block';this.style.display='none'" style="font-size:11px;color:var(--forno-accent-text);cursor:pointer;text-decoration:underline">Se flere alternativer</span></div>
@@ -2704,6 +2716,20 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.51',
+    d: 'juli 2026',
+    changes: [
+      '"Faste tider" i Beta-fanen døpt om til "Populære tidspunkt for pizza", med en tydelig visuell strek mot "Steketidspunkt"-søket over. Hvert resultat viser nå både 🚀 oppstartstid og 🍕 planlagt steketid direkte i kortet, i stedet for at du må trykke "Bruk denne" og hoppe til Steg-fanen for å se det.'
+    ]
+  },
+  {
+    v: '5.50',
+    d: 'juli 2026',
+    changes: [
+      'Døpt om "Egen tid" til "Steketidspunkt" i Beta-fanen — tydeligere navn, matcher terminologien appen allerede bruker andre steder.'
+    ]
+  },
   {
     v: '5.49',
     d: 'juli 2026',
@@ -5559,7 +5585,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-pizzatid-days" style="padding:.3rem 1rem .5rem"></div>
       <div style="padding:0 1rem .8rem"><button onclick="saveBetaPizzatid()" style="width:100%;height:36px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text-muted);font-size:12px;font-weight:600;cursor:pointer">Lagre ledig tid</button></div>
 
-      <div class="mob-section-lbl">Egen tid</div>
+      <div class="mob-section-lbl">Steketidspunkt</div>
       <div style="padding:.3rem 1rem .8rem">
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px;margin-bottom:8px">
           <input type="date" id="mob-beta-ed">
@@ -5569,7 +5595,8 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div id="mob-beta-result"></div>
       </div>
 
-      <div class="mob-section-lbl">Faste tider</div>
+      <div style="height:14px;border-top:2px solid var(--forno-border);margin:.4rem 1rem 0"></div>
+      <div class="mob-section-lbl" style="padding-top:1rem">Populære tidspunkt for pizza</div>
       <div id="mob-beta-faste" style="padding:.3rem 1rem .8rem"></div>
 
       <div style="height:80px"></div>
