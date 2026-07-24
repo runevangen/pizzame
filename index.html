@@ -564,6 +564,7 @@ body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
     <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
+    <div class="menu-row" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Finn oppskrift (Beta)</div>
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
   </div>
@@ -1931,6 +1932,227 @@ function chicagoButterHTML(){
 // romtemperaturheving). Brukt både i totalFermentHours() og i hurtigknappene
 // (meltypeWarnReduceFerment/maksSmakApply) — tidligere hardkodet i flere separate
 // steder med et avvik (biga=20t ett sted, 18t et annet), som gjorde dem inkonsekvente.
+// ===== BETA: "Pizzatid" — delt, ukentlig ledig tid (opptil 2 perioder/dag) =====
+const PIZZATID_DAY_KEYS=['sun','mon','tue','wed','thu','fri','sat']; // indeksert av Date.getDay()
+window._pizzatidSchedule=null;
+function defaultPizzatidSchedule(){
+  const weekday=[['16:00','23:30'],['06:30','08:00']];
+  const weekend=[['06:00','23:00'],null];
+  return {mon:weekday,tue:weekday,wed:weekday,thu:weekday,fri:weekday,sat:weekend,sun:weekend};
+}
+async function loadPizzatidSchedule(){
+  try{
+    const u=JSON.parse(localStorage.getItem('pizzaUser'));
+    if(!u||!u.id){ window._pizzatidSchedule=defaultPizzatidSchedule(); return; }
+    const res=await fetch('/api/pizzatid?userId='+encodeURIComponent(u.id));
+    if(!res.ok) throw new Error('http '+res.status);
+    const data=await res.json();
+    window._pizzatidSchedule=data.schedule||defaultPizzatidSchedule();
+  }catch(e){
+    window._pizzatidSchedule=defaultPizzatidSchedule();
+  }
+}
+async function savePizzatidSchedule(schedule){
+  window._pizzatidSchedule=schedule;
+  try{
+    const u=JSON.parse(localStorage.getItem('pizzaUser'));
+    if(!u||!u.id) return;
+    await fetch('/api/pizzatid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:u.id,schedule})});
+  }catch(e){}
+}
+function timeStrToMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function inPizzatidWindow(hh,mm,day){
+  const key=PIZZATID_DAY_KEYS[day];
+  const periods=(window._pizzatidSchedule||defaultPizzatidSchedule())[key]||[];
+  const t=hh*60+mm;
+  for(const p of periods){
+    if(!p) continue;
+    const a=timeStrToMin(p[0]), b=timeStrToMin(p[1]);
+    if(a<=b){ if(t>=a&&t<=b) return true; }
+    else{ if(t>=a||t<=b) return true; } // periode som spenner over midnatt
+  }
+  return false;
+}
+function scorePizzatidWindows(steps){
+  let violations=0;
+  for(const s of steps){
+    if(s.passive) continue;
+    let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+    if(!inPizzatidWindow(at.getHours(),at.getMinutes(),at.getDay())) violations++;
+  }
+  return violations;
+}
+// Søker på tvers av ALLE metoder (ikke bare Poolish/Biga) for et gitt spisetids-
+// punkt, mot brukerens ukentlige Pizzatid-vinduer. Rangerer på færrest
+// tidskonflikter først, deretter lengst total gjæringstid som "best smak"-
+// tiebreak. Varierer ikke meltype — den delen håndteres separat (se
+// flourMatchesForHours()) siden mel er en fysisk begrensning, ikke noe å søke i.
+function searchAllMethods(anchor){
+  const origMethod=S.method, origMode=S.mode, origCold=S.cold, origPoolishH=S.poolishH,
+        origBigaH=S.bigaH, origHurtigH=S.hurtigH, origKveldH=S.kveldH, origPoolishCold=S.poolishCold;
+  S.mode='end';
+  const candidates=[];
+  function evalCombo(label, snapshot){
+    const steps=rawSteps(anchor);
+    candidates.push({label, violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{...snapshot}});
+  }
+  // Standard
+  S.method='standard';
+  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo('Standard', {method:'standard',cold}); }
+  // Poolish, romtemperatur
+  S.method='poolish'; S.poolishCold=false;
+  for(const pref of [12,13,14,15,16]) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo('Poolish (romtemperatur)', {method:'poolish',poolishCold:false,poolishH:pref,cold}); }
+  // Poolish, kjøleskap
+  S.poolishCold=true;
+  for(const pref of range(12,48,6)) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo('Poolish (kjøleskap)', {method:'poolish',poolishCold:true,poolishH:pref,cold}); }
+  // Biga
+  S.method='biga';
+  for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
+  // Hurtigdeig — bruker HOPTS sine faste alternativer
+  S.method='hurtig';
+  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:'Hurtigdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}}); }
+  // Kveldsdeig — bruker KOPTS sine faste alternativer
+  S.method='kveld';
+  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:'Kveldsdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}}); }
+  // Mania-poolish — fast struktur, ingenting å søke i, bare mål den ene planen
+  S.method='mania';
+  { const steps=rawSteps(anchor); candidates.push({label:'Mania-poolish', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}}); }
+
+  S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
+  S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold;
+
+  candidates.sort((a,b)=> a.violations!==b.violations ? a.violations-b.violations : b.totalHrs-a.totalHrs);
+  return candidates;
+}
+// Mel varieres ikke i søket — i stedet: hvilke registrerte meltyper tolererer
+// FAKTISK den totale gjæringstiden resultatet endte opp med.
+function flourMatchesForHours(hrs){
+  return MELTYPER.filter(m=>hrs>=m.ferm.mn && hrs<=m.ferm.mx).map(m=>m.t);
+}
+
+// ===== BETA-fane: rendring =====
+const PIZZATID_DAY_LABELS=[['mon','Mandag'],['tue','Tirsdag'],['wed','Onsdag'],['thu','Torsdag'],['fri','Fredag'],['sat','Lørdag'],['sun','Søndag']];
+window._betaResultRegistry=[];
+async function renderBetaPanel(){
+  if(!window._pizzatidSchedule) await loadPizzatidSchedule();
+  renderPizzatidDays();
+  const dEl=document.getElementById('mob-beta-ed');
+  if(dEl && !dEl.value){ dEl.value=fd(new Date()); }
+  renderBetaFasteTider();
+}
+function renderPizzatidDays(){
+  const el=document.getElementById('mob-pizzatid-days');
+  if(!el) return;
+  const sched=window._pizzatidSchedule||defaultPizzatidSchedule();
+  el.innerHTML=PIZZATID_DAY_LABELS.map(([key,label])=>{
+    const periods=sched[key]||[null,null];
+    const rows=[0,1].map(i=>{
+      const p=periods[i];
+      const from=p?p[0]:'', to=p?p[1]:'';
+      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:3px">
+        <input type="time" value="${from}" onchange="updatePizzatidPeriod('${key}',${i},0,this.value)" style="font-size:11px;padding:4px;border-radius:6px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text)">
+        <input type="time" value="${to}" onchange="updatePizzatidPeriod('${key}',${i},1,this.value)" style="font-size:11px;padding:4px;border-radius:6px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text)">
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:8px;padding:7px 9px;background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:8px">
+      <div style="font-size:11px;font-weight:600;color:var(--forno-text)">${label}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+function updatePizzatidPeriod(dayKey,periodIdx,fieldIdx,value){
+  if(!window._pizzatidSchedule) window._pizzatidSchedule=defaultPizzatidSchedule();
+  const sched=window._pizzatidSchedule;
+  if(!sched[dayKey]) sched[dayKey]=[null,null];
+  if(!sched[dayKey][periodIdx]) sched[dayKey][periodIdx]=['',''];
+  sched[dayKey][periodIdx][fieldIdx]=value;
+  const p=sched[dayKey][periodIdx];
+  if(!p[0]&&!p[1]) sched[dayKey][periodIdx]=null;
+}
+function saveBetaPizzatid(){
+  savePizzatidSchedule(window._pizzatidSchedule||defaultPizzatidSchedule());
+}
+// Delt visning for ett søkeresultat — alternativ C: toppanbefaling synlig med
+// en gang, "se flere alternativer" åpner en rangert topp 2-3-liste.
+function renderResultBlock(containerId, label, anchorIso){
+  const results=searchAllMethods(new Date(anchorIso));
+  const regId=window._betaResultRegistry.length;
+  window._betaResultRegistry.push({anchorIso, results});
+  const top=results[0];
+  const ok=top.violations===0;
+  const flours=flourMatchesForHours(top.totalHrs);
+  const flourTxt=flours.length ? flours.slice(0,3).join(', ')+(flours.length>3?' m.fl.':'') : 'Ingen registrert meltype dekker dette';
+  const altList=results.slice(1,3).map((c,i)=>`
+      <div onclick="applyBetaResult(${regId},${i+1})" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;background:var(--forno-bg);margin-top:4px;cursor:pointer">
+        <span style="font-size:11.5px;color:var(--forno-text)">${escH(c.label)}</span>
+        <span style="font-size:10.5px;color:${c.violations===0?'var(--forno-text-faint)':'#e8a06e'}">${c.violations===0?'Passer':c.violations+' avvik'} · ~${Math.round(c.totalHrs)}t</span>
+      </div>`).join('');
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:10px;margin-top:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+      <div style="font-size:13px;font-weight:700;color:var(--forno-text)">${escH(label)}</div>
+      <div style="font-size:14px">${ok?'✅':'⚠️'}</div>
+    </div>
+    <div style="font-size:12px;color:var(--forno-accent-text);font-weight:600">${escH(top.label)}</div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:2px">${ok?'Alt passer':top.violations+' steg utenfor ledig tid'} · ~${Math.round(top.totalHrs)}t total gjæring</div>
+    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">Mel som passer: ${escH(flourTxt)}</div>
+    <button onclick="applyBetaResult(${regId},0)" style="width:100%;margin-top:8px;height:34px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Bruk denne</button>
+    ${altList?`<div style="text-align:center;margin-top:6px"><span onclick="this.parentElement.nextElementSibling.style.display='block';this.style.display='none'" style="font-size:11px;color:var(--forno-accent-text);cursor:pointer;text-decoration:underline">Se flere alternativer</span></div>
+    <div style="display:none">${altList}</div>`:''}
+  </div>`;
+}
+function applyBetaResult(regId,altIdx){
+  const entry=window._betaResultRegistry[regId];
+  if(!entry) return;
+  const c=entry.results[altIdx];
+  if(!c) return;
+  const s=c.snapshot;
+  S.method=s.method;
+  S.mode='end';
+  if(s.method==='standard'||s.method==='poolish'||s.method==='biga'){ S.cold=s.cold; }
+  if(s.method==='poolish'){ S.poolishH=s.poolishH; S.poolishCold=!!s.poolishCold; }
+  if(s.method==='biga'){ S.bigaH=s.bigaH; }
+  if(s.method==='hurtig'){ S.hurtigH=s.hurtigH; }
+  if(s.method==='kveld'){ S.kveldH=s.kveldH; }
+  const d=new Date(entry.anchorIso);
+  const pad=n=>String(n).padStart(2,'0');
+  const dateStr=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const timeStr=pad(d.getHours())+':'+pad(d.getMinutes());
+  mobShowTab('settings');
+  wizGoto(2, ()=>{
+    mobMethodCards();
+    applyMobTypeUI();
+    const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+    if(dEl) dEl.value=dateStr;
+    if(tEl) tEl.value=timeStr;
+    mobSetMode('end');
+    mobGen();
+    mobShowTab('plan');
+  });
+}
+function renderBetaFasteTider(){
+  const targets=[
+    {label:'Fredag 19:00', d:nextWeekdayAt(5,19,0)},
+    {label:'Lørdag 16:00', d:nextWeekdayAt(6,16,0)},
+    {label:'Lørdag 19:00', d:nextWeekdayAt(6,19,0)},
+    {label:'Søndag 16:00', d:nextWeekdayAt(0,16,0)},
+    {label:'Søndag 19:00', d:nextWeekdayAt(0,19,0)}
+  ];
+  const el=document.getElementById('mob-beta-faste');
+  if(!el) return;
+  el.innerHTML=targets.map((t,i)=>`<div id="mob-beta-faste-${i}"></div>`).join('');
+  targets.forEach((t,i)=>renderResultBlock(`mob-beta-faste-${i}`, t.label, t.d.toISOString()));
+}
+function runBetaSearch(){
+  const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
+  if(!dEl||!dEl.value) return;
+  const anchor=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'19:00'));
+  if(isNaN(anchor.getTime())) return;
+  renderResultBlock('mob-beta-result', fDT(anchor), anchor.toISOString());
+}
+
+
 function fixedFermOverheadHours(method){
   const m=method||S.method;
   const preferment=m==='poolish'?S.poolishH:m==='biga'?S.bigaH:0;
@@ -2460,6 +2682,17 @@ function closeDeigerModal(){
 
 // ===== VERSJON OG ENDRINGSLOGG =====
 const CHANGELOG = [
+  {
+    v: '5.47',
+    d: 'juli 2026',
+    changes: [
+      'Ny fane: 🧭 Beta — "omvendt planlegger". I stedet for å velge innstillinger og se når du må starte, oppgir du når du er ledig og når du vil spise, og får en anbefalt oppskrift tilbake. Søker på tvers av ALLE metoder (Standard, Poolish begge varianter, Biga, Mania-poolish, Hurtigdeig, Kveldsdeig) — ikke bare Poolish/Biga.',
+      '"Pizzatid": din ukentlige ledige tid, mandag–søndag, med inntil to perioder per dag. Lagres delt på tvers av enheter (ny backend-funksjon pizzatid.js), ikke bare i denne nettleseren.',
+      '"Egen tid": fritt spisetidspunkt, én søkeknapp. "Faste tider" (de fem tidligere målene) er flyttet hit fra Planlegging-steget, ikke duplisert.',
+      'Resultatet viser toppanbefaling direkte (rangert på færrest tidskonflikter, deretter lengst trygg gjæring som "best smak"), med en "se flere alternativer"-lenke som åpner de neste to. Viser også ærlig hvilke meltyper som faktisk tåler den anbefalte gjæringstiden — eller sier rett ut hvis ingen gjør det.',
+      'PC fikk en enkel lenke inn til samme fane (via ☰ Meny → "Finn oppskrift (Beta)"), som bytter til mobilvisning.'
+    ]
+  },
   {
     v: '5.46',
     d: 'juli 2026',
@@ -4418,7 +4651,7 @@ function wizFinish(){
 }
 
 function mobShowTab(t){
-  ['plan','settings','recipe','tips','notes','bakster'].forEach(id=>{
+  ['plan','settings','recipe','tips','notes','bakster','beta'].forEach(id=>{
     const scr=document.getElementById('mob-'+id);
     if(scr)scr.classList.toggle('active',id===t);
     const tab=document.getElementById('mob-tab-'+id);
@@ -4428,6 +4661,7 @@ function mobShowTab(t){
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
   if(t==='notes')renderNotesPanel('mob-notes-content');
   if(t==='settings') wizEnterSettingsTab();
+  if(t==='beta') renderBetaPanel();
   updatePlanPulseDot(t);
   // Fanen holdes usynlig (opacity:0) helt til scroll-posisjonen er bekreftet
   // øverst, i stedet for å vise feil posisjon og så hoppe til riktig — det er
@@ -5166,8 +5400,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
       <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
       <div style="padding:0 1rem .8rem;text-align:center"><span onclick="wizGoto('finjuster')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">⚙️ Finjuster (mel, gjærtype, meltype osv.)</span></div>
-      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="toggleFasteTidspunkter()" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🍕 Mine faste tidspunkter</span></div>
-      <div id="mob-faste-tidspunkter" style="display:none;margin:0 1rem .8rem"></div>
+      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 Finn oppskrift ut fra ledig tid → Beta-fanen</span></div>
     </div>
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
@@ -5278,6 +5511,35 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-content" id="mob-notes-content"></div>
   </div>
 
+  <!-- TAB: BETA (omvendt planlegger) -->
+  <div class="mob-screen" id="mob-beta">
+    <div class="mob-content">
+      <div style="padding:.7rem 1rem .3rem">
+        <div style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">🧭 Finn oppskrift</div>
+        <div style="font-size:11px;color:var(--forno-text-faint);margin-top:2px">Oppgi når du er ledig og når du vil spise — få en anbefalt oppskrift tilbake. Søker på tvers av alle metoder.</div>
+      </div>
+
+      <div class="mob-section-lbl">Pizzatid — ledig tid per ukedag</div>
+      <div id="mob-pizzatid-days" style="padding:.3rem 1rem .5rem"></div>
+      <div style="padding:0 1rem .8rem"><button onclick="saveBetaPizzatid()" style="width:100%;height:36px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text-muted);font-size:12px;font-weight:600;cursor:pointer">Lagre ledig tid</button></div>
+
+      <div class="mob-section-lbl">Egen tid</div>
+      <div style="padding:.3rem 1rem .8rem">
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px;margin-bottom:8px">
+          <input type="date" id="mob-beta-ed">
+          <input type="time" id="mob-beta-et" value="19:00">
+        </div>
+        <button onclick="runBetaSearch()" style="width:100%;height:40px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:600;cursor:pointer">🔍 Finn oppskrift</button>
+      </div>
+
+      <div class="mob-section-lbl">Faste tider</div>
+      <div id="mob-beta-faste" style="padding:.3rem 1rem .8rem"></div>
+
+      <div id="mob-beta-result" style="padding:0 1rem .8rem"></div>
+      <div style="height:80px"></div>
+    </div>
+  </div>
+
   <!-- BOTTOM TAB BAR -->
   <div class="mob-tabbar">
     <div class="mob-tab on" id="mob-tab-settings" onclick="mobShowTab('settings')">
@@ -5298,6 +5560,9 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
     <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
       <span aria-hidden="true">ℹ️</span>Info
+    </div>
+    <div class="mob-tab" id="mob-tab-beta" onclick="mobShowTab('beta')">
+      <span aria-hidden="true">🧭</span>Beta
     </div>
   </div>
 
