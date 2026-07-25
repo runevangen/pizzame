@@ -2167,7 +2167,7 @@ function renderReturnBar(){
   const show=_returnTo && currentMobTab() && currentMobTab()!==_returnTo.tab;
   bar.classList.toggle('on', !!show);
   if(!show){ bar.innerHTML=''; return; }
-  bar.innerHTML=`${returnBarStatusHTML()}<button class="mob-return-btn" onclick="goBackFromJump()">← Tilbake til ${escH(_returnTo.tab==='settings'?'planleggingen':'planen')}</button>`;
+  bar.innerHTML=`${returnBarStatusHTML()}<button class="mob-return-btn" onclick="goBackFromJump()">← Tilbake til ${escH(_returnTo.tab==='settings'?'planleggingen':'tidsplanen')}</button>`;
 }
 function togglePizzatidMinimized(){
   const body=document.getElementById('mob-pizzatid-body');
@@ -2372,7 +2372,7 @@ function meltypeWarnOpenFinjuster(){
   };
   // wizGoto('finjuster') forbereder Finjuster-innholdet, men bytter ikke selve
   // fanen — uten dette blir endringen usynlig hvis man klikker lenken fra
-  // "Steg"-fanen (der meltype-varselet faktisk vises).
+  // "Tidsplan"-fanen (der meltype-varselet faktisk vises).
   mobShowTab('settings');
   wizGoto('finjuster', targetId ? highlight : null);
 }
@@ -4119,7 +4119,7 @@ function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textC
 function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
 function mobUCold(v){armStartDelta();S.cold=parseInt(v);const t=coldTimeLabel(S.cold);document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();}
 // Live forhåndsvisning av beregnet starttidspunkt — så man slipper å bla til
-// Steg-fanen for å sjekke hva en justering her faktisk fører til.
+// Tidsplan-fanen for å sjekke hva en justering her faktisk fører til.
 // v5.72: erstatter updateStartPreview(), som skrev "Da starter du: <tid>" rett
 // under kontrollen. Etter v5.71 sto den teksten to linjer under statuslinjen som
 // viser nøyaktig samme tidspunkt, altså en ren dublett. I stedet armerer hver
@@ -4391,7 +4391,7 @@ async function wizOpenFavoriteFromWizard(){
 const WIZ_STEPS = [
   {id:1, label:'Pizza', el:'wiz-step-1'},
   {id:2, label:'Metode', el:'wiz-step-2'},
-  {id:3, label:'Holder?', el:'wiz-step-check'}
+  {id:3, label:'Sjekk', el:'wiz-step-check'}
 ];
 function wizStepEl(step){
   const s=WIZ_STEPS.find(x=>x.id===step);
@@ -5134,7 +5134,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px;flex-shrink:0">←</span>
         <div id="wiz-timeline" style="flex:1"></div>
       </div>
-      <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:5px;padding-left:2px">Gå fritt frem og tilbake — Steg-fanen viser alltid planen for gjeldende valg.</div>
+      <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:5px;padding-left:2px">Gå fritt frem og tilbake — Tidsplan-fanen viser alltid resultatet av gjeldende valg.</div>
     </div>
 
     <div id="wiz-step-1" class="wiz-step" style="display:none">
@@ -5243,7 +5243,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         </div>
       </div>
 
-      <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
+      <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se tidsplanen →</button></div>
       <div style="padding:0 1rem .8rem;text-align:center"><span onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 Finn oppskrift ut fra ledig tid → Beta-fanen</span></div>
     </div>
 
@@ -5251,7 +5251,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div style="padding:.8rem 1rem .2rem;display:flex;align-items:center;gap:8px">
         <span onclick="wizGoto(3)" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px" title="Tilbake til sjekken">←</span>
         <span style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Finjuster</span>
-        <button id="wiz-finjuster-back-to-plan" onclick="mobGen();mobShowTab('plan')" style="display:none;margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Se steg →</button>
+        <button id="wiz-finjuster-back-to-plan" onclick="mobGen();mobShowTab('plan')" style="display:none;margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Se tidsplanen →</button>
       </div>
       <div id="wiz-status-finjuster"></div>
       <div id="wiz-finjuster-next" style="padding:.6rem 1rem .2rem"><button onclick="wizGoto(3)" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">← Tilbake til sjekken</button></div>
@@ -5426,7 +5426,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <span aria-hidden="true">⚙️</span>Planlegging
     </div>
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')">
-      <span aria-hidden="true">📅</span>Steg
+      <span aria-hidden="true">📅</span>Tidsplan
     </div>
     <div class="mob-tab" id="mob-tab-recipe" onclick="mobShowTab('recipe')">
       <span aria-hidden="true">🍕</span>Oppskrift

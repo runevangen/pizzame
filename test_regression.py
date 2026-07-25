@@ -837,6 +837,27 @@ def run_behavioral_tests(page):
     ok19 = r19['roomySaysFits'] and r19['tightSaysNo'] and r19['actuallyDiffered']
     results.append(('method_cards_refresh_live_when_entering_metode_step', ok19, r19))
 
+    # v5.89: "Steg" (fanenavn) og "Holder?" (wizardstegets korte etikett) var
+    # for generiske til å skille seg fra naboene sine ("Planlegging" vs "Steg",
+    # og en spørsmålsetikett alene blant to substantiv-etiketter). Fryser de
+    # nye navnene "Tidsplan" og "Sjekk" + at knappene som pekte til fanen
+    # fulgte med, så en fremtidig endring ikke sniker de gamle navnene tilbake.
+    r20 = page.evaluate("""() => {
+      return {
+        tabLabel: document.getElementById('mob-tab-plan').textContent.trim(),
+        wizStepLabel: WIZ_STEPS.find(s => s.id === 3).label,
+        finishBtnText: document.querySelector('#wiz-step-check button[onclick="wizFinish()"]')?.textContent || '',
+        finjusterBackText: document.getElementById('wiz-finjuster-back-to-plan')?.textContent || ''
+      };
+    }""")
+    ok20 = (
+      r20['tabLabel'] == '📅Tidsplan' and
+      r20['wizStepLabel'] == 'Sjekk' and
+      'tidsplanen' in r20['finishBtnText'].lower() and
+      'tidsplanen' in r20['finjusterBackText'].lower()
+    )
+    results.append(('tab_and_wizard_step_have_clearer_names', ok20, r20))
+
 
 
 

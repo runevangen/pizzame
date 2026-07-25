@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.89',
+    d: 'juli 2026',
+    changes: [
+      'To navn byttet ut fordi de var for generiske. Fanen som viser tidsplanen din (oppstart, steketid, alle stegene) het bare Steg, rett ved siden av fanen Planlegging — forvirrende likt. Den heter nå Tidsplan. Wizardens siste steg het Holder? i den lille etiketten øverst, mens de to andre etikettene er substantiv — den heter nå Sjekk.'
+    ]
+  },
+  {
     v: '5.88',
     d: 'juli 2026',
     changes: [
