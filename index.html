@@ -874,9 +874,8 @@ function schedNow(){
 function updateEarliestHint(){
   const el=document.getElementById('earliest-hint');
   if(!el||S.mode!=='end')return;
-  const now=new Date();
-  const earliest=new Date(now.getTime()+minBakeMins()*60000);
-  el.textContent='Tidligst mulig: '+fDT(earliest);
+  const earliest=earliestBakeAt();
+  el.textContent=earliest ? 'Tidligst mulig: '+fDT(earliest) : '';
 }
 ['sd','st','ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',sched);el.addEventListener('change',sched);}});
 
@@ -1135,13 +1134,24 @@ function cycleFontSize(){
 })();
 
 
-function minBakeMins(){
-  const rt=rtM(60),cM=S.cold*60;
-  if(S.method==='standard') return 45+rt+cM;
-  if(S.method==='poolish')  return S.poolishH*60+20+rt+cM;
-  if(S.method==='biga')     return S.bigaH*60+20+Math.round(rt*1.5)+cM;
-  if(S.method==='hurtig')   return 30+Math.round(S.hurtigH*0.6*60*tf())+Math.round((S.hurtigH-S.hurtigH*0.6-0.25)*60);
-  return 0;
+// v5.83: erstatter den gamle minBake-hjelperen, som var en håndskrevet tredje kopi av
+// varighetslogikken og manglet grener for Kveldsdeig og Mania — de returnerte 0,
+// så "Tidligst mulig" påsto at begge kunne stå ferdig umiddelbart, og
+// metodekortet for Kveldsdeig sa "passer godt" uansett hvor knapt det var.
+// Nå spørres den ekte stegbyggeren, slik Beta-søket alltid har gjort: bygg
+// planen fremover fra nå, siste stegs tidspunkt ER tidligst mulig steketid.
+// Riktig for alle seks metoder og temperaturkorrekt, og kan ikke drifte.
+function earliestBakeAt(method){
+  const origMethod=S.method, origMode=S.mode;
+  try{
+    if(method) S.method=method;
+    S.mode='start';
+    const steps=stepsForAnchor(new Date());
+    if(!steps || !steps.length) return null;
+    let at=steps[steps.length-1].at; if(!(at instanceof Date)) at=new Date(at);
+    return isNaN(at.getTime()) ? null : at;
+  }catch(e){ return null; }
+  finally{ S.method=origMethod; S.mode=origMode; }
 }
 
 function anc(p){
@@ -3868,8 +3878,6 @@ function syncMobControls(){
   setPoolishCold(S.poolishCold);
   mobBuildBrows();
   const now=new Date();
-  s('mob-sd',fd(now));
-  s('mob-st',String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
   const later=new Date(now.getTime()+S.cold*3600000+14400000);
   s('mob-ed',fd(later));
   s('mob-et','18:00');
@@ -3879,7 +3887,7 @@ function syncMobControls(){
   if(mobStamp)mobStamp.textContent=_dateStr;
   const mnv=g('mob-name-version');if(mnv)mnv.textContent='v'+CHANGELOG[0].v;
   const mfv=g('mob-footer-version');if(mfv)mfv.textContent='v'+CHANGELOG[0].v;
-  ['mob-sd','mob-st','mob-ed','mob-et'].forEach(id=>{
+  ['mob-ed','mob-et'].forEach(id=>{
     const el=g(id);
     if(el&&!el.dataset.lst){el.addEventListener('input',mobGen);el.addEventListener('change',mobGen);el.dataset.lst='1';}
   });
@@ -3951,9 +3959,9 @@ function methodFitNote(v){
   if(isNaN(eat.getTime())) return null;
   const leadH=(eat.getTime()-Date.now())/3600000;
   if(leadH<=0) return null;
-  const orig=S.method;
-  let needH=0;
-  try{ S.method=v; needH=minBakeMins()/60; }catch(e){ return null; } finally { S.method=orig; }
+  const at=earliestBakeAt(v);
+  if(!at) return null;
+  const needH=(at.getTime()-Date.now())/3600000;
   if(needH>leadH) return {txt:'rekker ikke — trenger ca. '+Math.round(needH)+' t', dim:true};
   if(v==='hurtig' && leadH>needH+24) return {txt:'mye av tiden går til spille', dim:true};
   return {txt:'passer godt', dim:false};
@@ -4123,7 +4131,7 @@ function stepColdWiz(delta){
 // nøyaktig samme sluttilstand som før.
 function wizStep1Refresh(){
   const lbl=document.getElementById('wiz-step1-when-lbl');
-  if(lbl) lbl.textContent = S.mode==='start' ? 'Når begynner du?' : 'Når vil du spise?';
+  if(lbl) lbl.textContent = S.mode==='start' ? 'Du begynner nå' : 'Når vil du spise?';
 }
 function wizCheckRefresh(){
   const isShort = (S.method==='hurtig' || S.method==='kveld');
@@ -4200,9 +4208,10 @@ function mobSetMode(m){
     me.style.fontWeight=m==='end'?'600':'400';
   }
   document.getElementById('mob-bs').style.display=m==='start'?'block':'none';
+  try{ wizStep1Refresh(); }catch(e){}
   document.getElementById('mob-be').style.display=m==='end'?'block':'none';
   const meh=document.getElementById('mob-earliest-hint');
-  if(meh){meh.style.display=m==='end'?'block':'none';if(m==='end'){const earliest=new Date(new Date().getTime()+minBakeMins()*60000);meh.textContent='Tidligst mulig: '+fDT(earliest);}}
+  if(meh){meh.style.display=m==='end'?'block':'none';if(m==='end'){const earliest=earliestBakeAt();meh.textContent=earliest?'Tidligst mulig: '+fDT(earliest):'';}}
   mobGen();
 }
 
@@ -5108,14 +5117,11 @@ document.addEventListener('change', firstInteractionCheck, true);
 
       <div class="wiz-qhead"><div class="wiz-qnum">3</div><div class="wiz-qlbl" id="wiz-step1-when-lbl">Når vil du spise?</div></div>
       <div id="mob-anchor-toggle" style="display:flex;gap:6px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🍕 Når jeg vil spise</div>
-        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">▶ Nå</div>
+        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🍕 Planlagt steketid</div>
+        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">▶ Jeg begynner nå</div>
       </div>
-      <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
-          <input type="date" id="mob-sd">
-          <input type="time" id="mob-st" value="07:30">
-        </div>
+      <div id="mob-bs" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div style="font-size:11px;color:var(--forno-text-faint);line-height:1.5">Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.</div>
       </div>
       <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">

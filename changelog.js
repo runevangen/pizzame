@@ -3,6 +3,15 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.83',
+    d: 'juli 2026',
+    changes: [
+      'Spørsmålet om når er nå to ærlige valg: "Planlagt steketid" med dato og klokkeslett, eller "Jeg begynner nå" — der planlegges deigen fra nå, og steketiden regnes ut for deg. Datofeltene på nå-grenen er fjernet: de har en stund vært uten funksjon (appen brukte alltid nå-tidspunktet uansett hva du skrev), så de sto der og så redigerbare ut uten å være det.',
+      '"Tidligst mulig"-hintet og metodekortenes passform regnes nå ut av den samme motoren som bygger selve tidsplanen, for alle seks metoder. Før brukte de en egen forenklet formel som manglet Kveldsdeig og Mania-poolish — begge fremsto derfor som klare umiddelbart, og Kveldsdeig-kortet sa "passer godt" selv når du ville spise om en time.',
+      'Overskriften på spørsmålet følger nå valget ditt med en gang du trykker, i stedet for først neste gang du kom inn på steget.'
+    ]
+  },
+  {
     v: '5.82',
     d: 'juli 2026',
     changes: [

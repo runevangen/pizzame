@@ -538,11 +538,11 @@ def run_behavioral_tests(page):
         // v5.82: spørsmålsoverskriften er eneste etikett — blokken under skal
         // ikke gjenta den. Teller forekomster i begge modus.
         whenLabelOnceStart: (() => {
-          mobSetMode('start'); wizStep1Refresh();
-          return (step1.textContent.match(/Når begynner du\?/g) || []).length;
+          mobSetMode('start');
+          return (step1.textContent.match(/Du begynner nå/g) || []).length;
         })(),
         whenLabelOnceEnd: (() => {
-          mobSetMode('end'); wizStep1Refresh();
+          mobSetMode('end');
           return (step1.textContent.match(/Når vil du spise\?/g) || []).length
                + (step1.textContent.match(/Når vil du ha pizzaen ferdig\?/g) || []).length;
         })(),
@@ -656,6 +656,56 @@ def run_behavioral_tests(page):
       r15['hiddenInPlan'] and r15['stillInCheck'] and r15['noCrossInCheck']
     )
     results.append(('quality_check_covers_dough_and_ignores_dismissals', ok15, r15))
+
+    # v5.83: "Tidligst mulig" og metodekortenes passform hentes naa fra den ekte
+    # stegbyggeren i stedet for en haandskrevet formel som manglet Kveldsdeig og
+    # Mania (begge ga 0 -> "klar umiddelbart" og "passer godt" uansett). Tester
+    # at alle seks metoder gir en tid i fremtiden, at Kveldsdeig IKKE lenger
+    # sier "passer godt" naar man vil spise om en time, at hodet paa steg 1
+    # oppdateres VED selve trykket (v5.78-buggen fra skjermbildet), og at de
+    # doede datofeltene paa naa-grenen er borte.
+    r16 = page.evaluate('''() => {
+      const now = Date.now();
+      const perMethod = {};
+      ['standard','poolish','biga','mania','hurtig','kveld'].forEach(m => {
+        const at = earliestBakeAt(m);
+        perMethod[m] = at ? Math.round((at.getTime() - now) / 60000) : null;
+      });
+
+      S.type='napoletana'; S.mode='end';
+      // Fire timer fram: nok for en 2-timers hurtigdeig, haaploest for Kveldsdeig
+      // (12t kjoleskap + temperering) — saa de to notatene skal peke hver sin vei.
+      const soon = new Date(now + 4*60*60000);
+      const p2 = n => String(n).padStart(2,'0');
+      document.getElementById('mob-ed').value =
+        soon.getFullYear()+'-'+p2(soon.getMonth()+1)+'-'+p2(soon.getDate());
+      document.getElementById('mob-et').value = p2(soon.getHours())+':'+p2(soon.getMinutes());
+      const kveldNote = methodFitNote('kveld');
+      S.hurtigH = 2; S.temp = 22; // ikke arv 14t fra varmt-kjokken-testen
+      const hurtigNote = methodFitNote('hurtig');
+
+      mobShowTab('settings'); wizGoto(1);
+      mobSetMode('end');
+      const lblEnd = document.getElementById('wiz-step1-when-lbl').textContent;
+      mobSetMode('start');
+      const lblStart = document.getElementById('wiz-step1-when-lbl').textContent;
+      mobSetMode('end');
+
+      return {
+        perMethod,
+        allPositive: Object.values(perMethod).every(v => v !== null && v > 0),
+        kveldSaysNo: !!(kveldNote && kveldNote.dim && kveldNote.txt.includes('rekker ikke')),
+        hurtigFits: !!(hurtigNote && !hurtigNote.dim),
+        headerFollowsToggle: lblEnd === 'Når vil du spise?' && lblStart === 'Du begynner nå',
+        deadFieldsGone: !document.getElementById('mob-sd') && !document.getElementById('mob-st')
+      };
+    }''')
+    ok16 = (
+      r16['allPositive'] and r16['kveldSaysNo'] and r16['hurtigFits'] and
+      r16['headerFollowsToggle'] and r16['deadFieldsGone']
+    )
+    results.append(('earliest_time_comes_from_step_builder_for_all_methods', ok16, r16))
+
 
     return results
 
