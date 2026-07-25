@@ -909,9 +909,36 @@ def main():
         context = browser.new_context(viewport={"width": 390, "height": 844}, timezone_id="Europe/Oslo")
         page = context.new_page()
         page.add_init_script("localStorage.setItem('pizzaUser', JSON.stringify({id:'test',name:'Test'}));")
+        # v5.88: fanger opp JS-feil som oppstår ved selve sideinnlastingen — se
+        # begrunnelse ved page_loads_without_script_errors nedenfor.
+        load_errors = []
+        page.on("pageerror", lambda exc: load_errors.append(str(exc)))
+        page.on("console", lambda msg: load_errors.append(f"[console.{msg.type}] {msg.text}") if msg.type == "error" and "404" not in msg.text and "Failed to load resource" not in msg.text else None)
         page.goto(f"http://localhost:{port}/{os.path.basename(index_path)}")
         page.wait_for_timeout(1200)
         page.evaluate("document.getElementById('guide-modal') && (document.getElementById('guide-modal').style.display='none')")
+
+        # v5.88: REELL BUG — en unterminert JS-streng i changelog.js (manglet
+        # avsluttende ') brakk parsingen av HELE filen. Siden changelog.js
+        # lastes som egen <script src> (v5.61), feilet bare referanser til
+        # CHANGELOG — men det inkluderer versjonsvisningen, som skjer tidlig
+        # i syncMobControls() og dermed stanset resten av den funksjonen.
+        # Resultatet: en app som så nesten blank ut ("kun tittel"), mens alle
+        # ANDRE tester fortsatt gikk gjennom — fordi page.evaluate() kaller
+        # funksjoner direkte og de fleste ikke rører CHANGELOG i det hele
+        # tatt. Denne sjekken laster siden ekte, slik en bruker ville gjort,
+        # og krever null JS-feil pluss et faktisk synlig versjonsnummer.
+        version_text = page.evaluate("document.getElementById('mob-name-version')?.textContent || ''")
+        ok0 = (len(load_errors) == 0) and bool(version_text.strip())
+        results0 = [('page_loads_without_script_errors', ok0, {'load_errors': load_errors, 'version_text': version_text})]
+        print("Sideinnlasting:")
+        for name, ok, detail in results0:
+            if ok:
+                print(f"✅ {name}: OK")
+            else:
+                failures.append((name, [("detail", "OK", detail)]))
+                print(f"❌ {name}: FEILET — {detail}")
+        print()
 
         for sc in SCENARIOS:
             name = sc["name"]
@@ -956,7 +983,7 @@ def main():
     httpd.shutdown()
 
     print()
-    total = len(SCENARIOS) + len(behavioral) + len(render_tests)
+    total = len(results0) + len(SCENARIOS) + len(behavioral) + len(render_tests)
     if failures:
         print(f"{len(failures)} av {total} tester feilet.")
         sys.exit(1)
