@@ -178,6 +178,39 @@ def run_behavioral_tests(page):
     ) and len(set(r5[m]['text'] for m in r5)) == 6  # alle seks tekstene er ulike
     results.append(('method_why_box_updates_per_method', ok5, r5))
 
+    # v5.71: kjøleskapsblokken på steg 3 skal ligge ØVERST — rett under
+    # statuslinjen og FØR stegets tittel — fordi den styrer oppstartstidspunktet
+    # som statuslinjen viser. Sjekker DOM-rekkefølgen direkte, at den fortsatt
+    # skjules for metodene uten kjølefase, og at den fjernede Juster-teksten
+    # ikke har sneket seg inn igjen.
+    r6 = page.evaluate("""() => {
+      const step = document.getElementById('wiz-step-3');
+      const cold = document.getElementById('mob-cold-wiz-wrap');
+      const status = document.getElementById('wiz-status-step3');
+      const title = document.getElementById('wiz-step3-title');
+      const pos = (a,b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING;
+      mobShowTab('settings');
+      const vis = {};
+      ['standard','poolish','biga','mania','hurtig','kveld'].forEach(m => {
+        S.method = m; wizStep3Refresh();
+        vis[m] = document.getElementById('mob-cold-wiz-wrap').style.display;
+      });
+      return {
+        coldAfterStatus: !!pos(status, cold),
+        coldBeforeTitle: !!pos(cold, title),
+        coldInsideStep3: step.contains(cold),
+        justerHintGone: !step.innerHTML.includes('Juster åpner flere valg'),
+        vis
+      };
+    }""")
+    ok6 = (
+      r6['coldAfterStatus'] and r6['coldBeforeTitle'] and
+      r6['coldInsideStep3'] and r6['justerHintGone'] and
+      all(r6['vis'][m] == 'block' for m in ('standard','poolish','biga','mania')) and
+      all(r6['vis'][m] == 'none' for m in ('hurtig','kveld'))
+    )
+    results.append(('step3_cold_block_sits_below_status_bar', ok6, r6))
+
     return results
 
 

@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.71',
+    d: 'juli 2026',
+    changes: [
+      'Kjøleskapshevingen på wizardens Når?-steg er flyttet opp og ligger nå rett under statuslinjen med oppstart og steketid, i stedet for nederst på siden. Kjøleskapstiden er den enkeltinnstillingen som flytter oppstartstidspunktet mest, og nå står årsak og virkning ved siden av hverandre. Blokken skjules fortsatt automatisk for Hurtigdeig og Kveldsdeig, som ikke har noen kjølefase.',
+      'Fjernet forklaringsteksten "⚙️ Juster åpner flere valg: mel, gjærtype, meltype osv." under statuslinjen på samme steg — den leste rart løsrevet fra lenken den opprinnelig hørte til (fjernet i v5.67).'
+    ]
+  },
+  {
     v: '5.70',
     d: 'juli 2026',
     changes: [
