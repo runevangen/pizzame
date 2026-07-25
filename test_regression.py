@@ -535,6 +535,17 @@ def run_behavioral_tests(page):
         stepCount: WIZ_STEPS.length,
         seq, stopsAtLast, stopsAt1,
         finjusterShown, finjusterNotNumbered, outOfFinjuster,
+        // v5.82: spørsmålsoverskriften er eneste etikett — blokken under skal
+        // ikke gjenta den. Teller forekomster i begge modus.
+        whenLabelOnceStart: (() => {
+          mobSetMode('start'); wizStep1Refresh();
+          return (step1.textContent.match(/Når begynner du\?/g) || []).length;
+        })(),
+        whenLabelOnceEnd: (() => {
+          mobSetMode('end'); wizStep1Refresh();
+          return (step1.textContent.match(/Når vil du spise\?/g) || []).length
+               + (step1.textContent.match(/Når vil du ha pizzaen ferdig\?/g) || []).length;
+        })(),
         step1HasType: !!step1.querySelector('#mob-gtype'),
         step1HasCount: !!step1.querySelector('#mob-pcount-disp'),
         step1HasWhen: !!step1.querySelector('#mob-be'),
@@ -550,6 +561,7 @@ def run_behavioral_tests(page):
       r13['finjusterShown'] == 'block' and
       r13['finjusterNotNumbered'] == 'finjuster' and
       r13['outOfFinjuster'] == 3 and
+      r13['whenLabelOnceStart'] == 1 and r13['whenLabelOnceEnd'] == 1 and
       r13['step1HasType'] and r13['step1HasCount'] and r13['step1HasWhen'] and
       r13['checkHasVerdict'] and r13['checkHasCold'] and
       r13['okIsGreen'] and r13['badIsNotGreen']

@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.82',
+    d: 'juli 2026',
+    changes: [
+      'Spørsmålet om når du vil spise sto med samme overskrift to ganger på første wizardsteg. Den ene er borte.'
+    ]
+  },
+  {
     v: '5.81',
     d: 'juli 2026',
     changes: [
