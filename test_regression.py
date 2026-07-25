@@ -183,33 +183,35 @@ def run_behavioral_tests(page):
     # som statuslinjen viser. Sjekker DOM-rekkefølgen direkte, at den fortsatt
     # skjules for metodene uten kjølefase, og at den fjernede Juster-teksten
     # ikke har sneket seg inn igjen.
+    # v5.78: kjøleskapsblokken bor nå på steg 4 (kvalitetssjekken), fortsatt
+    # rett under statuslinjen. Metodestyringen er uendret.
     r6 = page.evaluate("""() => {
-      const step = document.getElementById('wiz-step-3');
+      const step = document.getElementById('wiz-step-4');
       const cold = document.getElementById('mob-cold-wiz-wrap');
-      const status = document.getElementById('wiz-status-step3');
-      const title = document.getElementById('wiz-step3-title');
+      const status = document.getElementById('wiz-status-check');
+      const check = document.getElementById('wiz-check');
       const pos = (a,b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING;
       mobShowTab('settings');
       const vis = {};
       ['standard','poolish','biga','mania','hurtig','kveld'].forEach(m => {
-        S.method = m; wizStep3Refresh();
+        S.method = m; wizCheckRefresh();
         vis[m] = document.getElementById('mob-cold-wiz-wrap').style.display;
       });
       return {
         coldAfterStatus: !!pos(status, cold),
-        coldBeforeTitle: !!pos(cold, title),
-        coldInsideStep3: step.contains(cold),
+        coldAfterCheck: !!pos(check, cold),
+        coldInsideStep4: step.contains(cold),
         justerHintGone: !step.innerHTML.includes('Juster åpner flere valg'),
         vis
       };
     }""")
     ok6 = (
-      r6['coldAfterStatus'] and r6['coldBeforeTitle'] and
-      r6['coldInsideStep3'] and r6['justerHintGone'] and
+      r6['coldAfterStatus'] and r6['coldAfterCheck'] and
+      r6['coldInsideStep4'] and r6['justerHintGone'] and
       all(r6['vis'][m] == 'block' for m in ('standard','poolish','biga','mania')) and
       all(r6['vis'][m] == 'none' for m in ('hurtig','kveld'))
     )
-    results.append(('step3_cold_block_sits_below_status_bar', ok6, r6))
+    results.append(('cold_block_sits_below_status_bar_on_check_step', ok6, r6))
 
     # v5.72: "Da starter du"-linjene er borte, og statuslinjen viser i stedet en
     # differansebrikke når oppstart flytter seg. Tester at brikken dukker opp med
@@ -219,10 +221,10 @@ def run_behavioral_tests(page):
     r7 = page.evaluate("""() => {
       S.method='standard'; S.type='napoletana'; S.meltype='doppio_zero';
       S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.mode='end';
-      mobShowTab('settings'); wizGoto(3); mobGen();
+      mobShowTab('settings'); wizGoto(4); mobGen();
       _startDelta = null; mobGen();
       const chip = () => {
-        const el = document.querySelector('#wiz-status-step3 .wiz-start-delta');
+        const el = document.querySelector('#wiz-status-check .wiz-start-delta');
         return el ? el.textContent.trim() : '';
       };
       const before = chip();
@@ -484,6 +486,103 @@ def run_behavioral_tests(page):
       r12['backTab'] == 'plan' and r12['afterReturn'] is False
     )
     results.append(('warning_jumps_have_a_return_path', ok12, r12))
+
+    # v5.78: wizarden har fire steg. "Når" og antall bor på steg 1 sammen med
+    # pizzatypen, Finjuster er et nummerert steg, og steg 4 er kvalitetssjekken
+    # som også svarer GRØNT når alt går opp — det siste er det eneste helt nye.
+    r13 = page.evaluate("""() => {
+      const step1 = document.getElementById('wiz-step-1');
+      const step4 = document.getElementById('wiz-step-4');
+      mobShowTab('settings');
+
+      wizGoto(1);
+      const seq = [];
+      for (let i = 0; i < 3; i++) { wizNext(); seq.push(window._wizStep); }
+      wizNext();
+      const stopsAt4 = window._wizStep;
+      for (let i = 0; i < 3; i++) wizBack();
+      wizBack();
+      const stopsAt1 = window._wizStep;
+
+      wizGoto('finjuster');
+      const finjusterIsStep3 = window._wizStep;
+
+      // Ingen konflikt -> grønn bekreftelse.
+      S.method='standard'; S.type='napoletana'; S.cold=48; S.mode='end';
+      const allDay = [['00:00','23:59'], null];
+      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
+      wizGoto(4);
+      const okText = document.getElementById('wiz-check').textContent;
+
+      // Konflikt -> sjekken skal IKKE si at planen holder.
+      const none = [['12:00','12:01'], null];
+      window._pizzatidSchedule = {mon:none,tue:none,wed:none,thu:none,fri:none,sat:none,sun:none};
+      _dismissedWarnings.clear();
+      wizCheckRefresh();
+      const badText = document.getElementById('wiz-check').textContent;
+
+      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
+      return {
+        stepCount: WIZ_STEPS.length,
+        seq, stopsAt4, stopsAt1, finjusterIsStep3,
+        step1HasType: !!step1.querySelector('#mob-gtype'),
+        step1HasCount: !!step1.querySelector('#mob-pcount-disp'),
+        step1HasWhen: !!step1.querySelector('#mob-be'),
+        step4HasCheck: !!step4.querySelector('#wiz-check'),
+        step4HasCold: !!step4.querySelector('#mob-cold-wiz-wrap'),
+        okIsGreen: okText.includes('Planen holder'),
+        badIsNotGreen: !badText.includes('Planen holder') && badText.trim().length > 0
+      };
+    }""")
+    ok13 = (
+      r13['stepCount'] == 4 and r13['seq'] == [2, 3, 4] and
+      r13['stopsAt4'] == 4 and r13['stopsAt1'] == 1 and
+      r13['finjusterIsStep3'] == 3 and
+      r13['step1HasType'] and r13['step1HasCount'] and r13['step1HasWhen'] and
+      r13['step4HasCheck'] and r13['step4HasCold'] and
+      r13['okIsGreen'] and r13['badIsNotGreen']
+    )
+    results.append(('wizard_has_four_steps_with_quality_check', ok13, r13))
+
+    # v5.78: swipe navigerer mellom stegene, men må IKKE utløses av et dra på en
+    # slider (Finjuster har fire), av et vertikalt dra, eller av et dra fra
+    # skjermkanten (iOS sin egen tilbake-gestikk).
+    r14 = page.evaluate("""() => {
+      const scr = document.getElementById('mob-settings');
+      const swipe = (target, x0, y0, x1, y1) => {
+        const mk = (x, y) => new Touch({identifier: 1, target, clientX: x, clientY: y});
+        target.dispatchEvent(new TouchEvent('touchstart', {bubbles: true, touches: [mk(x0, y0)], changedTouches: [mk(x0, y0)]}));
+        target.dispatchEvent(new TouchEvent('touchend', {bubbles: true, touches: [], changedTouches: [mk(x1, y1)]}));
+        return window._wizStep;
+      };
+      mobShowTab('settings');
+
+      wizGoto(2);
+      const leftFromTwo = swipe(scr, 250, 300, 100, 305);
+      const rightFromThree = swipe(scr, 150, 300, 300, 295);
+
+      wizGoto(2);
+      const vertical = swipe(scr, 250, 200, 235, 400);
+      const fromEdge = swipe(scr, 8, 300, 200, 300);
+      const tooShort = swipe(scr, 250, 300, 220, 300);
+
+      // Dra som starter i en Finjuster-slider skal ikke bytte steg.
+      wizGoto(3);
+      const slider = document.getElementById('mob-hsl') || document.querySelector('#wiz-finjuster input[type=range]');
+      const onSlider = slider ? swipe(slider, 250, 300, 100, 302) : null;
+
+      wizGoto(1);
+      const atOne = swipe(scr, 150, 300, 300, 300);
+
+      return {leftFromTwo, rightFromThree, vertical, fromEdge, tooShort, onSlider, atOne, hasSlider: !!slider};
+    }""")
+    ok14 = (
+      r14['hasSlider'] and
+      r14['leftFromTwo'] == 3 and r14['rightFromThree'] == 2 and
+      r14['vertical'] == 2 and r14['fromEdge'] == 2 and r14['tooShort'] == 2 and
+      r14['onSlider'] == 3 and r14['atOne'] == 1
+    )
+    results.append(('wizard_swipe_navigates_without_hijacking_sliders', ok14, r14))
 
     return results
 

@@ -2834,7 +2834,7 @@ function activeStepWarnGoTo(which){
   setReturnTo(true);
   mobShowTab('settings');
   if(which==='cold'){
-    wizGoto(3, ()=>highlightWizEl('mob-cold-wiz-wrap'));
+    wizGoto(4, ()=>highlightWizEl('mob-cold-wiz-wrap'));
   }else{
     wizGoto(2, ()=>highlightWizEl(which==='poolish'?'mob-psub':'mob-bsub'));
   }
@@ -3939,6 +3939,25 @@ function mobPillGroup(id,key){
   });
 }
 
+// v5.78: nå som tidspunktet er kjent før metodevalget, kan kortene si noe om
+// seg selv. Dette er samme vurdering som methodTimeWarningHTML() gjorde i
+// etterkant, flyttet fram til der valget faktisk tas.
+function methodFitNote(v){
+  if(S.mode!=='end') return null;
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  if(!dEl || !dEl.value) return null;
+  let eat;
+  try{ eat=new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')); }catch(e){ return null; }
+  if(isNaN(eat.getTime())) return null;
+  const leadH=(eat.getTime()-Date.now())/3600000;
+  if(leadH<=0) return null;
+  const orig=S.method;
+  let needH=0;
+  try{ S.method=v; needH=minBakeMins()/60; }catch(e){ return null; } finally { S.method=orig; }
+  if(needH>leadH) return {txt:'rekker ikke — trenger ca. '+Math.round(needH)+' t', dim:true};
+  if(v==='hurtig' && leadH>needH+24) return {txt:'mye av tiden går til spille', dim:true};
+  return {txt:'passer godt', dim:false};
+}
 function mobMethodCards(){
   const wrap=document.getElementById('mob-gmet');if(!wrap)return;
   wrap.innerHTML='';
@@ -3952,9 +3971,16 @@ function mobMethodCards(){
     const el=document.createElement('div');
     const isOn=S.method===v;
     el.style.cssText=`position:relative;border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${isOn?'var(--forno-bg-raised)':'var(--forno-accent-soft)'};border:${isOn?'2px solid var(--forno-accent)':'1px solid transparent'}`;
-    el.innerHTML=`<div style="font-size:13px;font-weight:600;color:${isOn?'var(--forno-accent-text)':'var(--forno-text)'}">${t}</div><div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
+    const fit=methodFitNote(v);
+    if(fit && fit.dim && !isOn) el.style.opacity='.55';
+    const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;color:${fit.dim?'var(--forno-text-faint)':'#0F6E56'}">${escH(fit.txt)}</div>`:'';
+    el.innerHTML=`<div style="font-size:13px;font-weight:600;color:${isOn?'var(--forno-accent-text)':'var(--forno-text)'}">${t}</div><div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
     el.onclick=()=>{
-      S.method=v;mobMethodCards();
+      S.method=v;
+      // Lange metoder planlegges alltid bakover fra spisetidspunktet, slik de
+      // alltid har gjort — før ble dette tvunget når man landet på steg 3.
+      if(v!=='hurtig' && v!=='kveld' && S.mode!=='end') mobSetMode('end');
+      mobMethodCards();
       document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';
       document.getElementById('mob-ksub').style.display=v==='kveld'?'block':'none';
       document.getElementById('mob-psub').style.display=v==='poolish'?'block':'none';
@@ -4089,28 +4115,54 @@ function stepColdWiz(delta){
 // kjøleskapsheving — man har uansett alltid et måltidspunkt i tankene), og viser
 // kjøleskapsdager. Raske metoder (Hurtigdeig/Kveldsdeig) beholder
 // begge alternativene, med et nøytralt spørsmål siden begge faktisk svarer på det.
-function wizStep3Refresh(){
+// v5.78: "Når"-blokken bor nå på steg 1, kjøleskapsspaken på steg 4. Den gamle
+// wizStep3Refresh() gjorde begge deler og er derfor delt i to.
+// NB: steg 1 kommer FØR metodevalget, så her kan vi ikke skjule ankervelgeren
+// slik den gamle koden gjorde for lange metoder — vi vet ikke metoden ennå.
+// I stedet tvinges mode='end' når en lang metode velges på steg 2, som gir
+// nøyaktig samme sluttilstand som før.
+function wizStep1Refresh(){
+  const lbl=document.getElementById('wiz-step1-when-lbl');
+  if(lbl) lbl.textContent = S.mode==='start' ? 'Når begynner du?' : 'Når vil du spise?';
+}
+function wizCheckRefresh(){
   const isShort = (S.method==='hurtig' || S.method==='kveld');
-  const toggle=document.getElementById('mob-anchor-toggle');
-  const titleEl=document.getElementById('wiz-step3-title');
-  const q1lbl=document.getElementById('wiz-step3-q1-lbl');
+  if(!isShort && S.mode!=='end') mobSetMode('end');
   const coldWrap=document.getElementById('mob-cold-wiz-wrap');
-  if(isShort){
-    if(toggle) toggle.style.display='flex';
-    if(titleEl) titleEl.textContent='Planlegg fra:';
-    if(q1lbl) q1lbl.textContent='Planlegg fra';
-    mobSetMode(S.mode==='start' ? 'start' : 'end');
-  }else{
-    if(toggle) toggle.style.display='none';
-    if(titleEl) titleEl.textContent='Når vil du spise?';
-    if(q1lbl) q1lbl.textContent='Når vil du spise?';
-    mobSetMode('end');
-  }
   if(coldWrap) coldWrap.style.display = isShort ? 'none' : 'block';
   if(!isShort){
     const d=document.getElementById('mob-cold-wiz-disp');
     if(d) d.textContent=coldTimeLabel(S.cold||24);
   }
+  wizCheckRender();
+}
+// Selve kvalitetssjekken. Tre utfall, alle bygget på maskineriet fra v5.75:
+// planen holder, planen holder ikke men har en utregnet fiks, eller den er låst
+// og krever et annet metodevalg. Den grønne tilstanden er det eneste nye —
+// appen har hittil kun sagt fra når noe var galt, aldri når alt var riktig.
+function wizCheckRender(){
+  const el=document.getElementById('wiz-check');
+  if(!el) return;
+  let c=null;
+  try{ c=firstStepConflict(computeCurrentSteps()); }catch(e){}
+  if(!c){
+    el.innerHTML=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem">
+      <div style="font-size:13px;font-weight:700;color:#085041;margin-bottom:.25rem">✓ Planen holder</div>
+      <div style="font-size:12px;color:#0F6E56;line-height:1.5">Alle steg ligger i tiden du har satt av, og ingenting faller på natten.</div>
+    </div>`;
+    return;
+  }
+  // Gjenbruker varselet, som allerede regner ut riktig fiks per situasjon. Er
+  // det skjult med krysset fra v5.74, faller vi tilbake på en kort linje —
+  // sjekken skal aldri påstå at planen holder når den ikke gjør det.
+  let w='';
+  try{ w=activeStepTimeWarningHTML(); }catch(e){}
+  if(w){ el.innerHTML=w; return; }
+  let t='';
+  try{ t=fT(c.at); }catch(e){}
+  el.innerHTML=`<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem">
+    <div style="font-size:13px;font-weight:700;color:#633806">⚠ ${escH(c.step.title)}${t?' kl. '+escH(t):''} ligger utenfor</div>
+  </div>`;
 }
 function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=v+'°C';const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
 
@@ -4153,6 +4205,44 @@ function mobSetMode(m){
 const USE_WIZARD_FLOW = true;
 window._wizEnteredOnce = false;
 
+// v5.78: swipe mellom wizardstegene, i tillegg til knapper og stegprikker.
+// Tre ting må håndteres for at den ikke skal ødelegge noe:
+//  - Finjuster har fire range-slidere. Et horisontalt dra på en slider er også
+//    et horisontalt dra på skjermen; starter berøringen i en slider (eller i et
+//    element merket .no-swipe) avbryter vi.
+//  - Retningen må være tydelig horisontal, ellers stjeler vi vanlig scrolling.
+//  - Drag helt inntil skjermkanten er iOS sin egen tilbake-gestikk. Konkurrerer
+//    vi med den, taper vi — så kantene ignoreres.
+let _wizTouch=null;
+const WIZ_SWIPE_MIN=60, WIZ_SWIPE_EDGE=30, WIZ_SWIPE_RATIO=1.5;
+function wizSwipeStart(e){
+  _wizTouch=null;
+  if(!e.touches || e.touches.length!==1) return;
+  const t=e.touches[0];
+  if(t.clientX<WIZ_SWIPE_EDGE || t.clientX>window.innerWidth-WIZ_SWIPE_EDGE) return;
+  if(e.target && e.target.closest && e.target.closest('input[type=range],select,input[type=date],input[type=time],textarea,.no-swipe')) return;
+  _wizTouch={x:t.clientX, y:t.clientY};
+}
+function wizSwipeEnd(e){
+  const start=_wizTouch; _wizTouch=null;
+  if(!start || !e.changedTouches || !e.changedTouches.length) return;
+  const t=e.changedTouches[0];
+  const dx=t.clientX-start.x, dy=t.clientY-start.y;
+  if(Math.abs(dx)<WIZ_SWIPE_MIN) return;
+  if(Math.abs(dx)<Math.abs(dy)*WIZ_SWIPE_RATIO) return;
+  const cur=window._wizStep==='finjuster' ? 3 : window._wizStep;
+  if(typeof cur!=='number') return;
+  const next=dx<0 ? cur+1 : cur-1;
+  if(next<1 || next>WIZ_STEPS.length) return;
+  wizGoto(next);
+}
+function wizAttachSwipe(){
+  const scr=document.getElementById('mob-settings');
+  if(!scr || scr._swipeBound) return;
+  scr.addEventListener('touchstart', wizSwipeStart, {passive:true});
+  scr.addEventListener('touchend', wizSwipeEnd, {passive:true});
+  scr._swipeBound=true;
+}
 function wizEnterSettingsTab(){
   if(!USE_WIZARD_FLOW){
     document.querySelectorAll('#mob-settings .wiz-step').forEach(el=>{ el.style.display='block'; });
@@ -4221,7 +4311,7 @@ function tnShort(type){
 }
 
 function wizHideAllSteps(){
-  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-3','wiz-finjuster'].forEach(id=>{
+  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-4','wiz-finjuster'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
 }
@@ -4238,22 +4328,32 @@ async function wizOpenFavoriteFromWizard(){
   if(window._activeDeigId) mobShowTab('plan');
 }
 
+// v5.78: fire steg. "Når" flyttet opp til steg 1 sammen med type og antall,
+// fordi metodevalget avhenger av hvor mye tid du har — før valgte man metode
+// blindt og oppdaget først etterpå at den ikke passet. Finjuster er nå et
+// nummerert steg i rekken i stedet for en sidedør, og siste steg er en
+// kvalitetssjekk som svarer på om planen faktisk holder.
 const WIZ_STEPS = [
-  {id:1, label:'Pizzatype'},
-  {id:2, label:'Metode'},
-  {id:3, label:'Når?'}
+  {id:1, label:'Pizza', el:'wiz-step-1'},
+  {id:2, label:'Metode', el:'wiz-step-2'},
+  {id:3, label:'Finjuster', el:'wiz-finjuster'},
+  {id:4, label:'Holder?', el:'wiz-step-4'}
 ];
+function wizStepEl(step){
+  const s=WIZ_STEPS.find(x=>x.id===step);
+  return s ? s.el : null;
+}
 function wizGoto(step, onSettled){
+  // 'finjuster' beholdes som lovlig verdi utenfra, men er nå steg 3.
+  if(step==='finjuster') step=3;
   window._wizStep = step;
   document.getElementById('wiz-returning').style.display='none';
   wizHideAllSteps();
   document.getElementById('wiz-header').style.display='block';
-  if(step==='finjuster'){
-    document.getElementById('wiz-finjuster').style.display='block';
-  }else{
-    const el=document.getElementById('wiz-step-'+step); if(el) el.style.display='block';
-  }
-  if(step===3) wizStep3Refresh();
+  const elId=wizStepEl(step);
+  if(elId){ const el=document.getElementById(elId); if(el) el.style.display='block'; }
+  if(step===1) wizStep1Refresh();
+  if(step===4) wizCheckRefresh();
   try{ renderWizStatusBar(); }catch(e){}
   wizRenderHeader(step);
   const scr=document.getElementById('mob-settings');
@@ -4271,7 +4371,7 @@ function wizGoto(step, onSettled){
   }else if(onSettled){ onSettled(); }
 }
 function wizRenderHeader(step){
-  const idx = typeof step==='number' ? step : 4;
+  const idx = typeof step==='number' ? step : 3;
   document.getElementById('wiz-back').style.visibility = idx>1 ? 'visible' : 'hidden';
   const tlEl = document.getElementById('wiz-timeline');
   const dotsHtml = WIZ_STEPS.map((s,i)=>{
@@ -4301,15 +4401,12 @@ function wizRenderHeader(step){
   tlEl.innerHTML = `<div style="display:flex;align-items:center">${dotsHtml}</div><div style="display:flex;margin-top:5px">${labelsHtml}</div>`;
 }
 function wizNext(){
-  const cur = window._wizStep;
-  if(cur===1) wizGoto(2);
-  else if(cur===2) wizGoto(3);
+  const cur = window._wizStep==='finjuster' ? 3 : window._wizStep;
+  if(cur<4) wizGoto(cur+1);
 }
 function wizBack(){
-  const cur = window._wizStep;
-  if(cur==='finjuster') wizGoto(3);
-  else if(cur===3) wizGoto(2);
-  else if(cur===2) wizGoto(1);
+  const cur = window._wizStep==='finjuster' ? 3 : window._wizStep;
+  if(cur>1) wizGoto(cur-1);
 }
 function wizFinish(){
   try{ localStorage.setItem(lastConfigKey(), JSON.stringify({...S})); }catch(e){}
@@ -4378,7 +4475,7 @@ function renderWizStatusBar(){
   let steps=[];
   try{ steps=computeCurrentSteps(); }catch(e){}
   const html=deigStatusBarHTML(steps, false, true);
-  ['wiz-status-step2','wiz-status-step3','wiz-status-finjuster'].forEach(id=>{
+  ['wiz-status-step2','wiz-status-check','wiz-status-finjuster'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML=html;
   });
@@ -4388,6 +4485,7 @@ function mobGen(){
   if(!mobEl||!mobEl.classList.contains('active'))return;
   renderWizStatusBar();
   try{ renderReturnBar(); }catch(e){}
+  if(window._wizStep===4){ try{ wizCheckRender(); }catch(e){} }
   const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
 
   if(S.type!=='ingenelting' && S.method==='hurtig'){
@@ -4951,6 +5049,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // må lastes ved oppstart. Varselet faller tilbake på den gamle regelen til
   // svaret er inne, og rendres på nytt her når det er.
   loadPizzatidSchedule().then(()=>{ try{ mobGen(); }catch(e){} });
+  try{ wizAttachSwipe(); }catch(e){}
 });
 if(document.readyState==='complete'||document.readyState==='interactive'){
   initLayout();
@@ -5010,8 +5109,43 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="wiz-step-1" class="wiz-step" style="display:none">
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken pizza?</div>
-      <div class="mob-section-lbl" style="display:none">Pizzatype</div>
+      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl">Pizzatype</div></div>
       <div class="mob-pill-wrap" id="mob-gtype"></div>
+
+      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Antall pizzaer</div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <span style="font-size:12px;color:var(--forno-text-faint);display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
+        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
+        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:22px;text-align:center;font-family:var(--forno-font-mono)">4</span>
+        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
+      </div>
+      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin:0 1rem .65rem;padding:7px 9px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:8px">
+        <span class="roundup-txt" style="font-size:11px;color:var(--forno-accent-text)"></span>
+        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #BA7517;border-radius:6px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:600;cursor:pointer"></button>
+      </div>
+
+      <div class="wiz-qhead"><div class="wiz-qnum">3</div><div class="wiz-qlbl" id="wiz-step1-when-lbl">Når vil du spise?</div></div>
+      <div id="mob-anchor-toggle" style="display:flex;gap:6px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🍕 Når jeg vil spise</div>
+        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">▶ Nå</div>
+      </div>
+      <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div style="font-size:10px;font-weight:600;color:var(--forno-text-faint);text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+          <input type="date" id="mob-sd">
+          <input type="time" id="mob-st" value="07:30">
+        </div>
+      </div>
+      <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div style="font-size:10px;font-weight:600;color:var(--forno-text-faint);text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+          <input type="date" id="mob-ed">
+          <input type="time" id="mob-et" value="18:00">
+        </div>
+      </div>
+      <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:var(--forno-accent-text);background:var(--forno-bg-raised);display:none"></div>
+      <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
+
       <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
@@ -5071,8 +5205,10 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
-    <div id="wiz-step-3" class="wiz-step" style="display:none">
-      <div id="wiz-status-step3"></div>
+    <div id="wiz-step-4" class="wiz-step" style="display:none">
+      <div id="wiz-status-check"></div>
+      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Holder dette?</div>
+      <div id="wiz-check" style="padding:.4rem 1rem .2rem"></div>
 
       <div id="mob-cold-wiz-wrap" style="display:none">
         <div class="mob-section-lbl">Kjøleskapsheving</div>
@@ -5083,53 +5219,18 @@ document.addEventListener('change', firstInteractionCheck, true);
         </div>
       </div>
 
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)" id="wiz-step3-title">Når vil du spise?</div>
-
-      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-step3-q1-lbl">Når vil du spise?</div></div>
-      <div id="mob-anchor-toggle" style="display:flex;gap:6px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🍕 Når jeg vil spise</div>
-        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">▶ Nå</div>
-      </div>
-      <div id="mob-bs" style="padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="font-size:10px;font-weight:600;color:var(--forno-text-faint);text-transform:uppercase;margin-bottom:4px">Når begynner du?</div>
-        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
-          <input type="date" id="mob-sd">
-          <input type="time" id="mob-st" value="07:30">
-        </div>
-      </div>
-      <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="font-size:10px;font-weight:600;color:var(--forno-text-faint);text-transform:uppercase;margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
-        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
-          <input type="date" id="mob-ed">
-          <input type="time" id="mob-et" value="18:00">
-        </div>
-      </div>
-      <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:var(--forno-accent-text);background:var(--forno-bg-raised);display:none"></div>
-      <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
-
-      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Antall pizzaer</div></div>
-      <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <span style="font-size:12px;color:var(--forno-text-faint);display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
-        <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
-        <span id="mob-pcount-disp" style="font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:22px;text-align:center;font-family:var(--forno-font-mono)">4</span>
-        <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
-      </div>
-      <div id="mob-roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin:0 1rem .65rem;padding:7px 9px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:8px">
-        <span class="roundup-txt" style="font-size:11px;color:var(--forno-accent-text)"></span>
-        <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:5px 10px;border:1px solid #BA7517;border-radius:6px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:600;cursor:pointer"></button>
-      </div>
-
       <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
       <div style="padding:0 1rem .8rem;text-align:center"><span onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 Finn oppskrift ut fra ledig tid → Beta-fanen</span></div>
     </div>
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
       <div style="padding:.8rem 1rem .2rem;display:flex;align-items:center;gap:8px">
-        <span onclick="wizGoto(3)" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px" title="Tilbake til Planlegging">←</span>
+        <span onclick="wizGoto(2)" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px" title="Tilbake til Metode">←</span>
         <span style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Finjuster</span>
         <button id="wiz-finjuster-back-to-plan" onclick="mobGen();mobShowTab('plan')" style="display:none;margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Se steg →</button>
       </div>
       <div id="wiz-status-finjuster"></div>
+      <div id="wiz-finjuster-next" style="padding:.6rem 1rem .2rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
       <button onclick="stepMobSlider('mob-msl',-100,mobUMel)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>

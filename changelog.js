@@ -3,6 +3,16 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.78',
+    d: 'juli 2026',
+    changes: [
+      'Wizarden er bygget om til fire steg. Antall pizzaer og når du vil spise er flyttet opp til første steg, sammen med pizzatypen — det er tingene du allerede vet når du bestemmer deg for å lage pizza. Viktigere: metodevalget avhenger av hvor mye tid du har, og nå vet appen det før du velger. Metodekortene sier derfor selv om de passer, i stedet for at du får en advarsel etterpå.',
+      'Finjuster er nå et vanlig steg i rekken i stedet for en sidedør, så du kan bla forbi den eller innom den som du vil.',
+      'Siste steg er nytt: en kvalitetssjekk som svarer på om planen holder. Står alt riktig, sier den fra om det — appen har hittil bare snakket når noe var galt. Kolliderer et steg med tiden du har satt av, viser den den utregnede fiksen, og er planen låst fast sier den det rett ut og foreslår en annen metode.',
+      'Du kan nå dra til siden for å bla mellom stegene i wizarden, i tillegg til knappene og stegprikkene. Sliderne i Finjuster virker som før — et dra som starter på en slider stiller slideren, det bytter ikke steg.'
+    ]
+  },
+  {
     v: '5.77',
     d: 'juli 2026',
     changes: [
