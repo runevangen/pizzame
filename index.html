@@ -2320,6 +2320,15 @@ function totalFermentHours(){
   if(S.method==='mania') return 720/60 + 120/60 + 25/60 + 30/60 + 75/60 + 600/60 + (600-15)/60; // fast struktur, ~36,6t
   return fixedFermOverheadHours()+S.cold;
 }
+// v5.81: Finjuster nås fra varslene i stedet for fra stegrekken. Hvert varsel
+// peker på den spaken som faktisk hører til problemet, i stedet for å slippe
+// deg av på toppen av skjermen.
+function openFinjusterAt(targetId){
+  setReturnTo(false);
+  window._wizEnteredOnce = true;
+  mobShowTab('settings');
+  wizGoto('finjuster', ()=>{ if(targetId) highlightWizEl(targetId); });
+}
 function meltypeWarnOpenFinjuster(){
   setReturnTo(false);
   const flour=MELTYPER.find(m=>m.v===S.meltype);
@@ -2824,7 +2833,7 @@ function activeStepWarnGoTo(which){
   setReturnTo(true);
   mobShowTab('settings');
   if(which==='cold'){
-    wizGoto(4, ()=>highlightWizEl('mob-cold-wiz-wrap'));
+    wizGoto(3, ()=>highlightWizEl('mob-cold-wiz-wrap'));
   }else{
     wizGoto(2, ()=>highlightWizEl(which==='poolish'?'mob-psub':'mob-bsub'));
   }
@@ -2874,6 +2883,7 @@ function hurtigWarmRoomWarningHTML(){
   return warningWrapHTML(`warmroom|${S.hurtigH}|${S.temp}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌡️ ${S.hurtigH} timer ved ${S.temp}°C — sjekk deigen underveis</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">De lengste hurtigdeig-alternativene (12–16t) er beregnet for et kjøligere kjøkken (18–20°C). Ved ${S.temp}°C går gjæringen fortere enn ventet, og deigen kan bli overmoden før tiden er ute. Sjekk den gjerne en time eller to før planlagt slutt — er den allerede stor og blank med bobler som kollapser lett, er den klar til bruk selv om klokken ikke stemmer helt.</div>
+    <div style="margin-top:.5rem"><span onclick="openFinjusterAt('mob-tlbl')" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>
   </div>`);
 }
 function overfermentWarningHTML(){
@@ -2890,6 +2900,7 @@ function overfermentWarningHTML(){
   return warningWrapHTML(`overferment|${S.method}|${Math.round(totalHours)}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⚠️ Lang gjæringstid — fare for overfermentering</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">Total effektiv gjæringstid er ca. ${totalDays} døgn${methodTxt}. Ved denne lengden bryter enzymer gradvis ned glutenstrukturen mer enn de bygger den — deigen kan bli slapp, klissete og vanskelig å forme, med en flat, tydelig sur smak. Sjekk deigen jevnlig mot slutten, og vær klar til å bake litt tidligere enn planlagt hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).</div>
+    <div style="margin-top:.5rem"><span onclick="openFinjusterAt('mob-cwrap')" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>
   </div>`);
 }
 
@@ -4226,7 +4237,8 @@ function wizSwipeEnd(e){
   const dx=t.clientX-start.x, dy=t.clientY-start.y;
   if(Math.abs(dx)<WIZ_SWIPE_MIN) return;
   if(Math.abs(dx)<Math.abs(dy)*WIZ_SWIPE_RATIO) return;
-  const cur=window._wizStep==='finjuster' ? 3 : window._wizStep;
+  if(window._wizStep==='finjuster'){ wizGoto(3); return; }
+  const cur=window._wizStep;
   if(typeof cur!=='number') return;
   const next=dx<0 ? cur+1 : cur-1;
   if(next<1 || next>WIZ_STEPS.length) return;
@@ -4307,7 +4319,7 @@ function tnShort(type){
 }
 
 function wizHideAllSteps(){
-  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-4','wiz-finjuster'].forEach(id=>{
+  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-check','wiz-finjuster'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
 }
@@ -4332,24 +4344,24 @@ async function wizOpenFavoriteFromWizard(){
 const WIZ_STEPS = [
   {id:1, label:'Pizza', el:'wiz-step-1'},
   {id:2, label:'Metode', el:'wiz-step-2'},
-  {id:3, label:'Finjuster', el:'wiz-finjuster'},
-  {id:4, label:'Holder?', el:'wiz-step-4'}
+  {id:3, label:'Holder?', el:'wiz-step-check'}
 ];
 function wizStepEl(step){
   const s=WIZ_STEPS.find(x=>x.id===step);
   return s ? s.el : null;
 }
 function wizGoto(step, onSettled){
-  // 'finjuster' beholdes som lovlig verdi utenfra, men er nå steg 3.
-  if(step==='finjuster') step=3;
+  // v5.81: Finjuster er ute av stegrekken igjen og nås fra varslene. Den
+  // beholder 'finjuster' som stegverdi — den har ingen plass i nummereringen,
+  // men må fortsatt kunne vises, og wizBack/swipe må vite hvor den hører til.
   window._wizStep = step;
   document.getElementById('wiz-returning').style.display='none';
   wizHideAllSteps();
   document.getElementById('wiz-header').style.display='block';
-  const elId=wizStepEl(step);
+  const elId = step==='finjuster' ? 'wiz-finjuster' : wizStepEl(step);
   if(elId){ const el=document.getElementById(elId); if(el) el.style.display='block'; }
   if(step===1) wizStep1Refresh();
-  if(step===4) wizCheckRefresh();
+  if(step===3) wizCheckRefresh();
   try{ renderWizStatusBar(); }catch(e){}
   wizRenderHeader(step);
   const scr=document.getElementById('mob-settings');
@@ -4397,12 +4409,13 @@ function wizRenderHeader(step){
   tlEl.innerHTML = `<div style="display:flex;align-items:center">${dotsHtml}</div><div style="display:flex;margin-top:5px">${labelsHtml}</div>`;
 }
 function wizNext(){
-  const cur = window._wizStep==='finjuster' ? 3 : window._wizStep;
-  if(cur<4) wizGoto(cur+1);
+  // Fra Finjuster er det bare én vei ut: tilbake til sjekken man kom fra.
+  if(window._wizStep==='finjuster'){ wizGoto(3); return; }
+  if(window._wizStep < WIZ_STEPS.length) wizGoto(window._wizStep+1);
 }
 function wizBack(){
-  const cur = window._wizStep==='finjuster' ? 3 : window._wizStep;
-  if(cur>1) wizGoto(cur-1);
+  if(window._wizStep==='finjuster'){ wizGoto(3); return; }
+  if(window._wizStep > 1) wizGoto(window._wizStep-1);
 }
 function wizFinish(){
   try{ localStorage.setItem(lastConfigKey(), JSON.stringify({...S})); }catch(e){}
@@ -4481,7 +4494,7 @@ function mobGen(){
   if(!mobEl||!mobEl.classList.contains('active'))return;
   renderWizStatusBar();
   try{ renderReturnBar(); }catch(e){}
-  if(window._wizStep===4){ try{ wizCheckRender(); }catch(e){} }
+  if(window._wizStep===3){ try{ wizCheckRender(); }catch(e){} }
   const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
 
   if(S.type!=='ingenelting' && S.method==='hurtig'){
@@ -5174,7 +5187,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
-    <div id="wiz-step-4" class="wiz-step" style="display:none">
+    <div id="wiz-step-check" class="wiz-step" style="display:none">
       <div id="wiz-status-check"></div>
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Holder dette?</div>
       <div id="wiz-check" style="padding:.4rem 1rem .2rem"></div>
@@ -5194,12 +5207,12 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
       <div style="padding:.8rem 1rem .2rem;display:flex;align-items:center;gap:8px">
-        <span onclick="wizGoto(2)" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px" title="Tilbake til Metode">←</span>
+        <span onclick="wizGoto(3)" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px" title="Tilbake til sjekken">←</span>
         <span style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Finjuster</span>
         <button id="wiz-finjuster-back-to-plan" onclick="mobGen();mobShowTab('plan')" style="display:none;margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Se steg →</button>
       </div>
       <div id="wiz-status-finjuster"></div>
-      <div id="wiz-finjuster-next" style="padding:.6rem 1rem .2rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
+      <div id="wiz-finjuster-next" style="padding:.6rem 1rem .2rem"><button onclick="wizGoto(3)" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">← Tilbake til sjekken</button></div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
       <button onclick="stepMobSlider('mob-msl',-100,mobUMel)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>

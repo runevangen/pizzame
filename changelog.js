@@ -3,6 +3,15 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.81',
+    d: 'juli 2026',
+    changes: [
+      'Finjuster er ikke lenger et eget steg i wizarden. Den nås nå derfra du oppdager at du trenger den: hvert varsel i kvalitetssjekken har fått en "Se i Finjuster"-lenke som tar deg rett til spaken som hører til akkurat det problemet — hydreringen for melvarselet, kjøleskapstiden for lang gjæring, romtemperaturen for varmt kjøkken. ⚙️ Juster øverst i statuslinjen åpner Finjuster som før.',
+      'Wizarden er dermed tre steg igjen: Pizza, Metode, Holder? Rekkefølgen var blitt bakvendt — du finjusterte før du fikk vite om det var noe å finjustere.',
+      'Både knappen og et dra til siden tar deg tilbake til sjekken du kom fra når du er ferdig i Finjuster.'
+    ]
+  },
+  {
     v: '5.80',
     d: 'juli 2026',
     changes: [

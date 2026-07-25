@@ -186,7 +186,7 @@ def run_behavioral_tests(page):
     # v5.78: kjøleskapsblokken bor nå på steg 4 (kvalitetssjekken), fortsatt
     # rett under statuslinjen. Metodestyringen er uendret.
     r6 = page.evaluate("""() => {
-      const step = document.getElementById('wiz-step-4');
+      const step = document.getElementById('wiz-step-check');
       const cold = document.getElementById('mob-cold-wiz-wrap');
       const status = document.getElementById('wiz-status-check');
       const check = document.getElementById('wiz-check');
@@ -200,14 +200,14 @@ def run_behavioral_tests(page):
       return {
         coldAfterStatus: !!pos(status, cold),
         coldAfterCheck: !!pos(check, cold),
-        coldInsideStep4: step.contains(cold),
+        coldInsideCheck: step.contains(cold),
         justerHintGone: !step.innerHTML.includes('Juster åpner flere valg'),
         vis
       };
     }""")
     ok6 = (
       r6['coldAfterStatus'] and r6['coldAfterCheck'] and
-      r6['coldInsideStep4'] and r6['justerHintGone'] and
+      r6['coldInsideCheck'] and r6['justerHintGone'] and
       all(r6['vis'][m] == 'block' for m in ('standard','poolish','biga','mania')) and
       all(r6['vis'][m] == 'none' for m in ('hurtig','kveld'))
     )
@@ -221,7 +221,7 @@ def run_behavioral_tests(page):
     r7 = page.evaluate("""() => {
       S.method='standard'; S.type='napoletana'; S.meltype='doppio_zero';
       S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.mode='end';
-      mobShowTab('settings'); wizGoto(4); mobGen();
+      mobShowTab('settings'); wizGoto(3); mobGen();
       _startDelta = null; mobGen();
       const chip = () => {
         const el = document.querySelector('#wiz-status-check .wiz-start-delta');
@@ -492,20 +492,25 @@ def run_behavioral_tests(page):
     # som også svarer GRØNT når alt går opp — det siste er det eneste helt nye.
     r13 = page.evaluate("""() => {
       const step1 = document.getElementById('wiz-step-1');
-      const step4 = document.getElementById('wiz-step-4');
+      const step4 = document.getElementById('wiz-step-check');
       mobShowTab('settings');
 
       wizGoto(1);
       const seq = [];
-      for (let i = 0; i < 3; i++) { wizNext(); seq.push(window._wizStep); }
+      for (let i = 0; i < 2; i++) { wizNext(); seq.push(window._wizStep); }
       wizNext();
-      const stopsAt4 = window._wizStep;
-      for (let i = 0; i < 3; i++) wizBack();
+      const stopsAtLast = window._wizStep;
+      for (let i = 0; i < 2; i++) wizBack();
       wizBack();
       const stopsAt1 = window._wizStep;
 
+      // v5.81: Finjuster er ute av nummereringen. Den kan fortsatt vises, men
+      // både Neste og Tilbake derfra leder til sjekken.
       wizGoto('finjuster');
-      const finjusterIsStep3 = window._wizStep;
+      const finjusterShown = document.getElementById('wiz-finjuster').style.display;
+      const finjusterNotNumbered = window._wizStep;
+      wizNext();
+      const outOfFinjuster = window._wizStep;
 
       // Ingen konflikt -> grønn bekreftelse.
       // Couco tåler 16-54t gjæring og 60-80% hydrering, så dette er et reelt
@@ -515,7 +520,7 @@ def run_behavioral_tests(page):
       S.meltype='couco'; S.hydro=65;
       const allDay = [['00:00','23:59'], null];
       window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
-      wizGoto(4);
+      wizGoto(3);
       const okText = document.getElementById('wiz-check').textContent;
 
       // Konflikt -> sjekken skal IKKE si at planen holder.
@@ -528,25 +533,28 @@ def run_behavioral_tests(page):
       window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
       return {
         stepCount: WIZ_STEPS.length,
-        seq, stopsAt4, stopsAt1, finjusterIsStep3,
+        seq, stopsAtLast, stopsAt1,
+        finjusterShown, finjusterNotNumbered, outOfFinjuster,
         step1HasType: !!step1.querySelector('#mob-gtype'),
         step1HasCount: !!step1.querySelector('#mob-pcount-disp'),
         step1HasWhen: !!step1.querySelector('#mob-be'),
-        step4HasCheck: !!step4.querySelector('#wiz-check'),
-        step4HasCold: !!step4.querySelector('#mob-cold-wiz-wrap'),
+        checkHasVerdict: !!step4.querySelector('#wiz-check'),
+        checkHasCold: !!step4.querySelector('#mob-cold-wiz-wrap'),
         okIsGreen: okText.includes('Planen holder'),
         badIsNotGreen: !badText.includes('Planen holder') && badText.trim().length > 0
       };
     }""")
     ok13 = (
-      r13['stepCount'] == 4 and r13['seq'] == [2, 3, 4] and
-      r13['stopsAt4'] == 4 and r13['stopsAt1'] == 1 and
-      r13['finjusterIsStep3'] == 3 and
+      r13['stepCount'] == 3 and r13['seq'] == [2, 3] and
+      r13['stopsAtLast'] == 3 and r13['stopsAt1'] == 1 and
+      r13['finjusterShown'] == 'block' and
+      r13['finjusterNotNumbered'] == 'finjuster' and
+      r13['outOfFinjuster'] == 3 and
       r13['step1HasType'] and r13['step1HasCount'] and r13['step1HasWhen'] and
-      r13['step4HasCheck'] and r13['step4HasCold'] and
+      r13['checkHasVerdict'] and r13['checkHasCold'] and
       r13['okIsGreen'] and r13['badIsNotGreen']
     )
-    results.append(('wizard_has_four_steps_with_quality_check', ok13, r13))
+    results.append(('wizard_has_three_steps_with_quality_check', ok13, r13))
 
     # v5.78: swipe navigerer mellom stegene, men må IKKE utløses av et dra på en
     # slider (Finjuster har fire), av et vertikalt dra, eller av et dra fra
@@ -571,7 +579,7 @@ def run_behavioral_tests(page):
       const tooShort = swipe(scr, 250, 300, 220, 300);
 
       // Dra som starter i en Finjuster-slider skal ikke bytte steg.
-      wizGoto(3);
+      wizGoto('finjuster');
       const slider = document.getElementById('mob-hsl') || document.querySelector('#wiz-finjuster input[type=range]');
       const onSlider = slider ? swipe(slider, 250, 300, 100, 302) : null;
 
@@ -584,7 +592,7 @@ def run_behavioral_tests(page):
       r14['hasSlider'] and
       r14['leftFromTwo'] == 3 and r14['rightFromThree'] == 2 and
       r14['vertical'] == 2 and r14['fromEdge'] == 2 and r14['tooShort'] == 2 and
-      r14['onSlider'] == 3 and r14['atOne'] == 1
+      r14['onSlider'] == 'finjuster' and r14['atOne'] == 1
     )
     results.append(('wizard_swipe_navigates_without_hijacking_sliders', ok14, r14))
 
@@ -603,7 +611,7 @@ def run_behavioral_tests(page):
       // Rent utgangspunkt: mel som passer til gjæringstiden.
       S.type='napoletana'; S.method='standard'; S.mode='end';
       S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.meltype='couco';
-      wizGoto(4);
+      wizGoto(3);
       const cleanText = check().textContent;
 
       // Mel som ikke tåler gjæringstiden -> skal dukke opp i sjekken.
@@ -617,7 +625,7 @@ def run_behavioral_tests(page):
       const btn = document.querySelector('#mob-plan-content .warn-dismiss-btn');
       if (btn) btn.click();
       const hiddenInPlan = !document.querySelector('#mob-plan-content .warn-dismiss-wrap');
-      mobShowTab('settings'); wizGoto(4);
+      mobShowTab('settings'); wizGoto(3);
       const stillInCheck = check().textContent.includes('ting å se på') || check().textContent.includes('Én ting');
 
       _dismissedWarnings.clear();
