@@ -437,17 +437,6 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 .mob-step.step-next{border-left:3px solid #1D7FE9}
 .next-flag{display:inline-block;font-size:10px;font-weight:600;color:#1257A0;background:#E3F0FD;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
-.pizza-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;background:#fff;border:1px solid #EDEDED;border-radius:12px;padding:.7rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;z-index:300;transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:min(90vw,360px)}
-body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--forno-border)}
-.pizza-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.pizza-toast-emoji{font-size:30px;line-height:1;flex-shrink:0;display:inline-block}
-.pizza-toast-text{font-size:13px;font-weight:600;color:var(--dyn-text);line-height:1.35}
-@keyframes toastWiggle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
-@keyframes toastBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes toastKnead{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
-.toast-anim-wiggle{animation:toastWiggle .5s ease-in-out infinite}
-.toast-anim-bounce{animation:toastBounce .6s ease-in-out infinite}
-.toast-anim-knead{animation:toastKnead .45s ease-in-out infinite}
 .adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#F2F2F7;border-radius:8px;font-size:12px;font-weight:600;color:#3A3A3C;cursor:pointer;margin:.6rem 0}
 .adv-toggle:hover{background:#e5e2dc}
 </style>
@@ -910,7 +899,6 @@ function pgrp(id,key,cb){
       S[key]=p.dataset.v;
       pgrp(id,key,cb);
       if(cb)cb();
-      if(key==='type' && changed) showPizzaToast(S.type);
       schedNow();
     };
   });
@@ -2436,8 +2424,10 @@ function dismissWarning(k){
   if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
   else { try{ schedNow(); }catch(e){} }
 }
+let _warnShowAll = false;
 function warningWrapHTML(keySource, innerHTML){
   if(!innerHTML) return '';
+  if(_warnShowAll) return innerHTML;
   const k=warnKey(keySource);
   if(_dismissedWarnings.has(k)) return '';
   return `<div class="warn-dismiss-wrap">${innerHTML}<button class="warn-dismiss-btn" onclick="dismissWarning('${k}')" title="Skjul dette varselet" aria-label="Skjul dette varselet">✕</button></div>`;
@@ -3932,7 +3922,6 @@ function mobPillGroup(id,key){
       S[key]=v;
       mobPillGroup(id,key);
       if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
-      if(key==='type' && changed) showPizzaToast(S.type);
       mobGen();
     };
     wrap.appendChild(el);
@@ -4143,27 +4132,34 @@ function wizCheckRefresh(){
 function wizCheckRender(){
   const el=document.getElementById('wiz-check');
   if(!el) return;
-  let c=null;
-  try{ c=firstStepConflict(computeCurrentSteps()); }catch(e){}
-  if(!c){
+  // Sjekken stiller to spørsmål: går planen opp i livet ditt, og blir deigen
+  // god. Tidskonflikt og metodepassform svarer på det første, mel, gjæringstid
+  // og romtemperatur på det andre. Alle fem finnes fra før — her samles de på
+  // ett sted, der det er billigst å gjøre noe med dem: ett steg unna spaken.
+  const prev=_warnShowAll;
+  _warnShowAll=true;
+  const parts=[];
+  try{
+    [activeStepTimeWarningHTML, methodTimeWarningHTML, meltypeWarningHTML,
+     overfermentWarningHTML, hurtigWarmRoomWarningHTML].forEach(fn=>{
+      let h='';
+      try{ h=fn(); }catch(e){}
+      if(h) parts.push(h);
+    });
+  } finally { _warnShowAll=prev; }
+
+  if(!parts.length){
     el.innerHTML=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem">
       <div style="font-size:13px;font-weight:700;color:#085041;margin-bottom:.25rem">✓ Planen holder</div>
-      <div style="font-size:12px;color:#0F6E56;line-height:1.5">Alle steg ligger i tiden du har satt av, og ingenting faller på natten.</div>
+      <div style="font-size:12px;color:#0F6E56;line-height:1.5">Alle steg ligger i tiden du har satt av, og melet passer til gjæringstiden.</div>
     </div>`;
     return;
   }
-  // Gjenbruker varselet, som allerede regner ut riktig fiks per situasjon. Er
-  // det skjult med krysset fra v5.74, faller vi tilbake på en kort linje —
-  // sjekken skal aldri påstå at planen holder når den ikke gjør det.
-  let w='';
-  try{ w=activeStepTimeWarningHTML(); }catch(e){}
-  if(w){ el.innerHTML=w; return; }
-  let t='';
-  try{ t=fT(c.at); }catch(e){}
-  el.innerHTML=`<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem">
-    <div style="font-size:13px;font-weight:700;color:#633806">⚠ ${escH(c.step.title)}${t?' kl. '+escH(t):''} ligger utenfor</div>
-  </div>`;
+  const n=parts.length;
+  const lead=`<div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.5rem">${n===1?'Én ting å se på':n+' ting å se på'}</div>`;
+  el.innerHTML=lead+parts.join('');
 }
+
 function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=v+'°C';const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
 
 function mobHydroUI(){
@@ -4821,33 +4817,6 @@ function methodMetaLabel(){
   if(S.method==='biga') return 'Biga '+S.bigaH+'t + '+c;
   if(S.method==='standard') return c;
   return '';
-}
-
-const PIZZA_TOAST = {
-  napoletana: {emoji:'🤌', anim:'toast-anim-wiggle', text:'Mamma mia! Nå blir det ekte vare.'},
-  newyork:    {emoji:'🗽', anim:'toast-anim-knead',  text:'Frihetsgudinnen godkjenner — husk å brette skiva!'},
-  chicago:    {emoji:'🍴', anim:'toast-anim-bounce', text:'Glem hendene — dette spises med kniv og gaffel.'},
-  langpanne:  {emoji:'🟥', anim:'toast-anim-bounce', text:'Hele gjengen spiser seg mette — ingen krangling om siste biten.'}
-};
-function showPizzaToast(type){
-  const cfg = PIZZA_TOAST[type];
-  if(!cfg) return;
-  const existing = document.getElementById('pizza-toast');
-  if(existing){ clearTimeout(existing._hideTimer); existing.remove(); }
-  const el = document.createElement('div');
-  el.id = 'pizza-toast';
-  el.className = 'pizza-toast';
-  el.innerHTML = `<span class="pizza-toast-emoji ${cfg.anim}">${cfg.emoji}</span><span class="pizza-toast-text">${cfg.text}</span>`;
-  document.body.appendChild(el);
-  if(typeof requestAnimationFrame === 'function'){
-    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
-  }else{
-    setTimeout(()=>el.classList.add('show'), 20);
-  }
-  el._hideTimer = setTimeout(()=>{
-    el.classList.remove('show');
-    setTimeout(()=>el.remove(), 300);
-  }, 2500);
 }
 
 function savedDeigSuffix(){

@@ -3,6 +3,22 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.80',
+    d: 'juli 2026',
+    changes: [
+      'Kvalitetssjekken på siste wizardsteg sjekker nå også deigen, ikke bare tidene. Passer ikke melet til gjæringstiden, er hydreringen utenfor det melet tåler, blir gjæringen så lang at deigen kan bryte sammen, eller er kjøkkenet for varmt for hurtigdeigen — så står det der, sammen med tidskonfliktene. Står alt riktig, sier den fortsatt fra om det.',
+      'Grunnen til at de hører hjemme akkurat der: inne i wizarden er det ett swipe tilbake til spaken som fikser problemet. Fra Steg-fanen måtte du bytte fane og lete.',
+      'Er det flere ting å se på, teller sjekken dem opp øverst. Og et varsel du har trykket bort med krysset dukker likevel opp i sjekken — der har du nettopp bedt om dommen, så der holder vi ikke noe tilbake.'
+    ]
+  },
+  {
+    v: '5.79',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet den lille meldingen som spratt opp øverst på skjermen hver gang du byttet pizzatype. Den var morsom én gang og i veien de neste tjue.'
+    ]
+  },
+  {
     v: '5.78',
     d: 'juli 2026',
     changes: [

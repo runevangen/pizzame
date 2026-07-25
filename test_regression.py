@@ -508,7 +508,11 @@ def run_behavioral_tests(page):
       const finjusterIsStep3 = window._wizStep;
 
       // Ingen konflikt -> grønn bekreftelse.
+      // Couco tåler 16-54t gjæring og 60-80% hydrering, så dette er et reelt
+      // rent utgangspunkt — Doppio Zero stopper på 24t og ville selv utløst
+      // meltype-varselet ved 48t kjøleskap.
       S.method='standard'; S.type='napoletana'; S.cold=48; S.mode='end';
+      S.meltype='couco'; S.hydro=65;
       const allDay = [['00:00','23:59'], null];
       window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
       wizGoto(4);
@@ -583,6 +587,55 @@ def run_behavioral_tests(page):
       r14['onSlider'] == 3 and r14['atOne'] == 1
     )
     results.append(('wizard_swipe_navigates_without_hijacking_sliders', ok14, r14))
+
+    # v5.80: kvalitetssjekken dekker nå både tid og deig. Tester at et
+    # meltype-problem faktisk dukker opp på steg 4, at telleren stemmer med
+    # antall bokser, og at et varsel som er skjult med krysset i Steg-fanen
+    # likevel VISES i sjekken — der har man nettopp bedt om dommen.
+    r15 = page.evaluate("""() => {
+      const check = () => document.getElementById('wiz-check');
+      const boxes = () => check().querySelectorAll('div[style*="FAEEDA"]').length;
+      const allDay = [['00:00','23:59'], null];
+      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
+      _dismissedWarnings.clear();
+      mobShowTab('settings');
+
+      // Rent utgangspunkt: mel som passer til gjæringstiden.
+      S.type='napoletana'; S.method='standard'; S.mode='end';
+      S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.meltype='couco';
+      wizGoto(4);
+      const cleanText = check().textContent;
+
+      // Mel som ikke tåler gjæringstiden -> skal dukke opp i sjekken.
+      S.meltype='vanlig_hvetemel'; S.cold=96;
+      wizCheckRefresh();
+      const dirtyText = check().textContent;
+      const dirtyBoxes = boxes();
+
+      // Skjul det i Steg-fanen; sjekken skal fortsatt vise det.
+      mobShowTab('plan'); mobGen();
+      const btn = document.querySelector('#mob-plan-content .warn-dismiss-btn');
+      if (btn) btn.click();
+      const hiddenInPlan = !document.querySelector('#mob-plan-content .warn-dismiss-wrap');
+      mobShowTab('settings'); wizGoto(4);
+      const stillInCheck = check().textContent.includes('ting å se på') || check().textContent.includes('Én ting');
+
+      _dismissedWarnings.clear();
+      S.meltype='couco'; S.cold=48;
+      return {
+        cleanIsGreen: cleanText.includes('Planen holder'),
+        dirtyMentionsFlour: dirtyText.includes('🌾') || dirtyText.includes('gjæret'),
+        dirtyHasCount: /ting å se på|Én ting/.test(dirtyText),
+        dirtyBoxes, hiddenInPlan, stillInCheck,
+        noCrossInCheck: check().querySelectorAll('.warn-dismiss-btn').length === 0
+      };
+    }""")
+    ok15 = (
+      r15['cleanIsGreen'] and r15['dirtyMentionsFlour'] and
+      r15['dirtyHasCount'] and r15['dirtyBoxes'] >= 1 and
+      r15['hiddenInPlan'] and r15['stillInCheck'] and r15['noCrossInCheck']
+    )
+    results.append(('quality_check_covers_dough_and_ignores_dismissals', ok15, r15))
 
     return results
 
