@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.85',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet "Tidligst mulig"-linjen under Når vil du spise-spørsmålet på første wizardsteg. Skulle du be om et tidspunkt som ikke går opp, får du i stedet det tydelige varselet fra v5.84 med en ferdig utregnet knapp — det tar seg av akkurat den situasjonen bedre enn en passiv linje gjorde.'
+    ]
+  },
+  {
     v: '5.84',
     d: 'juli 2026',
     changes: [

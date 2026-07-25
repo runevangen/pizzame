@@ -4240,8 +4240,6 @@ function mobSetMode(m){
   document.getElementById('mob-bs').style.display=m==='start'?'block':'none';
   try{ wizStep1Refresh(); }catch(e){}
   document.getElementById('mob-be').style.display=m==='end'?'block':'none';
-  const meh=document.getElementById('mob-earliest-hint');
-  if(meh){meh.style.display=m==='end'?'block':'none';if(m==='end'){const earliest=earliestBakeAt();meh.textContent=earliest?'Tidligst mulig: '+fDT(earliest):'';}}
   mobGen();
 }
 
@@ -5159,7 +5157,6 @@ document.addEventListener('change', firstInteractionCheck, true);
           <input type="time" id="mob-et" value="18:00">
         </div>
       </div>
-      <div id="mob-earliest-hint" style="padding:.3rem 1rem .5rem;font-size:11px;color:var(--forno-accent-text);background:var(--forno-bg-raised);display:none"></div>
       <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
 
       <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
