@@ -430,6 +430,61 @@ def run_behavioral_tests(page):
     )
     results.append(('pizzatid_edit_refreshes_warning_immediately', ok11, r11))
 
+    # v5.77: hoppene fra varslene skal ikke lenger være enveisdører. Tester at
+    # returlinjen dukker opp der du LANDER (ikke der du kom fra), at den svarer
+    # live mens du redigerer, at den tar deg tilbake til riktig fane, og at den
+    # ikke vises hvis du åpner Beta-fanen på eget initiativ.
+    r12 = page.evaluate("""() => {
+      const bar = () => document.getElementById('mob-return-bar');
+      const shown = () => bar().classList.contains('on');
+      const status = () => bar().textContent;
+
+      _returnTo = null;
+      const wd = [['16:00','23:30'],['06:30','08:00']];
+      const we = [['06:00','23:00'], null];
+      window._pizzatidSchedule = {mon:wd,tue:wd,wed:wd,thu:wd,fri:wd,sat:we,sun:we};
+
+      // Åpner Beta-fanen selv: ingen returlinje.
+      mobShowTab('beta');
+      const selfOpened = shown();
+
+      // Kommer fra et varsel på Steg-fanen i stedet.
+      mobShowTab('plan');
+      const onOriginBefore = shown();
+      openPizzatidFromWarning();
+      const landedTab = MOB_TABS.find(id => document.getElementById('mob-'+id).classList.contains('active'));
+      const afterJump = { shown: shown(), text: status() };
+
+      // Redigerer pizzatiden så konflikten forsvinner: linjen skal snu til grønt
+      // uten at vi bytter skjerm.
+      const allDay = [['00:00','23:59'], null];
+      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
+      pizzatidChanged();
+      const afterFix = { shown: shown(), text: status() };
+
+      // Returnerer.
+      goBackFromJump();
+      const backTab = MOB_TABS.find(id => document.getElementById('mob-'+id).classList.contains('active'));
+      const afterReturn = shown();
+
+      _returnTo = null; renderReturnBar();
+      return {
+        selfOpened, onOriginBefore, landedTab,
+        afterJump, afterFix, backTab, afterReturn,
+        resolvedIsGreen: afterFix.text.includes('Alle steg ligger'),
+        hasBackButton: afterJump.text.includes('Tilbake')
+      };
+    }""")
+    ok12 = (
+      r12['selfOpened'] is False and
+      r12['onOriginBefore'] is False and
+      r12['landedTab'] == 'beta' and
+      r12['afterJump']['shown'] is True and r12['hasBackButton'] and
+      r12['afterFix']['shown'] is True and r12['resolvedIsGreen'] and
+      r12['backTab'] == 'plan' and r12['afterReturn'] is False
+    )
+    results.append(('warning_jumps_have_a_return_path', ok12, r12))
+
     return results
 
 

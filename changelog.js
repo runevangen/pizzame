@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.77',
+    d: 'juli 2026',
+    changes: [
+      'Knappene i varslene som sender deg et annet sted — "Rediger pizzatiden din", "Juster kjøleskapstid", "Se i Finjuster", "Se i Metode" — var enveisdører. Du landet et sted, endret noe, og fikk aldri vite om problemet du kom for å løse faktisk ble borte. Nå dukker det opp en linje nederst på skjermen du ble sendt til, med en vei tilbake dit du kom fra.',
+      'Linjen svarer mens du redigerer. Justerer du pizzatiden til at steget passer, sier den fra med det samme at alle steg ligger innenfor — du trenger ikke gå ut og inn for å sjekke. Står konflikten fortsatt, sier den hvilket steg det gjelder og når. Linjen vises bare når du faktisk ble sendt dit av et varsel, og forsvinner så snart du navigerer videre på egen hånd.'
+    ]
+  },
+  {
     v: '5.76',
     d: 'juli 2026',
     changes: [
