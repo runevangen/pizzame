@@ -890,6 +890,62 @@ def run_behavioral_tests(page):
     )
     results.append(('hei_igjen_screen_removed_wizard_goes_straight_to_step_1', ok21, r21))
 
+    # v5.91: Rune sitt scenario — han vet han faktisk KAN ordne deigen kl.
+    # 14:00 den dagen, men gidder ikke gå inn og redigere pizzatiden for én
+    # enkelt dag. Ny "Dette er greit — fortsett likevel"-knapp på tidskonflikt-
+    # varselet (kun busy/natt, ikke deigens fysiske begrensninger). Tester at
+    # (1) knappen finnes for en pizzatid-konflikt, (2) et klikk bytter boksen
+    # til en nøytral bekreftelse i stedet for å bare skjule den, (3) sjekken
+    # sier "Planen holder — med ett godtatt forbehold" i stedet for å late som
+    # ingenting skjedde ELLER late som noe fortsatt er uløst, og (4) "Angre"
+    # tar deg tilbake til det ekte varselet.
+    r22 = page.evaluate("""() => {
+      const none = [['12:00','12:01'], null];
+      window._pizzatidSchedule = {mon:none,tue:none,wed:none,thu:none,fri:none,sat:none,sun:none};
+      _dismissedWarnings.clear(); _acceptedConflicts.clear();
+      S.type='napoletana'; S.method='standard'; S.mode='end';
+      S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.meltype='couco';
+      const far = new Date(Date.now() + 10*24*3600000);
+      const p2 = n => String(n).padStart(2,'0');
+      document.getElementById('mob-ed').value = far.getFullYear()+'-'+p2(far.getMonth()+1)+'-'+p2(far.getDate());
+      document.getElementById('mob-et').value = '18:00';
+      mobShowTab('settings'); wizGoto(3);
+
+      const check = () => document.getElementById('wiz-check');
+      const before = check().innerHTML;
+      const acceptBtn = Array.from(check().querySelectorAll('button'))
+        .find(b => b.textContent.includes('fortsett likevel'));
+      const hadAcceptBtn = !!acceptBtn;
+
+      if (acceptBtn) acceptBtn.click();
+      const afterAccept = check().innerHTML;
+
+      const undoLink = Array.from(check().querySelectorAll('span'))
+        .find(el => el.textContent.trim() === 'Angre');
+      const hadUndo = !!undoLink;
+      if (undoLink) undoLink.click();
+      const afterUndo = check().innerHTML;
+
+      _acceptedConflicts.clear(); _dismissedWarnings.clear();
+      return {
+        beforeHadWarning: before.includes('Et steg havner'),
+        hadAcceptBtn,
+        afterAcceptIsGreenWithCaveat: afterAccept.includes('med ett godtatt forbehold'),
+        afterAcceptHasNeutralBox: afterAccept.includes('data-accepted') && afterAccept.includes('Du har godtatt'),
+        afterAcceptNoLongerAmberWarning: !afterAccept.includes('Et steg havner'),
+        hadUndo,
+        afterUndoShowsRealWarningAgain: afterUndo.includes('Et steg havner') && !afterUndo.includes('Planen holder')
+      };
+    }""")
+    ok22 = (
+      r22['beforeHadWarning'] and r22['hadAcceptBtn'] and
+      r22['afterAcceptIsGreenWithCaveat'] and r22['afterAcceptHasNeutralBox'] and
+      r22['afterAcceptNoLongerAmberWarning'] and r22['hadUndo'] and
+      r22['afterUndoShowsRealWarningAgain']
+    )
+    results.append(('accept_time_conflict_anyway_without_lying_about_it', ok22, r22))
+
+
 
 
 

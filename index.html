@@ -2454,6 +2454,21 @@ function dismissWarning(k){
   else { try{ schedNow(); }catch(e){} }
 }
 let _warnShowAll = false;
+// v5.91: kun for TIDSpreferanser (opptatt tid / natt) — ikke for deigens
+// fysiske begrensninger (meltype, overfermentering, varmt kjøkken), der
+// "godta likevel" ville tilslørt et reelt kvalitetsproblem i stedet for et
+// logistikkvalg du faktisk kan ta.
+const _acceptedConflicts = new Set();
+function acceptStepConflict(k){
+  _acceptedConflicts.add(k);
+  if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
+  else { try{ schedNow(); }catch(e){} }
+}
+function unacceptStepConflict(k){
+  _acceptedConflicts.delete(k);
+  if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
+  else { try{ schedNow(); }catch(e){} }
+}
 function warningWrapHTML(keySource, innerHTML){
   if(!innerHTML) return '';
   if(_warnShowAll) return innerHTML;
@@ -2643,6 +2658,8 @@ function activeStepTimeWarningHTML(){
     }
     const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="${btnOutline}">Prøv Kveldsdeig i stedet</button>` : '';
     const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="${btnOutline}">Rediger pizzatiden din</button>` : '';
+    const conflictKey=warnKey(`activestep|${win.id}|${s.title}|${dt}`);
+    const acceptBtn=(win.id==='busy'||win.id==='night') ? `<button onclick="acceptStepConflict('${conflictKey}')" style="padding:6px 12px;border:none;background:transparent;color:#8a5a05;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline">Dette er greit — fortsett likevel</button>` : '';
 
     // Ingen spak beveger steget, og måltidet kan ikke flyttes til noe som går
     // opp: da er det ærligere å si at metoden ikke passer enn å tilby knapper
@@ -2652,8 +2669,20 @@ function activeStepTimeWarningHTML(){
       ? ` Dette steget er låst til steketidspunktet, så verken hevetid eller kjøleskapstid kan flytte det — og det finnes ingen spisetid innenfor det neste døgnet som får hele planen til å gå opp.${isShort?'':' En metode med kortere temperering, som Kveldsdeig, er sannsynligvis det som skal til.'}`
       : shiftTxt;
 
+    // Godtatt fra før: bytt til en nøytral bekreftelse i stedet for
+    // advarselen. Den teller IKKE som et åpent problem i wizCheckRender() —
+    // markert med data-accepted, ikke bare stilen — men forblir SYNLIG, slik
+    // at sjekken aldri later som konflikten forsvant, bare at du har godtatt
+    // den. Wrappes fortsatt (egen nøkkel) så den kan skjules med kryss i
+    // Steg-fanen, akkurat som alt annet der.
+    if((win.id==='busy'||win.id==='night') && _acceptedConflicts.has(conflictKey)){
+      return warningWrapHTML(`accepted|${conflictKey}`, `<div data-accepted="1" style="background:var(--forno-bg-raised,#F2F2F7);border:1px solid var(--forno-border,#ddd);border-radius:10px;padding:.65rem .9rem;margin-bottom:.8rem">
+        <div style="font-size:12px;color:var(--forno-text-faint,#666);line-height:1.5">✓ Du har godtatt at <b style="color:var(--forno-text,#333)">${escH(s.title)}</b> havner i ${win.label} (${dt}).</div>
+        <div style="margin-top:.4rem"><span onclick="unacceptStepConflict('${conflictKey}')" style="font-size:11px;color:#8a5a05;font-weight:600;text-decoration:underline;cursor:pointer">Angre</span></div>
+      </div>`);
+    }
     const row1=`${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}`;
-    const row2=`${pizzatidBtn}${stuck?kveldBtn:''}`;
+    const row2=`${pizzatidBtn}${stuck?kveldBtn:''}${acceptBtn}`;
     return warningWrapHTML(`activestep|${win.id}|${s.title}|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
       <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} Et steg havner i ${win.label}</div>
       <div style="font-size:12px;color:#4a2a05;line-height:1.5"><b>${escH(s.title)}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.${lockedNote}</div>
@@ -4196,24 +4225,25 @@ function wizCheckRender(){
   // ett sted, der det er billigst å gjøre noe med dem: ett steg unna spaken.
   const prev=_warnShowAll;
   _warnShowAll=true;
-  const parts=[];
+  const parts=[]; let openCount=0;
   try{
     [pastStartWarningHTML, activeStepTimeWarningHTML, methodTimeWarningHTML,
      meltypeWarningHTML, overfermentWarningHTML, hurtigWarmRoomWarningHTML].forEach(fn=>{
       let h='';
       try{ h=fn(); }catch(e){}
-      if(h) parts.push(h);
+      if(h){ parts.push(h); if(!h.includes('data-accepted')) openCount++; }
     });
   } finally { _warnShowAll=prev; }
 
-  if(!parts.length){
-    el.innerHTML=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem">
-      <div style="font-size:13px;font-weight:700;color:#085041;margin-bottom:.25rem">✓ Planen holder</div>
-      <div style="font-size:12px;color:#0F6E56;line-height:1.5">Alle steg ligger i tiden du har satt av, og melet passer til gjæringstiden.</div>
-    </div>`;
+  if(!openCount){
+    const hasAccepted = parts.some(p=>p.includes('data-accepted'));
+    el.innerHTML=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem;margin-bottom:${hasAccepted?'.6rem':'0'}">
+      <div style="font-size:13px;font-weight:700;color:#085041;margin-bottom:.25rem">✓ ${hasAccepted?'Planen holder — med ett godtatt forbehold':'Planen holder'}</div>
+      <div style="font-size:12px;color:#0F6E56;line-height:1.5">${hasAccepted?'Alt annet stemmer, og du har selv godtatt resten.':'Alle steg ligger i tiden du har satt av, og melet passer til gjæringstiden.'}</div>
+    </div>`+parts.join('');
     return;
   }
-  const n=parts.length;
+  const n=openCount;
   const lead=`<div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.5rem">${n===1?'Én ting å se på':n+' ting å se på'}</div>`;
   el.innerHTML=lead+parts.join('');
 }

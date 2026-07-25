@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.91',
+    d: 'juli 2026',
+    changes: [
+      'Varselet om at et steg havner utenfor tiden du har satt av, eller på natten, har fått en tredje knapp: "Dette er greit — fortsett likevel". Noen ganger vet du at du kan ordne deigen på et upassende tidspunkt akkurat denne ene gangen, uten å gå inn og endre pizzatiden din for godt. Trykker du den, blir varselet til en nøytral bekreftelse i stedet for å bare forsvinne — sjekken sier "Planen holder — med ett godtatt forbehold" i stedet for å late som ingenting eller late som noe fortsatt står uløst. Et "Angre"-alternativ tar deg tilbake til varselet.',
+      'Gjelder kun disse to varslene — ikke meltype, overfermentering eller varmt kjøkken, som handler om deigens fysiske grenser og ikke bør kunne "godtas bort".'
+    ]
+  },
+  {
     v: '5.90',
     d: 'juli 2026',
     changes: [
