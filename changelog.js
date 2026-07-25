@@ -3,6 +3,22 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.75',
+    d: 'juli 2026',
+    changes: [
+      'Varselet om at et steg havner på et dårlig tidspunkt tilbyr nå bare knapper som faktisk kan løse akkurat det problemet. Tidligere fikk du "Juster kjøleskapstid" uansett — men steg som "Ta ut av kjøleskap" ligger fast fire timer før steking, så kjøleskapstiden kan ikke flytte dem i det hele tatt når du planlegger bakover fra et måltid. Du kunne justere så mye du ville uten at varselet forsvant.',
+      'I stedet regner appen ut hvor mye du må flytte måltidet for at hele planen skal gå opp, og tilbyr det ferdig: "Spis tir 20:00 i stedet" — med en forklaring av hva det gjør med steget som kolliderte. Finnes det ingen spisetid som fungerer, sier varselet det rett ut i stedet for å tilby knapper som ikke virker, og peker mot en metode med kortere temperering.'
+    ]
+  },
+  {
+    v: '5.74',
+    d: 'juli 2026',
+    changes: [
+      'Alle varsler har fått et kryss oppe i høyre hjørne som skjuler varselet for denne gangen. Det gjelder også nattevarselet — unntak finnes, du kan være våken uansett, eller ha lagt opp til det med vilje for smakens skyld.',
+      'Krysset husker den konkrete konflikten, ikke varseltypen. Skjuler du "Ta ut av kjøleskap tir 14:00" og siden endrer noe slik at problemet flytter seg til et annet tidspunkt, dukker varselet opp igjen — men et uendret problem forblir skjult. Ingenting lagres: "denne gangen" varer til du laster appen på nytt.'
+    ]
+  },
+  {
     v: '5.73',
     d: 'juli 2026',
     changes: [

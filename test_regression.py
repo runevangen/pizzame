@@ -294,6 +294,99 @@ def run_behavioral_tests(page):
     )
     results.append(('busy_time_warning_follows_user_pizzatid', ok8, r8))
 
+    # v5.74: alle varsler skal ha et kryss som skjuler dem for denne gang, med
+    # nøkkel på selve konflikten. Tester at krysset finnes, at et klikk skjuler
+    # varselet, at et ANNET varsel ikke ble skjult samtidig, og at samme varsel
+    # dukker opp igjen når konflikten endrer innhold.
+    r9 = page.evaluate("""() => {
+      _dismissedWarnings.clear();
+      S.type='napoletana'; S.method='hurtig'; S.mel=500; S.hydro=65;
+      S.hurtigH=14; S.temp=24; S.meltype='manitoba'; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const boxes = () => Array.from(document.querySelectorAll('#mob-plan-content .warn-dismiss-wrap'));
+      const warmBox = () => boxes().find(b => b.textContent.includes('sjekk deigen underveis'));
+      const meltypeBox = () => boxes().find(b => b.textContent.includes('🌾'));
+      const countBefore = boxes().length;
+      const btnCount = document.querySelectorAll('#mob-plan-content .warn-dismiss-btn').length;
+      const hadWarm = !!warmBox(), hadMeltype = !!meltypeBox();
+
+      warmBox().querySelector('.warn-dismiss-btn').click();
+      const afterDismiss = { count: boxes().length, warm: !!warmBox(), meltype: !!meltypeBox() };
+
+      // Endrer temperaturen: varmt-kjøkken-varselet får ny nøkkel og skal komme
+      // tilbake, mens meltype-varselet (uendret nøkkel) ikke påvirkes.
+      S.temp = 26; mobGen();
+      const afterChange = { count: boxes().length, warm: !!warmBox(), meltype: !!meltypeBox() };
+
+      // Skjuler det på nytt, og bekrefter at en endring som IKKE rører nøkkelen
+      // lar det forbli skjult.
+      warmBox().querySelector('.warn-dismiss-btn').click();
+      S.mel = 600; mobGen();
+      const afterUnrelatedChange = { warm: !!warmBox() };
+
+      _dismissedWarnings.clear(); S.temp = 24; S.mel = 500; mobGen();
+      return {
+        countBefore, btnCount, hadWarm, hadMeltype,
+        afterDismiss, afterChange, afterUnrelatedChange,
+        btnPerBox: btnCount === countBefore,
+        restored: boxes().length === countBefore
+      };
+    }""")
+    ok9 = (
+      r9['countBefore'] >= 2 and r9['btnPerBox'] and
+      r9['hadWarm'] and r9['hadMeltype'] and
+      r9['afterDismiss']['count'] == r9['countBefore'] - 1 and
+      r9['afterDismiss']['warm'] is False and
+      r9['afterDismiss']['meltype'] is True and
+      r9['afterChange']['warm'] is True and
+      r9['afterUnrelatedChange']['warm'] is False and
+      r9['restored']
+    )
+    results.append(('all_warnings_dismissible_keyed_on_conflict', ok9, r9))
+
+    # v5.75: varselet skal bare tilby spaker som faktisk beveger det steget som
+    # kolliderer. Scenariet er Runes eget: Langtidsdeig, spis 18:00 en tirsdag
+    # -> "Ta ut av kjøleskap" havner 14:00, som er låst til steketiden (taUt =
+    # bake - 240). "Juster kjøleskapstid" MÅ da være borte, og i stedet skal det
+    # tilbys å spise senere, med utregnet klokkeslett.
+    r10 = page.evaluate("""() => {
+      _dismissedWarnings.clear();
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65;
+      S.cold=48; S.temp=22; S.meltype='doppio_zero'; S.mode='end';
+      const now=new Date();
+      const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),18,0,0,0);
+      d.setDate(d.getDate() + ((2 - now.getDay() + 7) % 7 || 7));
+      document.getElementById('mob-ed').value = fd(d);
+      document.getElementById('mob-et').value = '18:00';
+      mobShowTab('plan'); mobGen();
+      const c = firstStepConflict(window._steps||[]);
+      const anchor = mobGetAnchor('e');
+      const box = Array.from(document.querySelectorAll('#mob-plan-content .warn-dismiss-wrap'))
+                       .find(x => x.textContent.includes('Et steg havner'));
+      const labels = box ? Array.from(box.querySelectorAll('button')).map(x=>x.textContent.trim()) : [];
+      const firstStepTitle = (window._steps||[])[0] ? window._steps[0].title : '';
+      return {
+        conflictStep: c ? c.step.title : null,
+        coldMovesConflict: c ? leverMovesStep('cold', 24, 144, c.step.title, anchor) : null,
+        coldMovesFirstStep: leverMovesStep('cold', 24, 144, firstStepTitle, anchor),
+        shiftMinutes: (()=>{ const sh=findAnchorShift(anchor); return sh ? sh.minutes : null; })(),
+        labels,
+        hasColdBtn: labels.some(l => l.includes('Juster kjøleskapstid')),
+        hasShiftBtn: labels.some(l => l.startsWith('Spis ')),
+        mentionsPlanGoesUp: !!box && box.textContent.includes('hele planen går opp')
+      };
+    }""")
+    ok10 = (
+      r10['conflictStep'] == 'Ta ut av kjøleskap' and
+      r10['coldMovesConflict'] is False and
+      r10['coldMovesFirstStep'] is True and
+      r10['shiftMinutes'] == 120 and
+      r10['hasColdBtn'] is False and
+      r10['hasShiftBtn'] is True and
+      r10['mentionsPlanGoesUp'] is True
+    )
+    results.append(('warning_only_offers_levers_that_move_the_step', ok10, r10))
+
     return results
 
 

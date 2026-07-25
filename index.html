@@ -251,6 +251,10 @@ body.mob-mode .mob-daylbl .ddot{background:var(--forno-border)}
 body.mob-mode .mob-daylbl.today .ddot{background:var(--forno-accent);box-shadow:0 0 6px var(--forno-accent)}
 
 /* mob settings */
+.warn-dismiss-wrap{position:relative}
+.warn-dismiss-wrap > div > div:first-child{padding-right:26px}
+.warn-dismiss-btn{position:absolute;top:5px;right:6px;width:26px;height:26px;line-height:26px;text-align:center;padding:0;border:none;border-radius:6px;background:transparent;color:#8a5a00;font-size:15px;font-weight:700;cursor:pointer;opacity:.65}
+.warn-dismiss-btn:hover{opacity:1;background:rgba(138,90,0,.10)}
 .mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
 .wiz-qhead{display:flex;align-items:center;gap:7px;padding:.65rem 1rem .3rem}
 .wiz-qnum{width:18px;height:18px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -2332,6 +2336,30 @@ function meltypeWarnSetFlour(flourVal){
 function findBestMatchingFlour(hrs, hydro){
   return MELTYPER.find(m => hrs>=m.ferm.mn && hrs<=m.ferm.mx && hydro>=m.hydroRange.mn && hydro<=m.hydroRange.mx);
 }
+// v5.74: alle varsler kan skjules "for denne gang" med et kryss. Nøkkelen er
+// innholdet i selve konflikten, ikke varseltypen — skjuler du "Ta ut av kjøleskap
+// tir 14:00" og situasjonen senere endrer seg til et ANNET tidspunkt, dukker
+// varselet opp igjen, mens et uendret problem forblir skjult. Nøkkelen hashes,
+// så stegtitler med apostrof eller emoji ikke kan ødelegge onclick-attributtet.
+// Kun i minnet: "denne gang" betyr økten, ikke for alltid. Gjelder også natt-
+// varselet — unntak finnes (man kan være våken, eller planlegge det bevisst).
+const _dismissedWarnings = new Set();
+function warnKey(s){
+  let h=0;
+  for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; }
+  return 'w'+(h>>>0).toString(36);
+}
+function dismissWarning(k){
+  _dismissedWarnings.add(k);
+  if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
+  else { try{ schedNow(); }catch(e){} }
+}
+function warningWrapHTML(keySource, innerHTML){
+  if(!innerHTML) return '';
+  const k=warnKey(keySource);
+  if(_dismissedWarnings.has(k)) return '';
+  return `<div class="warn-dismiss-wrap">${innerHTML}<button class="warn-dismiss-btn" onclick="dismissWarning('${k}')" title="Skjul dette varselet" aria-label="Skjul dette varselet">✕</button></div>`;
+}
 function meltypeWarningHTML(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return '';
@@ -2349,6 +2377,7 @@ function meltypeWarningHTML(){
     const tooLow = S.hydro<flour.hydroRange.mn;
     issues.push(`Du har satt ${S.hydro}% hydrering, mens ${flour.t} er beregnet for ${flour.hydro} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}). ${tooLow?'Lavere hydrering enn anbefalt er ikke farlig i seg selv, men gir en fastere, tørrere deig enn melet egentlig er designet for — du utnytter ikke potensialet i det.':'Høyere hydrering enn dette melet er designet for kan gi en for løs, klissete deig som er vanskelig å håndtere, siden det ikke har nok proteinstyrke til å holde på så mye vann.'} Juster hydreringen til ${flour.hydro}, eller bytt til et mel som passer bedre med ${S.hydro}%.`);
   }
+  const _wk = `meltype|${S.meltype}|${hrs}|${S.hydro}|${fermOk}|${hydroOk}`;
   const title = (!fermOk && !hydroOk) ? `${flour.t}: gjæringstid og hydrering stemmer ikke` : (!fermOk ? `${flour.t} er ${hrs<flour.ferm.mn?'ikke gjæret lenge nok':'gjæret lenger enn anbefalt'}` : `${flour.t}: hydreringen stemmer ikke med melet`);
 
   // Hurtigjustering direkte i varselet — samme funksjoner som Pizzaplanlegger-fanen bruker,
@@ -2370,23 +2399,83 @@ function meltypeWarningHTML(){
   const finjusterLink = `<div style="margin-top:.5rem"><span onclick="meltypeWarnOpenFinjuster()" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>`;
   const estNote = flour.estimated ? `<div style="font-size:11px;color:#8a5a00;margin-top:.4rem;font-style:italic">Gjærings-/hydreringstallene for ${flour.t} er anslått av oss, ikke oppgitt av produsenten.</div>` : '';
 
-  return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+  return warningWrapHTML(_wk, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌾 ${title}</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">${issues.join(' ')}</div>
     ${actionsHtml}
     ${finjusterLink}
     ${estNote}
-  </div>`;
+  </div>`);
 }
 // Generalisert varsel: sjekker om noen AKTIVE steg (alt uten passive:true —
 // altså steg som faktisk krever at du gjør noe, ikke bare venter) havner i et
-// tidsvindu du sannsynligvis ikke vil bli forstyrret i. Natt er universell og
-// hardkodet trygt; arbeidstid er individuelt og hardkodet KUN som et første
-// steg (admin-innstilling senere). Samme mekanisme for begge.
+// tidsvindu du sannsynligvis ikke vil bli forstyrret i. Natt (23–06) er en
+// universell regel; opptatt tid kommer fra brukerens egen Pizzatid (v5.73).
+// Samme mekanisme for begge, og begge kan skjules med kryss (v5.74).
 const ACTIVE_STEP_TIME_WINDOWS=[
   {id:'night', test:(h,mm,day)=>h>=23||h<6, label:'natten', icon:'🌙'},
   {id:'busy',  test:(h,mm,day)=>outsidePizzatid(h,mm,day), label:'tid du ikke har satt av til pizza', icon:'📅'}
 ];
+// v5.75: varselet pleide å tilby de samme knappene uansett hvilket steg som
+// kolliderte. Det var direkte feil for steg som er låst til steketiden: i
+// tailSteps() er taUt = bake - 240 min, så "Ta ut av kjøleskap" kan IKKE
+// flyttes av kjøleskapstiden når man planlegger bakover fra et måltid — bake
+// er gitt, og taUt følger den. Brukeren trykket, justerte, og varselet ble
+// stående. Nå simulerer vi hver spak og tilbyr bare dem som faktisk beveger
+// akkurat det steget, pluss å flytte selve måltidet.
+const POOLISH_BIGA_PROBE={lo:8, hi:48};
+function firstStepConflict(steps){
+  for(const s of (steps||[])){
+    if(s.passive) continue;
+    let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+    if(isNaN(at.getTime())) continue;
+    const win=ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(at.getHours(),at.getMinutes(),at.getDay()));
+    if(win) return {step:s, win, at};
+  }
+  return null;
+}
+// Setter feltet til ytterpunktene sine og ser om det aktuelle steget i det hele
+// tatt bytter tidspunkt. Rører S midlertidig, men setter alltid tilbake.
+function leverMovesStep(field, lo, hi, stepTitle, anchor){
+  const orig=S[field];
+  const timeOf=(v)=>{
+    S[field]=v;
+    let st=null;
+    try{ st=stepsForAnchor(anchor).find(x=>x.title===stepTitle); }catch(e){}
+    if(!st) return null;
+    let at=st.at; if(!(at instanceof Date)) at=new Date(at);
+    return isNaN(at.getTime())?null:at.getTime();
+  };
+  let a=null,b=null;
+  try{ a=timeOf(lo); b=timeOf(hi); }finally{ S[field]=orig; }
+  return a!==null && b!==null && a!==b;
+}
+// Å flytte måltidet forskyver hele planen, så vi leter etter den MINSTE
+// forskyvningen som gjør alle aktive steg konfliktfrie. 15-minutters oppløsning,
+// inntil 14 timer hver vei, og aldri et forslag som starter i fortiden.
+function findAnchorShift(anchor){
+  const now=Date.now();
+  for(let d=15; d<=14*60; d+=15){
+    for(const sign of [1,-1]){
+      const cand=new Date(anchor.getTime()+sign*d*60000);
+      let steps=null;
+      try{ steps=stepsForAnchor(cand); }catch(e){ continue; }
+      if(!steps || !steps.length) continue;
+      let first=steps[0].at; if(!(first instanceof Date)) first=new Date(first);
+      if(isNaN(first.getTime()) || first.getTime()<now) continue;
+      if(!firstStepConflict(steps)) return {at:cand, minutes:sign*d};
+    }
+  }
+  return null;
+}
+function applyAnchorShift(iso){
+  const d=new Date(iso);
+  if(isNaN(d.getTime())) return;
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  if(dEl) dEl.value=fd(d);
+  if(tEl) tEl.value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  mobGen();
+}
 function activeStepTimeWarningHTML(){
   const steps=window._steps||[];
   if(!steps.length) return '';
@@ -2399,20 +2488,47 @@ function activeStepTimeWarningHTML(){
     if(!win) continue;
     let dt=''; try{ dt=fDT(at); }catch(e){}
     const isShort=(S.method==='hurtig'||S.method==='kveld');
+    const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
+    const btnSolid='padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer';
+    const btnOutline='padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer';
+
+    // Hvilke spaker beveger DETTE steget? Alt annet er villedende å tilby.
+    const prefField=S.method==='poolish'?'poolishH':(S.method==='biga'?'bigaH':null);
+    const prefWorks = !!prefField && leverMovesStep(prefField, POOLISH_BIGA_PROBE.lo, POOLISH_BIGA_PROBE.hi, s.title, anchor);
+    const coldWorks = (!isShort && S.type!=='ingenelting') && leverMovesStep('cold', 24, 144, s.title, anchor);
+    const shift = (S.mode==='end') ? findAnchorShift(anchor) : null;
+
     let prefBtn='';
-    if(S.method==='poolish') prefBtn=`<button onclick="activeStepWarnGoTo('poolish')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Juster hevetid i Poolish</button>`;
-    else if(S.method==='biga') prefBtn=`<button onclick="activeStepWarnGoTo('biga')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Juster hevetid i Biga</button>`;
-    const coldBtn=(!isShort && S.type!=='ingenelting') ? `<button onclick="activeStepWarnGoTo('cold')" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Juster kjøleskapstid</button>` : '';
-    const findBestBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnFindBest()" style="padding:6px 12px;border:none;border-radius:8px;background:#8a5a00;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🔍 Finn beste kombinasjon</button>` : '';
-    const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Prøv Kveldsdeig i stedet</button>` : '';
-    const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Rediger pizzatiden din</button>` : '';
-    if(!prefBtn && !coldBtn && !pizzatidBtn) continue; // ingenting å foreslå å justere for denne metoden
-    return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+    if(prefWorks) prefBtn=`<button onclick="activeStepWarnGoTo('${S.method}')" style="${btnSolid}">Juster hevetid i ${S.method==='poolish'?'Poolish':'Biga'}</button>`;
+    const coldBtn=coldWorks ? `<button onclick="activeStepWarnGoTo('cold')" style="${btnOutline}">Juster kjøleskapstid</button>` : '';
+    const findBestBtn=(prefWorks && coldWorks) ? `<button onclick="activeStepWarnFindBest()" style="padding:6px 12px;border:none;border-radius:8px;background:#8a5a00;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🔍 Finn beste kombinasjon</button>` : '';
+    let shiftTxt='', shiftBtn='';
+    if(shift){
+      let st=''; try{ st=fDT(shift.at); }catch(e){}
+      const moved=new Date(at.getTime()+shift.minutes*60000);
+      const movedTxt=String(moved.getHours()).padStart(2,'0')+':'+String(moved.getMinutes()).padStart(2,'0');
+      shiftBtn=`<button onclick="applyAnchorShift('${shift.at.toISOString()}')" style="${btnSolid}">Spis ${escH(st)} i stedet</button>`;
+      shiftTxt=` Spiser du ${escH(st)}, faller <b>${escH(s.title)}</b> på ${movedTxt} og hele planen går opp.`;
+    }
+    const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="${btnOutline}">Prøv Kveldsdeig i stedet</button>` : '';
+    const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="${btnOutline}">Rediger pizzatiden din</button>` : '';
+
+    // Ingen spak beveger steget, og måltidet kan ikke flyttes til noe som går
+    // opp: da er det ærligere å si at metoden ikke passer enn å tilby knapper
+    // som ikke virker.
+    const stuck = !prefWorks && !coldWorks && !shift;
+    const lockedNote = stuck
+      ? ` Dette steget er låst til steketidspunktet, så verken hevetid eller kjøleskapstid kan flytte det — og det finnes ingen spisetid innenfor det neste døgnet som får hele planen til å gå opp.${isShort?'':' En metode med kortere temperering, som Kveldsdeig, er sannsynligvis det som skal til.'}`
+      : shiftTxt;
+
+    const row1=`${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}`;
+    const row2=`${pizzatidBtn}${stuck?kveldBtn:''}`;
+    return warningWrapHTML(`activestep|${win.id}|${s.title}|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
       <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} Et steg havner i ${win.label}</div>
-      <div style="font-size:12px;color:#4a2a05;line-height:1.5"><b>${escH(s.title)}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${prefBtn}${coldBtn}${findBestBtn}${pizzatidBtn}</div>
-      ${kveldBtn?`<div style="margin-top:6px">${kveldBtn}</div>`:''}
-    </div>`;
+      <div style="font-size:12px;color:#4a2a05;line-height:1.5"><b>${escH(s.title)}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.${lockedNote}</div>
+      ${row1?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${row1}</div>`:''}
+      ${row2?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${row2}</div>`:''}
+    </div>`);
   }
   return '';
 }
@@ -2663,14 +2779,14 @@ function methodTimeWarningHTML(){
   if(leadHours < 20) return ''; // mindre enn ~et døgns slakk er ikke et reelt problem
   const methodName = S.method==='hurtig' ? 'Hurtigdeig' : 'Kveldsdeig';
   const leadDays = (Math.round(leadHours/24*10)/10).toString().replace('.',',');
-  return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+  return warningWrapHTML(`methodtime|${S.method}|${Math.round(leadHours)}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⏱ ${methodName} passer dårlig med god tid til rådighet</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">Du har satt av ca. ${leadDays} dager fram til du vil spise, men ${methodName.toLowerCase()} er en rask metode ment for et par timers gjæring rett før steking — resten av tiden går til spille. Med så mye tid til rådighet gir Langtidsdeig eller Kveldsdeig gjerne bedre smak for samme innsats.</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">
       <button onclick="methodWarnSwitchToStandard()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Bytt til Langtidsdeig</button>
     </div>
     <div style="margin-top:.5rem"><span onclick="wizGoto(2)" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Metode</span></div>
-  </div>`;
+  </div>`);
 }
 function methodWarnSwitchToStandard(){
   S.method='standard';
@@ -2682,10 +2798,10 @@ function methodWarnSwitchToStandard(){
 }
 function hurtigWarmRoomWarningHTML(){
   if(S.method!=='hurtig' || S.hurtigH<12 || S.temp<22) return '';
-  return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+  return warningWrapHTML(`warmroom|${S.hurtigH}|${S.temp}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌡️ ${S.hurtigH} timer ved ${S.temp}°C — sjekk deigen underveis</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">De lengste hurtigdeig-alternativene (12–16t) er beregnet for et kjøligere kjøkken (18–20°C). Ved ${S.temp}°C går gjæringen fortere enn ventet, og deigen kan bli overmoden før tiden er ute. Sjekk den gjerne en time eller to før planlagt slutt — er den allerede stor og blank med bobler som kollapser lett, er den klar til bruk selv om klokken ikke stemmer helt.</div>
-  </div>`;
+  </div>`);
 }
 function overfermentWarningHTML(){
   if(S.method==='hurtig' || S.type==='ingenelting') return '';
@@ -2698,10 +2814,10 @@ function overfermentWarningHTML(){
   const methodTxt = S.method==='poolish' ? ` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.poolishH}t poolish-forgjæring)`
     : S.method==='biga' ? ` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.bigaH}t biga-forgjæring)`
     : ` (${coldTimeLabel(S.cold)} kjøleskap)`;
-  return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+  return warningWrapHTML(`overferment|${S.method}|${Math.round(totalHours)}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⚠️ Lang gjæringstid — fare for overfermentering</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">Total effektiv gjæringstid er ca. ${totalDays} døgn${methodTxt}. Ved denne lengden bryter enzymer gradvis ned glutenstrukturen mer enn de bygger den — deigen kan bli slapp, klissete og vanskelig å forme, med en flat, tydelig sur smak. Sjekk deigen jevnlig mot slutten, og vær klar til å bake litt tidligere enn planlagt hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).</div>
-  </div>`;
+  </div>`);
 }
 
 function buildTechHTML(){
@@ -4159,11 +4275,13 @@ function mobStepH(steps){
 
 // Deler steg-utregningen med wizardens statuslinje, så begge alltid viser
 // nøyaktig samme oppstart/steketid uten å duplisere selve valg-logikken.
-function computeCurrentSteps(){
-  const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
+function stepsForAnchor(anchor){
   if(S.type!=='ingenelting' && S.method==='hurtig') return hurtigSteps(anchor).steps;
   if(S.type!=='ingenelting' && S.method==='kveld') return kveldSteps(anchor).steps;
   return rawSteps(anchor);
+}
+function computeCurrentSteps(){
+  return stepsForAnchor(mobGetAnchor(S.mode==='end'?'e':'s'));
 }
 function renderWizStatusBar(){
   let steps=[];
