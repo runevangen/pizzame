@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.73',
+    d: 'juli 2026',
+    changes: [
+      'Varselet "Et steg havner i arbeidstiden din" bygger nå på din egen Pizzatid fra Beta-fanen i stedet for en fast antakelse om at alle jobber mandag til fredag 08–16. Setter du opp når du faktisk er ledig, følger varselet det — og varselet har fått en knapp rett inn til redigeringen. Pizzatiden lagres per bruker på serveren, så den følger deg mellom telefon og PC.',
+      'Rydding under panseret: appen hadde tre uavhengige oppfatninger av når du er ledig — varselets hardkodede 08–16, "Mine faste tidspunkter" sitt eget hardkodede sett, og Pizzatid. Nå er Pizzatid eneste kilde for alle tre. Standardverdiene er de samme tallene som før, så ingenting endrer seg for deg før du selv redigerer timeplanen. Nattevarselet (23–06) er fortsatt en universell regel.'
+    ]
+  },
+  {
     v: '5.72',
     d: 'juli 2026',
     changes: [

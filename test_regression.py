@@ -254,6 +254,46 @@ def run_behavioral_tests(page):
     )
     results.append(('start_delta_chip_accumulates_and_shows_direction', ok7, r7))
 
+    # v5.73: varselet om opptatt tid bygger nå på brukerens egen Pizzatid fra
+    # Beta-fanen i stedet for en hardkodet man-fre 08-16-regel. Tester at
+    # predikatet følger timeplanen, at "Mine faste tidspunkter" bruker samme
+    # kilde, og at fallbacken før timeplanen er lastet er den GAMLE regelen og
+    # ikke "alt er ledig" (som ville skjult ekte konflikter ved oppstart).
+    r8 = page.evaluate("""() => {
+      const saved = window._pizzatidSchedule;
+      const wd = [['16:00','23:30'],['06:30','08:00']];
+      const we = [['06:00','23:00'], null];
+      const out = {};
+
+      window._pizzatidSchedule = null;
+      out.fallbackMon14 = outsidePizzatid(14,0,1);
+      out.fallbackMon18 = outsidePizzatid(18,0,1);
+      out.fallbackSat14 = outsidePizzatid(14,0,6);
+
+      window._pizzatidSchedule = {mon:wd,tue:wd,wed:wd,thu:wd,fri:wd,sat:we,sun:we};
+      out.defaultMon14 = outsidePizzatid(14,0,1);
+      out.defaultMon18 = outsidePizzatid(18,0,1);
+
+      window._pizzatidSchedule = {mon:[['06:00','23:00'],null],tue:wd,wed:wd,thu:wd,fri:wd,sat:we,sun:we};
+      out.customMon14 = outsidePizzatid(14,0,1);
+      out.myFreeFollowsSameSource = inMyFreeWindows(14,0,1);
+
+      out.hasBusyWindow = ACTIVE_STEP_TIME_WINDOWS.some(w => w.id === 'busy');
+      out.hardcodedWorkWindowGone = !ACTIVE_STEP_TIME_WINDOWS.some(w => w.id === 'work');
+      out.perUserEndpoint = loadPizzatidSchedule.toString().includes('userId=');
+
+      window._pizzatidSchedule = saved;
+      return out;
+    }""")
+    ok8 = (
+      r8['fallbackMon14'] is True and r8['fallbackMon18'] is False and
+      r8['fallbackSat14'] is False and
+      r8['defaultMon14'] is True and r8['defaultMon18'] is False and
+      r8['customMon14'] is False and r8['myFreeFollowsSameSource'] is True and
+      r8['hasBusyWindow'] and r8['hardcodedWorkWindowGone'] and r8['perUserEndpoint']
+    )
+    results.append(('busy_time_warning_follows_user_pizzatid', ok8, r8))
+
     return results
 
 

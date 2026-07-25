@@ -1976,6 +1976,19 @@ function inPizzatidWindow(hh,mm,day){
   }
   return false;
 }
+// v5.73: ETT felles predikat for "er brukeren opptatt på dette tidspunktet".
+// Fram til nå fantes tre uavhengige tidsmodeller: ACTIVE_STEP_TIME_WINDOWS
+// (hardkodet man-fre 08-16), MY_FREE_WINDOWS_WEEKDAY (hardkodet 16-23:30 +
+// 06:30-08) og Pizzatid fra Beta-fanen (per bruker, lagret på server). Nå er
+// Pizzatid eneste kilde; de to hardkodede settene er borte. Natt (23-06) er
+// fortsatt en universell regel og ligger utenfor dette.
+// Timeplanen lastes asynkront, så før den er på plass faller vi tilbake på den
+// gamle 08-16-regelen — IKKE på "alt er ledig", som ville skjult ekte konflikter
+// i det første sekundet etter oppstart.
+function outsidePizzatid(hh,mm,day){
+  if(!window._pizzatidSchedule) return (hh>=8 && hh<16 && day>=1 && day<=5);
+  return !inPizzatidWindow(hh,mm,day);
+}
 function scorePizzatidWindows(steps){
   let violations=0;
   for(const s of steps){
@@ -2057,6 +2070,17 @@ async function renderBetaPanel(){
   const dEl=document.getElementById('mob-beta-ed');
   if(dEl && !dEl.value){ dEl.value=fd(new Date()); }
   renderBetaFasteTider();
+}
+// Åpner Beta-fanen og folder ut Pizzatid-panelet, slik at "Rediger pizzatiden
+// din" i varselet lander på selve redigeringen og ikke bare på fanen.
+function openPizzatidFromWarning(){
+  mobShowTab('beta');
+  setTimeout(()=>{
+    const body=document.getElementById('mob-pizzatid-body');
+    if(body && body.style.display==='none') togglePizzatidMinimized();
+    const wrap=document.getElementById('mob-pizzatid-days');
+    if(wrap && wrap.scrollIntoView) wrap.scrollIntoView({behavior:'smooth',block:'center'});
+  }, 60);
 }
 function togglePizzatidMinimized(){
   const body=document.getElementById('mob-pizzatid-body');
@@ -2360,8 +2384,8 @@ function meltypeWarningHTML(){
 // hardkodet trygt; arbeidstid er individuelt og hardkodet KUN som et første
 // steg (admin-innstilling senere). Samme mekanisme for begge.
 const ACTIVE_STEP_TIME_WINDOWS=[
-  {id:'night', test:(h,day)=>h>=23||h<6, label:'natten', icon:'🌙'},
-  {id:'work', test:(h,day)=>h>=8&&h<16&&day>=1&&day<=5, label:'arbeidstiden din', icon:'💼'}
+  {id:'night', test:(h,mm,day)=>h>=23||h<6, label:'natten', icon:'🌙'},
+  {id:'busy',  test:(h,mm,day)=>outsidePizzatid(h,mm,day), label:'tid du ikke har satt av til pizza', icon:'📅'}
 ];
 function activeStepTimeWarningHTML(){
   const steps=window._steps||[];
@@ -2370,8 +2394,8 @@ function activeStepTimeWarningHTML(){
     if(s.passive) continue;
     let at=s.at; if(!(at instanceof Date)) at=new Date(at);
     if(isNaN(at.getTime())) continue;
-    const h=at.getHours(), day=at.getDay();
-    const win=ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(h,day));
+    const h=at.getHours(), mm=at.getMinutes(), day=at.getDay();
+    const win=ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(h,mm,day));
     if(!win) continue;
     let dt=''; try{ dt=fDT(at); }catch(e){}
     const isShort=(S.method==='hurtig'||S.method==='kveld');
@@ -2381,11 +2405,12 @@ function activeStepTimeWarningHTML(){
     const coldBtn=(!isShort && S.type!=='ingenelting') ? `<button onclick="activeStepWarnGoTo('cold')" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Juster kjøleskapstid</button>` : '';
     const findBestBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnFindBest()" style="padding:6px 12px;border:none;border-radius:8px;background:#8a5a00;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🔍 Finn beste kombinasjon</button>` : '';
     const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Prøv Kveldsdeig i stedet</button>` : '';
-    if(!prefBtn && !coldBtn) continue; // ingenting å foreslå å justere for denne metoden
+    const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer">Rediger pizzatiden din</button>` : '';
+    if(!prefBtn && !coldBtn && !pizzatidBtn) continue; // ingenting å foreslå å justere for denne metoden
     return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
       <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} Et steg havner i ${win.label}</div>
       <div style="font-size:12px;color:#4a2a05;line-height:1.5"><b>${escH(s.title)}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${prefBtn}${coldBtn}${findBestBtn}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${prefBtn}${coldBtn}${findBestBtn}${pizzatidBtn}</div>
       ${kveldBtn?`<div style="margin-top:6px">${kveldBtn}</div>`:''}
     </div>`;
   }
@@ -2411,9 +2436,9 @@ function scoreActiveSteps(steps){
   for(const s of steps){
     if(s.passive) continue;
     let at=s.at; if(!(at instanceof Date)) at=new Date(at);
-    const h=at.getHours(), day=at.getDay();
-    if(h>=23||h<6) score+=2; // natt teller verre enn arbeidstid
-    else if(h>=8&&h<16&&day>=1&&day<=5) score+=1;
+    const h=at.getHours(), mm=at.getMinutes(), day=at.getDay();
+    if(h>=23||h<6) score+=2; // natt teller verre enn opptatt tid
+    else if(outsidePizzatid(h,mm,day)) score+=1;
   }
   return score;
 }
@@ -2455,12 +2480,12 @@ function findBestWeekendCombo(){
 // kl. 19/16) mot NÅVÆRENDE metode/hevetid/kjøleskapstid — endrer ingenting
 // automatisk. Helg (lør/søn) er ledig hele dagen bortsett fra natt (23–06) —
 // en helt annen (og enklere) regel enn hverdager, som kun har to smale vinduer.
-const MY_FREE_WINDOWS_WEEKDAY=[[16*60,23*60+30],[6*60+30,8*60]];
+// v5.73: brukte tidligere sitt eget hardkodede sett (MY_FREE_WINDOWS_WEEKDAY).
+// Standardverdiene i Pizzatid er nøyaktig de samme tallene — de ble i sin tid
+// kopiert herfra — så oppførselen er uendret for en bruker som ikke har
+// redigert timeplanen sin, men følger nå brukerens egne valg hvis hun har.
 function inMyFreeWindows(hh,mm,day){
-  const t=hh*60+mm;
-  const isWeekend=(day===0||day===6);
-  if(isWeekend) return t>=6*60 && t<23*60; // ledig hele dagen, unntatt natt
-  return MY_FREE_WINDOWS_WEEKDAY.some(([a,b])=>t>=a&&t<=b);
+  return !outsidePizzatid(hh,mm,day);
 }
 function nextWeekdayAt(targetDay,hh,mm){
   const now=new Date();
@@ -4712,6 +4737,10 @@ async function deleteBakeConfirm(id){
 gen();
 document.addEventListener('DOMContentLoaded',function(){
   initLayout();
+  // Timeplanen styrer nå varselet om opptatt tid, ikke bare Beta-søket, så den
+  // må lastes ved oppstart. Varselet faller tilbake på den gamle regelen til
+  // svaret er inne, og rendres på nytt her når det er.
+  loadPizzatidSchedule().then(()=>{ try{ mobGen(); }catch(e){} });
 });
 if(document.readyState==='complete'||document.readyState==='interactive'){
   initLayout();
