@@ -3912,15 +3912,15 @@ function syncMobControls(){
   mobPillGroup('mob-gkm','kjokkenmaskin');
   syncMobMeltypeSelect();
   mobPillGroup('mob-govn','oven');
+  const now=new Date();
+  const later=new Date(now.getTime()+S.cold*3600000+14400000);
+  s('mob-ed',fd(later));
+  s('mob-et','18:00');
   mobMethodCards();
   mobBuildHrows();
   mobBuildKrows();
   setPoolishCold(S.poolishCold);
   mobBuildBrows();
-  const now=new Date();
-  const later=new Date(now.getTime()+S.cold*3600000+14400000);
-  s('mob-ed',fd(later));
-  s('mob-et','18:00');
   applyMobTypeUI();
   mobSetMode(S.mode);
   const mobStamp=g('mob-stamp');
@@ -4408,6 +4408,7 @@ function wizGoto(step, onSettled){
   const elId = step==='finjuster' ? 'wiz-finjuster' : wizStepEl(step);
   if(elId){ const el=document.getElementById(elId); if(el) el.style.display='block'; }
   if(step===1) wizStep1Refresh();
+  if(step===2) mobMethodCards();
   if(step===3) wizCheckRefresh();
   try{ renderWizStatusBar(); }catch(e){}
   wizRenderHeader(step);

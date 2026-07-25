@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.87',
+    d: 'juli 2026',
+    changes: [
+      '"Passer godt"-teksten under metodekortene var ustabil — kunne mangle helt, eller vise et svar som ikke stemte med tiden du faktisk hadde satt av. To årsaker: kortene ble tegnet før datofeltene fikk sin første verdi, så den aller første visningen manglet alltid teksten; og kortene ble aldri tegnet på nytt når du kom inn på Metode-steget, så teksten viste alltid resultatet fra forrige gang et kort ble klikket — ikke det som stemte med datoen du nettopp hadde satt på forrige steg. Metodekortene oppdaterer seg nå hver gang du åpner Metode-steget."
+    ]
+  },
+  {
     v: '5.86',
     d: 'juli 2026',
     changes: [

@@ -793,6 +793,51 @@ def run_behavioral_tests(page):
     )
     results.append(('beta_shortcuts_share_one_search_with_feasible_default', ok18, r18))
 
+    # v5.87: Rune meldte at "passer godt"-teksten under metodekortene var
+    # ustabil — "helt borte og kommer og gaar litt". Rotaarsak: (1)
+    # syncMobControls() kalte mobMethodCards() FOeR mob-ed/mob-et fikk sine
+    # standardverdier, saa foerste rendring alltid manglet fit-tekst, og (2)
+    # wizGoto() hadde ingen oppfrisking for aa komme inn paa Metode-steget
+    # (steg 1 og 3 hadde det), saa kortene viste alltid resultatet fra forrige
+    # gang NOEN klikket et kort — ikke det som stemte med gjeldende dato.
+    # Tester at kortene oppdateres LIVE naar man setter en ny dato paa steg 1
+    # og navigerer til steg 2, UTEN aa klikke noe kort manuelt.
+    r19 = page.evaluate('''() => {
+      const allDay = [['00:00','23:59'], null];
+      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
+      mobShowTab('settings');
+      // Eksplisitt tilstand -- flere tester deler S, og denne skal ikke arve
+      // f.eks. en lang S.cold fra en tidligere test.
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65;
+      S.cold=24; S.poolishH=14; S.poolishCold=false; S.temp=22; S.meltype='couco';
+      const p2 = n => String(n).padStart(2,'0');
+      const setEat = h => {
+        const d = new Date(Date.now() + h*3600000);
+        document.getElementById('mob-ed').value = d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+        document.getElementById('mob-et').value = p2(d.getHours())+':'+p2(d.getMinutes());
+      };
+      const poolishText = () => Array.from(document.querySelectorAll('#mob-gmet > div'))
+        .find(c => c.textContent.includes('Poolish')).textContent;
+
+      // Rikelig med tid: Poolish skal passe.
+      wizGoto(1); setEat(72); mobSetMode('end'); wizGoto(2);
+      const roomy = poolishText();
+
+      // Knapt med tid: Poolish skal IKKE lenger si "passer godt", uten at
+      // noe kort er klikket mellom de to maalingene.
+      wizGoto(1); setEat(3); wizGoto(2);
+      const tight = poolishText();
+
+      return {
+        roomySaysFits: roomy.includes('passer godt'),
+        tightSaysNo: tight.includes('rekker ikke'),
+        actuallyDiffered: roomy !== tight
+      };
+    }''')
+    ok19 = r19['roomySaysFits'] and r19['tightSaysNo'] and r19['actuallyDiffered']
+    results.append(('method_cards_refresh_live_when_entering_metode_step', ok19, r19))
+
+
 
 
 
