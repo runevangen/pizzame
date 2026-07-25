@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.72',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet "Da starter du: …"-linjen under Kjøleskapsheving på Når?-steget, og under Poolish- og Biga-varigheten på Metode-steget. Etter at kjøleskapsblokken ble flyttet opp i v5.71 gjentok den bare oppstartstidspunktet statuslinjen viser noen linjer over.',
+      'I stedet viser statuslinjen nå hvor mye oppstart flyttet seg når du justerer kjøleskapstid, poolish-varighet eller biga-varighet — en liten brikke ved siden av oppstartstidspunktet som sier f.eks. "6 t tidligere". Den forsvinner av seg selv etter noen sekunder. Trykker du flere ganger raskt etter hverandre summeres differansen mot der du startet, i stedet for å vise ett steg om gangen.'
+    ]
+  },
+  {
     v: '5.71',
     d: 'juli 2026',
     changes: [

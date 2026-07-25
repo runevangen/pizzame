@@ -211,6 +211,49 @@ def run_behavioral_tests(page):
     )
     results.append(('step3_cold_block_sits_below_status_bar', ok6, r6))
 
+    # v5.72: "Da starter du"-linjene er borte, og statuslinjen viser i stedet en
+    # differansebrikke når oppstart flytter seg. Tester at brikken dukker opp med
+    # riktig retning og størrelse, at den AKKUMULERER over flere raske trykk
+    # (tre trykk à 6t skal gi 18 t, ikke 6 t), og at ingen av de gamle
+    # preview-elementene finnes igjen i dokumentet.
+    r7 = page.evaluate("""() => {
+      S.method='standard'; S.type='napoletana'; S.meltype='doppio_zero';
+      S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.mode='end';
+      mobShowTab('settings'); wizGoto(3); mobGen();
+      _startDelta = null; mobGen();
+      const chip = () => {
+        const el = document.querySelector('#wiz-status-step3 .wiz-start-delta');
+        return el ? el.textContent.trim() : '';
+      };
+      const before = chip();
+      stepColdWiz(1);
+      const afterOne = chip();
+      stepColdWiz(1); stepColdWiz(1);
+      const afterThree = chip();
+      _startDelta = null; mobGen();
+      const afterReset = chip();
+      stepColdWiz(-1);
+      const afterDown = chip();
+      return {
+        before, afterOne, afterThree, afterReset, afterDown,
+        oldPreviewsGone: !document.getElementById('mob-cold-start-preview')
+                      && !document.getElementById('mob-p-start-preview')
+                      && !document.getElementById('mob-b-start-preview'),
+        updateStartPreviewGone: typeof window.updateStartPreview === 'undefined'
+      };
+    }""")
+    # NB: lengre kjøleskapstid = TIDLIGERE oppstart, siden planen regnes bakover
+    # fra spisetidspunktet (S.mode='end'). Motsatt vei for et negativt steg.
+    ok7 = (
+      r7['before'] == '' and
+      r7['afterOne'] == '6 t tidligere' and
+      r7['afterThree'] == '18 t tidligere' and
+      r7['afterReset'] == '' and
+      r7['afterDown'] == '6 t senere' and
+      r7['oldPreviewsGone'] and r7['updateStartPreviewGone']
+    )
+    results.append(('start_delta_chip_accumulates_and_shows_direction', ok7, r7))
+
     return results
 
 
