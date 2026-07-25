@@ -3,6 +3,48 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.70',
+    d: 'juli 2026',
+    changes: [
+      'Ny dynamisk "hvorfor"-boks under metodevalg-kortene på wizardens Metode-steg — viser en kort forklaring av hvorfor du velger den metoden du har trykket på, i stedet for kun den korte strukturbeskrivelsen kortet selv har. Poolish og Biga gjenbruker de allerede eksisterende forklaringstekstene fra Steg-visningen; Langtidsdeig, Hurtigdeig, Kveldsdeig og Mania-poolish har fått nye korte tekster i samme stil.'
+    ]
+  },
+  {
+    v: '5.69',
+    d: 'juli 2026',
+    changes: [
+      'Lagt til ±-knapper ved siden av alle fire sliderne i Finjuster (Melmengde, Hydrering, Kjøleskapsheving, Romtemperatur) — native slidere er vanskelige å treffe presist på mobil. Slideren selv er uendret og virker som før; knappene gir et nøyaktig ett-steg samtidig.'
+    ]
+  },
+  {
+    v: '5.68',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet "🌙 Maks smak"-boksen på wizardens steg 3. Den var kun en snarvei til ett bestemt tall — ikke en sikkerhetsmekanisme, siden det uavhengige varselsystemet for gjæringstid uansett fanger opp for lang eller kort kjøletid. ±-steppen for kjøleskapstid er uendret og fortsatt der.'
+    ]
+  },
+  {
+    v: '5.67',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet den overflødige lenken "⚙️ Finjuster (mel, gjærtype, meltype osv.)" nederst på wizardens steg 3 — den gjorde nøyaktig det samme som "⚙️ Juster"-knappen i statuslinjen øverst på samme skjerm. Forklaringsteksten "mel, gjærtype, meltype osv." er flyttet opp som en liten undertekst under Juster-knappen, kun synlig på steg 3.'
+    ]
+  },
+  {
+    v: '5.66',
+    d: 'juli 2026',
+    changes: [
+      'Metoden "Standard" heter nå "Langtidsdeig" overalt i appen (PC og mobil) — fullfører et tidsbasert navnesystem sammen med Hurtigdeig og Kveldsdeig. Kun visningsnavnet er endret; ingenting i lagrede bakster eller egen logikk er rørt.'
+    ]
+  },
+  {
+    v: '5.65',
+    d: 'juli 2026',
+    changes: [
+      'Tre tekstrettelser: stegtittelen "Kjøleskapsheiving" var en skrivefeil for "Kjøleskapsheving" (Standard/Poolish/Biga). "klede tørker ut overflaten" rettet til "kluter" (to steder, Standard og Kveldsdeig). Den kopierte tidsplanens toppfelt viste "Kjøleskapsheving: X timer" for Standard/Poolish/Biga, men det tallet inkluderer også 4 timers fast romtemperering og formingstid — ikke ren kjøletid. Endret til "Total heving: X timer" for å stemme med hva tallet faktisk er. Kveldsdeigs tilsvarende linje var allerede riktig (der er hele tallet ren kjøletid) og er ikke endret.'
+    ]
+  },
+  {
     v: '5.64',
     d: 'juli 2026',
     changes: [

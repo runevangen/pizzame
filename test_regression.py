@@ -123,6 +123,61 @@ def run_behavioral_tests(page):
     ok3 = (r3['afterForward'] == 3 and r3['afterBack'] == 1)
     results.append(('wizard_step_dots_clickable_both_directions', ok3, r3))
 
+    # v5.69: ±-knapper lagt til rundt de fire Finjuster-sliderne (Mel/Hydrering/
+    # Kjøleskap/Temperatur). Sjekker at et klikk på hver "+"-knapp faktisk
+    # øker riktig S-verdi med riktig steg, og at sliderens egen .value følger med.
+    r4 = page.evaluate("""() => {
+      S.method='standard'; S.type='napoletana'; S.meltype='doppio_zero';
+      S.mel=500; S.hydro=65; S.cold=48; S.temp=22;
+      mobShowTab('settings'); wizGoto('finjuster');
+      syncMobControls();
+      const before = {mel:S.mel, hydro:S.hydro, cold:S.cold, temp:S.temp};
+      stepMobSlider('mob-msl', 100, mobUMel);
+      stepMobSlider('mob-hsl', 1, mobUHydro);
+      stepMobSlider('mob-csl', 6, mobUCold);
+      stepMobSlider('mob-tsl', 2, mobUTemp);
+      const after = {mel:S.mel, hydro:S.hydro, cold:S.cold, temp:S.temp};
+      const sliderVals = {
+        mel: document.getElementById('mob-msl').value,
+        hydro: document.getElementById('mob-hsl').value,
+        cold: document.getElementById('mob-csl').value,
+        temp: document.getElementById('mob-tsl').value
+      };
+      return {before, after, sliderVals};
+    }""")
+    ok4 = (
+      r4['after']['mel'] == r4['before']['mel'] + 100 and
+      r4['after']['hydro'] == r4['before']['hydro'] + 1 and
+      r4['after']['cold'] == r4['before']['cold'] + 6 and
+      r4['after']['temp'] == r4['before']['temp'] + 2 and
+      int(r4['sliderVals']['mel']) == r4['after']['mel'] and
+      int(r4['sliderVals']['hydro']) == r4['after']['hydro'] and
+      int(r4['sliderVals']['cold']) == r4['after']['cold'] and
+      int(r4['sliderVals']['temp']) == r4['after']['temp']
+    )
+    results.append(('finjuster_slider_step_buttons_work', ok4, r4))
+
+    # v5.70: dynamisk "hvorfor"-boks under metodevalg-kortene skal oppdatere
+    # tittel og tekst for alle seks metoder når kortet klikkes.
+    r5 = page.evaluate("""() => {
+      mobShowTab('settings'); wizGoto(2); mobMethodCards();
+      const methods = ['standard','poolish','biga','mania','hurtig','kveld'];
+      const results = {};
+      methods.forEach(m => {
+        S.method = m; mobMethodCards();
+        results[m] = {
+          title: document.getElementById('mob-method-why-title').textContent,
+          text: document.getElementById('mob-method-why-text').textContent
+        };
+      });
+      return results;
+    }""")
+    ok5 = all(
+      r5[m]['text'] and len(r5[m]['text']) > 20 and r5[m]['title'].startswith('Hvorfor')
+      for m in ['standard','poolish','biga','mania','hurtig','kveld']
+    ) and len(set(r5[m]['text'] for m in r5)) == 6  # alle seks tekstene er ulike
+    results.append(('method_why_box_updates_per_method', ok5, r5))
+
     return results
 
 

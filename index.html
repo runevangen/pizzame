@@ -502,7 +502,7 @@ body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--
       </div>
       <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
         <div class="guide-num">2</div>
-        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Velg metode (valgfritt)</b>Standard fungerer fint til å begynne med — bytt senere når du vil eksperimentere.</div>
+        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Velg metode (valgfritt)</b>Langtidsdeig fungerer fint til å begynne med — bytt senere når du vil eksperimentere.</div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
         <div class="guide-num">3</div>
@@ -572,7 +572,7 @@ body.mob-mode .pizza-toast{background:var(--forno-bg-raised);border-color:var(--
 
   <div id="gmet-wrap"><div class="lbl">Metode</div>
     <div class="mcards" id="gmet">
-      <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Standard</div><div class="mc-s">Direkte + kjøl</div></div>
+      <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Langtidsdeig</div><div class="mc-s">Direkte + kjøl</div></div>
       <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
       <div class="mc" data-v="biga" title="Fast fordeig 16–24t."><div class="mc-t">Biga</div><div class="mc-s">Fast fordeig, 16–24t</div></div>
       <div class="mc hc" data-v="hurtig" title="2–16 timer i romtemperatur."><div class="mc-t">Hurtigdeig</div><div class="mc-s">2–16 timer, romtemperatur</div></div>
@@ -771,7 +771,7 @@ function coldMultForHours(h){
 }
 // Leselig visningstekst for kjøleskapstid — alltid i timer, aldri "dager", for
 // konsekvens med resten av det time-baserte systemet (Poolish/Biga-valgene,
-// Hurtigdeig/Kveldsdeig, Maks smak) som allerede viser timer gjennomgående.
+// Hurtigdeig/Kveldsdeig) som allerede viser timer gjennomgående.
 function coldTimeLabel(h){
   return h+' timer';
 }
@@ -1228,7 +1228,7 @@ function oT(t){
   return p?'Jernpanne gir best varmeoverføring.':'Ost UNDER sausen — Chicago-tradisjonen.';
 }
 function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
-function mN(m){return{standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig'}[m]||m;}
+function mN(m){return{standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig'}[m]||m;}
 
 const LOC={
   kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
@@ -1242,6 +1242,18 @@ const WHY={
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
+};
+// Kort "hvorfor"-forklaring til den dynamiske boksen under metodevalg-kortene
+// (wizardens Metode-steg, v5.70). Poolish/Biga gjenbruker WHY.pl/WHY.bi
+// ordrett i stedet for å duplisere teksten. Skrevet i samme stil, godkjent
+// av Rune via skisse (skisse_metode_forklaring.html) før innbygging.
+const METHOD_WHY={
+  standard:'Direkte deig uten fordeig-steg, med lang kjøleskapsheving (1–6 dager). Enklest å planlegge — du trenger ikke tenke på en egen fordeig i tillegg, og du styrer smaksdybden selv via hvor mange dager den står kaldt.',
+  poolish:WHY.pl,
+  biga:WHY.bi,
+  hurtig:'Ingen fordeig og ingen lang kjøletid — mer gjær kompenserer for den korte tiden. Raskeste veien fra bolle til ovn, på bekostning av litt av smaksdybden de lengre metodene gir.',
+  kveld:'Kortere kjøletid enn Langtidsdeig (5–24 timer, ikke dager) — for deg som vil elte i kveld og steke i morgen uten å planlegge flere dager frem. Gir mer smak enn Hurtigdeig, men litt mindre enn en flerdagers kald heving.',
+  mania:'To-trinns metode fra Pizzamania: en egen poolish gjæres for seg i 12 timer og kjøles ned, blandes så inn i hoveddeigen som deretter kjøleskapheves samlet i 10 timer. Fast oppskrift, ingen justerbare variabler.'
 };
 function rtW(actualMins){
   const durTxt = fmtDur(actualMins);
@@ -1339,8 +1351,8 @@ function rawSteps(a){
           ?`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap — du presser emnet ut i den runde jernpanna når du skal steke.`
           :`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,
         why:WHY.fk,
-        tip:'Bruk bokser med lokk — klede tørker ut overflaten og lager skorpe.'},
-      {title:'Kjøleskapsheiving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
+        tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
+      {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
         desc:`La emnene stå urørt i kjøleskapet i ca. ${coldTimeLabel(c)}. Ikke åpne boksene.`,
         why:WHY.fk},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
@@ -1547,7 +1559,7 @@ function kveldSteps(anchor){
     {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:FORM_DUR,
       desc:`Del i ${p.count} emner à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett rett i kjøleskap.`,
       why:'Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.',
-      tip:'Bruk bokser med lokk — klede tørker ut overflaten og lager skorpe.'},
+      tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
       desc:`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,
       why:'Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.'},
@@ -1847,7 +1859,7 @@ function copyP(steps){
   const coldLine = S.type==='ingenelting' ? null
     : S.method==='kveld' ? `Kjøleskapsheving: ${S.kveldH} timer · Ovn: ${oN()}`
     : S.method==='hurtig' ? `Ovn: ${oN()}`
-    : `Kjøleskapsheving: ${coldTimeLabel(S.cold)} · Ovn: ${oN()}`;
+    : `Total heving: ${coldTimeLabel(S.cold)} · Ovn: ${oN()}`;
   const ovnLine = S.type==='ingenelting' ? `Ovn: Vanlig ovn, 250°C` : null;
   const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.butter?[`Smør: ${r.butter}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${currentYeastAmount()}`,'','TIDSPLAN','--------'];
   steps.forEach((s,i)=>{
@@ -1994,9 +2006,9 @@ function searchAllMethods(anchor){
     const steps=rawSteps(anchor);
     candidates.push({label, violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{...snapshot}, ...timesOf(steps)});
   }
-  // Standard
+  // Langtidsdeig (tidligere "Standard")
   S.method='standard';
-  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo('Standard', {method:'standard',cold}); }
+  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo('Langtidsdeig', {method:'standard',cold}); }
   // Poolish, romtemperatur
   S.method='poolish'; S.poolishCold=false;
   for(const pref of [12,13,14,15,16]) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo('Poolish (romtemperatur)', {method:'poolish',poolishCold:false,poolishH:pref,cold}); }
@@ -2628,9 +2640,9 @@ function methodTimeWarningHTML(){
   const leadDays = (Math.round(leadHours/24*10)/10).toString().replace('.',',');
   return `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⏱ ${methodName} passer dårlig med god tid til rådighet</div>
-    <div style="font-size:12px;color:#4a2a05;line-height:1.5">Du har satt av ca. ${leadDays} dager fram til du vil spise, men ${methodName.toLowerCase()} er en rask metode ment for et par timers gjæring rett før steking — resten av tiden går til spille. Med så mye tid til rådighet gir Standard eller Kveldsdeig gjerne bedre smak for samme innsats.</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">Du har satt av ca. ${leadDays} dager fram til du vil spise, men ${methodName.toLowerCase()} er en rask metode ment for et par timers gjæring rett før steking — resten av tiden går til spille. Med så mye tid til rådighet gir Langtidsdeig eller Kveldsdeig gjerne bedre smak for samme innsats.</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">
-      <button onclick="methodWarnSwitchToStandard()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Bytt til Standard</button>
+      <button onclick="methodWarnSwitchToStandard()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Bytt til Langtidsdeig</button>
     </div>
     <div style="margin-top:.5rem"><span onclick="wizGoto(2)" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Metode</span></div>
   </div>`;
@@ -2653,7 +2665,7 @@ function hurtigWarmRoomWarningHTML(){
 function overfermentWarningHTML(){
   if(S.method==='hurtig' || S.type==='ingenelting') return '';
   // Forgjæring + bulkheving legges til kjøleskapstiden for å få total EFFEKTIV
-  // gjæringstid — samme delte regnestykke som meltype-varselet og Maks smak bruker.
+  // gjæringstid — samme delte regnestykke som meltype-varselet bruker.
   const totalHours = fixedFermOverheadHours()+S.cold;
   const threshold = S.method==='biga' ? 92 : 96;
   if(totalHours < threshold) return '';
@@ -2691,7 +2703,7 @@ function buildTechHTML(){
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor kaldt vann, ikke lunkent?</div><div class="sdesc">I motsetning til Hurtigdeig skal denne varianten roe seg ned i kjøleskapet, ikke få full fart før den kommer dit. Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen i minuttene før kjøleskapet kjøler deigen ned.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Om gjærmengden</div><div class="sdesc">Gjærkurven for 5–24 timer i kjøleskap er anslått ut fra at kald gjæring er 4–8× tregere enn romtemperatur — kildene spriker noe her, så tallene er et fornuftig utgangspunkt, ikke en eksakt fasit. Virker deigen for aktiv eller for treg i forhold til valgt tid, juster gjerne timeantallet neste gang.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>
-    <div class="step"><div class="stit" style="margin-bottom:.3rem">Kortere temperering enn Standard</div><div class="sdesc">Standardmetoden bruker 4 timer temperering fordi deigen har vært kald i flere dager og bygget opp en isolerende gjæringsvarme. Kveldsdeig har vært kald i timer, ikke dager, så ${S.kveldH<=15?'90 minutter':'2 timer'} er nok til å gjøre den strekkbar igjen.</div></div>
+    <div class="step"><div class="stit" style="margin-bottom:.3rem">Kortere temperering enn Langtidsdeig</div><div class="sdesc">Langtidsdeig-metoden bruker 4 timer temperering fordi deigen har vært kald i flere dager og bygget opp en isolerende gjæringsvarme. Kveldsdeig har vært kald i timer, ikke dager, så ${S.kveldH<=15?'90 minutter':'2 timer'} er nok til å gjøre den strekkbar igjen.</div></div>
     <div class="step"><div class="stit" style="margin-bottom:.3rem">Gjærtype: ${S.gjaer==='torr'?'tørrgjær':'fersk gjær'}</div><div class="sdesc">${S.gjaer==='torr'?'Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.':'Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først, adskilt fra resten av det kalde vannet. Bruk 3× mengden av tørrgjær.'}</div></div>`;
   }
   return `
@@ -3706,7 +3718,7 @@ function mobPillGroup(id,key){
 function mobMethodCards(){
   const wrap=document.getElementById('mob-gmet');if(!wrap)return;
   wrap.innerHTML='';
-  [{v:'standard',t:'Standard',s:'Direkte + kjøleskapsheving'},
+  [{v:'standard',t:'Langtidsdeig',s:'Direkte + kjøleskapsheving'},
    {v:'poolish',t:'Poolish',s:'Løs fordeig, 12–16t'},
    {v:'biga',t:'Biga',s:'Fast fordeig, 16–24t'},
    {v:'mania',t:'Mania-poolish',s:'To-trinns, udelt kald heving'},
@@ -3731,6 +3743,18 @@ function mobMethodCards(){
     };
     wrap.appendChild(el);
   });
+  updateMethodWhyBox();
+}
+// Oppdaterer den dynamiske "hvorfor"-boksen under metodekortene til å vise
+// teksten for S.method. Kalt fra mobMethodCards() ved hver rendring, så den
+// alltid er i sync uten egen wiring i onclick-handleren.
+function updateMethodWhyBox(){
+  const titleEl=document.getElementById('mob-method-why-title');
+  const textEl=document.getElementById('mob-method-why-text');
+  if(!titleEl||!textEl) return;
+  const names={standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',kveld:'Kveldsdeig',mania:'Mania-poolish'};
+  titleEl.textContent='Hvorfor '+(names[S.method]||S.method)+'?';
+  textEl.textContent=METHOD_WHY[S.method]||'';
 }
 
 function mobBuildHrows(){
@@ -3783,6 +3807,17 @@ function mobBuildBrows(){
 function mobSetB(h){S.bigaH=h;mobBuildBrows();mobGen();updateStartPreview('mob-b-start-preview');}
 function mobSetK(h){S.kveldH=h;mobBuildKrows();mobGen();}
 
+// Delt ±-knapp-hjelper for Finjuster-sliderne (v5.69) — leser gjeldende verdi
+// og min/max direkte fra selve range-inputen, så den ikke kan gå utenfor
+// grensene, og kaller samme oppdateringsfunksjon som selve slideren bruker.
+function stepMobSlider(id, delta, fn){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const min=parseFloat(el.min), max=parseFloat(el.max);
+  const next=Math.max(min,Math.min(max, parseFloat(el.value)+delta));
+  el.value=next;
+  fn(next);
+}
 function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=v+'g';const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=v+'g';mobGen();}
 function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
 function mobUCold(v){S.cold=parseInt(v);const t=coldTimeLabel(S.cold);document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();updateStartPreview('mob-cold-start-preview');}
@@ -3802,36 +3837,11 @@ function stepColdWiz(delta){
   const next=Math.max(24,Math.min(144,(S.cold||24)+delta*6));
   mobUCold(next);
 }
-function maksSmakApply(){
-  const flour=MELTYPER.find(m=>m.v===S.meltype);
-  const overhead=fixedFermOverheadHours();
-  const roundDown6=h=>Math.floor(h/6)*6;
-  let maxByFlour=144;
-  if(flour) maxByFlour=Math.max(24,roundDown6(flour.ferm.mx-overhead));
-  let maxByTime=144;
-  const dEl=document.getElementById('mob-ed'),tEl=document.getElementById('mob-et');
-  if(S.mode==='end' && dEl && dEl.value){
-    try{
-      const eatTime=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'18:00'));
-      if(!isNaN(eatTime.getTime())){
-        const availableHours=(eatTime.getTime()-Date.now())/3600000-overhead;
-        maxByTime=Math.max(24,roundDown6(availableHours));
-      }
-    }catch(e){}
-  }
-  const hours=Math.max(24,Math.min(144,maxByFlour,maxByTime));
-  mobUCold(hours);
-  const reasonEl=document.getElementById('mob-maks-smak-reason');
-  if(reasonEl){
-    reasonEl.textContent = (maxByTime<=maxByFlour)
-      ? 'Begrenset av tiden du har, ikke melet'
-      : 'Begrenset av hva '+(flour?flour.t:'melet')+' tåler, ikke tiden din';
-  }
-}
-// Steg 3 tilpasser seg valgt metode: lange metoder (Standard/Poolish/Biga) spør
+// maksSmakApply() fjernet i v5.68 — se changelog.js
+// Steg 3 tilpasser seg valgt metode: lange metoder (Langtidsdeig/Poolish/Biga) spør
 // alltid "Når vil du spise?" uten "Starter nå" (gir ikke mening ved flere dagers
 // kjøleskapsheving — man har uansett alltid et måltidspunkt i tankene), og viser
-// kjøleskapsdager + Maks smak. Raske metoder (Hurtigdeig/Kveldsdeig) beholder
+// kjøleskapsdager. Raske metoder (Hurtigdeig/Kveldsdeig) beholder
 // begge alternativene, med et nøytralt spørsmål siden begge faktisk svarer på det.
 function wizStep3Refresh(){
   const isShort = (S.method==='hurtig' || S.method==='kveld');
@@ -4228,7 +4238,7 @@ async function openFavorite(){
 
 function bakeMetaLine(b){
   const tn = {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago'}[b.config.type] || b.config.type;
-  const mn = {standard:'Standard',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig'}[b.config.method] || b.config.method;
+  const mn = {standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig'}[b.config.method] || b.config.method;
   const lbl = b.anchorMode==='end' ? 'Steketid' : 'Startet';
   let dtStr = '';
   try{ dtStr = fDT(new Date(b.anchorISO)); }catch(e){}
@@ -4368,7 +4378,7 @@ function syncSaveBakeLabel(){
 // tydelig 🚀 oppstartstid og 🍕 steketid for oppsettet man jobber med, pluss
 // en fast "Juster"-inngang til Finjuster med retur-sløyfe tilbake til Steg.
 function deigStatusBarHTML(steps, showActions){
-  const methodNames={standard:'Standard',poolish:(S.poolishCold?'Poolish (kjøleskap)':'Poolish'),biga:'Biga',mania:'Mania-poolish',hurtig:'Hurtigdeig',kveld:'Kveldsdeig'};
+  const methodNames={standard:'Langtidsdeig',poolish:(S.poolishCold?'Poolish (kjøleskap)':'Poolish'),biga:'Biga',mania:'Mania-poolish',hurtig:'Hurtigdeig',kveld:'Kveldsdeig'};
   let typeName='';
   try{ typeName=S.method==='mania'?'Napoletansk pizza':R().name; }catch(e){}
   const firstActive=(steps||[]).find(s=>!s.passive)||(steps||[])[0];
@@ -4745,10 +4755,14 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div id="wiz-step-2" class="wiz-step" style="display:none">
       <div id="wiz-status-step2"></div>
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken metode?</div>
-      <div style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Standard fungerer fint om du er usikker</div>
+      <div style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Langtidsdeig fungerer fint om du er usikker</div>
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl">Metode</div></div>
       <div id="mob-gmet-wrap">
         <div class="mob-mcard-wrap" id="mob-gmet"></div>
+      </div>
+      <div id="mob-method-why" style="margin:.4rem 1rem .65rem;padding:12px 14px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--forno-accent-text);margin-bottom:4px">💡 <span id="mob-method-why-title">Hvorfor Langtidsdeig?</span></div>
+        <div style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted)" id="mob-method-why-text"></div>
       </div>
       <div id="mob-hsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-hrows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
@@ -4798,6 +4812,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="wiz-step-3" class="wiz-step" style="display:none">
       <div id="wiz-status-step3"></div>
+      <div style="padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);margin-top:-4px">⚙️ Juster åpner flere valg: mel, gjærtype, meltype osv.</div>
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)" id="wiz-step3-title">Når vil du spise?</div>
 
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-step3-q1-lbl">Når vil du spise?</div></div>
@@ -4842,17 +4857,9 @@ document.addEventListener('change', firstInteractionCheck, true);
           <button onclick="stepColdWiz(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
         </div>
         <div id="mob-cold-start-preview" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-accent-text)"></div>
-        <div style="margin:0 1rem .65rem;padding:9px 10px;background:var(--forno-accent-soft);border:1px solid #BA7517;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <div style="min-width:0">
-            <div style="font-size:12px;font-weight:700;color:var(--forno-accent-text)">🌙 Maks smak</div>
-            <div id="mob-maks-smak-reason" style="font-size:10.5px;color:var(--forno-text-faint);margin-top:2px;line-height:1.4">Setter lengst trygge heving</div>
-          </div>
-          <button onclick="maksSmakApply()" style="flex-shrink:0;background:var(--forno-accent);color:#1a1512;font-size:11px;font-weight:700;padding:7px 12px;border:none;border-radius:8px;cursor:pointer" id="mob-maks-smak-btn">Bruk</button>
-        </div>
       </div>
 
       <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se steg for steg →</button></div>
-      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="wizGoto('finjuster')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">⚙️ Finjuster (mel, gjærtype, meltype osv.)</span></div>
       <div style="padding:0 1rem .8rem;text-align:center"><span onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 Finn oppskrift ut fra ledig tid → Beta-fanen</span></div>
     </div>
 
@@ -4864,20 +4871,36 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
       <div id="wiz-status-finjuster"></div>
     <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
-    <div class="mob-slider-wrap"><input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)"></div>
+    <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
+      <button onclick="stepMobSlider('mob-msl',-100,mobUMel)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
+      <input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)" style="flex:1;min-width:0">
+      <button onclick="stepMobSlider('mob-msl',100,mobUMel)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">+</button>
+    </div>
 
     <div id="finjuster-hydro-section">
     <div class="mob-section-lbl">Hydrering — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>
-    <div class="mob-slider-wrap"><input type="range" id="mob-hsl" min="55" max="80" step="1" value="65" oninput="mobUHydro(this.value)"></div>
+    <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
+      <button onclick="stepMobSlider('mob-hsl',-1,mobUHydro)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
+      <input type="range" id="mob-hsl" min="55" max="80" step="1" value="65" oninput="mobUHydro(this.value)" style="flex:1;min-width:0">
+      <button onclick="stepMobSlider('mob-hsl',1,mobUHydro)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">+</button>
+    </div>
     </div>
 
     <div id="mob-cwrap">
       <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">24 timer</span></div>
-      <div class="mob-slider-wrap"><input type="range" id="mob-csl" min="24" max="144" step="6" value="24" oninput="mobUCold(this.value)"></div>
+      <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
+        <button onclick="stepMobSlider('mob-csl',-6,mobUCold)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
+        <input type="range" id="mob-csl" min="24" max="144" step="6" value="24" oninput="mobUCold(this.value)" style="flex:1;min-width:0">
+        <button onclick="stepMobSlider('mob-csl',6,mobUCold)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">+</button>
+      </div>
     </div>
 
     <div class="mob-section-lbl">Romtemperatur — <span id="mob-tlbl">22°C</span></div>
-    <div class="mob-slider-wrap"><input type="range" id="mob-tsl" min="18" max="28" step="2" value="22" oninput="mobUTemp(this.value)"></div>
+    <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
+      <button onclick="stepMobSlider('mob-tsl',-2,mobUTemp)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
+      <input type="range" id="mob-tsl" min="18" max="28" step="2" value="22" oninput="mobUTemp(this.value)" style="flex:1;min-width:0">
+      <button onclick="stepMobSlider('mob-tsl',2,mobUTemp)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">+</button>
+    </div>
 
     <div id="mob-ggj-group">
     <div class="mob-section-lbl">Gjærtype</div>
