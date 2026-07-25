@@ -628,6 +628,12 @@ def run_behavioral_tests(page):
 
       // Mel som ikke tåler gjæringstiden -> skal dukke opp i sjekken.
       S.meltype='vanlig_hvetemel'; S.cold=96;
+      // Steketid 10 doegn fram, saa v5.84-varselet om passert oppstart ikke
+      // blander seg inn — denne testen handler om deig, ikke tid.
+      const far = new Date(Date.now() + 10*24*3600000);
+      const fp2 = n => String(n).padStart(2,'0');
+      document.getElementById('mob-ed').value = far.getFullYear()+'-'+fp2(far.getMonth()+1)+'-'+fp2(far.getDate());
+      document.getElementById('mob-et').value = '18:00';
       wizCheckRefresh();
       const dirtyText = check().textContent;
       const dirtyBoxes = boxes();
@@ -705,6 +711,54 @@ def run_behavioral_tests(page):
       r16['headerFollowsToggle'] and r16['deadFieldsGone']
     )
     results.append(('earliest_time_comes_from_step_builder_for_all_methods', ok16, r16))
+
+    # v5.84: bakoverplanlegging kunne gi oppstart i FORTIDEN uten et ord —
+    # Runes skjermbilder: spise i morgen 18:00 gir oppstart i gaar 16:15, mens
+    # hintet samtidig sier tidligst mulig 20:54. Beta-soket fikk sperren i
+    # v5.52; wizardveien faar den naa. Tester at sjekken flagger det, at
+    # ett-trykks-knappen flytter steketiden til noe gjennomfoerbart, og at
+    # varselet forsvinner etterpaa. Og at en romslig plan IKKE flagges.
+    r17 = page.evaluate('''() => {
+      const allDay = [['00:00','23:59'], null];
+      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
+      _dismissedWarnings.clear();
+      S.type='napoletana'; S.method='standard'; S.mode='end';
+      S.mel=500; S.hydro=65; S.cold=24; S.temp=22; S.meltype='doppio_zero';
+      const p2 = n => String(n).padStart(2,'0');
+      const setEat = d => {
+        document.getElementById('mob-ed').value = d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+        document.getElementById('mob-et').value = p2(d.getHours())+':'+p2(d.getMinutes());
+      };
+
+      // Spise om 2 timer med en ~26-timers metode -> oppstart ~24t i fortiden.
+      setEat(new Date(Date.now() + 2*3600000));
+      mobShowTab('settings'); wizGoto(3); mobGen();
+      const check = document.getElementById('wiz-check');
+      const flagged = check.textContent.includes('Oppstarten har allerede passert');
+      const btn = Array.from(check.querySelectorAll('button')).find(b => b.textContent.includes('i stedet'));
+
+      let afterClick = null, eatMovedToFuture = null;
+      if (btn) {
+        btn.click();
+        afterClick = !document.getElementById('wiz-check').textContent.includes('Oppstarten har allerede passert');
+        const dv = document.getElementById('mob-ed').value, tv = document.getElementById('mob-et').value;
+        eatMovedToFuture = new Date(dv+'T'+tv).getTime() > Date.now();
+      }
+
+      // Romslig plan (3 doegn fram) skal IKKE flagges.
+      setEat(new Date(Date.now() + 72*3600000));
+      mobGen();
+      const roomyClean = !document.getElementById('wiz-check').textContent.includes('Oppstarten har allerede passert');
+
+      return {flagged, hasBtn: !!btn, afterClick, eatMovedToFuture, roomyClean};
+    }''')
+    ok17 = (
+      r17['flagged'] and r17['hasBtn'] and
+      r17['afterClick'] is True and r17['eatMovedToFuture'] is True and
+      r17['roomyClean']
+    )
+    results.append(('backward_plan_flags_start_in_the_past_with_fix', ok17, r17))
+
 
 
     return results

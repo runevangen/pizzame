@@ -2567,6 +2567,36 @@ function applyAnchorShift(iso){
   if(tEl) tEl.value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
   mobGen();
 }
+// v5.84: bakoverplanleggingen kunne regne seg til en oppstart som allerede
+// har passert, uten å si fra — Beta-søket fikk denne sperren i v5.52, men
+// wizardveien fikk den aldri. Varselet tilbyr det tidligste realistiske
+// steketidspunktet med ett trykk, via earliestBakeAt + applyAnchorShift.
+function pastStartWarningHTML(){
+  if(S.mode!=='end') return '';
+  let steps=[];
+  try{ steps=computeCurrentSteps(); }catch(e){ return ''; }
+  const first=steps.find(s=>!s.passive)||steps[0];
+  if(!first) return '';
+  let at=first.at; if(!(at instanceof Date)) at=new Date(at);
+  if(isNaN(at.getTime())) return '';
+  const lateMs=Date.now()-at.getTime();
+  if(lateMs < 2*60000) return ''; // to minutters slingring, ellers maser den mens man skriver
+  let dt=''; try{ dt=fDT(at); }catch(e){}
+  let btn='';
+  const eb=earliestBakeAt();
+  if(eb){
+    // Rund opp til neste kvarter med litt margin, så knappen gir et tidspunkt
+    // som fortsatt holder når man faktisk trykker på den.
+    const t=new Date(Math.ceil((eb.getTime()+5*60000)/(15*60000))*(15*60000));
+    let tTxt=''; try{ tTxt=fDT(t); }catch(e){}
+    if(tTxt) btn=`<div style="margin-top:.6rem"><button onclick="applyAnchorShift('${t.toISOString()}')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Spis ${escH(tTxt)} i stedet</button></div>`;
+  }
+  return warningWrapHTML(`paststart|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⏰ Oppstarten har allerede passert</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">For å rekke steketidspunktet du har valgt, måtte du ha startet ${escH(dt)}. Velg et senere tidspunkt, eller la appen finne det tidligste som går.</div>
+    ${btn}
+  </div>`);
+}
 function activeStepTimeWarningHTML(){
   const steps=window._steps||[];
   if(!steps.length) return '';
@@ -4159,8 +4189,8 @@ function wizCheckRender(){
   _warnShowAll=true;
   const parts=[];
   try{
-    [activeStepTimeWarningHTML, methodTimeWarningHTML, meltypeWarningHTML,
-     overfermentWarningHTML, hurtigWarmRoomWarningHTML].forEach(fn=>{
+    [pastStartWarningHTML, activeStepTimeWarningHTML, methodTimeWarningHTML,
+     meltypeWarningHTML, overfermentWarningHTML, hurtigWarmRoomWarningHTML].forEach(fn=>{
       let h='';
       try{ h=fn(); }catch(e){}
       if(h) parts.push(h);
@@ -4509,7 +4539,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     const rrH=[...baseIngredientRows({mel:S.mel,vann:w2,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rrH, true)}</div></div>`;
@@ -4519,7 +4549,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='kveld'){
     const {ya,steps}=kveldSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const r2=R(),p=pc();
     const rrK=[...baseIngredientRows({mel:S.mel,vann:r2.water,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Kjøleskapsheving',v:`${S.kveldH} timer`},{k:'Ovntype',v:oN()}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rrK, true)}</div></div>`;
@@ -4529,7 +4559,7 @@ function mobGen(){
   if(S.method==='mania'){
     const steps=rawSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const rm=maniaRecipe(),p=pc();
     const rrPoolish=[{k:'Mel',v:`${rm.poolishMel}g`},{k:'Vann',v:`${rm.poolishVann}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.poolishYd}g tørrgjær`:`${rm.poolishYf}g fersk gjær`}];
     const rrHoved=[{k:'Poolish',v:'Hele poolishen over'},{k:'Mel',v:`${rm.hovedMel}g`},{k:'Vann del 1',v:`${rm.vann1}g`},{k:'Vann del 2',v:`${rm.vann2}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.hovedYd}g tørrgjær`:`${rm.hovedYf}g fersk gjær`},{k:'Salt',v:`${rm.salt}g`}];
@@ -4541,7 +4571,7 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[...baseIngredientRows({mel:r.flour,vann:r.water,hydro:S.hydro,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,gjaer:yA(r)}),...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rr, true)}</div><div class="mob-swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;

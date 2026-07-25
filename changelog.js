@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.84',
+    d: 'juli 2026',
+    changes: [
+      'Velger du et steketidspunkt som er for tett på, kunne appen regne seg bakover til en oppstart som allerede hadde passert — og vise den uten å si fra. Nå får du et tydelig varsel både i kvalitetssjekken og på Steg-fanen, med en knapp som flytter steketiden til det tidligste tidspunktet som faktisk går, ferdig utregnet for metoden og innstillingene dine.',
+      'Beta-fanens søk fikk denne sperren allerede i v5.52 — nå gjelder den også når du planlegger direkte i wizarden.'
+    ]
+  },
+  {
     v: '5.83',
     d: 'juli 2026',
     changes: [
