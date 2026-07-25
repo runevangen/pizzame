@@ -759,6 +759,41 @@ def run_behavioral_tests(page):
     )
     results.append(('backward_plan_flags_start_in_the_past_with_fix', ok17, r17))
 
+    # v5.86: Rune paapekte at "Steketidspunkt" (fritt soek) og "Populaere
+    # tidspunkt for pizza" i Beta-fanen var to helt uavhengige soek som ikke
+    # hang sammen — standardverdien i det frie soeket kunne vaere et tidspunkt
+    # som alt hadde passert, og de faste tidspunktene skrev til en helt annen
+    # boks. Tester at (1) standarddatoen alltid er i fremtiden selv naar
+    # klokken 19:00 alt er passert i dag, og (2) et klikk paa et populaert
+    # tidspunkt fyller DE SAMME feltene og skriver til DET SAMME resultatfeltet
+    # som det frie soeket bruker.
+    r18 = page.evaluate('''() => {
+      const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
+      dEl.value='';
+      mobShowTab('beta');
+      const defaultDate = dEl.value;
+      const defaultIsFuture = new Date(defaultDate+'T19:00').getTime() > Date.now();
+
+      const shortcuts = Array.from(document.querySelectorAll('#mob-beta-faste button'));
+      const firstLabel = shortcuts.length ? shortcuts[0].textContent : null;
+      if (shortcuts.length) shortcuts[0].click();
+      const resultText = document.getElementById('mob-beta-result').textContent;
+      const fieldsUpdated = dEl.value !== defaultDate || tEl.value !== '19:00';
+
+      return {
+        shortcutCount: shortcuts.length,
+        firstLabel, defaultDate, defaultIsFuture,
+        resultHasContent: resultText.trim().length > 0,
+        fieldsUpdated
+      };
+    }''')
+    ok18 = (
+      r18['shortcutCount'] == 5 and r18['defaultIsFuture'] and
+      r18['resultHasContent'] and r18['fieldsUpdated']
+    )
+    results.append(('beta_shortcuts_share_one_search_with_feasible_default', ok18, r18))
+
+
 
 
     return results

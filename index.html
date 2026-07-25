@@ -2085,7 +2085,12 @@ async function renderBetaPanel(){
   if(!window._pizzatidSchedule) await loadPizzatidSchedule();
   renderPizzatidDays();
   const dEl=document.getElementById('mob-beta-ed');
-  if(dEl && !dEl.value){ dEl.value=fd(new Date()); }
+  if(dEl && !dEl.value){
+    const now=new Date();
+    let cand=new Date(now.getFullYear(),now.getMonth(),now.getDate(),19,0,0,0);
+    if(cand.getTime()<=now.getTime()) cand.setDate(cand.getDate()+1);
+    dEl.value=fd(cand);
+  }
   renderBetaFasteTider();
 }
 // Åpner Beta-fanen og folder ut Pizzatid-panelet, slik at "Rediger pizzatiden
@@ -2283,16 +2288,21 @@ function renderBetaFasteTider(){
   ];
   const el=document.getElementById('mob-beta-faste');
   if(!el) return;
-  el.innerHTML=targets.map((t,i)=>`<div id="mob-beta-faste-${i}"></div>`).join('');
-  targets.forEach((t,i)=>{
-    try{
-      renderResultBlock(`mob-beta-faste-${i}`, t.label, t.d.toISOString());
-    }catch(e){
-      const box=document.getElementById(`mob-beta-faste-${i}`);
-      if(box) box.innerHTML=`<div style="padding:8px;font-size:11px;color:#e8a06e">${escH(t.label)}: noe gikk galt under søket.</div>`;
-      console.error('Faste tider-søk feilet for', t.label, e);
-    }
-  });
+  el.innerHTML=targets.map((t,i)=>
+    `<button onclick="useBetaShortcut('${t.d.toISOString()}')" style="width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text);font-size:12.5px;font-weight:600;cursor:pointer">${escH(t.label)}</button>`
+  ).join('');
+}
+// Snarveiene fyller de samme feltene det frie søket bruker, og kjører samme
+// søk — ett resultatfelt for begge veiene inn, ikke fem ferdigregnede bokser
+// som stod løsrevet fra feltene over.
+function useBetaShortcut(iso){
+  const d=new Date(iso);
+  if(isNaN(d.getTime())) return;
+  const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
+  const pad=n=>String(n).padStart(2,'0');
+  if(dEl) dEl.value=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  if(tEl) tEl.value=pad(d.getHours())+':'+pad(d.getMinutes());
+  runBetaSearch();
 }
 function runBetaSearch(){
   const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
@@ -5400,7 +5410,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
 
       <div style="height:14px;border-top:2px solid var(--forno-border);margin:.4rem 1rem 0"></div>
-      <div class="mob-section-lbl" style="padding-top:1rem">Populære tidspunkt for pizza</div>
+      <div class="mob-section-lbl" style="padding-top:1rem">Eller velg et populært tidspunkt</div>
       <div id="mob-beta-faste" style="padding:.3rem 1rem .8rem"></div>
 
       <div style="height:80px"></div>

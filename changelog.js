@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.86',
+    d: 'juli 2026',
+    changes: [
+      '"Steketidspunkt" og "Populære tidspunkt for pizza" i Beta-fanen var to helt uavhengige søk som ikke hadde noe med hverandre å gjøre — et populært tidspunkt skrev til sin egen boks uten å røre feltene over. Nå fyller et klikk på et populært tidspunkt de samme feltene og viser svaret i det samme resultatfeltet som det frie søket bruker. Ett svar om gangen, uansett hvilken vei du kommer inn.',
+      'Standarddatoen i det frie søket var alltid "i dag kl. 19:00", selv om klokken alt var passert — et forslag som kunne være ugjennomførbart før du rakk å lese det. Den er nå alltid neste gjennomførbare kl. 19:00, i dag eller i morgen.'
+    ]
+  },
+  {
     v: '5.85',
     d: 'juli 2026',
     changes: [
