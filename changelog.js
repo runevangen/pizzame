@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.90',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet velkomstskjermen som dukket opp ved ny oppstart med knappene Bruk samme som sist og Åpne favoritten min. Den ga et løfte den ikke helt holdt — den gjenbrukte det meste av forrige oppsett, men ikke tidspunktet du planla for — og hoppet forbi hele wizarden, inkludert sjekken som nå ser over planen din. Favoritten din er fortsatt like lett å finne via Mine deiger. Appen går nå rett til første steg hver gang du starter noe nytt.'
+    ]
+  },
+  {
     v: '5.89',
     d: 'juli 2026',
     changes: [

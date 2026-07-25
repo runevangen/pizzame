@@ -2345,7 +2345,7 @@ function totalFermentHours(){
 // deg av på toppen av skjermen.
 function openFinjusterAt(targetId){
   setReturnTo(false);
-  window._wizEnteredOnce = true;
+  window._wizEnteredOnce = true; // hindrer wizEnterSettingsTab() i å nullstille til steg 1
   mobShowTab('settings');
   wizGoto('finjuster', ()=>{ if(targetId) highlightWizEl(targetId); });
 }
@@ -3489,10 +3489,9 @@ async function authComplete(id, name){
   if(settingsScr) settingsScr.scrollTop=0;
   maybeShowGuideOnLoad();
   syncLoggedInAs();
-  // syncFavoriteButton() kan ha kjørt ved sideinnlasting før innlogging var reell —
-  // hent på nytt så "Åpne favoritten min"-snarveien (for tilbakevendende brukere)
-  // viser riktig status. Selve "Hei igjen"-avgjørelsen tas nå kun på per-bruker-
-  // signalet i wizDecideStart(), så denne påvirker bare snarvei-knappen.
+  // Nullstiller slik at wizEnterSettingsTab() starter denne nylig innloggede
+  // brukeren på steg 1, ikke der forrige bruker på samme enhet var.
+  // syncFavoriteButton() henvises fortsatt av "Mine deiger"/"★ Min favoritt".
   window._wizEnteredOnce = false;
   await syncFavoriteButton();
   if(document.body.classList.contains('mob-mode')) wizEnterSettingsTab();
@@ -4303,85 +4302,20 @@ function wizEnterSettingsTab(){
     document.querySelectorAll('#mob-settings .wiz-step').forEach(el=>{ el.style.display='block'; });
     return;
   }
-  if(window._wizEnteredOnce) return; // ikke vis "Hei igjen" på nytt bare fordi du bytter fane frem og tilbake
+  // v5.90: "Hei igjen"-mellomskjermen (bruk samme som sist / åpne favoritt)
+  // er fjernet — den brøt løftet sitt (gjenbrukte alt UNNTATT tidspunktet,
+  // som ikke lå i S) og hoppet forbi hele wizarden, inkludert sjekken den nå
+  // gjør. Favoritten nås fra før via "Mine deiger"/"★ Min favoritt", og
+  // "Start noe nytt" var uansett bare wizGoto(1) — nøyaktig det som skjer her.
+  // Guarden under er fortsatt nødvendig av en annen grunn: mobShowTab kaller
+  // denne funksjonen HVER gang du bytter til Planlegging-fanen, og uten den
+  // ville du blitt tilbakestilt til steg 1 hver gang, i stedet for å lande
+  // der du sist var.
+  if(window._wizEnteredOnce) return;
   window._wizEnteredOnce = true;
-  wizDecideStart();
+  wizGoto(1);
 }
 
-// Nøkkel for "siste oppsett" må være knyttet til hvilken bruker som faktisk er
-// innlogget — ellers arver en ny bruker forrige brukers siste deig på samme enhet.
-function lastConfigKey(){
-  try{
-    const u = JSON.parse(localStorage.getItem('pizzaUser'));
-    if(u && u.id) return 'pizzaLastConfig_'+u.id;
-  }catch(e){}
-  return 'pizzaLastConfig'; // reserve, brukes kun hvis vi av en eller annen grunn ikke finner bruker-id
-}
-function currentUserName(){
-  try{
-    const u = JSON.parse(localStorage.getItem('pizzaUser'));
-    if(u && u.name) return u.name;
-  }catch(e){}
-  return null;
-}
-
-async function wizDecideStart(){
-  // VIKTIG: deig-lageret (/api/bakes) er DELT for hele gruppen — at det finnes
-  // en aktiv deig eller favoritt der beviser ikke at DENNE brukeren har brukt
-  // appen før. Eneste per-bruker-signal er lastConfigKey() (knyttet til bruker-id).
-  let hasLastConfig = false;
-  try{ hasLastConfig = !!localStorage.getItem(lastConfigKey()); }catch(e){}
-  if(hasLastConfig){
-    const hasFavorite = !!window._favoriteId; // delt snarvei — vises kun for reelt tilbakevendende brukere
-    wizHideAllSteps();
-    document.getElementById('wiz-returning').style.display='block';
-    document.getElementById('wiz-returning-sub').textContent = wizLastConfigSummary();
-    document.getElementById('wiz-use-last-btn').style.display = 'block';
-    document.getElementById('wiz-use-fav-btn').style.display = hasFavorite ? 'block' : 'none';
-    const scr=document.getElementById('mob-settings');
-    if(scr){
-      scr.classList.add('settling');
-      scr.scrollTop=0;
-      requestAnimationFrame(()=>{
-        scr.scrollTop=0;
-        requestAnimationFrame(()=>{
-          scr.scrollTop=0;
-          scr.classList.remove('settling');
-        });
-      });
-    }
-  }else{
-    wizGoto(1);
-  }
-}
-
-function wizLastConfigSummary(){
-  try{
-    const cfg = JSON.parse(localStorage.getItem(lastConfigKey()));
-    return 'Sist bakte du '+tnShort(cfg.type)+' med '+mN(cfg.method)+'-metoden';
-  }catch(e){ return 'Du har brukt appen før'; }
-}
-function tnShort(type){
-  return {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago',ingenelting:'Ingen elting'}[type]||type;
-}
-
-function wizHideAllSteps(){
-  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-check','wiz-finjuster'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.style.display='none';
-  });
-}
-
-function wizUseLastConfig(){
-  try{
-    const cfg = JSON.parse(localStorage.getItem(lastConfigKey()));
-    Object.assign(S, cfg);
-  }catch(e){}
-  mobShowTab('plan');
-}
-async function wizOpenFavoriteFromWizard(){
-  await openFavorite();
-  if(window._activeDeigId) mobShowTab('plan');
-}
 
 // v5.78: fire steg. "Når" flyttet opp til steg 1 sammen med type og antall,
 // fordi metodevalget avhenger av hvor mye tid du har — før valgte man metode
@@ -4397,12 +4331,19 @@ function wizStepEl(step){
   const s=WIZ_STEPS.find(x=>x.id===step);
   return s ? s.el : null;
 }
+function wizHideAllSteps(){
+  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-check','wiz-finjuster'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
+}
+function tnShort(type){
+  return {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago',ingenelting:'Ingen elting'}[type]||type;
+}
 function wizGoto(step, onSettled){
   // v5.81: Finjuster er ute av stegrekken igjen og nås fra varslene. Den
   // beholder 'finjuster' som stegverdi — den har ingen plass i nummereringen,
   // men må fortsatt kunne vises, og wizBack/swipe må vite hvor den hører til.
   window._wizStep = step;
-  document.getElementById('wiz-returning').style.display='none';
   wizHideAllSteps();
   document.getElementById('wiz-header').style.display='block';
   const elId = step==='finjuster' ? 'wiz-finjuster' : wizStepEl(step);
@@ -4466,7 +4407,6 @@ function wizBack(){
   if(window._wizStep > 1) wizGoto(window._wizStep-1);
 }
 function wizFinish(){
-  try{ localStorage.setItem(lastConfigKey(), JSON.stringify({...S})); }catch(e){}
   mobShowTab('plan');
 }
 
@@ -4816,7 +4756,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   </div>`;
 }
 function wizOpenFinjusterFromPlan(){
-  window._wizEnteredOnce = true; // ikke la "Hei igjen"-skjermen kapre visningen — vi skal rett til Finjuster
+  window._wizEnteredOnce = true; // hindrer wizEnterSettingsTab() i å nullstille til steg 1 — vi skal rett til Finjuster
   mobShowTab('settings');
   wizGoto('finjuster', ()=>{
     const btn=document.getElementById('wiz-finjuster-back-to-plan');
@@ -5121,14 +5061,6 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <!-- TAB: INNSTILLINGER -->
   <div class="mob-screen active" id="mob-settings">
-    <div id="wiz-returning" class="wiz-step" style="display:none;padding:2rem 1.2rem;text-align:center">
-      <div style="font-size:17px;font-weight:700;margin-bottom:.3rem;font-family:var(--forno-font-display,inherit)">Hei igjen! 👋</div>
-      <div id="wiz-returning-sub" style="font-size:12px;color:var(--forno-text-faint);margin-bottom:1.3rem"></div>
-      <button id="wiz-use-last-btn" onclick="wizUseLastConfig()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">🔁 Bruk samme som sist</button>
-      <button id="wiz-use-fav-btn" onclick="wizOpenFavoriteFromWizard()" style="display:none;width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised);color:var(--forno-text);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">⭐ Åpne favoritten min</button>
-      <button onclick="wizGoto(1)" style="width:100%;height:40px;border:none;background:transparent;color:var(--forno-accent-text);font-size:13px;font-weight:600;cursor:pointer">Start noe nytt →</button>
-    </div>
-
     <div id="wiz-header" class="wiz-step" style="display:none;padding:1.1rem 1rem .8rem">
       <div style="display:flex;align-items:center;gap:8px">
         <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px;flex-shrink:0">←</span>
