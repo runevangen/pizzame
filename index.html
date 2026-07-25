@@ -1966,6 +1966,15 @@ async function savePizzatidSchedule(schedule){
     if(!u||!u.id) return;
     await fetch('/api/pizzatid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:u.id,schedule})});
   }catch(e){}
+  finally{ pizzatidChanged(); }
+}
+// v5.76: fram til v5.73 påvirket pizzatiden bare Beta-søket, så redigering
+// trengte ingen oppfrisking av planen. Nå styrer den varselet om opptatt tid,
+// og da må planen regnes ut på nytt med en gang — ellers blir varselet stående
+// med gammelt svar selv om brukeren nettopp gjorde seg ledig.
+function pizzatidChanged(){
+  if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
+  else { try{ schedNow(); }catch(e){} }
 }
 function timeStrToMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
 function inPizzatidWindow(hh,mm,day){
@@ -1973,8 +1982,9 @@ function inPizzatidWindow(hh,mm,day){
   const periods=(window._pizzatidSchedule||defaultPizzatidSchedule())[key]||[];
   const t=hh*60+mm;
   for(const p of periods){
-    if(!p) continue;
+    if(!p || !p[0] || !p[1]) continue; // halvferdig periode midt i redigering
     const a=timeStrToMin(p[0]), b=timeStrToMin(p[1]);
+    if(isNaN(a) || isNaN(b)) continue;
     if(a<=b){ if(t>=a&&t<=b) return true; }
     else{ if(t>=a||t<=b) return true; } // periode som spenner over midnatt
   }
@@ -2122,6 +2132,7 @@ function updatePizzatidPeriod(dayKey,periodIdx,fieldIdx,value){
   sched[dayKey][periodIdx][fieldIdx]=value;
   const p=sched[dayKey][periodIdx];
   if(!p[0]&&!p[1]) sched[dayKey][periodIdx]=null;
+  pizzatidChanged();
 }
 function saveBetaPizzatid(){
   savePizzatidSchedule(window._pizzatidSchedule||defaultPizzatidSchedule());
@@ -4240,6 +4251,10 @@ function mobShowTab(t){
     const tab=document.getElementById('mob-tab-'+id);
     if(tab)tab.classList.toggle('on',id===t);
   });
+  // Planen regnes ut på nytt hver gang man lander på fanen. Uten dette kunne
+  // en endring gjort i en annen fane (typisk pizzatiden i Beta) etterlate et
+  // varsel som svarte på gammel tilstand.
+  if(t==='plan'){ try{ mobGen(); }catch(e){} }
   if(t==='bakster')renderBaksterPanel('mob-bakster-content');
   if(t==='notes')renderNotesPanel('mob-notes-content');
   if(t==='settings') wizEnterSettingsTab();

@@ -3,6 +3,15 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.76',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at varselet om opptatt tid ble hengende med gammelt svar når du endret pizzatiden din i Beta-fanen. Redigeringen lagret riktig, men planen ble aldri regnet ut på nytt, så varselet svarte på tilstanden fra før endringen. Nå oppdaterer planen seg med en gang du endrer et tidspunkt.',
+      'I tillegg regnes planen alltid ut på nytt når du går inn på Steg-fanen. Det er en generell sikring: ingen endring gjort i en annen fane skal kunne etterlate et varsel som svarer på gammel tilstand.',
+      'Et halvferdig tidsrom midt i redigeringen — der du har fylt inn "fra" men ikke "til" ennå — teller ikke lenger som en gyldig periode.'
+    ]
+  },
+  {
     v: '5.75',
     d: 'juli 2026',
     changes: [

@@ -387,6 +387,49 @@ def run_behavioral_tests(page):
     )
     results.append(('warning_only_offers_levers_that_move_the_step', ok10, r10))
 
+    # v5.76: REELL BUG — varselet ble hengende med gammelt svar når pizzatiden
+    # ble endret i Beta-fanen, fordi redigeringen aldri regnet planen ut på nytt.
+    # Reproduserer: lag en konflikt, gjør deg ledig på nøyaktig det tidspunktet
+    # via updatePizzatidPeriod (samme kall som time-inputene bruker), og krev at
+    # varselet er borte UTEN et manuelt mobGen() imellom.
+    r11 = page.evaluate("""() => {
+      _dismissedWarnings.clear();
+      const savedSched = window._pizzatidSchedule;
+      const wd=[['16:00','23:30'],['06:30','08:00']], we=[['06:00','23:00'],null];
+      window._pizzatidSchedule = {mon:wd,tue:wd,wed:wd,thu:wd,fri:wd,sat:we,sun:we};
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65;
+      S.cold=48; S.temp=22; S.meltype='doppio_zero'; S.mode='end';
+      const now=new Date();
+      const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),18,0,0,0);
+      d.setDate(d.getDate() + ((2 - now.getDay() + 7) % 7 || 7));
+      document.getElementById('mob-ed').value = fd(d);
+      document.getElementById('mob-et').value = '18:00';
+      mobShowTab('plan'); mobGen();
+      const has = () => !!Array.from(document.querySelectorAll('#mob-plan-content .warn-dismiss-wrap'))
+                            .find(x => x.textContent.includes('Et steg havner'));
+      const before = has();
+
+      // Gjør tirsdag ledig fra 06:00 — samme vei som time-feltene i Beta-fanen.
+      updatePizzatidPeriod('tue', 0, 0, '06:00');
+      const afterEdit = has();
+
+      // Halvferdig periode skal ikke telle som gyldig
+      window._pizzatidSchedule.tue = [['16:00',''], null];
+      const halfDoneCountsAsBusy = outsidePizzatid(18,0,2);
+
+      window._pizzatidSchedule = savedSched;
+      _dismissedWarnings.clear();
+      return { before, afterEdit, halfDoneCountsAsBusy,
+               planTabRerenders: mobShowTab.toString().includes("t==='plan'") };
+    }""")
+    ok11 = (
+      r11['before'] is True and
+      r11['afterEdit'] is False and
+      r11['halfDoneCountsAsBusy'] is True and
+      r11['planTabRerenders'] is True
+    )
+    results.append(('pizzatid_edit_refreshes_warning_immediately', ok11, r11))
+
     return results
 
 
