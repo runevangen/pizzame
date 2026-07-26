@@ -1248,6 +1248,36 @@ function oT(t){
   return p?'Jernpanne gir best varmeoverføring.':'Ost UNDER sausen — Chicago-tradisjonen.';
 }
 function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
+// v5.99: understeg for det delte stekestegetet — samme gren-logikk (type ×
+// ovnstype) som oD()/oT(), brutt opp i egne linjer i stedet for ett avsnitt.
+// Brukt av tailSteps (Standard/Poolish/Biga), kveldSteps og hurtigSteps sine
+// bakesteg, så alle metoder får samme behandling fra samme kilde.
+function bakeSubsteps(type){
+  const p=S.oven==='pizza';
+  const warm = type==='napoletana'
+    ? (p?'Varm pizzaovnen til 430–450°C — pizzastein/-stål MÅ varmes minst 45 min':'Varm ovnen til 250°C med pizzastein/-stål, 45 min, øverste rille')
+    : type==='newyork'
+    ? (p?'Varm pizzaovnen til 300–340°C':'Varm ovnen til 250°C med pizzastein/-stål, 45 min')
+    : type==='langpanne'
+    ? (p?'Varm pizzaovnen til 300–350°C':'Varm ovnen til 230–250°C')
+    : (p?'Varm pizzaovnen til 250–280°C i jernpanne':'Varm ovnen til 200–220°C');
+  const shape = type==='langpanne'
+    ? 'Press deigen utover i oljet langpanne — ikke elt, bare press med fingertuppene'
+    : type==='chicago'
+    ? 'Press deigen ned og opp langs kantene i smørsmurt jernpanne'
+    : type==='newyork'
+    ? 'Strekk tynt og bredt — kantene skal kunne brettes'
+    : 'Strekk emnet rundt, la kanten være tykkere enn midten';
+  const top = type==='chicago' ? 'Ost først, så fyll, saus øverst — Chicago-tradisjonen' : 'Ha på saus, ost og ønsket topping';
+  const bakeLine = type==='napoletana'
+    ? (p?'Stek 90–120 sek til leopardmønster og sprø kanter':'Stek 6–9 min øverste rille')
+    : type==='newyork'
+    ? (p?'Stek 4–6 min til gyllen og sprø':'Stek 6–8 min til gyllen og sprø bunn')
+    : type==='langpanne'
+    ? (p?'Stek 8–12 min':'Stek 12–16 min')
+    : (p?'Stek 20–25 min':'Stek 28–35 min');
+  return [warm, shape, top, bakeLine];
+}
 function mN(m){return{standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig'}[m]||m;}
 
 const LOC={
@@ -1339,22 +1369,50 @@ function rawSteps(a){
       {title:'Bland alt i bollen',loc:'benk',at:t0,dur:MIX_DUR,
         desc:`Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle. Tilsett ${r.water}g ${waterTempPhrase()} og rør sammen med en skje til alt melet er fuktet. Klumpete og grovt er helt greit — ingen elting.${langpanneHintText()}`,
         needs:[`🌾 ${r.flour}g mel`, `🧂 ${r.salt}g salt`, `🫙 ${yA(r)}`, `💧 ${r.water}g vann`],
+        substeps:[
+          `Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle`,
+          `Tilsett ${r.water}g vann`,
+          `Rør sammen med en skje til alt melet er fuktet — klumpete er helt greit`
+        ],
         why:'Lang, langsom heving bygger opp glutenstrukturen av seg selv — helt uten mekanisk arbeid.',
         tip:'Ingen kjøkkenmaskin eller håndelting nødvendig i det hele tatt — bare rør sammen med en skje.'},
       {title:'La stå (natt over)',loc:'rom',at:restAt,dur:REST_MIN,passive:true,
         desc:`Dekk bollen med plastfolie eller lokk. La stå i romtemperatur i ca. ${Math.round(REST_MIN/60)} timer, til overflaten er full av bobler og deigen har mer enn doblet seg.`,
+        substeps:[
+          'Dekk bollen med plastfolie eller lokk',
+          `La stå i romtemperatur i ca. ${Math.round(REST_MIN/60)} timer, til den er full av bobler og har doblet seg`
+        ],
         why:'Enzymer og gjær jobber sakte over lang tid og bygger smak og glutenstruktur uten at du trenger å gjøre noe.'},
       {title:pc().count>1?'Del i langpanner, press ut':'Press ut i oljet form',loc:'benk',at:shapeAt,dur:SHAPE_DUR,
         desc:pc().count>1
           ?`Del deigen i ${pc().count} deler à ca. ${pc().perPizza}g. Fordel ${r.oil||30}g olivenolje totalt utover langpannene. Vend hver del forsiktig ut i sin egen form — ikke elt, bare press utover med fingertuppene til den dekker bunnen.`
           :`Fordel ${r.oil||30}g olivenolje godt i en langpanne. Vend deigen forsiktig ut i formen — ikke elt, bare press den utover med fingertuppene til den dekker bunnen.`,
+        needs:[`🫒 ${r.oil||30}g olivenolje`],
+        substeps: pc().count>1 ? [
+          `Del deigen i ${pc().count} deler à ca. ${pc().perPizza}g`,
+          `Fordel ${r.oil||30}g olivenolje utover langpannene`,
+          'Vend hver del forsiktig ut, press med fingertuppene til den dekker bunnen'
+        ] : [
+          `Fordel ${r.oil||30}g olivenolje godt i langpannen`,
+          'Vend deigen ut i formen',
+          'Press den utover med fingertuppene til den dekker bunnen'
+        ],
         why:'Minimal håndtering bevarer luftboblene som har bygget seg opp under hevingen.',
         tip:'Er deigen for elastisk til å nå hjørnene med én gang: la den hvile 10 min og press videre — den gir lettere etter en kort pause.'},
       {title:'Etterheving + forvarm ovn',loc:'rom',at:proofAt,dur:PROOF_DUR,passive:true,
         desc:`Dekk formen${pc().count>1?'e':''} løst og la etterheve ${PROOF_DUR} min mens ovnen varmes til 250°C.`,
+        substeps:[
+          `Dekk formen${pc().count>1?'e':''} løst`,
+          `La etterheve ${PROOF_DUR} min mens ovnen varmes til 250°C`
+        ],
         why:'Gluten slapper av etter forming, og deigen får en siste, kort heving før steking.'},
       {title:'Press ut hjørnene, topp og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
         desc:`Press fingertuppene ned i deigen${pc().count>1?' på hver panne':''} over hele flaten (som focaccia) rett før steking. Ha på saus, ost og topping. Stek på 250°C (vanlig ovn, midterste rille) i 20–25 min til gyllenbrun og sprø i kantene${pc().count>1?' — stek én panne om gangen om de ikke får plass samtidig i ovnen':''}.`,
+        substeps:[
+          `Press fingertuppene ned i deigen${pc().count>1?' på hver panne':''} over hele flaten, som focaccia`,
+          'Ha på saus, ost og topping',
+          `Stek på 250°C, midterste rille, 20–25 min til gyllenbrun og sprø`
+        ],
         why:WHY.st,
         tip:'Denne deigen er for løs og våt til pizzaovn-stil på 430–450°C i 90 sekunder — den trenger lengre tid på lavere varme for å bli gjennomstekt uten å brenne toppen.'}
     ];
@@ -1396,7 +1454,7 @@ function rawSteps(a){
         ],
         why:WHY.tu,
         tip:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen.'},
-      {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),why:WHY.st,tip:oT(tp)}
+      {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:oT(tp)}
     ];
   }
   if(S.method==='standard'){
@@ -1465,6 +1523,11 @@ function rawSteps(a){
           ?`Ta av deigrulle og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
           :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
         needs:[`💧 ${Math.round(r2.flour/2)}g vann`, `🫙 ${r2.yDry}g tørrgjær`, `🌾 ${Math.round(r2.flour/2)}g mel`],
+        substeps:[
+          `Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${r2.yDry}g tørrgjær`,
+          `Tilsett ${Math.round(r2.flour/2)}g mel, rør til glatt med en slikkepott`,
+          `Dekk bollen med lokk eller plastfolie`
+        ],
         why:WHY.pl,
         tip:S.kjokkenmaskin==='ankarsrum'
           ?`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. ${poolishRestText()}`
@@ -1477,9 +1540,15 @@ function rawSteps(a){
           ?`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`
           :`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,
         needs:[`💧 ${Math.round(r2.water-Math.round(r2.flour/2))}g vann`, `🌾 ${Math.round(r2.flour/2)}g mel`, `🧂 ${r2.salt}g salt`, ...(r2.oil?[`🫒 ${r2.oil}g olje`]:[]), ...(r2.butter?[`🧈 ${r2.butter}g smør`]:[])],
+        substeps:[
+          `Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g vann i bollen med poolishen`,
+          `Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}`,
+          `Tilsett ${r2.salt}g salt — ingen ekstra gjær trengs`,
+          `Elt til deigen er glatt og smidig`
+        ],
         why:'Poolishen har allerede fermentert mesteparten av deigen — resten inkorporeres effektivt uansett metode.',
         tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,why:rtW(rt)},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rt} min ved ${S.temp}°C`],why:rtW(rt)},
       ...tailSteps(aM(rdy,20+rt))
     ];
   }
@@ -1491,6 +1560,10 @@ function rawSteps(a){
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
         desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${r3.yDry}g tørrgjær til klumpete, tørr konsistens — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Ikke bland for mye.${langpanneHintText()}`,
         needs:[`🌾 ${bm}g mel`, `💧 ${bv}g vann`, `🫙 ${r3.yDry}g tørrgjær`],
+        substeps:[
+          `Bland ${bm}g mel, ${bv}g vann og ${r3.yDry}g tørrgjær for hånd`,
+          `Bland kun til klumpete, tørr konsistens — ikke bland for mye`
+        ],
         why:WHY.bi,
         tip:`La stå ca. ${S.bigaH} timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.`},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
@@ -1501,9 +1574,15 @@ function rawSteps(a){
           ?`Legg bigaen i en bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()} og bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''} og ${r3.salt}g salt. Vend ut på benk. Bigaen er stiv i starten — bruk «press, brett, drei»-teknikk og regn med at det tar litt lengre tid enn vanlig håndelting, 12–15 min, før den løsner og blir smidig.`
           :`Legg bigaen i kjøkkenmaskinens bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}. Tilsett ${r3.salt}g salt etter 2–3 min. Øk til middels lav hastighet. Elt 8–10 min — bigaen er stiv og kan belaste maskinen, så gå ned i hastighet om den strever.`,
         needs:[`💧 ${Math.round(r3.water-bv)}g vann`, `🌾 ${Math.round(r3.flour*0.4)}g mel`, `🧂 ${r3.salt}g salt`, ...(r3.oil?[`🫒 ${r3.oil}g olje`]:[]), ...(r3.butter?[`🧈 ${r3.butter}g smør`]:[])],
+        substeps:[
+          `Legg bigaen i bollen, tilsett ${Math.round(r3.water-bv)}g vann`,
+          `Bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}`,
+          `Tilsett ${r3.salt}g salt`,
+          `Elt til bigaen løsner og blir smidig`
+        ],
         why:'Bigaen er stiv — den løses opp gradvis uansett metode. Deigen kan virke tung i starten, det er normalt.',
         tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW(rtB)},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rtB} min ved ${S.temp}°C`],why:rtW(rtB)},
       ...tailSteps(aM(rdy,20+rtB))
     ];
   }
@@ -1534,36 +1613,63 @@ function rawSteps(a){
       {title:'Bland poolish',loc:'benk',at:poolishAt,dur:8,
         desc:`Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C). Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt. Dekk til med lokk eller plastfolie.`,
         needs:[`🫙 ${rm.poolishYd}g tørrgjær`, `💧 ${rm.poolishVann}g vann`, `🌾 ${rm.poolishMel}g mel`],
+        substeps:[
+          `Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C)`,
+          `Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt`,
+          `Dekk til med lokk eller plastfolie`
+        ],
         why:'Halvparten av oppskriftens mel og vann fermenterer for seg selv i mange timer før resten av deigen i det hele tatt blandes — poolishen bygger opp mesteparten av smaken.',
         tip:'La stå ved 18–21°C.'},
-      {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:'La stå i romtemperatur i 12 timer.'},
+      {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:'La stå i romtemperatur i 12 timer.',substeps:['La stå urørt i romtemperatur i 12 timer']},
       {title:'Poolish kjøles ned',loc:'kjol',at:chillAt,dur:0,
         desc:'Sett poolishen i kjøleskapet for nedkjøling.',
+        substeps:['Sett poolishen i kjøleskapet'],
         tip:'Minimum 1 time er nok, men det gjør ikke noe om den står 3–4 timer om du ikke rekker neste steg med det samme — dette steget er fleksibelt.'},
-      {title:'Nedkjøling',loc:'kjol',at:chillAt,dur:CHILL,passive:true,desc:'La stå kaldt i minst 2 timer.'},
+      {title:'Nedkjøling',loc:'kjol',at:chillAt,dur:CHILL,passive:true,desc:'La stå kaldt i minst 2 timer.',substeps:['La stå kaldt i minst 2 timer']},
       {title:'Bland hoveddeig',loc:'benk',at:mixAt,dur:MIX_DUR,
         sessionNote:`Sett av ca. ${fmtSessionDur(MIX_DUR+RISE1+15)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
         desc:`Hell avkjølt poolish i bollen. Ha i ${rm.hovedMel}g mel, ${rm.hovedYd}g tørrgjær og ${rm.vann1}g kaldt vann (4–6°C) direkte i bollen — ingen forblanding av gjæren nødvendig. Kjør på lav hastighet til blandet. Tilsett resten av vannet (${rm.vann2}g) i dråper, vent til absorbert mellom hver — hold igjen 1/3 til slutt sammen med saltet. Etter ca. 15 min: tilsett ${rm.salt}g salt og resten av vannet. Kjør videre 5 min til smidig deig.`,
         needs:[`🌾 ${rm.hovedMel}g mel`, `🫙 ${rm.hovedYd}g tørrgjær`, `💧 ${rm.vann1+rm.vann2}g vann totalt`, `🧂 ${rm.salt}g salt`],
+        substeps:[
+          `Hell avkjølt poolish i bollen`,
+          `Ha i ${rm.hovedMel}g mel, ${rm.hovedYd}g tørrgjær og ${rm.vann1}g kaldt vann — kjør på lav hastighet til blandet`,
+          `Tilsett resten av vannet (${rm.vann2}g) i dråper, vent mellom hver`,
+          `Etter ca. 15 min: tilsett ${rm.salt}g salt, elt videre 5 min til smidig`
+        ],
         why:'To-trinns vanntilsetning gir kontroll over glutenutviklingen mens deigen absorberer alt vannet, uten å bli overarbeidet.',
         tip:'Deigtemp bør ligge 20–24°C — gå ikke over 26°C, aldri over 28°C. Da blir gjæringen ukontrollert og deigen kan bli ødelagt.'},
       {title:'Hvile i ro',loc:'benk',at:aM(mixAt,MIX_DUR),dur:RISE1,passive:true,
-        desc:'Smør et tynt lag olivenolje på kjøkkenbenken og over deigen. Dekk til (brødpose eller plastfolie) og la ligge urørt.'},
+        desc:'Smør et tynt lag olivenolje på kjøkkenbenken og over deigen. Dekk til (brødpose eller plastfolie) og la ligge urørt.',
+        substeps:['Smør et tynt lag olivenolje på benken og over deigen','Dekk til og la ligge urørt']},
       {title:'Form til bolle → romtemperatur',loc:'rom',at:shapeAt,dur:ROOMTEMP1,passive:false,
         desc:'Brett deigen noen ganger og lag en stram, rund bolle. Legg i bakebolle eller lignende, dekk med lokk eller plastfolie.',
+        substeps:[
+          'Brett deigen noen ganger, lag en stram, rund bolle',
+          'Legg i bakebolle eller lignende',
+          'Dekk med lokk eller plastfolie'
+        ],
         why:'Formingen bygger opp spenning i deigoverflaten, som gir bedre holdbarhet og struktur gjennom den lange kalde hevingen som følger.',
         tip:`La stå i romtemperatur i ca. ${Math.round(ROOMTEMP1/60*10)/10} time før kjøleskapet.`},
       {title:'Kjøleskapsheving (udelt)',loc:'kjol',at:coldBulkStart,dur:COLDBULK,passive:true,
         desc:'Hele deigen kjøleskapheves samlet, udelt — deles i emner først etterpå.',
+        substeps:['La hele deigen stå samlet, udelt, i kjøleskapet'],
         why:'Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.'},
       {title:'Del i emner',loc:'benk',at:divideAt,dur:15,
         desc:'Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.',
+        needs:['📦 boks/skål per emne', '🫒 litt olje'],
+        substeps:[
+          'Del i emner à ønsket vekt (vei dem for lik størrelse)',
+          'Form stramme baller',
+          'Legg i hver sin oljede boks eller dype skål, dekk til'
+        ],
         tip:'Baller som er formet stramt holder seg bedre gjennom neste, lange romtemperaturheving.'},
       {title:'Romtemperaturheving (delt)',loc:'rom',at:aM(divideAt,15),dur:FINAL_PROOF-15,passive:true,
         desc:`La emnene heve i romtemperatur ved ${S.temp}°C.`,
+        substeps:[`La emnene heve i romtemperatur ved ${S.temp}°C`],
         tip:'Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.'},
       {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
         desc:oN()+'.',
+        substeps:bakeSubsteps(S.type),
         tip:'Pizzastein/-stål MÅ varmes minst 45 min.'}
     ];
   }
@@ -1588,16 +1694,22 @@ function hurtigSteps(anchor){
         ?`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 24°C er et godt mål. Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
         :`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål.`;})()+langpanneHintText(),
       needs:[`💧 ${w}g vann`, `🫙 ${ya}`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
+      substeps:(()=>{const wt=calcWaterTempC();return[
+        `Hell ${w}g vann (${wt}°C) + ${ya} i bollen`,
+        `Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,
+        `Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,
+        `Øk hastigheten, elt godt til deigen er glatt — sikt mot 24°C`
+      ];})(),
       why:'Vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvor lenge den skal gjære — det er gjærmengden over, ikke vanntemperaturen, som gjør denne varianten rask.',
       tip:S.kjokkenmaskin==='ankarsrum'
         ?'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'
         :S.kjokkenmaskin==='manuell'
         ?'Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.'
         :'Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.'},
-    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(t0,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,why:rtW(ba)},
-    {title:'Form emner',loc:'benk',at:aM(t0,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,tip:'Ikke kjevle — strekk for hånd.'},
-    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,why:'Gluten slapper av etter forming.'},
-    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(t0,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,tip:oT(S.type)}
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(t0,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,substeps:[`Dekk tett`,`Hev ved ${S.temp}°C i ca. ${ba} min`],why:rtW(ba)},
+    {title:'Form emner',loc:'benk',at:aM(t0,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,needs:[`📦 ${p.count} emner`],substeps:[`Del i ${p.count} emner à ${p.perPizza}g`,'Rund godt — ikke kjevle, strekk for hånd senere'],tip:'Ikke kjevle — strekk for hånd.'},
+    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,substeps:[`Etterhev ${afm} min, tildekket`,`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`],why:'Gluten slapper av etter forming.'},
+    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(t0,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,substeps:[`Strekk/press emnet ut etter pizzatypens teknikk`,`Ha på saus, ost og topping`,`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`],tip:oT(S.type)}
   ]};
 }
 
@@ -1652,7 +1764,7 @@ function kveldSteps(anchor){
         'Ikke rør dem før du skal strekke og steke'
       ];})(),
       why:'Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.'},
-    {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),why:WHY.st,tip:oT(S.type)}
+    {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),substeps:bakeSubsteps(S.type),why:WHY.st,tip:oT(S.type)}
   ];
   return {ya,steps};
 }

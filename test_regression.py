@@ -1161,7 +1161,7 @@ def run_behavioral_tests(page):
     }""")
     ok26 = (
       r26['descsBefore'] == 7 and r26['hadMobToggle'] and
-      r26['onState']['flag'] is True and r26['onState']['lists'] == 6 and
+      r26['onState']['flag'] is True and r26['onState']['lists'] == 7 and
       r26['checkedAfterClick'] and r26['passiveNotClickable'] and
       r26['offState']['flag'] is False and r26['offState']['lists'] == 0 and
       r26['offState']['descs'] == 7 and r26['hadPcToggle']
@@ -1196,10 +1196,54 @@ def run_behavioral_tests(page):
       return result;
     }""")
     ok27 = (
-      r27['descsBefore'] == 5 and r27['substepLists'] == 4 and
-      r27['descsAfter'] == 1 and r27['firstItems'] == 4
+      r27['descsBefore'] == 5 and r27['substepLists'] == 5 and
+      r27['descsAfter'] == 0 and r27['firstItems'] == 4
     )
     results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
+
+    # v5.99: "alle oppskrifter maa faa understeg" -- fullfoert hele sveipet.
+    # Tester at HVER metode (Standard/Poolish/Biga/Hurtigdeig/Kveldsdeig/
+    # Mania-poolish/Ingen elting) har substeps paa ABSOLUTT alle sine steg naar
+    # bryteren er PAA -- null gjenvaerende avsnittstekst noe sted, inkludert
+    # det delte bakestegetet (bakeSubsteps()) som var det siste gjentatte hullet
+    # gjennom v5.96-98.
+    r28 = page.evaluate("""() => {
+      resetTestState();
+      const scenarios = [
+        ['standard', {cold:24}], ['poolish', {poolishH:14, cold:24}],
+        ['biga', {bigaH:18, cold:24}], ['hurtig', {hurtigH:5}],
+        ['kveld', {kveldH:10}], ['mania', {}]
+      ];
+      const out = {};
+      scenarios.forEach(([method, extra]) => {
+        S.type='napoletana'; S.method=method; S.mel=500; S.hydro=65;
+        S.mode='end'; S.temp=22; S.gjaer='torr';
+        Object.keys(extra).forEach(k => S[k]=extra[k]);
+        mobShowTab('plan'); mobGen();
+        const total = document.querySelectorAll('#mob-plan-content .mob-step').length;
+        const btn = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
+        btn.click();
+        out[method] = {
+          total,
+          lists: document.querySelectorAll('#mob-plan-content .substep-list').length,
+          descsLeft: document.querySelectorAll('#mob-plan-content .mob-sdesc').length
+        };
+        S.showSubsteps=false; mobGen();
+      });
+      S.type='ingenelting'; S.mel=500; S.hydro=75; S.mode='end'; S.temp=22; S.gjaer='torr';
+      mobShowTab('plan'); mobGen();
+      const btn2 = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
+      btn2.click();
+      out['ingenelting'] = {
+        total: document.querySelectorAll('#mob-plan-content .mob-step').length,
+        lists: document.querySelectorAll('#mob-plan-content .substep-list').length,
+        descsLeft: document.querySelectorAll('#mob-plan-content .mob-sdesc').length
+      };
+      S.showSubsteps=false; S.type='napoletana'; mobGen();
+      return out;
+    }""")
+    ok28 = all(r28[m]['lists'] == r28[m]['total'] and r28[m]['descsLeft'] == 0 for m in r28)
+    results.append(('every_method_has_full_substep_coverage', ok28, r28))
 
 
 

@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.99',
+    d: 'juli 2026',
+    changes: [
+      'Understeg finnes nå på alle steg, i alle metoder — Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania-poolish og Ingen elting. Selve steketrinnet (som var det siste, gjentagende hullet) er også dekket nå, for alle pizzatyper og begge ovnstyper.'
+    ]
+  },
+  {
     v: '5.98',
     d: 'juli 2026',
     changes: [
