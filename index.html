@@ -141,6 +141,8 @@ body.mob-mode .session-banner{background:var(--forno-bg-raised);border-color:var
 .sloc{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
 .sloc.k{color:#185FA5}.sloc.r{color:#0F6E56}.sloc.o{color:#993C1D}
 .sdesc{font-size:12px;color:#3A3A3C;margin-top:.45rem;line-height:1.65}
+.sneeds{display:flex;flex-wrap:wrap;gap:5px;margin-top:.5rem}
+.needchip{font-size:11px;font-weight:600;background:#EEF6F2;color:#0a6b52;border:1px solid #cfe8dc;border-radius:6px;padding:3px 8px}
 body.mob-mode .sdesc{color:var(--forno-text-muted)}
 .swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#085041;margin-top:.45rem;line-height:1.5}
 .stip{background:#FAFAF9;border-left:3px solid #ccc;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#3A3A3C;margin-top:.4rem;line-height:1.5}
@@ -242,6 +244,9 @@ body.mob-mode .mob-swait b{color:var(--forno-text)}
 body.mob-mode .mob-snote{border-left-color:#6b4a1f;color:var(--forno-text-muted)}
 .mob-sdesc{font-size:12px;color:#3A3A3C;margin-top:.4rem;line-height:1.6}
 body.mob-mode .mob-sdesc{color:var(--forno-text-muted)}
+.mob-sneeds{display:flex;flex-wrap:wrap;gap:5px;margin-top:.45rem}
+.mob-needchip{font-size:11px;font-weight:600;background:#EEF6F2;color:#0a6b52;border:1px solid #cfe8dc;border-radius:6px;padding:3px 8px}
+body.mob-mode .mob-needchip{background:var(--forno-accent-soft);color:var(--forno-accent-text);border-color:var(--forno-border)}
 .mob-swhy{border-left:2px solid #1D9E75;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#0a6b52;margin-top:.35rem;line-height:1.5}
 body.mob-mode .mob-swhy{border-left-color:var(--forno-border);color:var(--forno-text-muted)}
 .mob-stip{border-left:2px solid #B4B2A9;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
@@ -1325,6 +1330,7 @@ function rawSteps(a){
     return[
       {title:'Bland alt i bollen',loc:'benk',at:t0,dur:MIX_DUR,
         desc:`Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle. Tilsett ${r.water}g ${waterTempPhrase()} og rør sammen med en skje til alt melet er fuktet. Klumpete og grovt er helt greit — ingen elting.${langpanneHintText()}`,
+        needs:[`🌾 ${r.flour}g mel`, `🧂 ${r.salt}g salt`, `🫙 ${yA(r)}`, `💧 ${r.water}g vann`],
         why:'Lang, langsom heving bygger opp glutenstrukturen av seg selv — helt uten mekanisk arbeid.',
         tip:'Ingen kjøkkenmaskin eller håndelting nødvendig i det hele tatt — bare rør sammen med en skje.'},
       {title:'La stå (natt over)',loc:'rom',at:restAt,dur:REST_MIN,passive:true,
@@ -1357,6 +1363,7 @@ function rawSteps(a){
           :S.type==='chicago'
           ?`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap — du presser emnet ut i den runde jernpanna når du skal steke.`
           :`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,
+        needs:[`📦 ${pc().count} bokser m/lokk`, '🫒 litt olje'],
         why:WHY.fk,
         tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
       {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
@@ -1380,6 +1387,7 @@ function rawSteps(a){
           :S.kjokkenmaskin==='manuell'
           ?`Hell ${r.water}g ${waterTempPhrase()} i en bolle. Rør inn ${r.flour}g mel gradvis med en slikkepott eller hånden til alt melet er fuktet — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`
           :`Hell ${r.water}g ${waterTempPhrase()} i bollen på kjøkkenmaskinen. Sett i eltekroken, kjør på laveste hastighet og tilsett ${r.flour}g mel gradvis. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`)+langpanneHintText(),
+        needs:[`💧 ${r.water}g vann`, `🌾 ${r.flour}g mel`],
         why:whyAu(),
         tip:S.kjokkenmaskin==='ankarsrum'
           ?'Ankarsrum liker væske i bunnen — melet trekkes jevnt inn under deigrullen. Ikke overfyll på én gang.'
@@ -1392,6 +1400,7 @@ function rawSteps(a){
           :S.kjokkenmaskin==='manuell'
           ?`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i litt vann og bland inn i bollen sammen med ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. ${S.hydro>68?'Deigen er for våt for vanlig håndelting ved denne hydreringen. Bruk fransk elting (slap-and-fold): løft deigen med begge hender, dra den ut til sidene, og «slå» den ned mot benken i et fast, rytmisk tempo. Gjenta i 10–15 min — deigen strammer seg gradvis og blir mindre klissete.':'Vend ut på lett melet benk. Press deigen ut med håndbaken, brett den tilbake over seg selv, drei en kvart omgang — «press, brett, drei». Gjenta i 8–12 min til deigen er glatt, smidig og bare lett klissete. Mål gjerne deigtemperaturen — sikt mot 22–24°C.'}`
           :`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i litt vann og tilsett. Kjør eltekroken på lav hastighet i 2–3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Øk til middels lav hastighet. Elt totalt 6–10 min til deigen slipper bollen og er glatt — kjøkkenmaskiner overelter lett, så sjekk windowpane-testen tidlig og ofte.`,
+        needs:[`🫙 ${yA(r)}`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
         why:whySg(),
         tip:S.kjokkenmaskin==='ankarsrum'
           ?'Ankarsrum jobber best på lav-til-middels hastighet i lang tid. Unngå trinn 5–6 for pizzadeig — det overvarmer og bryter ned gluten.'
@@ -1415,6 +1424,7 @@ function rawSteps(a){
         desc:(S.kjokkenmaskin==='ankarsrum'
           ?`Ta av deigrulle og skraper. Hell ${Math.round(r2.flour/2)}g vann i bollen, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`
           :`Hell ${Math.round(r2.flour/2)}g vann i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${Math.round(r2.flour/2)}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`)+langpanneHintText(),
+        needs:[`💧 ${Math.round(r2.flour/2)}g vann`, `🫙 ${r2.yDry}g tørrgjær`, `🌾 ${Math.round(r2.flour/2)}g mel`],
         why:WHY.pl,
         tip:S.kjokkenmaskin==='ankarsrum'
           ?`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. ${poolishRestText()}`
@@ -1426,6 +1436,7 @@ function rawSteps(a){
           :S.kjokkenmaskin==='manuell'
           ?`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`
           :`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,
+        needs:[`💧 ${Math.round(r2.water-Math.round(r2.flour/2))}g vann`, `🌾 ${Math.round(r2.flour/2)}g mel`, `🧂 ${r2.salt}g salt`, ...(r2.oil?[`🫒 ${r2.oil}g olje`]:[]), ...(r2.butter?[`🧈 ${r2.butter}g smør`]:[])],
         why:'Poolishen har allerede fermentert mesteparten av deigen — resten inkorporeres effektivt uansett metode.',
         tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,why:rtW(rt)},
@@ -1439,6 +1450,7 @@ function rawSteps(a){
     return[
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
         desc:`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${r3.yDry}g tørrgjær til klumpete, tørr konsistens — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Ikke bland for mye.${langpanneHintText()}`,
+        needs:[`🌾 ${bm}g mel`, `💧 ${bv}g vann`, `🫙 ${r3.yDry}g tørrgjær`],
         why:WHY.bi,
         tip:`La stå ca. ${S.bigaH} timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.`},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
@@ -1448,6 +1460,7 @@ function rawSteps(a){
           :S.kjokkenmaskin==='manuell'
           ?`Legg bigaen i en bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()} og bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''} og ${r3.salt}g salt. Vend ut på benk. Bigaen er stiv i starten — bruk «press, brett, drei»-teknikk og regn med at det tar litt lengre tid enn vanlig håndelting, 12–15 min, før den løsner og blir smidig.`
           :`Legg bigaen i kjøkkenmaskinens bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}. Tilsett ${r3.salt}g salt etter 2–3 min. Øk til middels lav hastighet. Elt 8–10 min — bigaen er stiv og kan belaste maskinen, så gå ned i hastighet om den strever.`,
+        needs:[`💧 ${Math.round(r3.water-bv)}g vann`, `🌾 ${Math.round(r3.flour*0.4)}g mel`, `🧂 ${r3.salt}g salt`, ...(r3.oil?[`🫒 ${r3.oil}g olje`]:[]), ...(r3.butter?[`🧈 ${r3.butter}g smør`]:[])],
         why:'Bigaen er stiv — den løses opp gradvis uansett metode. Deigen kan virke tung i starten, det er normalt.',
         tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,why:rtW(rtB)},
@@ -1480,6 +1493,7 @@ function rawSteps(a){
     return[
       {title:'Bland poolish',loc:'benk',at:poolishAt,dur:8,
         desc:`Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C). Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt. Dekk til med lokk eller plastfolie.`,
+        needs:[`🫙 ${rm.poolishYd}g tørrgjær`, `💧 ${rm.poolishVann}g vann`, `🌾 ${rm.poolishMel}g mel`],
         why:'Halvparten av oppskriftens mel og vann fermenterer for seg selv i mange timer før resten av deigen i det hele tatt blandes — poolishen bygger opp mesteparten av smaken.',
         tip:'La stå ved 18–21°C.'},
       {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:'La stå i romtemperatur i 12 timer.'},
@@ -1490,6 +1504,7 @@ function rawSteps(a){
       {title:'Bland hoveddeig',loc:'benk',at:mixAt,dur:MIX_DUR,
         sessionNote:`Sett av ca. ${fmtSessionDur(MIX_DUR+RISE1+15)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
         desc:`Hell avkjølt poolish i bollen. Ha i ${rm.hovedMel}g mel, ${rm.hovedYd}g tørrgjær og ${rm.vann1}g kaldt vann (4–6°C) direkte i bollen — ingen forblanding av gjæren nødvendig. Kjør på lav hastighet til blandet. Tilsett resten av vannet (${rm.vann2}g) i dråper, vent til absorbert mellom hver — hold igjen 1/3 til slutt sammen med saltet. Etter ca. 15 min: tilsett ${rm.salt}g salt og resten av vannet. Kjør videre 5 min til smidig deig.`,
+        needs:[`🌾 ${rm.hovedMel}g mel`, `🫙 ${rm.hovedYd}g tørrgjær`, `💧 ${rm.vann1+rm.vann2}g vann totalt`, `🧂 ${rm.salt}g salt`],
         why:'To-trinns vanntilsetning gir kontroll over glutenutviklingen mens deigen absorberer alt vannet, uten å bli overarbeidet.',
         tip:'Deigtemp bør ligge 20–24°C — gå ikke over 26°C, aldri over 28°C. Da blir gjæringen ukontrollert og deigen kan bli ødelagt.'},
       {title:'Hvile i ro',loc:'benk',at:aM(mixAt,MIX_DUR),dur:RISE1,passive:true,
@@ -1532,6 +1547,7 @@ function hurtigSteps(anchor){
         :S.kjokkenmaskin==='manuell'
         ?`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 24°C er et godt mål. Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
         :`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål.`;})()+langpanneHintText(),
+      needs:[`💧 ${w}g vann`, `🫙 ${ya}`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
       why:'Vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvor lenge den skal gjære — det er gjærmengden over, ikke vanntemperaturen, som gjør denne varianten rask.',
       tip:S.kjokkenmaskin==='ankarsrum'
         ?'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'
@@ -1561,10 +1577,12 @@ function kveldSteps(anchor){
         :S.kjokkenmaskin==='manuell'
         ?`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`
         :`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`)+langpanneHintText(),
+      needs:[`💧 ${r.water}g vann`, `🫙 ${ya}`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
       why:'Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen før kjøleskapet kjøler den ned.',
       tip:'Deigtemperatur etter elting bør ligge på 20–22°C — litt kaldere enn standardmetoden er helt greit her, siden kjøleskapet uansett overtar snart.'},
     {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:FORM_DUR,
       desc:`Del i ${p.count} emner à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett rett i kjøleskap.`,
+      needs:[`📦 ${p.count} bokser m/lokk`, '🫒 litt olje'],
       why:'Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.',
       tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
@@ -1628,6 +1646,8 @@ function renderSteps(steps, mode='desktop'){
     timeLate: 'late',
     note: 'mob-snote',
     desc: 'mob-sdesc',
+    needs: 'mob-sneeds',
+    needchip: 'mob-needchip',
     why: 'mob-swhy',
     tip: 'mob-stip',
     locReplaceFrom: /class="sloc/g,
@@ -1650,6 +1670,8 @@ function renderSteps(steps, mode='desktop'){
     timeLate: 'late',
     note: 'snote',
     desc: 'sdesc',
+    needs: 'sneeds',
+    needchip: 'needchip',
     why: 'swhy',
     tip: 'stip',
   };
@@ -1695,6 +1717,7 @@ function renderSteps(steps, mode='desktop'){
             </div>
           </div>
         </div>
+        ${s.needs && s.needs.length ? `<div class="${C.needs}">${s.needs.map(n=>`<span class="${C.needchip}">${n}</span>`).join('')}</div>` : ''}
         ${s.desc ? `<div class="${C.desc}">${s.desc}</div>` : ''}
         ${S.showHelp && s.why ? `<div class="${C.why}"><b>Hvorfor:</b> ${s.why}</div>` : ''}
         ${S.showHelp && s.tip ? `<div class="${C.tip}"><b>Tips:</b> ${s.tip}</div>` : ''}

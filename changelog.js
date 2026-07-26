@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.95',
+    d: 'juli 2026',
+    changes: [
+      'Hvert steg som bruker målte ingredienser viser nå en liten rad med "trenger du"-chips over selve teksten — f.eks. vann, mel, salt og gjær med mengder — så du kan se hva du trenger uten å lese deg gjennom hele avsnittet først. Selve teksten er uendret, mengdene står fortsatt der også.',
+      'Gjelder alle metoder — Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania-poolish og Ingen elting — både på mobil og PC.'
+    ]
+  },
+  {
     v: '5.94',
     d: 'juli 2026',
     changes: [

@@ -1070,6 +1070,43 @@ def run_behavioral_tests(page):
     )
     results.append(('current_user_name_defined_and_never_throws', ok24, r24))
 
+    # v5.95: ny "trenger du"-chiprad over stegbeskrivelsen -- viser mengdene
+    # som chips i tillegg til (ikke i stedet for) prosaen, slik at man kan se
+    # hva man trenger uten a lese hele teksten. Tester at chipsene finnes og
+    # stemmer med de samme tallene som star i selve teksten (samme kilde-
+    # variabler, kan ikke drifte fra hverandre), for bade Kveldsdeig (steget
+    # fra Runes skjermbilde) og Standard, og at PC- og mobilrendring viser
+    # identiske chips siden renderSteps() er delt.
+    r25 = page.evaluate("""() => {
+      resetTestState();
+      S.type='napoletana'; S.method='kveld'; S.kveldH=15; S.mel=500; S.hydro=65;
+      S.mode='end'; S.temp=22; S.gjaer='torr';
+      mobShowTab('plan'); mobGen();
+      const mobStep = document.querySelector('#mob-plan-content .mob-step');
+      const mobChips = mobStep ? Array.from(mobStep.querySelectorAll('.mob-needchip')).map(c=>c.textContent) : [];
+      const mobDesc = mobStep ? mobStep.querySelector('.mob-sdesc').textContent : '';
+
+      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
+      gen();
+      const pcStep = document.querySelector('#p-plan .step');
+      const pcChips = pcStep ? Array.from(pcStep.querySelectorAll('.needchip')).map(c=>c.textContent) : [];
+      document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
+
+      S.method='standard'; S.cold=48;
+      mobGen();
+      const stdStep = document.querySelector('#mob-plan-content .mob-step');
+      const stdChips = stdStep ? Array.from(stdStep.querySelectorAll('.mob-needchip')).map(c=>c.textContent) : [];
+
+      return { mobChips, mobDesc, pcChips, stdChips };
+    }""")
+    ok25 = (
+      r25['mobChips'] == ['💧 325g vann', '🫙 1.01g tørrgjær', '🌾 500g mel', '🧂 14g salt'] and
+      all(chip.split(' ')[1] in r25['mobDesc'] for chip in r25['mobChips']) and
+      r25['pcChips'] == r25['mobChips'] and
+      len(r25['stdChips']) > 0
+    )
+    results.append(('step_needs_chips_match_prose_numbers_pc_and_mobile', ok25, r25))
+
 
 
 
