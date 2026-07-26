@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.92',
+    d: 'juli 2026',
+    changes: [
+      'Rettet "Ikke vis igjen"-knappen i velkomstguiden på PC — den var mørk med mørk tekst og vanskelig å lese. Årsaken var en reserveverdi i CSS-en som aldri faktisk ble brukt, så knappen alltid endte opp i den mobile, mørke fargen selv på PC. Retter seg nå etter samme lyse/mørke-mekanisme som resten av knappene i appen.'
+    ]
+  },
+  {
     v: '5.91',
     d: 'juli 2026',
     changes: [

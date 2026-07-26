@@ -945,6 +945,37 @@ def run_behavioral_tests(page):
     )
     results.append(('accept_time_conflict_anyway_without_lying_about_it', ok22, r22))
 
+    # v5.92: REELL BUG (skjermbilde) — "Ikke vis igjen"-knappen i PC-varianten
+    # av velkomstguiden brukte background:var(--forno-bg-raised,#F2F2F7). Den
+    # fallbacken er død kode: --forno-bg-raised er satt ubetinget på :root
+    # (mørk brun, #231a14), ikke skalert til mob-mode, så fallbacken kan aldri
+    # utløses — knappen ble alltid mørk, med mørk tekst (--dyn-text i PC-modus)
+    # oppå. Fikset til --dyn-btn-bg/--dyn-text/--dyn-border, samme mønster som
+    # alle andre knapper i appen som skal se ulike ut i PC- og mobilmodus.
+    r23 = page.evaluate("""() => {
+      document.body.classList.remove('mob-mode');
+      document.body.classList.add('pc-mode');
+      openGuideModal();
+      const btn = document.querySelector('#guide-modal-footer button');
+      const cs = getComputedStyle(btn);
+      const toRgb = s => s.match(/\\d+/g).map(Number);
+      const bg = toRgb(cs.backgroundColor), fg = toRgb(cs.color);
+      // Enkel lysstyrke-kontrast (0-255 per kanal) — bakgrunn skal være lys,
+      // tekst mørk, og de skal ikke ligge nær hverandre.
+      const lum = c => 0.299*c[0] + 0.587*c[1] + 0.114*c[2];
+      document.body.classList.remove('pc-mode');
+      return {
+        text: btn.textContent,
+        bgLuminance: lum(bg),
+        fgLuminance: lum(fg),
+        contrastGap: Math.abs(lum(bg) - lum(fg))
+      };
+    }""")
+    ok23 = (
+      r23['bgLuminance'] > 200 and r23['fgLuminance'] < 60 and r23['contrastGap'] > 150
+    )
+    results.append(('pc_guide_modal_button_has_readable_contrast', ok23, r23))
+
 
 
 
