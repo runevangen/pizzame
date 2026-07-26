@@ -1168,6 +1168,39 @@ def run_behavioral_tests(page):
     )
     results.append(('substep_toggle_switches_view_and_old_view_is_unchanged', ok26, r26))
 
+    # v5.98: REELL BUG (Rune) -- "jeg ser knappen, men ingenting skjer naar
+    # jeg trykker". Ikke en klikk-feil: bryteren virket helt fint (label
+    # byttet til PAA, S.showSubsteps flippet), men Kveldsdeig -- metoden Rune
+    # faktisk har testet med hele denne oekten -- hadde INGEN substeps
+    # skrevet ennaa. Bare Standard hadde faatt dem i v5.96/97, saa alt falt
+    # tilbake til gammel tekst, og ingenting SYNLIG endret seg. Lagt til
+    # substeps paa alle 4 av Kveldsdeigs egne steg (mix, form, kjoleskap,
+    # temperer) -- bake-steget mangler fortsatt, samme kjente grense som
+    # Standard. Tester at PAA faktisk viser understeg-lister for Kveldsdeig
+    # spesifikt, ikke bare at knappen reagerer.
+    r27 = page.evaluate("""() => {
+      resetTestState();
+      S.type='napoletana'; S.method='kveld'; S.kveldH=15; S.mel=500; S.hydro=65;
+      S.mode='end'; S.temp=22; S.gjaer='torr';
+      mobShowTab('plan'); mobGen();
+      const descsBefore = document.querySelectorAll('#mob-plan-content .mob-sdesc').length;
+      const btn = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
+      btn.click();
+      const result = {
+        descsBefore,
+        substepLists: document.querySelectorAll('#mob-plan-content .substep-list').length,
+        descsAfter: document.querySelectorAll('#mob-plan-content .mob-sdesc').length,
+        firstItems: document.querySelector('#mob-plan-content .mob-step').querySelectorAll('.substep-item').length
+      };
+      S.showSubsteps=false; mobGen();
+      return result;
+    }""")
+    ok27 = (
+      r27['descsBefore'] == 5 and r27['substepLists'] == 4 and
+      r27['descsAfter'] == 1 and r27['firstItems'] == 4
+    )
+    results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
+
 
 
 

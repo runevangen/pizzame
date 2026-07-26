@@ -1618,18 +1618,39 @@ function kveldSteps(anchor){
         ?`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`
         :`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`)+langpanneHintText(),
       needs:[`💧 ${r.water}g vann`, `🫙 ${ya}`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
+      substeps:[
+        `Hell ${r.water}g kaldt vann + ${ya} i bollen`,
+        `Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,
+        `Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,
+        `Øk hastigheten, elt til deigen er glatt — sikt mot 20–22°C`
+      ],
       why:'Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen før kjøleskapet kjøler den ned.',
       tip:'Deigtemperatur etter elting bør ligge på 20–22°C — litt kaldere enn standardmetoden er helt greit her, siden kjøleskapet uansett overtar snart.'},
     {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:FORM_DUR,
       desc:`Del i ${p.count} emner à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett rett i kjøleskap.`,
       needs:[`📦 ${p.count} bokser m/lokk`, '🫒 litt olje'],
+      substeps:[
+        `Del i ${p.count} emne${p.count>1?'r':''} à ca. ${p.perPizza}g`,
+        'Rund godt med begge hender',
+        'Legg i oljede bokser med tett lokk',
+        'Sett rett i kjøleskap'
+      ],
       why:'Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.',
       tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
       desc:`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,
+      substeps:[
+        `La emnene stå urørt i kjøleskapet i ca. ${kh} timer`,
+        'Ikke åpne boksene'
+      ],
       why:'Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.'},
     {title:'Ta ut og temperer',loc:'rom',at:temperAt,dur:TEMPER_MIN,passive:true,
       desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return `Ta emnene ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`;})(),
+      substeps:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return [
+        'Ta emnene ut av kjøleskapet',
+        `La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'}`,
+        'Ikke rør dem før du skal strekke og steke'
+      ];})(),
       why:'Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.'},
     {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),why:WHY.st,tip:oT(S.type)}
   ];

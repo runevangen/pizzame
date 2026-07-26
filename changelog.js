@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.98',
+    d: 'juli 2026',
+    changes: [
+      'Fant hvorfor "Prøv understeg" kunne føles som den ikke gjorde noe: knappen virket helt fint, men Kveldsdeig hadde ennå ikke fått understeg skrevet — bare Langtidsdeig hadde det. Alt falt derfor tilbake til gammel tekst, og ingenting synlig endret seg når du trykket. Kveldsdeig har nå understeg på alle sine steg unntatt selve stekingen.'
+    ]
+  },
+  {
     v: '5.97',
     d: 'juli 2026',
     changes: [
