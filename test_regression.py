@@ -1044,6 +1044,32 @@ def run_behavioral_tests(page):
     )
     results.append(('pc_guide_modal_button_has_readable_contrast', ok23, r23))
 
+    # v5.94: REELL BUG (Runes skjermbilde) -- currentUserName() ble kalt fra 4
+    # steder (lagre bakst, legge til notat) men var aldri definert. Kastet
+    # ReferenceError synkront inni JSON.stringify(), FOR fetch() i det hele
+    # tatt startet -- "Kunne ikke lagre... (currentUserName is not defined)".
+    # Tester at funksjonen finnes, ikke kaster med eller uten innlogget
+    # bruker, og returnerer riktig navn naar en bruker er satt.
+    r24 = page.evaluate("""() => {
+      const saved = localStorage.getItem('pizzaUser');
+      let withUserThrew = false, withoutUserThrew = false, name = null;
+      localStorage.setItem('pizzaUser', JSON.stringify({id:'t1', name:'Rune'}));
+      try { name = currentUserName(); } catch(e) { withUserThrew = true; }
+      localStorage.removeItem('pizzaUser');
+      let emptyResult = null;
+      try { emptyResult = currentUserName(); } catch(e) { withoutUserThrew = true; }
+      if (saved) localStorage.setItem('pizzaUser', saved); else localStorage.removeItem('pizzaUser');
+      return {
+        exists: typeof currentUserName === 'function',
+        withUserThrew, withoutUserThrew, name, emptyResult
+      };
+    }""")
+    ok24 = (
+      r24['exists'] and not r24['withUserThrew'] and not r24['withoutUserThrew'] and
+      r24['name'] == 'Rune' and r24['emptyResult'] == ''
+    )
+    results.append(('current_user_name_defined_and_never_throws', ok24, r24))
+
 
 
 

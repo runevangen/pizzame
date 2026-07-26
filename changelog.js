@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.94',
+    d: 'juli 2026',
+    changes: [
+      'Rettet en feil som gjorde at lagring av bakst kunne feile med meldingen "currentUserName is not defined". En funksjon for a hente navnet ditt til lagringen ble kalt fire steder, men var aldri skrevet noe sted i koden -- den feilet før selve lagringen i det hele tatt rakk å starte. Lagring av bakst og notater skal nå fungere normalt igjen.'
+    ]
+  },
+  {
     v: '5.93',
     d: 'juli 2026',
     changes: [

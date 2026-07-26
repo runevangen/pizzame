@@ -3122,6 +3122,18 @@ async function submitFeedback(){
     if(statusEl) statusEl.textContent = 'Kunne ikke sende — prøv igjen.';
   }
 }
+// v5.94: REELL BUG — currentUserName() ble kalt fire steder (lagre bakst,
+// legge til notat) men var ALDRI definert noe sted i filen. Kastet en
+// ReferenceError synkront inni JSON.stringify(), FØR fetch()-kallet i det
+// hele tatt startet — derav "Kunne ikke lagre... (currentUserName is not
+// defined)". Speiler samme trygge parse-mønster som pizzaUser.id allerede
+// leses med andre steder i fila (loadPizzatidSchedule, feedbackVoterId).
+function currentUserName(){
+  try{
+    const u=JSON.parse(localStorage.getItem('pizzaUser'));
+    return (u && u.name) ? u.name : '';
+  }catch(e){ return ''; }
+}
 function feedbackVoterId(){
   try{
     const u = JSON.parse(localStorage.getItem('pizzaUser'));
