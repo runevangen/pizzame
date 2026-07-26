@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.00',
+    d: 'juli 2026',
+    changes: [
+      '"Prøv understeg" er flyttet ned til statuslinjen, rett ved siden av "⚙️ Juster" — og en ny "💡 Tips"-bryter har fått plass der også. Alle tre står nå samlet på én rad i Tidsplan, med pizzatype og metode alene på linjen over. Tips-bryteren fungerte tidligere kun på PC; den virker nå på mobil også.',
+      'Wizardens egne statuslinjer (Metode, Sjekk, Finjuster) er urørt — Juster ligger fortsatt rett ved navnet der, uten Understeg eller Tips i veien.'
+    ]
+  },
+  {
     v: '5.99',
     d: 'juli 2026',
     changes: [

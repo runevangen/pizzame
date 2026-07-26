@@ -1245,6 +1245,49 @@ def run_behavioral_tests(page):
     ok28 = all(r28[m]['lists'] == r28[m]['total'] and r28[m]['descsLeft'] == 0 for m in r28)
     results.append(('every_method_has_full_substep_coverage', ok28, r28))
 
+    # v6.00: Rune ba om aa flytte Understeg-knappen ved siden av Juster, og
+    # legge til en Tips-bryter paa samme sted (skisse B: navn alene paa topp,
+    # egen knapperad under med Juster+Understeg+Tips). Tester at alle tre
+    # finnes sammen i Tidsplan-visningen, at Tips-bryteren FAKTISK virker paa
+    # mobil naa (den var kun tilgjengelig paa PC for denne endringen), og at
+    # wizardens kompakte statuslinjer (Metode/Sjekk/Finjuster) beholder Juster
+    # inline uendret UTEN aa faa Understeg/Tips-rot -- de tre hoerer kun hjemme
+    # i selve Tidsplan-fanen.
+    r29 = page.evaluate("""() => {
+      resetTestState();
+      S.type='napoletana'; S.method='kveld'; S.kveldH=15; S.mel=500; S.hydro=65;
+      S.mode='end'; S.temp=22; S.gjaer='torr';
+      mobShowTab('plan'); mobGen();
+
+      const juster = document.querySelector('#mob-plan-content button[onclick="wizOpenFinjusterFromPlan()"]');
+      const understeg = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
+      const tips = document.querySelector('#mob-plan-content button[onclick="toggleHelpFromPlan()"]');
+      const allThreePresent = !!(juster && understeg && tips);
+
+      const tipsBoxesBefore = document.querySelectorAll('#mob-plan-content .mob-stip').length;
+      tips.click();
+      const tipsBoxesAfterOff = document.querySelectorAll('#mob-plan-content .mob-stip').length;
+      document.querySelector('#mob-plan-content button[onclick="toggleHelpFromPlan()"]').click();
+      const tipsBoxesRestored = document.querySelectorAll('#mob-plan-content .mob-stip').length;
+
+      mobShowTab('settings'); wizGoto(2);
+      const wizHasJuster = !!document.querySelector('#wiz-status-step2 button[onclick="wizOpenFinjusterFromPlan()"]');
+      const wizHasUndersteg = !!document.querySelector('#wiz-status-step2 button[onclick="toggleSubsteps()"]');
+      const wizHasTips = !!document.querySelector('#wiz-status-step2 button[onclick="toggleHelpFromPlan()"]');
+
+      return {
+        allThreePresent, tipsBoxesBefore, tipsBoxesAfterOff, tipsBoxesRestored,
+        wizHasJuster, wizHasUndersteg, wizHasTips
+      };
+    }""")
+    ok29 = (
+      r29['allThreePresent'] and r29['tipsBoxesBefore'] > 0 and
+      r29['tipsBoxesAfterOff'] == 0 and
+      r29['tipsBoxesRestored'] == r29['tipsBoxesBefore'] and
+      r29['wizHasJuster'] and not r29['wizHasUndersteg'] and not r29['wizHasTips']
+    )
+    results.append(('juster_understeg_tips_grouped_in_tidsplan_toolbar', ok29, r29))
+
 
 
 
