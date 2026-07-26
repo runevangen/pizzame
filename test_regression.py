@@ -80,6 +80,57 @@ def run_behavioral_tests(page):
     """
     results = []
 
+    # v5.93: delt hjelper som nullstiller global tilstand testene deler —
+    # _dismissedWarnings, _acceptedConflicts, _pizzatidSchedule, S, og
+    # eat-dato-feltene. Rotårsaken til tre tester som feilet sent på kvelden:
+    # de leste ambient mob-ed/mob-et i stedet for å sette en egen, trygt
+    # fremtidig dato, og arvet dermed hva en TIDLIGERE test hadde satt der.
+    # setSafeFutureEatDate(daysOut, hh) setter et trygt langt-fram tidspunkt —
+    # trygt uansett S.cold (opptil 144t) og uansett hvilken time på døgnet
+    # selve testsuiten kjøres.
+    page.evaluate("""() => {
+      window.resetTestState = function(){
+        try{ _dismissedWarnings.clear(); }catch(e){}
+        try{ _acceptedConflicts.clear(); }catch(e){}
+        const wd=[['16:00','23:30'],['06:30','08:00']], we=[['06:00','23:00'],null];
+        window._pizzatidSchedule = {mon:wd,tue:wd,wed:wd,thu:wd,fri:wd,sat:we,sun:we};
+        Object.keys(DEF).forEach(k => S[k]=DEF[k]);
+        window._returnTo = null;
+        window._wizEnteredOnce = false;
+      };
+      // daysOut bør være minst ~7 for å tåle S.cold opp til 144t + margin mot
+      // at suiten kjøres sent på kvelden. weekday: 0=søn..6=lør, eller null
+      // for "bare N dager fram, uansett ukedag".
+      window.setSafeFutureEatDate = function(daysOut, hh, weekday){
+        hh = (hh==null) ? 18 : hh;
+        const d = new Date();
+        d.setDate(d.getDate() + daysOut);
+        if (weekday != null){
+          while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
+        }
+        d.setHours(hh, 0, 0, 0);
+        const p2 = n => String(n).padStart(2,'0');
+        const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+        if (dEl) dEl.value = d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+        if (tEl) tEl.value = p2(hh)+':00';
+        return d.toISOString();
+      };
+      // v5.93: en fast "trygg" time holdt IKKE — bakoverplanlagt miksestart
+      // kan uansett havne i natten (23-06), avhengig av total varighet og
+      // hvilken time "nå" faktisk er. I stedet for å gjette et tidspunkt,
+      // SØKER denne etter et som faktisk gir null konflikt akkurat nå, for
+      // gjeldende S/metode/pizzatid — samme prinsipp som findAnchorShift.
+      window.setCleanFutureEatDate = function(daysOut){
+        for (const hh of [13,14,15,12,16,11,17,10,18]){
+          setSafeFutureEatDate(daysOut, hh);
+          let steps=null;
+          try{ steps = computeCurrentSteps(); }catch(e){ continue; }
+          if (steps && !firstStepConflict(steps)) return true;
+        }
+        return false;
+      };
+    }""")
+
     # Bug: kryss-metode-søket (Beta-fanen) må foretrekke Kveldsdeig for et
     # stramt fredag-mål, siden ingen Poolish/Biga-kombinasjon rekker det uten
     # konflikt. Fant dette manuelt tidligere — fryser det som en ekte test nå.
@@ -352,12 +403,17 @@ def run_behavioral_tests(page):
     # bake - 240). "Juster kjøleskapstid" MÅ da være borte, og i stedet skal det
     # tilbys å spise senere, med utregnet klokkeslett.
     r10 = page.evaluate("""() => {
-      _dismissedWarnings.clear();
+      resetTestState();
       S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65;
       S.cold=48; S.temp=22; S.meltype='doppio_zero'; S.mode='end';
+      // v5.93: "neste tirsdag" kunne være bare 2 dager unna, og med 48t
+      // kjøleskap havnet miksestarten i FORTIDEN sent på kvelden -- da
+      // avviser findAnchorShift() (korrekt) alle skift, og testen feilet.
+      // +9 dager (fortsatt en tirsdag) gir minst en ukes margin uansett
+      // klokkeslett testen kjøres på.
       const now=new Date();
       const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),18,0,0,0);
-      d.setDate(d.getDate() + ((2 - now.getDay() + 7) % 7 || 7));
+      d.setDate(d.getDate() + ((2 - now.getDay() + 7) % 7 || 7) + 7);
       document.getElementById('mob-ed').value = fd(d);
       document.getElementById('mob-et').value = '18:00';
       mobShowTab('plan'); mobGen();
@@ -395,15 +451,17 @@ def run_behavioral_tests(page):
     # via updatePizzatidPeriod (samme kall som time-inputene bruker), og krev at
     # varselet er borte UTEN et manuelt mobGen() imellom.
     r11 = page.evaluate("""() => {
-      _dismissedWarnings.clear();
+      resetTestState();
       const savedSched = window._pizzatidSchedule;
       const wd=[['16:00','23:30'],['06:30','08:00']], we=[['06:00','23:00'],null];
       window._pizzatidSchedule = {mon:wd,tue:wd,wed:wd,thu:wd,fri:wd,sat:we,sun:we};
       S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65;
       S.cold=48; S.temp=22; S.meltype='doppio_zero'; S.mode='end';
+      // v5.93: samme fiks som r10 — +7 ekstra dager for margin mot at
+      // miksestarten havner i fortiden sent på kvelden.
       const now=new Date();
       const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),18,0,0,0);
-      d.setDate(d.getDate() + ((2 - now.getDay() + 7) % 7 || 7));
+      d.setDate(d.getDate() + ((2 - now.getDay() + 7) % 7 || 7) + 7);
       document.getElementById('mob-ed').value = fd(d);
       document.getElementById('mob-et').value = '18:00';
       mobShowTab('plan'); mobGen();
@@ -516,8 +574,13 @@ def run_behavioral_tests(page):
       // Couco tåler 16-54t gjæring og 60-80% hydrering, så dette er et reelt
       // rent utgangspunkt — Doppio Zero stopper på 24t og ville selv utløst
       // meltype-varselet ved 48t kjøleskap.
+      resetTestState();
       S.method='standard'; S.type='napoletana'; S.cold=48; S.mode='end';
       S.meltype='couco'; S.hydro=65;
+      // v5.93: denne satte ALDRI eat-datoen selv — den arvet ambient
+      // mob-ed/mob-et fra en TIDLIGERE test i samme kjøring. Søker nå etter
+      // et faktisk konfliktfritt tidspunkt (se setCleanFutureEatDate).
+      setCleanFutureEatDate(10);
       const allDay = [['00:00','23:59'], null];
       window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
       wizGoto(3);
@@ -615,14 +678,19 @@ def run_behavioral_tests(page):
     r15 = page.evaluate("""() => {
       const check = () => document.getElementById('wiz-check');
       const boxes = () => check().querySelectorAll('div[style*="FAEEDA"]').length;
-      const allDay = [['00:00','23:59'], null];
-      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
-      _dismissedWarnings.clear();
       mobShowTab('settings');
 
       // Rent utgangspunkt: mel som passer til gjæringstiden.
+      resetTestState();
+      // v5.93: allDay må settes ETTER resetTestState() — den nullstiller
+      // _pizzatidSchedule til default ukedag/helg-oppsettet, som ellers
+      // uten varsel overskriver denne testens tiltenkte "alt ledig".
+      const allDay = [['00:00','23:59'], null];
+      window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
       S.type='napoletana'; S.method='standard'; S.mode='end';
       S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.meltype='couco';
+      // v5.93: som r13 — satte aldri sin egen dato, arvet ambient tilstand.
+      setCleanFutureEatDate(10);
       wizGoto(3);
       const cleanText = check().textContent;
 

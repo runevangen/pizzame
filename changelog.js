@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.93',
+    d: 'juli 2026',
+    changes: [
+      'Ingen synlig endring i appen denne runden — rendyrket arbeid på test-sikkerhetsnettet bak kulissene. Tre tester feilet når regresjonssuiten kjørte sent på kvelden, fordi de planla bakover fra en dato som ikke lenger ga nok margin mot å havne i fortiden. De søker nå aktivt etter et tidspunkt som faktisk er konfliktfritt, i stedet for å gjette ett fast klokkeslett. Ny delt resetTestState()-hjelper rydder global tilstand mellom tester.'
+    ]
+  },
+  {
     v: '5.92',
     d: 'juli 2026',
     changes: [
