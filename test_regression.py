@@ -1107,6 +1107,67 @@ def run_behavioral_tests(page):
     )
     results.append(('step_needs_chips_match_prose_numbers_pc_and_mobile', ok25, r25))
 
+    # v5.96: Rune vil teste understeg-visningen i praksis for a bestemme seg,
+    # UTEN a miste den gamle avsnittsvisningen som backup. Ny bryter
+    # S.showSubsteps (default false -- render-lag-basisene rores derfor
+    # ikke). Tester at bryteren finnes bade pa mobil og PC, at PA viser
+    # nummererte understeg og AV viser eksakt samme avsnittstekst som for
+    # bryteren i det hele tatt fantes, at et klikk pa et understeg i et
+    # AKTIVT steg kan hakes av, og at et PASSIVT steg (Kjoleskapsheving)
+    # ikke er klikkbart -- det er ingenting a "gjore" der.
+    r26 = page.evaluate("""() => {
+      resetTestState();
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65; S.cold=24;
+      S.mode='end'; S.temp=22; S.gjaer='torr';
+      window._checkedSubsteps.clear();
+      mobShowTab('plan'); mobGen();
+
+      const descsBefore = document.querySelectorAll('#mob-plan-content .mob-sdesc').length;
+      const mobBtn = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
+      const hadMobToggle = !!mobBtn;
+
+      mobBtn.click();
+      const onState = {
+        flag: S.showSubsteps,
+        lists: document.querySelectorAll('#mob-plan-content .substep-list').length
+      };
+      const firstItem = document.querySelector('#mob-plan-content .substep-item');
+      firstItem.click();
+      const checkedAfterClick = !!document.querySelector('#mob-plan-content .substep-item.substep-done');
+
+      const coldCard = Array.from(document.querySelectorAll('#mob-plan-content .mob-step'))
+        .find(el => el.textContent.includes('Kjøleskapsheving'));
+      const coldSubstep = coldCard ? coldCard.querySelector('.substep-item') : null;
+      const passiveNotClickable = coldSubstep ? !coldSubstep.hasAttribute('onclick') : null;
+
+      mobBtn.click();
+      const offState = {
+        flag: S.showSubsteps,
+        lists: document.querySelectorAll('#mob-plan-content .substep-list').length,
+        descs: document.querySelectorAll('#mob-plan-content .mob-sdesc').length
+      };
+
+      // PC-siden skal ha samme bryter, delt tilstand
+      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
+      gen();
+      const pcBtn = document.querySelector('#substep-toggle');
+      document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
+
+      window._checkedSubsteps.clear();
+      return {
+        descsBefore, hadMobToggle, onState, checkedAfterClick, passiveNotClickable, offState,
+        hadPcToggle: !!pcBtn
+      };
+    }""")
+    ok26 = (
+      r26['descsBefore'] == 7 and r26['hadMobToggle'] and
+      r26['onState']['flag'] is True and r26['onState']['lists'] == 6 and
+      r26['checkedAfterClick'] and r26['passiveNotClickable'] and
+      r26['offState']['flag'] is False and r26['offState']['lists'] == 0 and
+      r26['offState']['descs'] == 7 and r26['hadPcToggle']
+    )
+    results.append(('substep_toggle_switches_view_and_old_view_is_unchanged', ok26, r26))
+
 
 
 

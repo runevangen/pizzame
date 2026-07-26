@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.96',
+    d: 'juli 2026',
+    changes: [
+      'Ny utprøvende knapp på Tidsplan: "📋 Prøv understeg". Slår du den på, deles teksten i hvert steg opp i nummererte understeg du kan hake av én etter én, i stedet for ett sammenhengende avsnitt — så langt bygget for Langtidsdeig. Slår du den av igjen er alt akkurat som før, ingenting er borte. Passive steg (som venting i romtemperatur eller kjøleskap) får understeg uten avhaking, siden det ikke er noe å gjøre der.',
+      'Avhakingen på understeg er kun lagret i økten så lenge dette utprøves — den blir ikke husket når du laster siden på nytt.'
+    ]
+  },
+  {
     v: '5.95',
     d: 'juli 2026',
     changes: [
