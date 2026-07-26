@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '5.97',
+    d: 'juli 2026',
+    changes: [
+      'Fant selv at "📋 Prøv understeg"-knappen fra forrige versjon var plassert for langt ned — den satt etter statuslinjen, som på mange oppskrifter er høy nok til å skyve knappen under skjermkanten uten at du visste den var der. Den bor nå helt øverst på Tidsplan, ved siden av det lille pizzaikonet, synlig med det samme uten å scrolle.'
+    ]
+  },
+  {
     v: '5.96',
     d: 'juli 2026',
     changes: [
