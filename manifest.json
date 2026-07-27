@@ -1,10 +1,15 @@
 {
   "name": "Pizzaplanlegger",
   "short_name": "Pizzaplanlegger",
-  "start_url": "./index.html",
+  "description": "Planlegg pizzadeig — oppskrift og tidsplan for napoletansk, langpanne, New York, Chicago og mer.",
+  "lang": "no",
+  "dir": "ltr",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FAFAF9",
-  "theme_color": "#1D9E75",
+  "theme_color": "#e8590c",
   "icons": [
     {
       "src": "icons/icon-192.png",

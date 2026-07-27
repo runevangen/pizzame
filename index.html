@@ -4155,20 +4155,27 @@ async function loadConfigThenStart(){
   }catch(e){
     console.error('Kunne ikke hente config — bruker innebygde standardverdier.', e);
   }
-  document.getElementById('loading-overlay').style.display = 'none';
-  checkAuthOnLoad();
-  initAdvancedState();
-  // Sikkerhetsnett: initLayout() kjørte allerede tidligere (før denne funksjonen var ferdig),
-  // men på det tidspunktet fantes kanskje ikke mobil-HTML-en (mob-gtype osv.) ennå i DOM-en —
-  // de ligger etter hovedskriptet i selve filen. Bestem riktig visning på nytt her, nå som
-  // absolutt alt garantert er lastet inn, og kjør den fullt ut uansett hva som skjedde før.
-  let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
-  const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
-  setLayout(targetLayout);
-  // Innstillinger-fanen er allerede markert aktiv i selve HTML-en fra start (statisk klasse),
-  // så mobShowTab('settings') kalles aldri automatisk ved første sideinnlasting — uten dette
-  // kallet her ville wizarden aldri vist seg før man bytter fane frem og tilbake manuelt.
-  if(targetLayout==='mob') wizEnterSettingsTab();
+  // Resten av oppstarten rører DOM-en (mob-layout m.m.), som ligger ETTER
+  // hovedskriptet i fila. Denne funksjonen er async: på treg/vanlig nettrespons
+  // rekker parsingen av resten av dokumentet å fullføre mens vi venter på config,
+  // men svarer /api/config veldig raskt (lokalt, cachet, eller rask forbindelse)
+  // kan vi komme hit FØR mobil-HTML-en er parset — da kastet setLayout/
+  // wizEnterSettingsTab på manglende elementer. Kjør derfor den DOM-avhengige
+  // halen først når dokumentet faktisk er ferdig parset.
+  const finish = () => {
+    document.getElementById('loading-overlay').style.display = 'none';
+    checkAuthOnLoad();
+    initAdvancedState();
+    let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
+    const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
+    setLayout(targetLayout);
+    // Innstillinger-fanen er allerede markert aktiv i selve HTML-en fra start (statisk klasse),
+    // så mobShowTab('settings') kalles aldri automatisk ved første sideinnlasting — uten dette
+    // kallet her ville wizarden aldri vist seg før man bytter fane frem og tilbake manuelt.
+    if(targetLayout==='mob') wizEnterSettingsTab();
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', finish, {once:true});
+  else finish();
 }
 function applyConfigValues(values){
   if(!values) return;
@@ -4196,6 +4203,12 @@ function initLayout(){
 // ===== MOBILE CONTROL SYNC =====
 function syncMobControls(){
   const g=id=>document.getElementById(id);
+  // Rot-vakt: denne kan kalles fra loadConfigThenStart FØR mobil-HTML-en lenger
+  // nede i fila er parset (se kommentaren ved loadConfigThenStart). Da finnes
+  // ingen mob-*-elementer ennå, og underfunksjoner som mobSetMode/mobHydroUI
+  // kaster på null. Hopp helt ut her; et senere kall (når layouten faktisk vises)
+  // gjør jobben med DOM-en på plass. Fanget av page_loads-regresjonstesten.
+  if(!g('mob-msl')) return;
   const s=(id,val)=>{const el=g(id);if(el)el.value=val;};
   const t=(id,val)=>{const el=g(id);if(el)el.textContent=val;};
   s('mob-msl',S.mel);t('mob-mdisp',S.mel+'g');
@@ -5771,6 +5784,118 @@ document.addEventListener('change', firstInteractionCheck, true);
   </div>
 
 </div>
+
+<script>
+/* «Legg til på hjemskjerm» — én knapp med to oppførsler: ekte install-prompt på
+   Android/Chrome (beforeinstallprompt), og en instruksjons-sheet på iOS Safari
+   (som ikke har noe install-API). Pluss registrering av service worker. Alt er
+   selvstendig og rører ikke resten av appen. Baren vises kun når appen faktisk
+   er installerbar og ikke allerede kjører installert — og huskes som avvist. */
+(function(){
+  'use strict';
+
+  // Service worker registreres kun over https (prod på Netlify). Dropper localhost/http
+  // slik at dev og regresjonstesten ikke påvirkes.
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+
+  var DISMISS_KEY = 'pizzaA2HSDismissed';
+  var deferred = null, bar = null, sheet = null;
+
+  function standalone(){
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+        || window.navigator.standalone === true;
+  }
+  function isiOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+  function iosSafari(){
+    return isiOS() && /safari/i.test(navigator.userAgent)
+        && !/crios|fxios|edgios|opios|mercury/i.test(navigator.userAgent);
+  }
+  function dismissed(){ try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch(e){ return false; } }
+  function remember(){ try { localStorage.setItem(DISMISS_KEY, '1'); } catch(e){} }
+
+  function buildBar(){
+    if (bar) return bar;
+    bar = document.createElement('div');
+    bar.id = 'a2hs-bar';
+    bar.setAttribute('role','dialog');
+    bar.setAttribute('aria-label','Legg appen til på hjemskjermen');
+    bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 76px);z-index:9000;display:none;align-items:center;gap:10px;max-width:calc(100vw - 24px);background:#fff;color:#1a1a1a;border:1px solid #EDEDED;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.18);padding:10px 12px;font-family:inherit;font-size:14px';
+    var txt = document.createElement('span');
+    txt.textContent = '📲 Legg appen til på hjemskjermen';
+    txt.style.cssText = 'font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    var add = document.createElement('button');
+    add.type = 'button'; add.textContent = 'Legg til';
+    add.style.cssText = 'flex:none;border:none;border-radius:8px;background:#e8590c;color:#fff;font-weight:700;font-size:14px;padding:7px 14px;cursor:pointer';
+    add.addEventListener('click', onAdd);
+    var close = document.createElement('button');
+    close.type = 'button'; close.setAttribute('aria-label','Lukk'); close.textContent = '×';
+    close.style.cssText = 'flex:none;border:none;background:transparent;color:#8E8E93;font-size:20px;line-height:1;cursor:pointer;padding:0 4px';
+    close.addEventListener('click', function(){ hideBar(); remember(); });
+    bar.appendChild(txt); bar.appendChild(add); bar.appendChild(close);
+    document.body.appendChild(bar);
+    return bar;
+  }
+  function showBar(){ buildBar().style.display = 'flex'; }
+  function hideBar(){ if (bar) bar.style.display = 'none'; }
+
+  function onAdd(){
+    if (deferred){
+      hideBar();
+      deferred.prompt();
+      deferred.userChoice.then(function(){ deferred = null; }).catch(function(){});
+    } else if (iosSafari()){
+      showSheet();
+    }
+  }
+
+  function buildSheet(){
+    if (sheet) return sheet;
+    var share = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/></svg>';
+    sheet = document.createElement('div');
+    sheet.id = 'a2hs-sheet';
+    sheet.style.cssText = 'position:fixed;inset:0;z-index:9500;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.4)';
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#fff;color:#1a1a1a;width:100%;max-width:440px;border-radius:16px 16px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 20px);font-family:inherit;box-shadow:0 -4px 24px rgba(0,0,0,.2)';
+    card.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+        + '<strong style="font-size:16px">Legg til på Hjem-skjerm</strong>'
+        + '<button type="button" aria-label="Lukk" id="a2hs-sheet-x" style="border:none;background:transparent;font-size:22px;color:#8E8E93;cursor:pointer;line-height:1">×</button>'
+      + '</div>'
+      + '<ol style="margin:0;padding-left:20px;line-height:1.7;font-size:15px">'
+        + '<li>Trykk på Del-ikonet ' + share + ' nederst i Safari.</li>'
+        + '<li>Bla ned og velg <strong>«Legg til på Hjem-skjerm»</strong>.</li>'
+        + '<li>Trykk <strong>«Legg til»</strong> øverst til høyre.</li>'
+      + '</ol>';
+    sheet.appendChild(card);
+    sheet.addEventListener('click', function(e){ if (e.target === sheet) hideSheet(); });
+    document.body.appendChild(sheet);
+    card.querySelector('#a2hs-sheet-x').addEventListener('click', hideSheet);
+    return sheet;
+  }
+  function showSheet(){ buildSheet().style.display = 'flex'; }
+  function hideSheet(){ if (sheet) sheet.style.display = 'none'; }
+
+  function maybeShow(){
+    if (standalone() || dismissed()) return;
+    if (deferred || iosSafari()) showBar();
+  }
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); deferred = e; maybeShow();
+  });
+  window.addEventListener('appinstalled', function(){
+    deferred = null; hideBar(); remember();
+  });
+
+  // iOS gir ingen beforeinstallprompt — vis baren direkte hvis den er relevant.
+  if (document.readyState === 'complete' || document.readyState === 'interactive') maybeShow();
+  else window.addEventListener('DOMContentLoaded', maybeShow);
+})();
+</script>
 
 </body>
 </html>
