@@ -149,7 +149,7 @@ const GUIDE = [
       ]},
       {t:'smart', x:'Varselet tilbyr bare knapper som faktisk flytter <b>det</b> steget som kolliderer. Er steget låst til steketidspunktet, foreslår appen heller <b>«Spis [tid] i stedet»</b> (minste forskyvning som får hele planen til å gå opp) eller en kortere metode — i stedet for knapper som ikke virker.'},
       {t:'bullets', x:[
-        '<b>Rediger pizzatiden din</b> — endrer når du er ledig (se Beta → Pizzatid).',
+        '<b>Rediger pizzatiden din</b> — endrer den ledige tiden din (se Beta → «Når er du ledig?»).',
         '<b>Juster hevetid / Juster kjøleskapstid / 🔍 Finn beste kombinasjon</b> — flytter steget via riktig spak.',
         '<b>Dette er greit — fortsett likevel</b> — godtar konflikten. Varselet blir da en nøytral «✓ Du har godtatt …» med <b>Angre</b>, og teller ikke lenger som et problem — men blir stående, så sjekken aldri lyver om at alt er perfekt.',
         '<b>⏰ Oppstarten har allerede passert</b> — dukker opp hvis starttiden er forbi; tilbyr det tidligste realistiske tidspunktet.'
@@ -221,12 +221,12 @@ const GUIDE = [
     body: [
       {t:'p', x:'Snu planleggingen på hodet: si <b>når du er ledig</b> og <b>når du vil spise</b>, så anbefaler appen en metode — søkt på tvers av alle metodene.'},
       {t:'steps', x:[
-        'Åpne <b>Pizzatid — ledig tid per ukedag</b> (trykk <b>Vis ▾</b>) og fyll inn når du kan lage pizza. Trykk <b>Lagre ledig tid</b> — den lagres per bruker og synkes mellom enheter.',
+        'Åpne <b>«Når er du ledig?»</b> (trykk <b>Vis ▾</b>) og fyll inn de faste tidene du kan lage pizza. Trykk <b>Lagre ledig tid</b> — den lagres per bruker og synkes mellom enheter.',
         'Sett <b>steketidspunkt</b> (dato + klokkeslett), eller velg et av de populære tidspunktene.',
         'Trykk <b>🔍 Finn oppskrift</b>. Du får den beste anbefalingen med oppstartstid, steketid, hvor mange steg som eventuelt faller utenfor ledig tid, total gjæringstid og hvilke meltyper som passer.',
         'Trykk <b>Bruk denne</b> for å ta den i bruk, eller <b>«Se flere alternativer»</b> for de nest beste.'
       ]},
-      {t:'smart', x:'Pizzatiden du lagrer her er <b>samme kilde</b> som «utenfor spisetid»-varslene bruker ellers i appen. Retter du den ett sted, stemmer den overalt.'}
+      {t:'smart', x:'Den ledige tiden du lagrer under <b>«Når er du ledig?»</b> er <b>samme kilde</b> som «utenfor spisetid»-varslene bruker ellers i appen. Retter du den ett sted, stemmer den overalt.'}
     ]
   },
 

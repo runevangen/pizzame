@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.05',
+    d: 'juli 2026',
+    changes: [
+      'Beta-fanen er ryddet: "Pizzatid" heter nå "Når er du ledig?", med en forklaringsboks som sier hva den er og hvordan den påvirker appen — den brukes både til å foreslå oppskrifter som passer tiden din, og til å varsle hvis et steg havner på en tid du ikke har satt av. "Eller velg et populært tidspunkt" har fått tydeligere skille fra feltene over og en kort forklaring av hva knappene gjør. Elementene følger nå samme stil som resten av appen.'
+    ]
+  },
+  {
     v: '6.04',
     d: 'juli 2026',
     changes: [
