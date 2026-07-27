@@ -419,7 +419,10 @@ def run_behavioral_tests(page):
       mobShowTab('plan'); mobGen();
       const c = firstStepConflict(window._steps||[]);
       const anchor = mobGetAnchor('e');
-      const box = Array.from(document.querySelectorAll('#mob-plan-content .warn-dismiss-wrap'))
+      // Det fulle varselet bor nå i wizardens Sjekk; Tidsplan viser kun et
+      // nedtonet merke. Rendrer sjekken og leser kortet derfra.
+      wizCheckRender();
+      const box = Array.from(document.querySelectorAll('#wiz-check div[style*="FAEEDA"]'))
                        .find(x => x.textContent.includes('Et steg havner'));
       const labels = box ? Array.from(box.querySelectorAll('button')).map(x=>x.textContent.trim()) : [];
       const firstStepTitle = (window._steps||[])[0] ? window._steps[0].title : '';
@@ -465,8 +468,9 @@ def run_behavioral_tests(page):
       document.getElementById('mob-ed').value = fd(d);
       document.getElementById('mob-et').value = '18:00';
       mobShowTab('plan'); mobGen();
-      const has = () => !!Array.from(document.querySelectorAll('#mob-plan-content .warn-dismiss-wrap'))
-                            .find(x => x.textContent.includes('Et steg havner'));
+      // Tidsplan viser nå et nedtonet «⚠ utenfor spisetid»-merke på steget i
+      // stedet for hele kortet — redigering av pizzatid skal fjerne merket live.
+      const has = () => !!document.querySelector('#mob-plan-content .conflict-flag');
       const before = has();
 
       // Gjør tirsdag ledig fra 06:00 — samme vei som time-feltene i Beta-fanen.

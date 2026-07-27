@@ -450,6 +450,7 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 .mob-step.step-next{border-left:3px solid #1D7FE9}
 .next-flag{display:inline-block;font-size:10px;font-weight:600;color:#1257A0;background:#E3F0FD;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.conflict-flag{display:inline-block;font-size:10px;font-weight:600;color:#8a5a00;background:#FAEEDA;border:1px solid #EF9F27;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
 .adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#F2F2F7;border-radius:8px;font-size:12px;font-weight:600;color:#3A3A3C;cursor:pointer;margin:.6rem 0}
 .adv-toggle:hover{background:#e5e2dc}
 </style>
@@ -1910,6 +1911,7 @@ function renderSteps(steps, mode='desktop'){
 
   let html = '';
   let lastDay = null;
+  let conflictFlagged = false; // kun det FØRSTE steget som kolliderer merkes (som varselkortet)
 
   steps.forEach((s, i) => {
     const k = dayKey(s.at);
@@ -1933,6 +1935,22 @@ function renderSteps(steps, mode='desktop'){
     const done = window._checked && window._checked.has(i);
     const missed = i < curIdx && !done;
     const isNext = i === nextIdx && nextIdx !== curIdx;
+    // Nedtonet tidskonflikt-merke: faller et aktivt steg i «natten» eller «tid du
+    // ikke har satt av til pizza», får steget bare et lite flagg her — det fulle
+    // varselet (med Rediger/Fortsett-valgene) bor i wizardens «Sjekk», som er der
+    // du blir gjort oppmerksom på det. På mobil er merket klikkbart rett til
+    // pizzatid-redigering.
+    let conflictFlag='';
+    if(!conflictFlagged){
+      let sAt=s.at; if(!(sAt instanceof Date)) sAt=new Date(sAt);
+      const sWin=(!s.passive && !isNaN(sAt.getTime())) ? ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(sAt.getHours(),sAt.getMinutes(),sAt.getDay())) : null;
+      if(sWin){
+        conflictFlagged=true;
+        const lbl=sWin.id==='busy'?'utenfor spisetid':'midt på natten';
+        const click=(sWin.id==='busy' && isMob)?' onclick="event.stopPropagation();openPizzatidFromWarning()" style="cursor:pointer"':'';
+        conflictFlag=` <span class="conflict-flag"${click} title="Dette steget faller i ${sWin.label} — se detaljer og valg i wizardens Sjekk">⚠ ${lbl}</span>`;
+      }
+    }
     if(s.sessionNote){
       html += `<div class="session-banner">⏱️ ${escH(s.sessionNote)}</div>`;
     }
@@ -1942,7 +1960,7 @@ function renderSteps(steps, mode='desktop'){
           <div class="${C.chk} ${done ? 'on' : ''}">${done ? '✓' : ''}</div>
           <div class="${C.num} ${i===curIdx ? '' : C.numDim}">${i+1}</div>
           <div style="flex:1;min-width:0">
-            <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}</div>
+            <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}${conflictFlag}</div>
             <div class="${C.meta}">
               <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + (s.passive ? fmtDur(s.dur)+' venting' : s.dur+(isMob ? ' min' : ' min aktivt')) : ''}</div>
               ${locHtml}
@@ -4873,7 +4891,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     const rrH=[...baseIngredientRows({mel:S.mel,vann:w2,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rrH, true)}</div></div>`;
@@ -4883,7 +4901,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='kveld'){
     const {ya,steps}=kveldSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const r2=R(),p=pc();
     const rrK=[...baseIngredientRows({mel:S.mel,vann:r2.water,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Kjøleskapsheving',v:`${S.kveldH} timer`},{k:'Ovntype',v:oN()}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rrK, true)}</div></div>`;
@@ -4893,7 +4911,7 @@ function mobGen(){
   if(S.method==='mania'){
     const steps=rawSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const rm=maniaRecipe(),p=pc();
     const rrPoolish=[{k:'Mel',v:`${rm.poolishMel}g`},{k:'Vann',v:`${rm.poolishVann}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.poolishYd}g tørrgjær`:`${rm.poolishYf}g fersk gjær`}];
     const rrHoved=[{k:'Poolish',v:'Hele poolishen over'},{k:'Mel',v:`${rm.hovedMel}g`},{k:'Vann del 1',v:`${rm.vann1}g`},{k:'Vann del 2',v:`${rm.vann2}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.hovedYd}g tørrgjær`:`${rm.hovedYf}g fersk gjær`},{k:'Salt',v:`${rm.salt}g`}];
@@ -4905,7 +4923,7 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${activeStepTimeWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
   // recipe tab
   const rr=[...baseIngredientRows({mel:r.flour,vann:r.water,hydro:S.hydro,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,gjaer:yA(r)}),...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rr, true)}</div><div class="mob-swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
