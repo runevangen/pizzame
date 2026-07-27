@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.04',
+    d: 'juli 2026',
+    changes: [
+      'Ny "📤 Del appen"-knapp (under Info → Del, og i ☰ Meny på PC). På mobil åpner den delingsmenyen så du kan sende appen videre i meldinger, e-post osv.; på PC kopieres lenken til utklippstavla. Løser at det ikke fantes noen adresse å kopiere når appen kjøres installert fra hjemskjermen (da er nettleserens adressefelt skjult). Bruksanvisningen er oppdatert med dette.'
+    ]
+  },
+  {
     v: '6.03',
     d: 'juli 2026',
     changes: [

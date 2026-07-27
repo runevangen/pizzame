@@ -592,6 +592,7 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
     </div>
     <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none">★ Min favoritt</div>
     <div class="menu-row" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
+    <div class="menu-row" onclick="sidenavGo(shareApp)">📤 Del appen</div>
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
     <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
@@ -3399,6 +3400,29 @@ function closeManualModal(){
   document.getElementById('manual-modal').style.display = 'none';
 }
 
+// ===== DEL APPEN =====
+// Løser at det ikke finnes noen adresselinje å kopiere når appen kjøres
+// installert (standalone). Bruker native delingsark (Web Share) der det finnes
+// — typisk mobil — ellers kopieres lenken til utklippstavla, med prompt som
+// siste utvei. labelId (valgfritt) er spanen som skal blinke «✓ Lenke kopiert!».
+function shareApp(labelId){
+  const url = location.origin + '/';
+  const data = { title:'Pizzaplanlegger', text:'Pizzaplanlegger — planlegg pizzadeig med oppskrift og tidsplan.', url };
+  if(navigator.share){ navigator.share(data).catch(()=>{}); return; } // bruker kan avbryte — ignorer
+  const done = () => {
+    if(labelId){
+      const el=document.getElementById(labelId);
+      if(el){ const o=el.textContent; el.textContent='✓ Lenke kopiert!'; setTimeout(()=>{ el.textContent=o; },2000); return; }
+    }
+    alert('Lenke kopiert til utklippstavla:\n'+url);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(()=>window.prompt('Kopier lenken:', url));
+  } else {
+    window.prompt('Kopier lenken:', url);
+  }
+}
+
 // ===== TILBAKEMELDING (delt liste via Netlify Blobs) =====
 const FEEDBACK_CATEGORIES = [
   {v:'mel', t:'Mangler mel'},
@@ -5762,6 +5786,12 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
         <div class="o" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
       </div>
+    </div>
+
+    <div class="mob-section-lbl">Del</div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="shareApp('share-app-label')">
+      <span id="share-app-label" style="font-size:13px;color:var(--dyn-text);font-weight:600">📤 Del appen</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
 
     <div class="mob-section-lbl">Hjelp</div>
