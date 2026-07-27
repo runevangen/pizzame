@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.07',
+    d: 'juli 2026',
+    changes: [
+      'Rettet tre tidsbeskrivelser som ikke stemte med selve tidsplanen (funnet ved manuell kvalitetssjekk): (1) kjøleskaps-steget skrev «ca. 24 timer» selv om den faktiske urørte kjøletiden er kortere — de siste 4 timene av den kalde fasen er temperering ute (eget steg). Teksten viser nå den reelle kjøletiden (f.eks. ca. 19,8 timer), i tråd med tidslinja på steget. (2) «Total heving» i den kopierte oppskriften viste bare den kalde halen (f.eks. 24t), ikke den reelle totaltiden — nå står «Total tid fra start til steking: ca. X timer» regnet fra første steg til steking (for en poolish med 24t kald hale blir det ca. 40 timer). (3) Fagteksten om poolish sa «har allerede fermentert mesteparten av deigen» — poolishen er halvparten av melet, så det står nå «halvparten av melet og bidrar med mye av smak- og aromautviklingen».'
+    ]
+  },
+  {
     v: '6.06',
     d: 'juli 2026',
     changes: [

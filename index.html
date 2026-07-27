@@ -1507,9 +1507,9 @@ function rawSteps(a){
         why:WHY.fk,
         tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
       {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
-        desc:`La emnene stå urørt i kjøleskapet i ca. ${coldTimeLabel(c)}. Ikke åpne boksene.`,
+        desc:`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}. Ikke åpne boksene.`,
         substeps:[
-          `La emnene stå urørt i kjøleskapet i ca. ${coldTimeLabel(c)}`,
+          `La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}`,
           'Ikke åpne boksene'
         ],
         why:WHY.fk},
@@ -1614,7 +1614,7 @@ function rawSteps(a){
           `Tilsett ${r2.salt}g salt — ingen ekstra gjær trengs`,
           `Elt til deigen er glatt og smidig`
         ],
-        why:'Poolishen har allerede fermentert mesteparten av deigen — resten inkorporeres effektivt uansett metode.',
+        why:'Poolishen har allerede fermentert halvparten av melet og bidrar med mye av smak- og aromautviklingen — resten inkorporeres effektivt uansett metode.',
         tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.'},
       {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rt} min ved ${S.temp}°C`],why:rtW(rt)},
       ...tailSteps(aM(rdy,20+rt))
@@ -2168,10 +2168,18 @@ function currentYeastAmount(){
 }
 function copyP(steps){
   const r=R(),p=pc();
+  // Faktisk total tid fra første steg til steking (bakover fra selve tidsplanen),
+  // ikke S.cold — «Total heving: 24 timer» var misvisende siden S.cold bare er
+  // den kalde halen (form→stek), mens den reelle totalen inkluderer poolish/biga-
+  // forgjæring og romheving (f.eks. ~40t for en poolish med 24t kald hale).
+  const _f=(steps&&steps[0]&&steps[0].at)?new Date(steps[0].at):null;
+  const _l=(steps&&steps.length&&steps[steps.length-1].at)?new Date(steps[steps.length-1].at):null;
+  const _totMin=(_f&&_l&&!isNaN(_f.getTime())&&!isNaN(_l.getTime()))?Math.round((_l-_f)/60000):null;
+  const _totTxt=_totMin==null?null:(_totMin>=60?`${Math.round(_totMin/60)} timer`:`${_totMin} min`);
   const coldLine = S.type==='ingenelting' ? null
     : S.method==='kveld' ? `Kjøleskapsheving: ${S.kveldH} timer · Ovn: ${oN()}`
     : S.method==='hurtig' ? `Ovn: ${oN()}`
-    : `Total heving: ${coldTimeLabel(S.cold)} · Ovn: ${oN()}`;
+    : `${_totTxt?`Total tid fra start til steking: ca. ${_totTxt} · `:''}Ovn: ${oN()}`;
   const ovnLine = S.type==='ingenelting' ? `Ovn: Vanlig ovn, 250°C` : null;
   // Toppen: en sjekk-instruksjon (for manuell kvalitetskontroll av oppskriften)
   // + appversjon og tidspunkt for kopieringen, slik at det er sporbart hvilken
