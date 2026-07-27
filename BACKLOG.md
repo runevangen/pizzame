@@ -15,7 +15,18 @@ fiks sannsynligvis flytter frosne tall.
 
 ## P0 — Reelle feil, bør fikses først
 
-### 1. Hurtigdeig dobbelttelller vann OG gjær (hele oppskriften blir feil)
+> ✅ **Alle P0 + #3/#4 fikset i commit `fa2c1d6`.** Under gjenstår som dokumentasjon.
+> En ny, beslektet load-crash (#0) ble funnet under testing og fikset i samme commit.
+
+### 0. `mobHydroUI` kastet «Cannot set properties of null» ved mobil-innlasting ✅ FIKSET
+- `syncMobControls()` kjøres fra `loadConfigThenStart` FØR mobil-HTML-en finnes i
+  DOM-en (dokumentert ved `4161–4164`). Alle skrivinger der no-opper trygt via
+  `s`/`t`-vaktene — bortsett fra `mobHydroUI()`, som skrev uvoktet til
+  `mob-hlbl`/`mob-hcat` og kastet ved hver mobil-last for innloggede brukere.
+- **Fiks:** samme null-vakt som `syncMobControls`/`mobSetMode`. Fanget av
+  `page_loads_without_script_errors`-testen (som feilet 3/3 også på uendret kode).
+
+### 1. Hurtigdeig dobbelttelller vann OG gjær (hele oppskriften blir feil) ✅ FIKSET
 Regresjon fra v6.01 «gjær-kickstart».
 - Kickstart-steget (`1734`, `needs` på `1735`) løser opp **hele** vannmengden
   `w = mel·hydro/100` og **hele** gjærmengden `ya`:
@@ -30,7 +41,7 @@ Regresjon fra v6.01 «gjær-kickstart».
   vannblandingen fra forrige steg i bollen») og fjerne vann + gjær fra sine egne
   `needs`-chips og understeg. Behold mel/salt/olje/smør/sukker der.
 
-### 2. Å åpne en lagret deig sletter dens avhaking på serveren (desktop, datatap)
+### 2. Å åpne en lagret deig sletter dens avhaking på serveren (desktop, datatap) ✅ FIKSET
 - `openBake` (`5246`) setter `window._checked` fra den lagrede deigen (`5251`),
   gjør så `Object.assign(S, b.config)` (`5255`) som kan endre `S.method`, og
   kaller `gen()` (`5277`).
@@ -49,7 +60,7 @@ Regresjon fra v6.01 «gjær-kickstart».
 
 ## P1 — Feil / inkonsistens
 
-### 3. `methodFlashHTML` er overlappende og desktop-only nullstilling
+### 3. `methodFlashHTML` er overlappende og desktop-only nullstilling ✅ FIKSET
 - `methodFlashHTML` (`5203`) nullstiller kun `window._checked` (ikke
   `_checkedIngredients` / `_checkedSubsteps`), mens v6.01-`clearStepProgress`
   (`727`) nullstiller alle tre og allerede kjører ved hvert ekte metodebytte
@@ -58,7 +69,7 @@ Regresjon fra v6.01 «gjær-kickstart».
   `.clear()/persistCheckedSteps()`. Da forsvinner både datatapet (2) og
   PC/mobil-desyncen på ett brett.
 
-### 4. Hurtigdeig: motstridende vanntemperatur
+### 4. Hurtigdeig: motstridende vanntemperatur ✅ FIKSET (løst sammen med #1)
 - Kickstarten (`1734`) sier «lunkent vann (40–43 °C)» — for *hele* vannmengden.
   Blandesteget (`1745`/`1748`, understeg `1751`) sier samme `w` gram ved
   `calcWaterTempC()` (kald/kjølig DDT-beregnet temp). «Why»-boksen (`1756`)
