@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.06',
+    d: 'juli 2026',
+    changes: [
+      '"📋 Kopier" tar nå med en sjekk-instruksjon øverst ("Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:"), pluss appversjon og dato/klokkeslett for kopieringen. Nyttig hvis du vil lime hele oppskriften rett inn i en manuell kvalitetssjekk — og det blir sporbart hvilken versjon planen kom fra.'
+    ]
+  },
+  {
     v: '6.05',
     d: 'juli 2026',
     changes: [

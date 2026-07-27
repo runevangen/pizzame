@@ -2173,7 +2173,12 @@ function copyP(steps){
     : S.method==='hurtig' ? `Ovn: ${oN()}`
     : `Total heving: ${coldTimeLabel(S.cold)} · Ovn: ${oN()}`;
   const ovnLine = S.type==='ingenelting' ? `Ovn: Vanlig ovn, 250°C` : null;
-  const lines=['PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.butter?[`Smør: ${r.butter}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${currentYeastAmount()}`,'','TIDSPLAN','--------'];
+  // Toppen: en sjekk-instruksjon (for manuell kvalitetskontroll av oppskriften)
+  // + appversjon og tidspunkt for kopieringen, slik at det er sporbart hvilken
+  // versjon og når planen ble hentet ut.
+  const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
+  const _now=new Date();
+  const lines=['Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:','',`Pizzaplanlegger v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,'','PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.butter?[`Smør: ${r.butter}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${currentYeastAmount()}`,'','TIDSPLAN','--------'];
   steps.forEach((s,i)=>{
     const locMap={kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'};
     const loc=locMap[s.loc]||s.loc;
