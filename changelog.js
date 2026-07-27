@@ -3,6 +3,16 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.02',
+    d: 'juli 2026',
+    changes: [
+      'Tidskonflikt-varselet ("Et steg havner i tid du ikke har satt av til pizza") er tonet ned i Tidsplan: steget som kolliderer får nå bare et lite «⚠ utenfor spisetid»-merke rett på steg-raden, i stedet for hele kortet. Det fulle varselet — med forklaringen og valgene «Rediger pizzatiden» og «Fortsett likevel» — bor nå i wizardens «Sjekk», som er der du blir gjort oppmerksom på det før du starter. På mobil tar et trykk på merket deg rett til å redigere pizzatiden.',
+      'Rettet en reell feil i Hurtigdeig-kickstarten fra v6.01: hele vannmengden og gjæren ble listet i BÅDE kickstarten og eltesteget, så fulgte du stegene bokstavelig tilsatte du dobbelt av begge. Nå vekkes gjæren i en liten, varm porsjon av vannet, mens resten tilsettes i eltesteget på den beregnede temperaturen — vann og gjær telles én gang, og deigen sikter fortsatt mot ca. 24°C.',
+      'Ny "Legg til på hjemskjerm"-knapp: på Android får du den ekte installasjonsdialogen, på iPhone en kort veiledning via Del-ikonet i Safari. Appen kan nå også installeres og brukes offline.',
+      'Rettet en feil som kunne gi en kort "hikke" ved lasting på mobil for innloggede brukere — et internt oppstartssteg kunne kjøre før mobilvisningen var ferdig bygget. Ingen synlig endring utover at oppstarten er stødigere.'
+    ]
+  },
+  {
     v: '6.01',
     d: 'juli 2026',
     changes: [
