@@ -246,6 +246,7 @@ const GUIDE = [
     icon: '🔧', title: 'Visning & mer',
     body: [
       {t:'bullets', x:[
+        '<b>📤 Del appen</b> (Info → Del): del appen med andre. På mobil åpnes delingsmenyen (meldinger, e-post osv.); på PC kopieres lenken til utklippstavla. Praktisk når appen kjører installert og adressefeltet er skjult.',
         '<b>Skriftstørrelse</b> (Info → Visning): Normal / Stor / Ekstra stor.',
         '<b>Hva er nytt</b> (nederst i Info): endringsloggen med alt som er lagt til, versjon for versjon.',
         '<b>💬 Feedback</b> (Info): send inn ønsker og feil — det du sender knyttes til navnet ditt.',
