@@ -210,7 +210,7 @@ const GUIDE = [
     icon: '📤', title: 'Kopier & Kalender',
     body: [
       {t:'bullets', x:[
-        '<b>📋 Kopier</b> — kopierer hele planen som ren tekst (ingredienser + nummerert tidslinje med tider og forklaringer). Fin å lime inn i en melding eller et notat.',
+        '<b>📋 Kopier</b> — kopierer hele planen som ren tekst (ingredienser + nummerert tidslinje med tider og forklaringer). Teksten starter med en kort sjekk-instruksjon og appversjon + tidspunkt — praktisk hvis du vil få oppskriften kvalitetssjekket. Fin å lime inn i en melding eller et notat.',
         '<b>📅 Kalender / Påminnelser</b> — laster ned en kalenderfil (.ics) med ett innslag per steg, hver med <b>påminnelse 10 minutter før</b>. Da varsler telefonen deg gjennom hele hevingen.'
       ]}
     ]
