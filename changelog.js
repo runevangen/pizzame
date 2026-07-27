@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.03',
+    d: 'juli 2026',
+    changes: [
+      'Ny "📖 Bruksanvisning" under Info-fanen: en komplett, pedagogisk gjennomgang av hele appen — alle fanene, innstillingene, metodene og de smarte funksjonene (veiviseren og Sjekk, understeg/tips/juster, varsler og pizzatid, lagring og terningkast, kopier/kalender, install på hjemskjerm, og Beta-søket). Den har en innholdsfortegnelse øverst så du kan hoppe rett til det du lurer på. Bruksanvisningen holdes oppdatert i takt med appen.'
+    ]
+  },
+  {
     v: '6.02',
     d: 'juli 2026',
     changes: [
