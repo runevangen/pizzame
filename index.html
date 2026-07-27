@@ -1356,7 +1356,7 @@ const LOC={
 };
 const WHY={
   fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
-  tu:'Kald deig er stiv — gluten er seig ved 4°C. 3–4 timer romtemperatur lar gluten slappe av slik at deigen strekkes uten å rive.',
+  tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 4°C, og 3–4 timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
@@ -1514,14 +1514,14 @@ function rawSteps(a){
         ],
         why:WHY.fk},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
-        desc:'Ta deigemnene ut. La stå dekket ved romtemperatur i 4 timer. Ikke åpne boksene ennå.',
+        desc:'Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. 4 timer før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.',
         substeps:[
-          'Ta deigemnene ut av kjøleskapet',
-          'La stå dekket ved romtemperatur i 4 timer',
+          'Ta deigemnene ut av kjøleskapet, over på benken',
+          'La stå dekket ved romtemperatur i ca. 4 timer (benktid)',
           'Ikke åpne boksene ennå'
         ],
         why:WHY.tu,
-        tip:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen.'},
+        tip:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.'},
       {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:oT(tp)}
     ];
   }
