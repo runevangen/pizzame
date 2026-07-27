@@ -5849,8 +5849,12 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
 
       <div class="mob-section-lbl" onclick="togglePizzatidMinimized()" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding-right:1rem">
-        <span>Pizzatid — ledig tid per ukedag</span>
+        <span>Når er du ledig?</span>
         <span id="mob-pizzatid-toggle" style="font-size:11px;color:var(--forno-accent-text)">Vis ▾</span>
+      </div>
+      <div style="margin:.2rem 1rem .55rem;padding:12px 14px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px">
+        <div style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted)">Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.</div>
+        <div style="font-size:11px;color:var(--forno-text-faint);margin-top:6px">Trykk «Vis» for å sette opp ukedagene dine.</div>
       </div>
       <div id="mob-pizzatid-body" style="display:none">
         <div id="mob-pizzatid-days" style="padding:.3rem 1rem .5rem"></div>
@@ -5867,8 +5871,9 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div id="mob-beta-result"></div>
       </div>
 
-      <div style="height:14px;border-top:2px solid var(--forno-border);margin:.4rem 1rem 0"></div>
-      <div class="mob-section-lbl" style="padding-top:1rem">Eller velg et populært tidspunkt</div>
+      <div style="height:1px;background:var(--forno-border);margin:1.7rem 1rem 0"></div>
+      <div class="mob-section-lbl" style="padding-top:.9rem">Eller velg et populært tidspunkt</div>
+      <div style="font-size:11px;color:var(--forno-text-faint);padding:0 1rem .15rem;line-height:1.4">Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.</div>
       <div id="mob-beta-faste" style="padding:.3rem 1rem .8rem"></div>
 
       <div style="height:80px"></div>
