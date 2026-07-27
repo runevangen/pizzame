@@ -1717,6 +1717,11 @@ function rawSteps(a){
 function hurtigSteps(anchor){
   const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3],r=R(),ie=S.mode==='end';
   const w=Math.round(S.mel*S.hydro/100),f=S.mel/500;
+  // Kickstarten vekker gjæren i en LITEN, varm porsjon av vannet (wk); resten
+  // (wr) tilsettes i eltesteget på DDT-temperaturen. wk+wr=w, så hydreringen er
+  // uendret og ~24°C-målet på ferdig deig holder fortsatt (bulken av vannet er
+  // fremdeles DDT-temperert). Vann og gjær skal derfor kun telles ÉN gang.
+  const wk=Math.round(60*f),wr=w-wk;
   const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
   const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
   const tmp=S.oven==='pizza'?o.tp:o.tv;
@@ -1731,10 +1736,10 @@ function hurtigSteps(anchor){
   const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
     {title:'Væk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
-      desc:`Rør ${ya} ut i ${w}g lunkent vann (40–43°C) med en teskje honning. La stå ca. 5 min til det bobler og skummer — da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten.`,
-      needs:[`🫙 ${ya}`, `💧 ${w}g lunkent vann`, '🍯 1 ts honning'],
+      desc:`Rør ${ya} ut i ${wk}g lunkent vann (40–43°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min til det bobler og skummer. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,
+      needs:[`🫙 ${ya}`, `💧 ${wk}g lunkent vann`, '🍯 1 ts honning'],
       substeps:[
-        `Rør ${ya} ut i ${w}g lunkent vann (40–43°C)`,
+        `Rør ${ya} ut i ${wk}g lunkent vann (40–43°C)`,
         'Tilsett en teskje honning',
         'La stå ca. 5 min til det bobler og skummer'
       ],
@@ -1742,13 +1747,13 @@ function hurtigSteps(anchor){
       tip:'Bobler det ikke i det hele tatt etter 5–10 min, er gjæren død — bytt den ut nå, ikke etter du har blandet inn alt melet.'},
     {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:mixAt,dur:15,
       desc:(()=>{const wt=calcWaterTempC();return S.kjokkenmaskin==='ankarsrum'
-        ?`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål uansett hvor lang tid det tar akkurat i din maskin.`
+        ?`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål uansett hvor lang tid det tar akkurat i din maskin.`
         :S.kjokkenmaskin==='manuell'
-        ?`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 24°C er et godt mål. Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
-        :`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål.`;})()+langpanneHintText(),
-      needs:[`💧 ${w}g vann`, `🫙 ${ya}`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
+        ?`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 24°C er et godt mål. Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
+        :`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål.`;})()+langpanneHintText(),
+      needs:[`💧 ${wr}g vann (resten)`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
       substeps:(()=>{const wt=calcWaterTempC();return[
-        `Hell ${w}g vann (${wt}°C) + ${ya} i bollen`,
+        `Hell gjærblandingen fra kickstarten + ${wr}g vann (${wt}°C) i bollen`,
         `Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,
         `Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,
         `Øk hastigheten, elt godt til deigen er glatt — sikt mot 24°C`
@@ -4526,7 +4531,13 @@ function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').text
 
 function mobHydroUI(){
   const p=S.hydro,r=HRANGE[S.type];
-  document.getElementById('mob-hlbl').textContent=p+'%';
+  // Null-vakt som i syncMobControls (s/t) og mobSetMode: syncMobControls() kjøres
+  // også fra loadConfigThenStart FØR mobil-HTML-en finnes i DOM-en, og et uvoktet
+  // getElementById().textContent her kastet «Cannot set properties of null» ved
+  // hver mobil-innlasting for innloggede brukere. De andre skrivingene no-oppet
+  // trygt; kun denne brakk.
+  const hl=document.getElementById('mob-hlbl');
+  if(hl)hl.textContent=p+'%';
   const b=document.getElementById('mob-hcat');
   let tx,bg,co;
   if(p<r.mn){tx='veldig fast';bg='#E6F1FB';co='#0C447C';}
@@ -4534,7 +4545,7 @@ function mobHydroUI(){
   else if(p<=HREC[S.type]+3){tx='anbefalt';bg='#E1F5EE';co='#085041';}
   else if(p<=r.mx){tx='høy';bg='#FAEEDA';co='#633806';}
   else{tx='veldig høy';bg='#FAECE7';co='#712B13';}
-  b.textContent=tx;b.style.background=bg;b.style.color=co;
+  if(b){b.textContent=tx;b.style.background=bg;b.style.color=co;}
 }
 
 function mobSetMode(m){
@@ -5200,7 +5211,10 @@ function savedDeigSuffix(){
 function methodFlashHTML(){
   const changed = window._lastMethod!==undefined && window._lastMethod!==S.method;
   window._lastMethod = S.method;
-  if(changed && window._checked && window._checked.size){ window._checked.clear(); persistCheckedSteps(); }
+  // Nullstiller IKKE avhaking her: clearStepProgress() (kalt ved ekte type-/
+  // metodebytter fra brukeren) eier den jobben og tømmer alle tre settene.
+  // Å tømme + persistere her slettet den nettopp innlastede avhakingen når
+  // openBake() byttet metode — reelt datatap på server, og kun på desktop.
   return changed ? ' <span class="method-flash" style="margin-left:4px;font-size:10px;font-weight:600;color:#fff;background:#1D9E75;padding:2px 8px;border-radius:6px;vertical-align:2px">endret</span>' : '';
 }
 
