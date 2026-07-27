@@ -166,7 +166,16 @@ Siden produktet ER en tidsplan, er en kompakt live-stripe («Neste: Ta ut av
 kjøleskap — om 3 t 20 min», ev. med Notification API) en naturlig utvidelse. I dag
 er eneste tidsnudge ICS-eksport med 10-min-varsler (`5220`).
 
-### F6. Fullfør den halvbygde PWA-en (offline)
+### F6. Fullfør den halvbygde PWA-en (offline) ✅ GJORT (commit `91d41ec`)
+> Manifest flyttet til site-roten (var 404), service worker lagt til (nettverk-
+> først for kode, cache-først for ikoner, API-kall røres ikke), og «Legg til på
+> hjemskjerm»-knapp: ekte prompt på Android, instruksjons-sheet på iOS Safari.
+> Samme commit fikset en pre-eksisterende load-crash i mobil-init (loadConfigThenStart
+> kjørte DOM-avhengig oppstart før mob-HTML-en var parset) — utvider #0.
+> Rester som kan gjøres senere: rikere install-UI (screenshots i manifest), evt.
+> maskable ikon, og «oppdatering tilgjengelig»-varsel fra service workeren.
+
+_Opprinnelig beskrivelse:_
 `manifest.json` er lenket (`7`) og hele ikonsettet finnes, men det er ingen service
 worker noe sted — en deig som følges over timer/dager på kjøkken-wifi ryker offline,
 og appen er ikke reelt installerbar. En cache-first SW for skallet (index.html +
