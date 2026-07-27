@@ -1288,6 +1288,119 @@ def run_behavioral_tests(page):
     )
     results.append(('juster_understeg_tips_grouped_in_tidsplan_toolbar', ok29, r29))
 
+    # v6.01: "Start ny deig"-knapp. doReset() var alltid i koden men koblet
+    # til INGEN knapp -- testet direkte for bygging (26.07) og fant to reelle
+    # bugs i selve funksjonen: (1) window._checkedSubsteps ble aldri tomt, (2)
+    # den nullstilte kaldtid til en gammel hardkodet 1 i stedet for DEF.cold
+    # (24), rett etter at Object.assign(S,DEF) allerede hadde satt den riktig
+    # -- saa "nullstillingen" saa ut til aa virke men S.cold endte feil hver
+    # gang. Begge fikset ved kilden. Tester hele kjeden: banner skjult paa
+    # standard, vises med riktig tekst naar man er borte fra standard, og et
+    # ekte knappeklikk fjerner banner + nullstiller alt + sender til steg 1.
+    r30 = page.evaluate("""() => {
+      resetTestState();
+      mobShowTab('settings'); wizGoto(1);
+      const bannerAtDefault = document.getElementById('wiz-fresh-banner').style.display;
+
+      S.type='chicago'; S.method='kveld'; S.kveldH=15; S.mel=750; S.hydro=60;
+      S.mode='end'; S.temp=24; S.gjaer='fersk';
+      window._checked = new Set([0,1]);
+      window._checkedSubsteps = new Set(['0-0','1-2']);
+      wizGoto(2); wizGoto(1);
+      const bannerAfterChange = document.getElementById('wiz-fresh-banner').style.display;
+      const bannerText = document.getElementById('wiz-fresh-banner-txt').textContent;
+
+      const btn = document.querySelector('#wiz-fresh-banner button[onclick="doReset()"]');
+      const hadBtn = !!btn;
+      btn.click();
+
+      return {
+        bannerAtDefault, bannerAfterChange, bannerText, hadBtn,
+        wizStepAfterReset: window._wizStep,
+        typeAfterReset: S.type, coldAfterReset: S.cold,
+        checkedAfterReset: [...window._checked],
+        checkedSubstepsAfterReset: [...window._checkedSubsteps],
+        bannerAfterReset: document.getElementById('wiz-fresh-banner').style.display
+      };
+    }""")
+    ok30 = (
+      r30['bannerAtDefault'] == 'none' and r30['bannerAfterChange'] == 'flex' and
+      r30['bannerText'] == 'Fortsetter: Chicago · Kveldsdeig' and r30['hadBtn'] and
+      r30['wizStepAfterReset'] == 1 and r30['typeAfterReset'] == 'napoletana' and
+      r30['coldAfterReset'] == 24 and r30['checkedAfterReset'] == [] and
+      r30['checkedSubstepsAfterReset'] == [] and r30['bannerAfterReset'] == 'none'
+    )
+    results.append(('start_ny_deig_button_resets_everything_and_returns_to_step_1', ok30, r30))
+
+    # v6.01: REELL BUG (Rune, bekreftet direkte) -- avkrysningsstatus var
+    # indeksbasert, ikke innholdsbasert. Bytter pizzatype/metode midt i okten
+    # lot gamle avkrysninger henge igjen paa feil steg. Tester at et klikk paa
+    # den ALLEREDE valgte verdien IKKE tommer noe (ingen falsk nullstilling),
+    # mens et faktisk bytte av type ELLER metode tommer alle tre tilstander,
+    # bade pa mobil og PC.
+    r31 = page.evaluate("""() => {
+      resetTestState();
+      mobShowTab('settings'); wizGoto(1);
+      window._checked = new Set([0,1]);
+      window._checkedIngredients = new Set(['a','b']);
+      window._checkedSubsteps = new Set(['0-0']);
+
+      const currentTypePill = document.querySelector('#mob-gtype .pill.on');
+      currentTypePill.click();
+      const afterSameClick = { c: [...window._checked], i: [...window._checkedIngredients], s: [...window._checkedSubsteps] };
+
+      const otherTypePill = Array.from(document.querySelectorAll('#mob-gtype .pill')).find(p => !p.classList.contains('on'));
+      otherTypePill.click();
+      const afterTypeChange = { c: [...window._checked], i: [...window._checkedIngredients], s: [...window._checkedSubsteps] };
+
+      window._checked = new Set([0]);
+      window._checkedSubsteps = new Set(['1-1']);
+      wizGoto(2);
+      const kveldCard = Array.from(document.querySelectorAll('#mob-gmet > div')).find(c => c.textContent.includes('Kveldsdeig'));
+      kveldCard.click();
+      const afterMethodChange = { c: [...window._checked], s: [...window._checkedSubsteps], method: S.method };
+
+      return { afterSameClick, afterTypeChange, afterMethodChange };
+    }""")
+    ok31 = (
+      r31['afterSameClick']['c'] == [0,1] and r31['afterSameClick']['i'] == ['a','b'] and r31['afterSameClick']['s'] == ['0-0'] and
+      r31['afterTypeChange']['c'] == [] and r31['afterTypeChange']['i'] == [] and r31['afterTypeChange']['s'] == [] and
+      r31['afterMethodChange']['c'] == [] and r31['afterMethodChange']['s'] == [] and r31['afterMethodChange']['method'] == 'kveld'
+    )
+    results.append(('checkbox_progress_clears_on_real_type_or_method_change_only', ok31, r31))
+
+    # v6.01: Hurtigdeig fikk et nytt forste steg (gjaer-kickstart: lunkent
+    # vann + honning, ~5 min for melet tilsettes) og en semulegryn-tips paa
+    # stekesteget. Tester at kjeden fortsatt henger sammen uten hull/overlapp
+    # etter at et steg ble satt inn forst, og at begge nye elementene faktisk
+    # finnes.
+    r32 = page.evaluate("""() => {
+      resetTestState();
+      S.type='napoletana'; S.method='hurtig'; S.hurtigH=4; S.mel=500; S.hydro=65;
+      S.mode='end'; S.temp=22; S.gjaer='torr';
+      mobShowTab('plan'); mobGen();
+      const steps = window._steps || [];
+      let chainOk = true;
+      for (let i = 0; i < steps.length - 1; i++) {
+        const end = new Date(steps[i].at).getTime() + (steps[i].dur||0)*60000;
+        const nextStart = new Date(steps[i+1].at).getTime();
+        if (Math.abs(end - nextStart) > 60000) chainOk = false;
+      }
+      return {
+        firstTitle: steps[0].title,
+        chainOk,
+        kickstartHasNeeds: !!(steps[0].needs && steps[0].needs.length),
+        kickstartHasSubsteps: !!(steps[0].substeps && steps[0].substeps.length === 3),
+        bakeTip: steps[steps.length-1].tip
+      };
+    }""")
+    ok32 = (
+      r32['firstTitle'] == 'Væk gjæren (kickstart)' and r32['chainOk'] and
+      r32['kickstartHasNeeds'] and r32['kickstartHasSubsteps'] and
+      'semulegryn' in r32['bakeTip'].lower()
+    )
+    results.append(('hurtig_yeast_kickstart_and_semolina_tip', ok32, r32))
+
 
 
 

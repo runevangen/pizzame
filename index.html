@@ -709,6 +709,26 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 <script src="changelog.js"></script>
 <script>
 const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,meltype:'doppio_zero',showHelp:true,showSubsteps:false};
+// v6.01: kun feltene som faktisk definerer HVILKEN deig dette er — bevisst
+// IKKE showHelp/showSubsteps (visningspreferanser) eller mode (bare start/
+// slutt-retning på samme deig). Testet 26.07 før bygging: skiller korrekt
+// ekte deig-endringer fra rene preferanse-endringer.
+const DOUGH_FIELDS=['type','method','mel','hydro','temp','gjaer','kjokkenmaskin','oven','meltype','cold','hurtigH','kveldH','poolishH','bigaH'];
+function isAtDefaultConfig(){
+  return DOUGH_FIELDS.every(k=>S[k]===DEF[k]);
+}
+// v6.01: REELL BUG funnet av Rune og verifisert 26.07 — avkrysning (steg,
+// ingredienser, understeg) er indeksbasert ("steg 0"), ikke innholdsbasert.
+// Bytter du pizzatype eller metode, blir det andre steg på samme indekser,
+// men gamle avkrysninger henger igjen og vises feilaktig som haket av på
+// det nye innholdet. Kalles når type/metode FAKTISK endres (ikke ved klikk
+// på allerede valgt verdi, og ikke ved gjær/kjøkkenmaskin/ovn — de endrer
+// ordlyd, ikke stegstruktur).
+function clearStepProgress(){
+  window._checked=new Set();
+  window._checkedIngredients=new Set();
+  window._checkedSubsteps=new Set();
+}
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
@@ -909,6 +929,7 @@ function pgrp(id,key,cb){
     p.onclick=()=>{
       const changed = S[key] !== p.dataset.v;
       S[key]=p.dataset.v;
+      if(changed && key==='type') clearStepProgress();
       pgrp(id,key,cb);
       if(cb)cb();
       schedNow();
@@ -919,6 +940,7 @@ function mCards(){
   document.getElementById('gmet').querySelectorAll('.mc').forEach(c=>{
     c.classList.toggle('on',c.dataset.v===S.method);
     c.onclick=()=>{
+      if(S.method!==c.dataset.v) clearStepProgress();
       S.method=c.dataset.v;mCards();
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
       document.getElementById('ksub').style.display=S.method==='kveld'?'block':'none';
@@ -1000,11 +1022,16 @@ function doReset(){
   window._activeDeigId=null;window._activeDeigName=null;
   window._checked=new Set();
   window._checkedIngredients=new Set();
+  window._checkedSubsteps=new Set();
   document.body.classList.add('pre-interact');
   syncSaveBakeLabel();
   document.getElementById('msl').value=500;uMel(500);
   document.getElementById('hsl').value=65;S.hydro=65;uHydroUI();
-  document.getElementById('csl').value=1;uCold(1);
+  // v6.01: REELL, FØR-EKSISTERENDE BUG funnet under testing — denne satte
+  // kjøleskapstiden til 1 (en gammel, foreldet verdi), rett etter at
+  // Object.assign(S,DEF) allerede hadde satt den riktig til 24. Nullstillingen
+  // så dermed ut til å virke, men S.cold endte alltid på 1, ikke DEF.cold.
+  document.getElementById('csl').value=DEF.cold;uCold(DEF.cold);
   document.getElementById('tsl').value=22;S.temp=22;uTempUI();
   pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
   syncMeltypeSelect();
@@ -1014,6 +1041,15 @@ function doReset(){
   applyTypeUI();
   syncMobControls();
   setMode('start');initD();schedNow();
+  // v6.01: doReset() var aldri koblet til noen knapp og syncMobControls()
+  // over gjorde mobil-pillene riktige, men sendte deg ikke tilbake til
+  // wizardsteg 1 — testet og funnet før bygging (se backlogg 26.07). Retter
+  // det her, ved kilden, i stedet for i en egen wrapper-funksjon.
+  const mobEl=document.getElementById('mob-layout');
+  if(mobEl&&mobEl.classList.contains('active')){
+    wizGoto(1);
+    mobShowTab('settings');
+  }
 }
 function toggleHelp(){
   S.showHelp=!S.showHelp;
@@ -1685,9 +1721,26 @@ function hurtigSteps(anchor){
   const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
   const tmp=S.oven==='pizza'?o.tp:o.tv;
   const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60),p=pc();
-  const t0=ie?sM(anchor,30+ba+afm):anchor;
+  // v6.01: gjær-kickstart lagt til fra backloggen — rør gjæren i lunkent vann
+  // med litt honning og la den boble noen minutter FØR mel tilsettes, i
+  // stedet for at alt blandes i ett steg uten venting. Egen KICK_DUR lagt
+  // til foran alle eksisterende offset-tall, resten av kjeden uendret bortsett
+  // fra det.
+  const KICK_DUR=5;
+  const t0=ie?sM(anchor,KICK_DUR+30+ba+afm):anchor;
+  const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
-    {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:t0,dur:15,
+    {title:'Væk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
+      desc:`Rør ${ya} ut i ${w}g lunkent vann (40–43°C) med en teskje honning. La stå ca. 5 min til det bobler og skummer — da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten.`,
+      needs:[`🫙 ${ya}`, `💧 ${w}g lunkent vann`, '🍯 1 ts honning'],
+      substeps:[
+        `Rør ${ya} ut i ${w}g lunkent vann (40–43°C)`,
+        'Tilsett en teskje honning',
+        'La stå ca. 5 min til det bobler og skummer'
+      ],
+      why:'Bekrefter at gjæren faktisk lever før du blander inn resten, og gir den et forsprang siden den får lettfordøyelig mat med det samme i stedet for å vente på melet.',
+      tip:'Bobler det ikke i det hele tatt etter 5–10 min, er gjæren død — bytt den ut nå, ikke etter du har blandet inn alt melet.'},
+    {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:mixAt,dur:15,
       desc:(()=>{const wt=calcWaterTempC();return S.kjokkenmaskin==='ankarsrum'
         ?`Hell ${w}g vann (${wt}°C) + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål uansett hvor lang tid det tar akkurat i din maskin.`
         :S.kjokkenmaskin==='manuell'
@@ -1706,10 +1759,11 @@ function hurtigSteps(anchor){
         :S.kjokkenmaskin==='manuell'
         ?'Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.'
         :'Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.'},
-    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(t0,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,substeps:[`Dekk tett`,`Hev ved ${S.temp}°C i ca. ${ba} min`],why:rtW(ba)},
-    {title:'Form emner',loc:'benk',at:aM(t0,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,needs:[`📦 ${p.count} emner`],substeps:[`Del i ${p.count} emner à ${p.perPizza}g`,'Rund godt — ikke kjevle, strekk for hånd senere'],tip:'Ikke kjevle — strekk for hånd.'},
-    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(t0,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,substeps:[`Etterhev ${afm} min, tildekket`,`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`],why:'Gluten slapper av etter forming.'},
-    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(t0,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,substeps:[`Strekk/press emnet ut etter pizzatypens teknikk`,`Ha på saus, ost og topping`,`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`],tip:oT(S.type)}
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,substeps:[`Dekk tett`,`Hev ved ${S.temp}°C i ca. ${ba} min`],why:rtW(ba)},
+    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,needs:[`📦 ${p.count} emner`],substeps:[`Del i ${p.count} emner à ${p.perPizza}g`,'Rund godt — ikke kjevle, strekk for hånd senere'],tip:'Ikke kjevle — strekk for hånd.'},
+    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,substeps:[`Etterhev ${afm} min, tildekket`,`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`],why:'Gluten slapper av etter forming.'},
+    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,substeps:[`Strekk/press emnet ut etter pizzatypens teknikk`,`Ha på saus, ost og topping`,`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`],
+      tip:(oT(S.type)||'')+' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.'}
   ]};
 }
 
@@ -4216,6 +4270,7 @@ function mobPillGroup(id,key){
     el.onclick=()=>{
       const changed = S[key] !== v;
       S[key]=v;
+      if(changed && key==='type') clearStepProgress();
       mobPillGroup(id,key);
       if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
       mobGen();
@@ -4261,6 +4316,7 @@ function mobMethodCards(){
     const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;color:${fit.dim?'var(--forno-text-faint)':'#0F6E56'}">${escH(fit.txt)}</div>`:'';
     el.innerHTML=`<div style="font-size:13px;font-weight:600;color:${isOn?'var(--forno-accent-text)':'var(--forno-text)'}">${t}</div><div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
     el.onclick=()=>{
+      if(S.method!==v) clearStepProgress();
       S.method=v;
       // Lange metoder planlegges alltid bakover fra spisetidspunktet, slik de
       // alltid har gjort — før ble dette tvunget når man landet på steg 3.
@@ -4409,6 +4465,15 @@ function stepColdWiz(delta){
 function wizStep1Refresh(){
   const lbl=document.getElementById('wiz-step1-when-lbl');
   if(lbl) lbl.textContent = S.mode==='start' ? 'Du begynner nå' : 'Når vil du spise?';
+  const banner=document.getElementById('wiz-fresh-banner');
+  if(banner){
+    const fresh=isAtDefaultConfig();
+    banner.style.display = fresh ? 'none' : 'flex';
+    if(!fresh){
+      const txt=document.getElementById('wiz-fresh-banner-txt');
+      if(txt) txt.textContent = `Fortsetter: ${tnShort(S.type)} · ${mN(S.method)}`;
+    }
+  }
 }
 function wizCheckRefresh(){
   const isShort = (S.method==='hurtig' || S.method==='kveld');
@@ -5381,6 +5446,10 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="wiz-step-1" class="wiz-step" style="display:none">
       <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken pizza?</div>
+      <div id="wiz-fresh-banner" style="display:none;margin:.5rem 1rem 0;padding:8px 10px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:8px;font-size:11.5px;color:var(--forno-text-muted);align-items:center;justify-content:space-between;gap:8px">
+        <span id="wiz-fresh-banner-txt">Fortsetter: </span>
+        <button onclick="doReset()" style="flex-shrink:0;padding:4px 9px;border:1px solid var(--forno-border);border-radius:7px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Start ny</button>
+      </div>
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl">Pizzatype</div></div>
       <div class="mob-pill-wrap" id="mob-gtype"></div>
 

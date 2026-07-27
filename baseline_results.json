@@ -175,15 +175,16 @@
       "yFresh": 2.3
     },
     "firstStep": {
-      "title": "Ankarsrum — bland deig raskt",
+      "title": "Væk gjæren (kickstart)",
       "iso": "2026-08-01T16:00:00.000Z"
     },
     "lastStep": {
       "title": "Strekk og stek 🔥",
-      "iso": "2026-08-01T20:15:00.000Z"
+      "iso": "2026-08-01T20:20:00.000Z"
     },
-    "stepCount": 5,
+    "stepCount": 6,
     "stepTitles": [
+      "Væk gjæren (kickstart)",
       "Ankarsrum — bland deig raskt",
       "Bulk-heving (ca. 2.4t)",
       "Form emner",

@@ -3,6 +3,16 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.01',
+    d: 'juli 2026',
+    changes: [
+      'Ny "Start ny deig"-knapp på wizardens første steg. Den vises kun som en liten "Fortsetter: X · Y"-linje når du faktisk ikke er på standardverdier — kommer du tilbake til wizarden og alt er nullstilt fra før, ser du ingenting ekstra.',
+      'Rettet en reell feil: å bytte pizzatype eller metode midt i økten kunne la gamle avhukinger (steg, ingredienser, understeg) henge igjen og vises feilaktig som fullført på det nye innholdet. Bytter du nå, nullstilles alle tre riktig — men et trykk på samme type/metode du allerede har valgt endrer ingenting, som forventet.',
+      'Hurtigdeig har fått et nytt første steg: en gjær-kickstart der du rører gjæren ut i lunkent vann med litt honning og lar den boble noen minutter før melet tilsettes — en enkel sjekk på at gjæren faktisk lever, og et forsprang før den skal konkurrere med melet om maten.',
+      'Steketrinnet i Hurtigdeig har fått et tips om å bruke semulegryn i stedet for vanlig mel til utbakingen — tåler høyere varme bedre.'
+    ]
+  },
+  {
     v: '6.00',
     d: 'juli 2026',
     changes: [
