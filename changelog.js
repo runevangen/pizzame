@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.09',
+    d: 'juli 2026',
+    changes: [
+      'Ny teknikk: «🧊 Poolish kjøleskapspause». Er tidene vanskelige å få til å gå opp, kan du la den ferdige poolishen «vente» kaldt (opptil 18t) mellom «poolish er klar» og «bland ferdig deig». Det skyver resten av planen inn i den ledige tiden din — <b>uten å endre når du spiser</b>. Slå den av/på under Metode → «Poolish kjøleskapspause», eller trykk «🧊 Sett inn kjøleskapspause» rett i tidskonflikt-varselet når den dukker opp. Appen velger den korteste pausen (6/12/18t) som gir færrest steg utenfor tiden din, og viser pausen som et eget steg. Beta-søket «Finn oppskrift» kjenner også teknikken og kan foreslå den.'
+    ]
+  },
+  {
     v: '6.08',
     d: 'juli 2026',
     changes: [

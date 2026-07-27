@@ -740,7 +740,7 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 <script src="changelog.js"></script>
 <script src="guide.js"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,meltype:'doppio_zero',showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',showHelp:true,showSubsteps:false};
 // v6.01: kun feltene som faktisk definerer HVILKEN deig dette er — bevisst
 // IKKE showHelp/showSubsteps (visningspreferanser) eller mode (bare start/
 // slutt-retning på samme deig). Testet 26.07 før bygging: skiller korrekt
@@ -1002,6 +1002,7 @@ function applyMobTypeUI(){
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
   const ksub=g('mob-ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
   const psub=g('mob-psub');if(psub)psub.style.display=(!isIE&&S.method==='poolish')?'block':'none';
+  syncPoolishPauseUI();
   const bsub=g('mob-bsub');if(bsub)bsub.style.display=(!isIE&&S.method==='biga')?'block':'none';
 }
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
@@ -1582,9 +1583,15 @@ function rawSteps(a){
   }
   if(S.method==='poolish'){
     const r2=R();
-    // Fremover: poolish starter ved a. Bakover: form = stek - cM2, deigmiks = form - (20+rt), poolish = miks - S.poolishH timer.
-    const pa=ie?sM(sM(sM(a,cM2),20+rt),S.poolishH*60):a;
+    // Poolish kjøleskapspause: et valgfritt, kaldt hold av den MODNE poolishen,
+    // satt inn mellom «poolish er klar» (rdy) og «bland ferdig deig». Forskyver
+    // alt nedstrøms med pauseMin, mens middagen holdes fast. Bakover-modus flytter
+    // poolish-starten tilsvarende tidligere, slik at forover/bakover matcher.
+    const pauseMin=(S.poolishPauseH||0)*60;
+    // Fremover: poolish starter ved a. Bakover: form = stek - cM2, deigmiks = form - (20+rt) - pauseMin, poolish = miks - S.poolishH timer.
+    const pa=ie?sM(sM(sM(sM(a,cM2),20+rt),pauseMin),S.poolishH*60):a;
     const rdy=aM(pa,S.poolishH*60);
+    const mixAt=aM(rdy,pauseMin);
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
@@ -1600,7 +1607,16 @@ function rawSteps(a){
         tip:S.kjokkenmaskin==='ankarsrum'
           ?`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. ${poolishRestText()}`
           :poolishRestText()},
-      {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
+      ...(pauseMin>0?[{title:'🧊 Kjøleskapspause',loc:'kjol',at:rdy,dur:pauseMin,passive:true,
+        desc:`Sett poolish-bollen i kjøleskapet i ca. ${fmtDur(pauseMin)}. Kulda bremser gjæringen kraftig ned uten å stoppe den — poolishen «venter» på deg til du er klar til å blande ferdig deig. Middagstiden er den samme.`,
+        substeps:[
+          `Sett poolish-bollen i kjøleskapet`,
+          `La stå ca. ${fmtDur(pauseMin)} — gjæringen bremses, ikke stoppes`,
+          `Ta ut når du skal blande ferdig deig`
+        ],
+        why:'Pausen skyver resten av planen inn i tiden du faktisk er ledig, uten å endre når du spiser. En moden poolish tåler noen timer kaldt, men ikke i det uendelige — derfor er pausen begrenset til maks 18 timer.',
+        tip:'Er poolishen veldig kald når du tar den ut, la den stå 20–30 min i romtemperatur før du blander. At den er litt mer boblete/moden etter pausen er helt greit.'}]:[]),
+      {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:mixAt,dur:20,
         sessionNote:`Sett av ca. ${fmtSessionDur(35+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,
         desc:S.kjokkenmaskin==='ankarsrum'
           ?`Sett deigrulle og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`
@@ -1616,8 +1632,8 @@ function rawSteps(a){
         ],
         why:'Poolishen har allerede fermentert halvparten av melet og bidrar med mye av smak- og aromautviklingen — resten inkorporeres effektivt uansett metode.',
         tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rt} min ved ${S.temp}°C`],why:rtW(rt)},
-      ...tailSteps(aM(rdy,20+rt))
+      {title:'Romtemperaturheving',loc:'rom',at:aM(mixAt,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rt} min ved ${S.temp}°C`],why:rtW(rt)},
+      ...tailSteps(aM(mixAt,20+rt))
     ];
   }
   if(S.method==='biga'){
@@ -2340,8 +2356,9 @@ function scorePizzatidWindows(steps){
 // flourMatchesForHours()) siden mel er en fysisk begrensning, ikke noe å søke i.
 function searchAllMethods(anchor){
   const origMethod=S.method, origMode=S.mode, origCold=S.cold, origPoolishH=S.poolishH,
-        origBigaH=S.bigaH, origHurtigH=S.hurtigH, origKveldH=S.kveldH, origPoolishCold=S.poolishCold;
+        origBigaH=S.bigaH, origHurtigH=S.hurtigH, origKveldH=S.kveldH, origPoolishCold=S.poolishCold, origPoolishPauseH=S.poolishPauseH;
   S.mode='end';
+  S.poolishPauseH=0;
   const candidates=[];
   function timesOf(steps){
     const firstActive=steps.find(s=>!s.passive)||steps[0];
@@ -2363,6 +2380,10 @@ function searchAllMethods(anchor){
   // Poolish, kjøleskap
   S.poolishCold=true;
   for(const pref of range(12,48,6)) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo('Poolish (kjøleskap)', {method:'poolish',poolishCold:true,poolishH:pref,cold}); }
+  // Poolish med kjøleskapspause — skyver planen inn i ledig tid uten å endre middagen
+  S.poolishCold=false;
+  for(const pause of [6,12,18]) for(const pref of [13,14,15]) for(const cold of range(24,72,12)){ S.poolishH=pref; S.cold=cold; S.poolishPauseH=pause; evalCombo(`Poolish (romtemp + ${pause}t kjøleskapspause)`, {method:'poolish',poolishCold:false,poolishH:pref,cold,poolishPauseH:pause}); }
+  S.poolishPauseH=0;
   // Biga
   S.method='biga';
   for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
@@ -2377,7 +2398,7 @@ function searchAllMethods(anchor){
   { const steps=rawSteps(anchor); candidates.push({label:'Mania-poolish', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
 
   S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
-  S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold;
+  S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold; S.poolishPauseH=origPoolishPauseH;
 
   // En kombinasjon som ber deg starte FØR akkurat nå er ikke en reell løsning —
   // uansett hvor bra den ellers scorer. Prioriter alltid gjennomførbare
@@ -2576,7 +2597,7 @@ function applyBetaResult(regId,altIdx){
   S.method=s.method;
   S.mode='end';
   if(s.method==='standard'||s.method==='poolish'||s.method==='biga'){ S.cold=s.cold; }
-  if(s.method==='poolish'){ S.poolishH=s.poolishH; S.poolishCold=!!s.poolishCold; }
+  if(s.method==='poolish'){ S.poolishH=s.poolishH; S.poolishCold=!!s.poolishCold; S.poolishPauseH=s.poolishPauseH||0; }
   if(s.method==='biga'){ S.bigaH=s.bigaH; }
   if(s.method==='hurtig'){ S.hurtigH=s.hurtigH; }
   if(s.method==='kveld'){ S.kveldH=s.kveldH; }
@@ -2975,6 +2996,9 @@ function activeStepTimeWarningHTML(){
       shiftTxt=` Spiser du ${escH(st)}, faller <b>${escH(s.title)}</b> på ${movedTxt} og hele planen går opp.`;
     }
     const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="${btnOutline}">Prøv Kveldsdeig i stedet</button>` : '';
+    // Poolish-spesifikk hjelpespak: sett inn en kald pause som skyver planen inn i
+    // ledig tid uten å endre middagen. Vises kun for poolish når pausen er av.
+    const pauseBtn=(S.method==='poolish' && (S.poolishPauseH||0)===0) ? `<button onclick="activeStepWarnPoolishPause()" style="${btnSolid}">🧊 Sett inn kjøleskapspause</button>` : '';
     const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="${btnOutline}">Rediger pizzatiden din</button>` : '';
     const conflictKey=warnKey(`activestep|${win.id}|${s.title}|${dt}`);
     const acceptBtn=(win.id==='busy'||win.id==='night') ? `<button onclick="acceptStepConflict('${conflictKey}')" style="padding:6px 12px;border:none;background:transparent;color:#8a5a05;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline">Dette er greit — fortsett likevel</button>` : '';
@@ -2999,7 +3023,7 @@ function activeStepTimeWarningHTML(){
         <div style="margin-top:.4rem"><span onclick="unacceptStepConflict('${conflictKey}')" style="font-size:11px;color:#8a5a05;font-weight:600;text-decoration:underline;cursor:pointer">Angre</span></div>
       </div>`);
     }
-    const row1=`${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}`;
+    const row1=`${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}${pauseBtn}`;
     const row2=`${pizzatidBtn}${stuck?kveldBtn:''}${acceptBtn}`;
     return warningWrapHTML(`activestep|${win.id}|${s.title}|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
       <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} Et steg havner i ${win.label}</div>
@@ -3206,7 +3230,7 @@ function applyFastTidspunkt(idx){
   const prefField=S.method==='poolish'?'poolishH':'bigaH';
   S[prefField]=t.best.pref;
   S.cold=t.best.cold;
-  if(S.method==='poolish'){ S.poolishCold=!!t.best.poolishCold; setPoolishCold(S.poolishCold); }
+  if(S.method==='poolish'){ S.poolishCold=!!t.best.poolishCold; S.poolishPauseH=t.best.poolishPauseH||0; setPoolishCold(S.poolishCold); }
   mobSetMode('end');
   mobGen();
   mobShowTab('plan');
@@ -4530,6 +4554,43 @@ function stepPoolishCold(delta){
   const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=next+' timer';
   mobGen();
 }
+// Poolish kjøleskapspause: velg den korteste pausen (6/12/18t, tak 18) som gir
+// færrest steg utenfor «Når er du ledig?»-vinduene — middagen holdes fast.
+function autoPoolishPause(){
+  const orig=S.poolishPauseH;
+  const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
+  let best={h:6, v:Infinity};
+  for(const hh of [6,12,18]){
+    S.poolishPauseH=hh;
+    let v=Infinity; try{ v=scorePizzatidWindows(stepsForAnchor(anchor)); }catch(e){}
+    if(v<best.v){ best={h:hh, v}; }   // ascending → minste vinner ved likhet
+  }
+  S.poolishPauseH=orig;
+  return best.h;
+}
+function togglePoolishPause(){
+  armStartDelta();
+  if((S.poolishPauseH||0)>0){ S.poolishPauseH=0; }
+  else { S.poolishPauseH=autoPoolishPause(); }
+  syncPoolishPauseUI();
+  mobGen();
+  try{ wizCheckRefresh(); }catch(e){}
+}
+function syncPoolishPauseUI(){
+  const btn=document.getElementById('mob-ppause-btn'); if(!btn) return;
+  const on=(S.poolishPauseH||0)>0;
+  btn.textContent = on
+    ? `🧊 På — kald pause på ca. ${fmtDur(S.poolishPauseH*60)} (trykk for å slå av)`
+    : '🧊 Slå på — la poolishen vente i kjøleskapet';
+  btn.style.cssText = `padding:9px 10px;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;line-height:1.35;${on?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)'}`;
+}
+// Snarvei fra tidskonflikt-varselet: slå på pausen (auto) og vis resultatet.
+function activeStepWarnPoolishPause(){
+  S.poolishPauseH=autoPoolishPause();
+  syncPoolishPauseUI();
+  mobGen();
+  mobShowTab('plan');
+}
 function mobBuildBrows(){
   const b=document.getElementById('mob-brows');if(!b)return;
   b.innerHTML=BIGA_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.bigaH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.bigaH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.bigaH?600:400}" onclick="mobSetB(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.bigaH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
@@ -5665,6 +5726,11 @@ document.addEventListener('change', firstInteractionCheck, true);
           <button onclick="stepPoolishCold(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:15px;color:var(--forno-text-muted)">+</button>
         </div>
         <div id="mob-p-early-hint" style="display:none;padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
+        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish kjøleskapspause</div>
+        <div style="padding:.3rem 1rem .6rem">
+          <div id="mob-ppause-btn" onclick="togglePoolishPause()" style="padding:9px 10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer;line-height:1.35">🧊 Slå på — la poolishen vente i kjøleskapet</div>
+          <div style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;margin-top:6px">Er tidene vanskelige å få til å gå opp? Slå på, så finner appen en kald pause (opptil 18t) som skyver planen inn i den ledige tiden din — uten å endre når du spiser.</div>
+        </div>
       </div>
       <div id="mob-bsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Biga-varighet</div>

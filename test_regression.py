@@ -1405,7 +1405,42 @@ def run_behavioral_tests(page):
     )
     results.append(('hurtig_yeast_kickstart_and_semolina_tip', ok32, r32))
 
-
+    # Poolish kjøleskapspause (v6.09): et valgfritt kaldt hold av den modne poolishen
+    # skal (1) sette inn et eget pause-steg, (2) holde steketiden FAST i end-modus, og
+    # (3) flytte poolish-starten tilsvarende tidligere. Auto-valget skal aldri gi flere
+    # vinduskonflikter enn uten pause.
+    r33 = page.evaluate("""() => {
+      const anchor=new Date('2026-08-01T18:00:00');
+      S.type='napoletana'; S.method='poolish'; S.poolishCold=false; S.poolishH=14;
+      S.cold=48; S.mel=500; S.hydro=65; S.temp=22; S.mode='end';
+      const iso=d=>new Date(d).toISOString();
+      S.poolishPauseH=0; const a=stepsForAnchor(anchor);
+      S.poolishPauseH=12; const c=stepsForAnchor(anchor);
+      const pauseStep=c.find(s=>String(s.title).includes('Kjøleskapspause'));
+      const firstDeltaMin=Math.round((new Date(a[0].at)-new Date(c[0].at))/60000);
+      // auto-pause skal aldri være verre enn uten pause
+      window._pizzatidSchedule=null;
+      S.poolishPauseH=0; const vBase=scorePizzatidWindows(stepsForAnchor(anchor));
+      const best=autoPoolishPause(); S.poolishPauseH=best; const vAuto=scorePizzatidWindows(stepsForAnchor(anchor));
+      S.poolishPauseH=0;
+      return {
+        bakeUnchanged: iso(a[a.length-1].at)===iso(c[c.length-1].at),
+        pauseStepDur: pauseStep?pauseStep.dur:null,
+        poolishStartsEarlierMin: firstDeltaMin,
+        extraStep: c.length===a.length+1,
+        autoInRange: [6,12,18].includes(best),
+        autoNotWorse: vAuto<=vBase
+      };
+    }""")
+    ok33 = (
+      r33['bakeUnchanged'] is True and
+      r33['pauseStepDur'] == 720 and
+      r33['poolishStartsEarlierMin'] == 720 and
+      r33['extraStep'] is True and
+      r33['autoInRange'] is True and
+      r33['autoNotWorse'] is True
+    )
+    results.append(('poolish_kjoleskapspause_shifts_upstream_keeps_bake', ok33, r33))
 
 
 

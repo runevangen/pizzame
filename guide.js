@@ -154,6 +154,7 @@ const GUIDE = [
         '<b>Dette er greit — fortsett likevel</b> — godtar konflikten. Varselet blir da en nøytral «✓ Du har godtatt …» med <b>Angre</b>, og teller ikke lenger som et problem — men blir stående, så sjekken aldri lyver om at alt er perfekt.',
         '<b>⏰ Oppstarten har allerede passert</b> — dukker opp hvis starttiden er forbi; tilbyr det tidligste realistiske tidspunktet.'
       ]},
+      {t:'smart', x:'Bruker du <b>Poolish</b> og tiden er vanskelig å få til å gå opp, dukker det opp en <b>🧊 Sett inn kjøleskapspause</b>-knapp. Den lar den ferdige poolishen «vente» kaldt (opptil 18t) og skyver resten av planen inn i den ledige tiden din — <b>uten å endre når du spiser</b>. Du kan også slå den av/på selv under Metode → «Poolish kjøleskapspause», og Beta-søket kjenner den også.'},
       {t:'tip', x:'Sender et varsel deg til en annen fane, får du en <b>«← Tilbake»</b>-linje nederst som også sier fra live når konflikten er løst.'}
     ]
   },
@@ -164,7 +165,7 @@ const GUIDE = [
       {t:'p', x:'Kort om hva hver metode er og når den passer:'},
       {t:'bullets', x:[
         '<b>Langtidsdeig</b> — direkte deig med kald heving i 1–flere døgn. Enklest å planlegge, mest kontroll på smaksdybden. Trygt førstevalg.',
-        '<b>Poolish</b> — løs fordeig (12–16 t) for kompleks smak. Har en <b>❄️ Kjøleskap</b>-variant som gir langt friere tidspunkt.',
+        '<b>Poolish</b> — løs fordeig (12–16 t) for kompleks smak. Har en <b>❄️ Kjøleskap</b>-variant som gir langt friere tidspunkt, og en valgfri <b>🧊 Poolish kjøleskapspause</b> (se «Sjekk & varsler») for å få tiden til å gå opp.',
         '<b>Biga</b> — fast, tørr fordeig (16–24 t). Nøtteaktig smak og seigere struktur. Lages alltid for hånd.',
         '<b>Hurtigdeig</b> — samme dag, ingen lang kjøletid; mer gjær kompenserer for tiden. Starter med en <b>gjær-kickstart</b> (gjæren vekkes i litt lunkent vann med honning før melet).',
         '<b>Kveldsdeig</b> — kortere kjøletid (5–24 timer, ikke dager). Elt i kveld, stek i morgen. Mer smak enn Hurtigdeig.',
