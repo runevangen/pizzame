@@ -381,6 +381,29 @@ body.mob-mode .guide-num{background:var(--forno-accent);color:#1a1512}
 .guide-txt{font-size:13px;color:var(--dyn-text);line-height:1.4}
 body.mob-mode .guide-txt{color:var(--forno-text-muted)}
 body.mob-mode .guide-txt b{color:var(--forno-text)}
+/* Bruksanvisning (manual-modal) — rendret fra guide.js */
+.man-toc-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 1rem;padding-bottom:.9rem;border-bottom:1px solid #EDEDED}
+body.mob-mode .man-toc-wrap{border-bottom-color:var(--forno-border-soft)}
+.man-toc{font-size:12px;font-weight:600;color:#0F6E56;background:#E1F5EE;border-radius:20px;padding:5px 11px;cursor:pointer;white-space:nowrap;border:none}
+body.mob-mode .man-toc{color:var(--forno-accent-text,#8fe3c8);background:var(--forno-bg-raised,#241c15);border:1px solid var(--forno-border,#3a2e22)}
+.man-sec{margin:0 0 1.5rem;scroll-margin-top:8px}
+.man-lead{font-size:13.5px;line-height:1.55;color:var(--dyn-text);margin:0 0 1.1rem}
+body.mob-mode .man-lead{color:var(--forno-text-muted)}
+.man-h{font-size:16px;font-weight:800;color:var(--dyn-text);margin:0 0 .5rem;padding-top:.3rem}
+body.mob-mode .man-h{color:var(--forno-text)}
+.man-sub{font-size:13px;font-weight:700;color:var(--dyn-text);margin:.9rem 0 .35rem}
+body.mob-mode .man-sub{color:var(--forno-text)}
+.man-p{font-size:13.5px;line-height:1.55;color:var(--dyn-text);margin:0 0 .6rem}
+body.mob-mode .man-p{color:var(--forno-text-muted)}
+.man-ol,.man-ul{margin:0 0 .7rem;padding-left:1.25rem;font-size:13.5px;line-height:1.55;color:var(--dyn-text)}
+body.mob-mode .man-ol,body.mob-mode .man-ul{color:var(--forno-text-muted)}
+.man-ol li,.man-ul li{margin-bottom:.3rem}
+.man-tip{font-size:12.5px;line-height:1.5;background:#FFF8E8;border:1px solid #F0D9A8;border-radius:9px;padding:.55rem .7rem;margin:0 0 .7rem;color:#6a4e12}
+body.mob-mode .man-tip{background:rgba(239,159,39,.10);border-color:rgba(239,159,39,.35);color:var(--forno-text-muted)}
+.man-smart{font-size:12.5px;line-height:1.5;background:#E1F5EE;border:1px solid #A7DFCC;border-radius:9px;padding:.55rem .7rem;margin:0 0 .7rem;color:#0F5A46}
+body.mob-mode .man-smart{background:rgba(29,158,117,.12);border-color:rgba(29,158,117,.40);color:var(--forno-text-muted)}
+.man-p b,.man-ol b,.man-ul b,.man-tip b,.man-smart b,.man-lead b{color:var(--dyn-text)}
+body.mob-mode .man-p b,body.mob-mode .man-ol b,body.mob-mode .man-ul b,body.mob-mode .man-tip b,body.mob-mode .man-smart b,body.mob-mode .man-lead b{color:var(--forno-text)}
 .snum-btn{cursor:pointer;transition:background .15s,transform .1s;user-select:none}
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
@@ -496,6 +519,12 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
   <div class="modal-box">
     <div class="modal-head"><b>🕓 Hva er nytt</b><button class="modal-x" onclick="closeChangelogModal()" aria-label="Lukk">✕</button></div>
     <div class="modal-body" id="changelog-modal-body"></div>
+  </div>
+</div>
+<div id="manual-modal" class="modal-overlay" onclick="if(event.target===this)closeManualModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>📖 Bruksanvisning</b><button class="modal-x" onclick="closeManualModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="manual-modal-body"></div>
   </div>
 </div>
 <div id="feedback-modal" class="modal-overlay" onclick="if(event.target===this)closeFeedbackModal()">
@@ -708,6 +737,7 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 </div>
 
 <script src="changelog.js"></script>
+<script src="guide.js"></script>
 <script>
 const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,meltype:'doppio_zero',showHelp:true,showSubsteps:false};
 // v6.01: kun feltene som faktisk definerer HVILKEN deig dette er — bevisst
@@ -3332,6 +3362,43 @@ function closeChangelogModal(){
   document.getElementById('changelog-modal').style.display = 'none';
 }
 
+// ===== BRUKSANVISNING =====
+// Innholdet ligger som ren data i guide.js (const GUIDE), rendret her. Skal alltid
+// holdes i takt med appen: endrer vi en funksjon, oppdaterer vi guide.js også.
+function buildManualHTML(){
+  if(typeof GUIDE==='undefined' || !Array.isArray(GUIDE) || !GUIDE.length){
+    return '<p class="man-p">Bruksanvisningen kunne ikke lastes akkurat nå.</p>';
+  }
+  const renderBlock = b => {
+    switch(b.t){
+      case 'p':       return `<p class="man-p">${b.x}</p>`;
+      case 'sub':     return `<div class="man-sub">${b.x}</div>`;
+      case 'steps':   return `<ol class="man-ol">${b.x.map(i=>`<li>${i}</li>`).join('')}</ol>`;
+      case 'bullets': return `<ul class="man-ul">${b.x.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+      case 'tip':     return `<div class="man-tip">💡 ${b.x}</div>`;
+      case 'smart':   return `<div class="man-smart">✨ <b>Smart:</b> ${b.x}</div>`;
+      default:        return '';
+    }
+  };
+  const lead = GUIDE_INTRO ? `<p class="man-lead">${GUIDE_INTRO}</p>` : '';
+  const toc = `<div class="man-toc-wrap">${GUIDE.map((s,i)=>
+    `<button type="button" class="man-toc" onclick="document.getElementById('man-sec-${i}').scrollIntoView({behavior:'smooth',block:'start'})">${s.icon} ${s.title}</button>`
+  ).join('')}</div>`;
+  const secs = GUIDE.map((s,i)=>
+    `<div class="man-sec" id="man-sec-${i}"><div class="man-h">${s.icon} ${s.title}</div>${(s.body||[]).map(renderBlock).join('')}</div>`
+  ).join('');
+  return lead + toc + secs +
+    `<button type="button" onclick="closeManualModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:14px;font-weight:600;cursor:pointer;margin-top:.5rem">Lukk</button>`;
+}
+function openManualModal(){
+  document.getElementById('manual-modal-body').innerHTML = buildManualHTML();
+  document.getElementById('manual-modal-body').scrollTop = 0;
+  document.getElementById('manual-modal').style.display = 'flex';
+}
+function closeManualModal(){
+  document.getElementById('manual-modal').style.display = 'none';
+}
+
 // ===== TILBAKEMELDING (delt liste via Netlify Blobs) =====
 const FEEDBACK_CATEGORIES = [
   {v:'mel', t:'Mangler mel'},
@@ -5698,8 +5765,12 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div class="mob-section-lbl">Hjelp</div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openManualModal()">
+      <span style="font-size:13px;color:var(--dyn-text);font-weight:600">📖 Bruksanvisning</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
+    </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openGuideModal()">
-      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">❓ Guide</span>
+      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">❓ Kom i gang (kort)</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openTechModal()">
