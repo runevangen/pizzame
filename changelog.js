@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.08',
+    d: 'juli 2026',
+    changes: [
+      '«Ta ut av kjøleskap»-steget forklarer nå benktida (tempereringen) etter kjøleskapsfermenteringen bedre: den gjør to ting på én gang — glutenet slapper av så deigen blir strekkbar, og gjæren våkner fra kulda og gir en siste, kort heving som gjør skorpa luftig. Hopper du over den, blir deigen både vanskelig å strekke og tettere stekt. Tipset er også utvidet: for kort gir stiv, tett deig; altfor lenge kan overheve. Gjelder alle metoder med kjøleskapsheving (Langtidsdeig, Poolish, Biga).'
+    ]
+  },
+  {
     v: '6.07',
     d: 'juli 2026',
     changes: [
