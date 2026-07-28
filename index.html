@@ -752,6 +752,8 @@ window._units = (()=>{ try{ return localStorage.getItem('pizzaUnits')||'metric';
 function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
 function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
 function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
+function fmtW(g){ return window._units==='imperial' ? _oz(g) : g+'g'; }        // vekt-visning (slider/label)
+function fmtT(c){ return window._units==='imperial' ? Math.round(parseFloat(String(c).replace(',','.'))*9/5+32)+'°F' : c+'°C'; }
 // Enhets-post-prosessor: konverterer ALLE °C og gram i en ferdig tekst-blokk til
 // °F/oz på én gang — «billig-trikset». Kjøres kun på plan-stegtekst (ikke attributter).
 function localizeUnits(html){
@@ -765,9 +767,15 @@ function localizeUnits(html){
 // UI-krom-oversettelse (Tier A). Kun et representativt utvalg i PoC-en.
 const TXT = {
   no:{ tab_settings:'Planlegging',tab_plan:'Tidsplan',tab_recipe:'Oppskrift',tab_notes:'Notater',tab_bakster:'Deiger',tab_tips:'Info',tab_beta:'Beta',
-       li_section:'Språk / Enheter',li_lang:'Språk',li_units:'Enheter',u_metric:'Metrisk (g · °C)',u_imperial:'Imperial (oz · °F)' },
+       li_section:'Språk / Enheter',li_lang:'Språk',li_units:'Enheter',u_metric:'Metrisk (g · °C)',u_imperial:'Imperial (oz · °F)',
+       ai_note:'⚠️ Engelsk er maskinoversatt (AI). Sjekk kritiske steg – oppskriftsteksten er ennå ikke fullt gjennomgått.',
+       a_copy:'Kopier',a_cal:'Kalender',a_save:'Lagre',tb_juster:'⚙️ Juster',tb_understeg:'📋 Understeg',tb_tips:'💡 Tips',
+       r_count:'Antall',r_size:'Emnestørrelse',r_dough:'ferdig deig' },
   en:{ tab_settings:'Planner',tab_plan:'Schedule',tab_recipe:'Recipe',tab_notes:'Notes',tab_bakster:'Doughs',tab_tips:'Info',tab_beta:'Beta',
-       li_section:'Language / Units',li_lang:'Language',li_units:'Units',u_metric:'Metric (g · °C)',u_imperial:'Imperial (oz · °F)' } };
+       li_section:'Language / Units',li_lang:'Language',li_units:'Units',u_metric:'Metric (g · °C)',u_imperial:'Imperial (oz · °F)',
+       ai_note:'⚠️ English is machine-translated (AI). Double-check critical steps — the recipe text is not yet fully reviewed.',
+       a_copy:'Copy',a_cal:'Calendar',a_save:'Save',tb_juster:'⚙️ Adjust',tb_understeg:'📋 Substeps',tb_tips:'💡 Tips',
+       r_count:'Count',r_size:'Ball size',r_dough:'final dough' } };
 function t(key){ const l=window._lang||'no'; return (TXT[l]&&TXT[l][key]!=null)?TXT[l][key]:(TXT.no[key]||key); }
 // Display-oversettelse av steg-titler (rører IKKE step.title-objektet → baseline trygg).
 const TITLES_EN = {
@@ -794,6 +802,8 @@ function syncI18nUI(){
   const ui=document.getElementById('mob-u-imperial'); if(ui) ui.textContent=t('u_imperial');
   seg('mob-l-no', window._lang==='no'); seg('mob-l-en', window._lang==='en');
   seg('mob-u-metric', window._units==='metric'); seg('mob-u-imperial', window._units==='imperial');
+  const note=document.getElementById('mob-i18n-note');
+  if(note) note.textContent = window._lang==='en' ? t('ai_note') : 'Under utbygging: enheter konverteres app-bredt; engelsk dekker foreløpig faner, steg-titler og enheter — oppskriftsteksten oversettes metode for metode.';
 }
 // v6.01: kun feltene som faktisk definerer HVILKEN deig dette er — bevisst
 // IKKE showHelp/showSubsteps (visningspreferanser) eller mode (bare start/
@@ -2156,7 +2166,7 @@ function baseIngredientRows({mel,vann,hydro,salt,oil,butter,sugar,gjaer,melLabel
 function recipeRowsHTML(rr, mob=false){
   const rowClass = mob ? 'mob-rrow' : 'rrow';
   const valClass = mob ? 'mob-rval' : 'rval';
-  return rr.map(row=>{
+  return localizeUnits(rr.map(row=>{
     if(!INGREDIENT_KEYS.includes(row.k)){
       return `<div class="${rowClass}"><span>${row.k}</span><span class="${valClass}">${row.v}</span></div>`;
     }
@@ -2177,7 +2187,7 @@ function recipeRowsHTML(rr, mob=false){
       </span>
       <span class="${valClass}" style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${row.v}</span>
     </div>`;
-  }).join('');
+  }).join(''));
 }
 function toggleIngredientCheck(key){
   if(!window._checkedIngredients) window._checkedIngredients = new Set();
@@ -4412,10 +4422,10 @@ function syncMobControls(){
   if(!g('mob-msl')) return;
   const s=(id,val)=>{const el=g(id);if(el)el.value=val;};
   const t=(id,val)=>{const el=g(id);if(el)el.textContent=val;};
-  s('mob-msl',S.mel);t('mob-mdisp',S.mel+'g');
+  s('mob-msl',S.mel);t('mob-mdisp',fmtW(S.mel));
   s('mob-hsl',S.hydro);
   s('mob-csl',S.cold);t('mob-clbl',coldTimeLabel(S.cold));
-  s('mob-tsl',S.temp);t('mob-tlbl',S.temp+'°C');
+  s('mob-tsl',S.temp);t('mob-tlbl',fmtT(S.temp));
   mobHydroUI();
   mobPillGroup('mob-gtype','type');
   mobPillGroup('mob-ggj','gjaer');
@@ -4664,7 +4674,7 @@ function stepMobSlider(id, delta, fn){
   el.value=next;
   fn(next);
 }
-function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=v+'g';const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=v+'g';mobGen();}
+function mobUMel(v){S.mel=parseInt(v);document.getElementById('mob-mdisp').textContent=fmtW(v);const e=document.getElementById('msl');if(e)e.value=v;const d=document.getElementById('mdisp');if(d)d.textContent=fmtW(v);mobGen();}
 function mobUHydro(v){S.hydro=parseInt(v);mobHydroUI();const e=document.getElementById('hsl');if(e)e.value=v;uHydroUI();mobGen();}
 function mobUCold(v){armStartDelta();S.cold=parseInt(v);const t=coldTimeLabel(S.cold);document.getElementById('mob-clbl').textContent=t;const e=document.getElementById('csl');if(e)e.value=v;const l=document.getElementById('clbl');if(l)l.textContent=t;const d=document.getElementById('cdisp');if(d)d.textContent=t;const cw=document.getElementById('mob-cold-wiz-disp');if(cw)cw.textContent=t;mobGen();}
 // Live forhåndsvisning av beregnet starttidspunkt — så man slipper å bla til
@@ -4778,7 +4788,7 @@ function wizCheckRender(){
   el.innerHTML=lead+parts.join('');
 }
 
-function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=v+'°C';const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
+function mobUTemp(v){S.temp=parseInt(v);document.getElementById('mob-tlbl').textContent=fmtT(v);const e=document.getElementById('tsl');if(e)e.value=v;uTempUI();mobGen();}
 
 function mobHydroUI(){
   const p=S.hydro,r=HRANGE[S.type];
@@ -5020,8 +5030,12 @@ function mobGetAnchor(p){
 }
 
 
+function aiNoteHTML(){
+  if(window._lang!=='en') return '';
+  return `<div style="margin:.5rem .9rem;padding:8px 10px;background:rgba(239,159,39,.10);border:1px solid rgba(239,159,39,.35);border-radius:8px;font-size:11px;line-height:1.4;color:var(--forno-text-muted)">${t('ai_note')}</div>`;
+}
 function mobStepH(steps){
-  return localizeUnits(renderSteps(steps, 'mobile'));
+  return aiNoteHTML()+localizeUnits(renderSteps(steps, 'mobile'));
 }
 // v5.96: liten switch for å veksle mellom dagens avsnittstekst og en utprøvende
 // visning med nummererte understeg (+ avhaking på aktive steg). Rune vil teste
@@ -5364,17 +5378,17 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   try{ if(firstActive){ let at=firstActive.at; if(!(at instanceof Date)) at=new Date(at); if(!isNaN(at.getTime())) startMs=at.getTime(); } }catch(e){}
   const deltaHTML = showDelta ? startDeltaChipHTML(startMs) : '';
   const actionsHTML = showActions ? `<div style="display:flex;gap:6px;margin-top:8px">
-      <button onclick="copyP(window._steps||[])" title="Kopier tidsplan" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📋</span>Kopier</button>
-      <button onclick="downloadIcs(window._steps||[])" title="Last ned til kalender" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📅</span>Kalender</button>
-      <button id="mob-savebake-btn" onclick="saveBake()" title="Lagre denne deigen" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>💾</span>Lagre</button>
+      <button onclick="copyP(window._steps||[])" title="Kopier tidsplan" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📋</span>${t('a_copy')}</button>
+      <button onclick="downloadIcs(window._steps||[])" title="Last ned til kalender" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📅</span>${t('a_cal')}</button>
+      <button id="mob-savebake-btn" onclick="saveBake()" title="Lagre denne deigen" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>💾</span>${t('a_save')}</button>
     </div>` : '';
   // v6.00: skisse B — Juster/Understeg/Tips samlet på én rad UNDER navnet, kun
   // i Tidsplan-visningen (showActions). Wizardens kompakte statuslinjer
   // beholder Juster inline ved navnet, uendret — den er den dokumenterte
   // universelle veien til Finjuster fra ethvert wizardsteg (v5.81), og skal
   // ikke flytte seg der.
-  const justerBtn = `<button onclick="wizOpenFinjusterFromPlan()" style="flex-shrink:0;padding:4px 10px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-accent-text,#1D9E75);font-size:11px;font-weight:600;cursor:pointer">⚙️ Juster</button>`;
-  const justerBtnToolbar = `<button onclick="wizOpenFinjusterFromPlan()" style="flex:1;text-align:center;padding:5px 4px;border:1px solid var(--forno-border,#ddd);border-radius:7px;background:transparent;color:var(--forno-accent-text,#1D9E75);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">⚙️ Juster</button>`;
+  const justerBtn = `<button onclick="wizOpenFinjusterFromPlan()" style="flex-shrink:0;padding:4px 10px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-accent-text,#1D9E75);font-size:11px;font-weight:600;cursor:pointer">${t('tb_juster')}</button>`;
+  const justerBtnToolbar = `<button onclick="wizOpenFinjusterFromPlan()" style="flex:1;text-align:center;padding:5px 4px;border:1px solid var(--forno-border,#ddd);border-radius:7px;background:transparent;color:var(--forno-accent-text,#1D9E75);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">${t('tb_juster')}</button>`;
   const toolbarHTML = showActions ? `<div style="display:flex;gap:6px;margin-top:6px">
       ${justerBtnToolbar}
       ${substepToggleHTML('mob-compact')}
@@ -5923,7 +5937,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-u-metric" onclick="setUnits('metric')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">Metrisk (g · °C)</div>
       <div id="mob-u-imperial" onclick="setUnits('imperial')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">Imperial (oz · °F)</div>
     </div>
-    <div style="padding:0 1rem .3rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4">PoC: enheter konverteres app-bredt i tidsplanen; språk dekker faner + steg-titler (Hurtigdeig). Resten av oppskriftsteksten er ennå ikke oversatt.</div>
+    <div id="mob-i18n-note" style="padding:0 1rem .3rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
 
     <div class="mob-section-lbl">Visning</div>
     <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.5rem 1rem .65rem">
