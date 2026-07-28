@@ -754,6 +754,12 @@ function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);
 function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
 function fmtW(g){ return window._units==='imperial' ? _oz(g) : g+'g'; }        // vekt-visning (slider/label)
 function fmtT(c){ return window._units==='imperial' ? Math.round(parseFloat(String(c).replace(',','.'))*9/5+32)+'°F' : c+'°C'; }
+// L(no, en): velg språkversjon av en (ferdig interpolert) streng. Begge skrives
+// inline i samme scope, så ${}-verdiene er identiske; enheter håndteres av
+// localizeUnits() uansett. Norsk-utdata er byte-identisk → baseline uendret.
+function L(no, en){ return (window._lang==='en' && en!=null) ? en : no; }
+// Oversetter en norsk varighetsstreng fra fmtDur() ("2,5 timer", "45 min", "1,5 døgn") til engelsk.
+function durEn(s){ return String(s).replace(' timer',' hours').replace(' time',' hour').replace(' døgn',' days'); }
 // Enhets-post-prosessor: konverterer ALLE °C og gram i en ferdig tekst-blokk til
 // °F/oz på én gang — «billig-trikset». Kjøres kun på plan-stegtekst (ikke attributter).
 function localizeUnits(html){
@@ -788,9 +794,36 @@ const TITLES_EN = {
   'Kjøleskapsheving':'Cold proof',
   'Romtemperaturheving':'Room-temperature rise',
   'Strekk og stek 🔥':'Stretch and bake 🔥',
-  '🧊 Kjøleskapspause':'🧊 Cold pause'
+  '🧊 Kjøleskapspause':'🧊 Cold pause',
+  'Bland alt i bollen':'Mix everything in the bowl',
+  'La stå (natt over)':'Let it sit (overnight)',
+  'Etterheving + forvarm ovn':'Final proof + preheat oven',
+  'Press ut hjørnene, topp og stek 🔥':'Press out the corners, top and bake 🔥',
+  'Tilsett gjær og salt — elt ferdig':'Add yeast and salt — finish kneading',
+  'Lag biga (for hånd)':'Make biga (by hand)',
+  'Bland poolish':'Mix poolish',
+  'Poolish gjærer':'Poolish ferments',
+  'Poolish kjøles ned':'Poolish cools down',
+  'Nedkjøling':'Cooling down',
+  'Bland hoveddeig':'Mix the main dough',
+  'Hvile i ro':'Rest undisturbed',
+  'Form til bolle → romtemperatur':'Shape into a ball → room temperature',
+  'Kjøleskapsheving (udelt)':'Cold proof (undivided)',
+  'Del i emner':'Divide into balls',
+  'Romtemperaturheving (delt)':'Room-temperature rise (divided)',
+  'Form emner → kjøleskap':'Shape the balls → fridge',
+  'Ta ut og temperer':'Take out and temper'
 };
-function dispTitle(t){ return (window._lang==='en' && TITLES_EN[t]) ? TITLES_EN[t] : t; }
+// Dynamiske titler (med interpolerte tall) oversettes via mønster, siden en statisk nøkkel ikke treffer.
+function dispTitle(t){
+  if(window._lang!=='en') return t;
+  if(TITLES_EN[t]) return TITLES_EN[t];
+  let m;
+  if((m=t.match(/^Bulk-heving \(ca\. (.+)t\)$/))) return `Bulk rise (approx. ${m[1]}h)`;
+  if((m=t.match(/^Etterheving \+ forvarme \((.+) min\)$/))) return `Final proof + preheat (${m[1]} min)`;
+  if((m=t.match(/^Kjøleskapsheving \((.+)t\)$/))) return `Cold proof (${m[1]}h)`;
+  return t;
+}
 const TAB_EMOJI = {settings:'⚙️',plan:'📅',recipe:'🍕',notes:'📝',bakster:'🍽️',tips:'ℹ️',beta:'🧭'};
 function syncI18nUI(){
   Object.keys(TAB_EMOJI).forEach(id=>{ const el=document.getElementById('mob-tab-'+id); if(el) el.innerHTML=`<span aria-hidden="true">${TAB_EMOJI[id]}</span>${t('tab_'+id)}`; });
@@ -1004,7 +1037,7 @@ function updateEarliestHint(){
   const el=document.getElementById('earliest-hint');
   if(!el||S.mode!=='end')return;
   const earliest=earliestBakeAt();
-  el.textContent=earliest ? 'Tidligst mulig: '+fDT(earliest) : '';
+  el.textContent=earliest ? L('Tidligst mulig: ','Earliest possible: ')+fDT(earliest) : '';
 }
 ['sd','st','ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',sched);el.addEventListener('change',sched);}});
 
@@ -1309,9 +1342,15 @@ function anc(p){
 function aM(d,m){return new Date(d.getTime()+m*60000);}
 function sM(d,m){return new Date(d.getTime()-m*60000);}
 function fDT(d){
+  const tm=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  if(window._lang==='en'){
+    const dyE=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const moE=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return`${dyE[d.getDay()]} ${moE[d.getMonth()]} ${d.getDate()}, ${tm}`;
+  }
   const dy=['søn','man','tir','ons','tor','fre','lør'];
   const mo=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
-  return`${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]} kl. ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return`${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]} kl. ${tm}`;
 }
 function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
@@ -1342,7 +1381,7 @@ function maniaRecipe(){
     totalMel:m, totalYd:Math.round((poolishYd+hovedYd)*100)/100, totalYf:Math.round((poolishYf+hovedYf)*100)/100
   };
 }
-function yA(r){return S.gjaer==='torr'?`${r.yDry}g tørrgjær`:`${r.yFresh}g fersk gjær`;}
+function yA(r){return S.gjaer==='torr'?L(`${r.yDry}g tørrgjær`,`${r.yDry}g dry yeast`):L(`${r.yFresh}g fersk gjær`,`${r.yFresh}g fresh yeast`);}
 function pc(){
   // Langpanne/IngenElting: 0,7g deig per cm² formflate (standard focaccia-tommelfingerregel),
   // 30×40cm langpanne = 1200cm² => ca. 840g fyller én panne godt.
@@ -1376,12 +1415,12 @@ function oD(t){
 }
 function oT(t){
   const p=S.oven==='pizza';
-  if(t==='napoletana')return p?'Pizzastein/-stål MÅ varmes minst 45 min.':'Sett rist øverst. 250°C varmluft gir best resultat.';
-  if(t==='newyork')return p?'Strekk tynt og bredt — kantene skal kunne brettes. 300–340°C er et godt utgangspunkt — juster opp mot 350–370°C hvis pizzaen blir for lys, ned igjen hvis den blir for mørk før bunnen er gjennomstekt.':'Pizzastål gir den klassiske sprø, foldbare NY-bunnen.';
-  if(t==='langpanne')return p?'Tykkbunnet form tåler høy varme.':'Olje i formen. Forhåndstek 5 min uten fyll.';
-  return p?'Jernpanne gir best varmeoverføring.':'Ost UNDER sausen — Chicago-tradisjonen.';
+  if(t==='napoletana')return p?L('Pizzastein/-stål MÅ varmes minst 45 min.','The pizza stone/steel MUST preheat at least 45 min.'):L('Sett rist øverst. 250°C varmluft gir best resultat.','Put the rack at the top. 250°C convection gives the best result.');
+  if(t==='newyork')return p?L('Strekk tynt og bredt — kantene skal kunne brettes. 300–340°C er et godt utgangspunkt — juster opp mot 350–370°C hvis pizzaen blir for lys, ned igjen hvis den blir for mørk før bunnen er gjennomstekt.','Stretch thin and wide — the edges should be foldable. 300–340°C is a good starting point — turn up toward 350–370°C if the pizza is too pale, back down if it darkens before the base is cooked through.'):L('Pizzastål gir den klassiske sprø, foldbare NY-bunnen.','A pizza steel gives the classic crisp, foldable NY base.');
+  if(t==='langpanne')return p?L('Tykkbunnet form tåler høy varme.','A thick-bottomed pan handles high heat.'):L('Olje i formen. Forhåndstek 5 min uten fyll.','Oil in the pan. Pre-bake 5 min without toppings.');
+  return p?L('Jernpanne gir best varmeoverføring.','A cast-iron pan gives the best heat transfer.'):L('Ost UNDER sausen — Chicago-tradisjonen.','Cheese UNDER the sauce — the Chicago tradition.');
 }
-function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
+function oN(){return S.oven==='pizza'?L('Pizzaovn','Pizza oven'):L('Vanlig ovn (maks 250°C)','Regular oven (max 250°C)');}
 // v5.99: understeg for det delte stekestegetet — samme gren-logikk (type ×
 // ovnstype) som oD()/oT(), brutt opp i egne linjer i stedet for ett avsnitt.
 // Brukt av tailSteps (Standard/Poolish/Biga), kveldSteps og hurtigSteps sine
@@ -1389,37 +1428,47 @@ function oN(){return S.oven==='pizza'?'Pizzaovn':'Vanlig ovn (maks 250°C)';}
 function bakeSubsteps(type){
   const p=S.oven==='pizza';
   const warm = type==='napoletana'
-    ? (p?'Varm pizzaovnen til 430–450°C — pizzastein/-stål MÅ varmes minst 45 min':'Varm ovnen til 250°C med pizzastein/-stål, 45 min, øverste rille')
+    ? (p?L('Varm pizzaovnen til 430–450°C — pizzastein/-stål MÅ varmes minst 45 min','Heat the pizza oven to 430–450°C — the stone/steel MUST preheat at least 45 min'):L('Varm ovnen til 250°C med pizzastein/-stål, 45 min, øverste rille','Heat the oven to 250°C with a pizza stone/steel, 45 min, top rack'))
     : type==='newyork'
-    ? (p?'Varm pizzaovnen til 300–340°C':'Varm ovnen til 250°C med pizzastein/-stål, 45 min')
+    ? (p?L('Varm pizzaovnen til 300–340°C','Heat the pizza oven to 300–340°C'):L('Varm ovnen til 250°C med pizzastein/-stål, 45 min','Heat the oven to 250°C with a pizza stone/steel, 45 min'))
     : type==='langpanne'
-    ? (p?'Varm pizzaovnen til 300–350°C':'Varm ovnen til 230–250°C')
-    : (p?'Varm pizzaovnen til 250–280°C i jernpanne':'Varm ovnen til 200–220°C');
+    ? (p?L('Varm pizzaovnen til 300–350°C','Heat the pizza oven to 300–350°C'):L('Varm ovnen til 230–250°C','Heat the oven to 230–250°C'))
+    : (p?L('Varm pizzaovnen til 250–280°C i jernpanne','Heat the pizza oven to 250–280°C in a cast-iron pan'):L('Varm ovnen til 200–220°C','Heat the oven to 200–220°C'));
   const shape = type==='langpanne'
-    ? 'Press deigen utover i oljet langpanne — ikke elt, bare press med fingertuppene'
+    ? L('Press deigen utover i oljet langpanne — ikke elt, bare press med fingertuppene','Press the dough out in an oiled sheet pan — don\'t knead, just press with your fingertips')
     : type==='chicago'
-    ? 'Press deigen ned og opp langs kantene i smørsmurt jernpanne'
+    ? L('Press deigen ned og opp langs kantene i smørsmurt jernpanne','Press the dough down and up along the edges in a buttered cast-iron pan')
     : type==='newyork'
-    ? 'Strekk tynt og bredt — kantene skal kunne brettes'
-    : 'Strekk emnet rundt, la kanten være tykkere enn midten';
-  const top = type==='chicago' ? 'Ost først, så fyll, saus øverst — Chicago-tradisjonen' : 'Ha på saus, ost og ønsket topping';
+    ? L('Strekk tynt og bredt — kantene skal kunne brettes','Stretch thin and wide — the edges should be foldable')
+    : L('Strekk emnet rundt, la kanten være tykkere enn midten','Stretch the ball round, keep the edge thicker than the center');
+  const top = type==='chicago' ? L('Ost først, så fyll, saus øverst — Chicago-tradisjonen','Cheese first, then filling, sauce on top — the Chicago tradition') : L('Ha på saus, ost og ønsket topping','Add sauce, cheese and your chosen toppings');
   const bakeLine = type==='napoletana'
-    ? (p?'Stek 90–120 sek til leopardmønster og sprø kanter':'Stek 6–9 min øverste rille')
+    ? (p?L('Stek 90–120 sek til leopardmønster og sprø kanter','Bake 90–120 sec until leopard-spotted with crisp edges'):L('Stek 6–9 min øverste rille','Bake 6–9 min on the top rack'))
     : type==='newyork'
-    ? (p?'Stek 4–6 min til gyllen og sprø':'Stek 6–8 min til gyllen og sprø bunn')
+    ? (p?L('Stek 4–6 min til gyllen og sprø','Bake 4–6 min until golden and crisp'):L('Stek 6–8 min til gyllen og sprø bunn','Bake 6–8 min until golden with a crisp base'))
     : type==='langpanne'
-    ? (p?'Stek 8–12 min':'Stek 12–16 min')
-    : (p?'Stek 20–25 min':'Stek 28–35 min');
+    ? (p?L('Stek 8–12 min','Bake 8–12 min'):L('Stek 12–16 min','Bake 12–16 min'))
+    : (p?L('Stek 20–25 min','Bake 20–25 min'):L('Stek 28–35 min','Bake 28–35 min'));
   return [warm, shape, top, bakeLine];
 }
-function mN(m){return{standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig'}[m]||m;}
+function mN(m){return (window._lang==='en'
+  ?{standard:'Long-ferment dough',poolish:'Poolish',biga:'Biga',hurtig:'Quick dough',ingenelting:'No-knead',kveld:'Evening dough'}
+  :{standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig'})[m]||m;}
 
-const LOC={
+const LOC_NO={
   kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
   rom:'<span class="sloc r">🏠 Romtemperatur</span>',
   ovn:'<span class="sloc o">🔥 Ovn</span>',
   benk:'<span class="sloc r">🔧 Kjøkkenbenk</span>'
 };
+const LOC_EN={
+  kjol:'<span class="sloc k">❄️ Fridge</span>',
+  rom:'<span class="sloc r">🏠 Room temp.</span>',
+  ovn:'<span class="sloc o">🔥 Oven</span>',
+  benk:'<span class="sloc r">🔧 Counter</span>'
+};
+// Bruk en Proxy slik at eksisterende `LOC[s.loc]`-oppslag automatisk følger valgt språk.
+const LOC=new Proxy({},{get:(_,k)=>((window._lang==='en'?LOC_EN:LOC_NO)[k])});
 const WHY={
   fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
   tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 4°C, og 3–4 timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
@@ -1441,7 +1490,7 @@ const METHOD_WHY={
 };
 function rtW(actualMins){
   const durTxt = fmtDur(actualMins);
-  return `Romtemperaturhevingen lar gjæren produsere gass og utvikle smak samtidig som glutenstrukturen modnes. Ved ${S.temp}°C og valgt gjærmengde tar dette ca. ${durTxt}.`;
+  return L(`Romtemperaturhevingen lar gjæren produsere gass og utvikle smak samtidig som glutenstrukturen modnes. Ved ${S.temp}°C og valgt gjærmengde tar dette ca. ${durTxt}.`,`The room-temperature rise lets the yeast produce gas and develop flavor while the gluten structure matures. At ${S.temp}°C and the chosen amount of yeast this takes about ${durEn(durTxt)}.`);
 }
 
 // ===== KJØKKENMASKIN: felles tekst-hjelpere =====
@@ -1451,8 +1500,8 @@ function rtW(actualMins){
 // håndelting ~0–4°F) og uavhengige Ankarsrum-sammenligninger (nær håndelting i friksjon).
 function waterTempPhrase(){
   return S.kjokkenmaskin==='annen'
-    ? 'kaldt vann, gjerne rett fra kjøleskapet'
-    : 'kjølig eller romtemperert vann (ikke iskaldt)';
+    ? L('kaldt vann, gjerne rett fra kjøleskapet','cold water, ideally straight from the fridge')
+    : L('kjølig eller romtemperert vann (ikke iskaldt)','cool or room-temperature water (not ice-cold)');
 }
 // "Desired Dough Temperature"-formelen bakere bruker for å styre sluttdeigens temperatur:
 // vanntemp = 3×ønsket deigtemp − (romtemp + meltemp + friksjonsfaktor). Meltemp antas lik
@@ -1483,7 +1532,7 @@ function whySg(){
 function langpanneHintText(){
   if(S.type!=='langpanne' && S.type!=='ingenelting') return '';
   const p=pc();
-  return ` Denne mengden gir ${p.count} langpanne${p.count>1?'r':''} (ca. ${p.melPer}g mel per langpanne).`;
+  return L(` Denne mengden gir ${p.count} langpanne${p.count>1?'r':''} (ca. ${p.melPer}g mel per langpanne).`,` This amount makes ${p.count} sheet pan${p.count>1?'s':''} (approx. ${p.melPer}g flour per pan).`);
 }
 
 function rawSteps(a){
@@ -1836,7 +1885,7 @@ function hurtigSteps(anchor){
   // fremdeles DDT-temperert). Vann og gjær skal derfor kun telles ÉN gang.
   const wk=Math.round(60*f),wr=w-wk;
   const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
-  const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+  const ya=S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
   const tmp=S.oven==='pizza'?o.tp:o.tv;
   const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60),p=pc();
   // v6.01: gjær-kickstart lagt til fra backloggen — rør gjæren i lunkent vann
@@ -1849,39 +1898,39 @@ function hurtigSteps(anchor){
   const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
     {title:'Væk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
-      desc:`Rør ${ya} ut i ${wk}g lunkent vann (40–43°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min til det bobler og skummer. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,
-      needs:[`🫙 ${ya}`, `💧 ${wk}g lunkent vann`, '🍯 1 ts honning'],
+      desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (40–43°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min til det bobler og skummer. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (40–43°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min until it bubbles and foams. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
+      needs:[`🫙 ${ya}`, L(`💧 ${wk}g lunkent vann`,`💧 ${wk}g lukewarm water`), L('🍯 1 ts honning','🍯 1 tsp honey')],
       substeps:[
-        `Rør ${ya} ut i ${wk}g lunkent vann (40–43°C)`,
-        'Tilsett en teskje honning',
-        'La stå ca. 5 min til det bobler og skummer'
+        L(`Rør ${ya} ut i ${wk}g lunkent vann (40–43°C)`,`Stir ${ya} into ${wk}g lukewarm water (40–43°C)`),
+        L('Tilsett en teskje honning','Add a teaspoon of honey'),
+        L('La stå ca. 5 min til det bobler og skummer','Let it sit about 5 min until it bubbles and foams')
       ],
-      why:'Bekrefter at gjæren faktisk lever før du blander inn resten, og gir den et forsprang siden den får lettfordøyelig mat med det samme i stedet for å vente på melet.',
-      tip:'Bobler det ikke i det hele tatt etter 5–10 min, er gjæren død — bytt den ut nå, ikke etter du har blandet inn alt melet.'},
+      why:L('Bekrefter at gjæren faktisk lever før du blander inn resten, og gir den et forsprang siden den får lettfordøyelig mat med det samme i stedet for å vente på melet.','Confirms the yeast is actually alive before you mix in the rest, and gives it a head start since it gets easily digestible food right away instead of waiting for the flour.'),
+      tip:L('Bobler det ikke i det hele tatt etter 5–10 min, er gjæren død — bytt den ut nå, ikke etter du har blandet inn alt melet.','If nothing bubbles at all after 5–10 min, the yeast is dead — replace it now, not after you have mixed in all the flour.')},
     {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:mixAt,dur:15,
       desc:(()=>{const wt=calcWaterTempC();return S.kjokkenmaskin==='ankarsrum'
-        ?`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål uansett hvor lang tid det tar akkurat i din maskin.`
+        ?L(`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål uansett hvor lang tid det tar akkurat i din maskin.`,`Pour the yeast mixture from the kickstart + the rest of the water (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sugar`:''} into the bowl. Start on speed 1. Add ${S.mel}g flour gradually${r.oil?` + ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 3 min. Increase to speed 3–4. Knead 10–12 min — measure the final dough temperature if you can, about 24°C is a good target no matter how long it takes in your particular machine.`)
         :S.kjokkenmaskin==='manuell'
-        ?`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 24°C er et godt mål. Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`
-        :`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål.`;})()+langpanneHintText(),
-      needs:[`💧 ${wr}g vann (resten)`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
+        ?L(`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 24°C er et godt mål. Hurtigdeig krever litt mer futt i eltingen siden du ikke har lang hevetid til å bygge gluten.`,`Pour the yeast mixture from the kickstart + the rest of the water (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sugar`:''} into a bowl. Mix in ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''} and ${r.salt}g salt. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) for 10–12 min since the dough is wet.':'press, fold, turn for 8–10 min until smooth.'} Measure the final dough temperature if you have a thermometer — about 24°C is a good target. Quick dough needs a bit more effort in the kneading since you don't have a long rise to build gluten.`)
+        :L(`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål.`,`Pour the yeast mixture from the kickstart + the rest of the water (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sugar`:''} into the bowl. Run the dough hook on low speed while you add ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 2 min. Increase to medium speed. Knead 6–8 min — measure the final dough temperature if you can, about 24°C is a good target.`);})()+langpanneHintText(),
+      needs:[L(`💧 ${wr}g vann (resten)`,`💧 ${wr}g water (the rest)`), L(`🌾 ${S.mel}g mel`,`🌾 ${S.mel}g flour`), L(`🧂 ${r.salt}g salt`,`🧂 ${r.salt}g salt`), ...(r.oil?[L(`🫒 ${r.oil}g olje`,`🫒 ${r.oil}g oil`)]:[]), ...(r.butter?[L(`🧈 ${r.butter}g smør`,`🧈 ${r.butter}g butter`)]:[]), ...(r.sugar?[L(`🍯 ${r.sugar}g sukker`,`🍯 ${r.sugar}g sugar`)]:[])],
       substeps:(()=>{const wt=calcWaterTempC();return[
-        `Hell gjærblandingen fra kickstarten + ${wr}g vann (${wt}°C) i bollen`,
-        `Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,
-        `Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,
-        `Øk hastigheten, elt godt til deigen er glatt — sikt mot 24°C`
+        L(`Hell gjærblandingen fra kickstarten + ${wr}g vann (${wt}°C) i bollen`,`Pour the yeast mixture from the kickstart + ${wr}g water (${wt}°C) into the bowl`),
+        L(`Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,`Start on the lowest speed/setting, add ${S.mel}g flour gradually`),
+        L(`Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,`Add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}`),
+        L(`Øk hastigheten, elt godt til deigen er glatt — sikt mot 24°C`,`Increase the speed, knead well until the dough is smooth — aim for 24°C`)
       ];})(),
-      why:'Vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvor lenge den skal gjære — det er gjærmengden over, ikke vanntemperaturen, som gjør denne varianten rask.',
+      why:L('Vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvor lenge den skal gjære — det er gjærmengden over, ikke vanntemperaturen, som gjør denne varianten rask.','The water temperature is calculated to hit about 24°C finished dough no matter how long it ferments — it is the amount of yeast above, not the water temperature, that makes this variant fast.'),
       tip:S.kjokkenmaskin==='ankarsrum'
-        ?'Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.'
+        ?L('Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.','Quick dough: use speed 3–4 a bit faster than usual since you don\'t have time for a long rise.')
         :S.kjokkenmaskin==='manuell'
-        ?'Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.'
-        :'Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.'},
-    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,substeps:[`Dekk tett`,`Hev ved ${S.temp}°C i ca. ${ba} min`],why:rtW(ba)},
-    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,needs:[`📦 ${p.count} emner`],substeps:[`Del i ${p.count} emner à ${p.perPizza}g`,'Rund godt — ikke kjevle, strekk for hånd senere'],tip:'Ikke kjevle — strekk for hånd.'},
-    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,substeps:[`Etterhev ${afm} min, tildekket`,`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`],why:'Gluten slapper av etter forming.'},
-    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,substeps:[`Strekk/press emnet ut etter pizzatypens teknikk`,`Ha på saus, ost og topping`,`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`],
-      tip:(oT(S.type)||'')+' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.'}
+        ?L('Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.','The windowpane test is extra important here since you don\'t have a long rise to compensate for under-kneading.')
+        :L('Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.','Knead a bit longer than you would with a longer rise — quick dough has less time for gluten to develop on its own.')},
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,`Cover tightly. Rise at ${S.temp}°C for about ${ba} min.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${ba} min`,`Rise at ${S.temp}°C for about ${ba} min`)],why:rtW(ba)},
+    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} balls of ${p.perPizza}g each. Round well.`),needs:[L(`📦 ${p.count} emner`,`📦 ${p.count} balls`)],substeps:[L(`Del i ${p.count} emner à ${p.perPizza}g`,`Divide into ${p.count} balls of ${p.perPizza}g each`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
+    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${afm} min. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${afm} min, tildekket`,`Final proof ${afm} min, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
+    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
+      tip:(oT(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
   ]};
 }
 
@@ -1952,6 +2001,11 @@ function renderSteps(steps, mode='desktop'){
   const dayKey = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   const todayKey = dayKey(today);
   const dayName = d => {
+    if(window._lang==='en'){
+      const dyE=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const moE=['January','February','March','April','May','June','July','August','September','October','November','December'];
+      return `${dyE[d.getDay()]} ${moE[d.getMonth()]} ${d.getDate()}`;
+    }
     const dy=['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
     const mo=['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
     return `${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]}`;
@@ -2029,7 +2083,7 @@ function renderSteps(steps, mode='desktop'){
     const k = dayKey(s.at);
     if (k !== lastDay) {
       const isToday = k === todayKey;
-      html += `<div class="${C.daylbl} ${isToday ? C.today : ''}"><span class="ddot"></span>${isToday ? 'I dag — ' : ''}${dayName(s.at)}</div>`;
+      html += `<div class="${C.daylbl} ${isToday ? C.today : ''}"><span class="ddot"></span>${isToday ? L('I dag — ','Today — ') : ''}${dayName(s.at)}</div>`;
       lastDay = k;
     }
 
@@ -2081,7 +2135,7 @@ function renderSteps(steps, mode='desktop'){
         </div>
         ${s.needs && s.needs.length ? `<div class="${C.needs}">${s.needs.map(n=>`<span class="${C.needchip}">${n}</span>`).join('')}</div>` : ''}
         ${(S.showSubsteps && s.substeps && s.substeps.length) ? substepsHTML(s, i) : (s.desc ? `<div class="${C.desc}">${s.desc}</div>` : '')}
-        ${S.showHelp && s.why ? `<div class="${C.why}"><b>Hvorfor:</b> ${s.why}</div>` : ''}
+        ${S.showHelp && s.why ? `<div class="${C.why}"><b>${L('Hvorfor','Why')}:</b> ${s.why}</div>` : ''}
         ${S.showHelp && s.tip ? `<div class="${C.tip}"><b>Tips:</b> ${s.tip}</div>` : ''}
       </div>
       ${wait}
@@ -5051,13 +5105,13 @@ function _toolbarToggleBtn(onclickFn, icon, label, on){
 function substepToggleHTML(where){
   const on = !!S.showSubsteps;
   if(where==='mob-compact'){
-    return _toolbarToggleBtn('toggleSubsteps()', '📋', 'Understeg', on);
+    return _toolbarToggleBtn('toggleSubsteps()', '📋', L('Understeg','Substeps'), on);
   }
   if(where==='mob'){
     const btnStyle = 'width:100%;text-align:left;padding:8px 10px;border:1px solid var(--forno-border,#e0ddd8);border-radius:8px;background:var(--forno-bg-raised,#fff);color:var(--forno-text,#3A3A3C);font-size:11.5px;font-weight:600;cursor:pointer;margin:0 .9rem .6rem;width:calc(100% - 1.8rem)';
-    return `<div style="padding:.6rem .9rem 0"><button onclick="toggleSubsteps()" style="${btnStyle}">${on?'📋 Understeg PÅ — trykk for gammel visning':'📋 Prøv understeg (utprøving, kan slås av igjen)'}</button></div>`;
+    return `<div style="padding:.6rem .9rem 0"><button onclick="toggleSubsteps()" style="${btnStyle}">${on?L('📋 Understeg PÅ — trykk for gammel visning','📋 Substeps ON — tap for the old view'):L('📋 Prøv understeg (utprøving, kan slås av igjen)','📋 Try substeps (experimental, can be turned off again)')}</button></div>`;
   }
-  return `<button class="act-btn act-btn-sec" id="substep-toggle" onclick="toggleSubsteps()" title="Utprøvende: nummererte understeg med avhaking i stedet for avsnittstekst">${on?'📋 Understeg PÅ':'📋 Prøv understeg'}</button>`;
+  return `<button class="act-btn act-btn-sec" id="substep-toggle" onclick="toggleSubsteps()" title="${L('Utprøvende: nummererte understeg med avhaking i stedet for avsnittstekst','Experimental: numbered substeps with checkboxes instead of paragraph text')}">${on?L('📋 Understeg PÅ','📋 Substeps ON'):L('📋 Prøv understeg','📋 Try substeps')}</button>`;
 }
 // Tips/Hvorfor-bryteren fantes fra før KUN på PC (toggleHelpFromPlan/
 // actionGroupHTML). Denne gir den samme jobben et sted på mobil også, i den
