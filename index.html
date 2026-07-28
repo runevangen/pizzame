@@ -812,7 +812,10 @@ const TITLES_EN = {
   'Del i emner':'Divide into balls',
   'Romtemperaturheving (delt)':'Room-temperature rise (divided)',
   'Form emner → kjøleskap':'Shape the balls → fridge',
-  'Ta ut og temperer':'Take out and temper'
+  'Ta ut og temperer':'Take out and temper',
+  'Ankarsrum — bland deig':'Ankarsrum — mix dough',
+  'Bland og elt for hånd':'Mix and knead by hand',
+  'Kjøkkenmaskin — bland deig':'Stand mixer — mix dough'
 };
 // Dynamiske titler (med interpolerte tall) oversettes via mønster, siden en statisk nøkkel ikke treffer.
 function dispTitle(t){
@@ -1408,10 +1411,10 @@ function pcCountBadge(){
 }
 function oD(t){
   const p=S.oven==='pizza';
-  if(t==='napoletana')return p?'Pizzaovn: 430–450°C, 90–120 sek. Leopardmønster og sprø kanter.':'Vanlig ovn: 250°C, pizzastein/stål varmes 45 min. Stek 6–9 min øverste rille.';
-  if(t==='newyork')return p?'Pizzaovn: 300–340°C, 4–6 min. Lavere temperatur enn napoletansk — sukkeret i deigen brunes raskt og kan brenne over 350°C.':'Vanlig ovn: 250°C på pizzastein/stål (varmes 45 min). Stek 6–8 min til gyllen og sprø bunn.';
-  if(t==='langpanne')return p?'Pizzaovn: 300–350°C, 8–12 min.':'Vanlig ovn: 230–250°C, oljet langpanne, 12–16 min.';
-  return p?'Pizzaovn: 250–280°C i jernpanne, 20–25 min.':'Vanlig ovn: 200–220°C, smørsmurt form, 28–35 min.';
+  if(t==='napoletana')return p?L('Pizzaovn: 430–450°C, 90–120 sek. Leopardmønster og sprø kanter.','Pizza oven: 430–450°C, 90–120 sec. Leopard spotting and crisp edges.'):L('Vanlig ovn: 250°C, pizzastein/stål varmes 45 min. Stek 6–9 min øverste rille.','Regular oven: 250°C, preheat pizza stone/steel 45 min. Bake 6–9 min on the top rack.');
+  if(t==='newyork')return p?L('Pizzaovn: 300–340°C, 4–6 min. Lavere temperatur enn napoletansk — sukkeret i deigen brunes raskt og kan brenne over 350°C.','Pizza oven: 300–340°C, 4–6 min. Lower temperature than Neapolitan — the sugar in the dough browns quickly and can burn above 350°C.'):L('Vanlig ovn: 250°C på pizzastein/stål (varmes 45 min). Stek 6–8 min til gyllen og sprø bunn.','Regular oven: 250°C on a pizza stone/steel (preheat 45 min). Bake 6–8 min until golden with a crisp base.');
+  if(t==='langpanne')return p?L('Pizzaovn: 300–350°C, 8–12 min.','Pizza oven: 300–350°C, 8–12 min.'):L('Vanlig ovn: 230–250°C, oljet langpanne, 12–16 min.','Regular oven: 230–250°C, oiled sheet pan, 12–16 min.');
+  return p?L('Pizzaovn: 250–280°C i jernpanne, 20–25 min.','Pizza oven: 250–280°C in a cast-iron pan, 20–25 min.'):L('Vanlig ovn: 200–220°C, smørsmurt form, 28–35 min.','Regular oven: 200–220°C, buttered pan, 28–35 min.');
 }
 function oT(t){
   const p=S.oven==='pizza';
@@ -1469,25 +1472,43 @@ const LOC_EN={
 };
 // Bruk en Proxy slik at eksisterende `LOC[s.loc]`-oppslag automatisk følger valgt språk.
 const LOC=new Proxy({},{get:(_,k)=>((window._lang==='en'?LOC_EN:LOC_NO)[k])});
-const WHY={
+const WHY_NO={
   fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
   tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 4°C, og 3–4 timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
 };
+const WHY_EN={
+  fk:'Cold fermentation (2–8°C) slows the yeast so enzymes break down starch over time. Gives deep flavor, good digestibility and a long shelf life.',
+  tu:'The counter time after the fridge does two things at once. The gluten relaxes — cold dough is stiff and tough at 4°C, and 3–4 hours at room temperature makes it stretchable so you can open the ball without it tearing. And the yeast, which lay almost dormant in the cold, wakes up again and gives one last short rise that makes the crust airy and light. If you skip the counter time, the dough is both hard to stretch and denser once baked. How long it needs depends on how warm the room is — a warmer room goes faster, so use the time as a guide and the dough itself as the final word.',
+  st:'High heat gives a fast "oven spring" — the pizza rises in a flash for airy edges and a crisp base.',
+  pl:'Poolish ferments for a long time with little yeast. Enzymes break starch down into sugar that the yeast ferments, and aromatic compounds and mild organic acids develop that give more complex flavor and better digestibility.',
+  bi:'A stiff preferment with low hydration. Slow fermentation gives a nutty flavor and a chewier dough.',
+};
+// Proxy slik at eksisterende WHY.xx-oppslag følger valgt språk (byte-identisk norsk).
+const WHY=new Proxy({},{get:(_,k)=>((window._lang==='en'?WHY_EN:WHY_NO)[k])});
 // Kort "hvorfor"-forklaring til den dynamiske boksen under metodevalg-kortene
 // (wizardens Metode-steg, v5.70). Poolish/Biga gjenbruker WHY.pl/WHY.bi
 // ordrett i stedet for å duplisere teksten. Skrevet i samme stil, godkjent
 // av Rune via skisse (skisse_metode_forklaring.html) før innbygging.
-const METHOD_WHY={
+const METHOD_WHY_NO={
   standard:'Direkte deig uten fordeig-steg, med lang kjøleskapsheving (1–6 dager). Enklest å planlegge — du trenger ikke tenke på en egen fordeig i tillegg, og du styrer smaksdybden selv via hvor mange dager den står kaldt.',
-  poolish:WHY.pl,
-  biga:WHY.bi,
+  poolish:WHY_NO.pl,
+  biga:WHY_NO.bi,
   hurtig:'Ingen fordeig og ingen lang kjøletid — mer gjær kompenserer for den korte tiden. Raskeste veien fra bolle til ovn, på bekostning av litt av smaksdybden de lengre metodene gir.',
   kveld:'Kortere kjøletid enn Langtidsdeig (5–24 timer, ikke dager) — for deg som vil elte i kveld og steke i morgen uten å planlegge flere dager frem. Gir mer smak enn Hurtigdeig, men litt mindre enn en flerdagers kald heving.',
   mania:'To-trinns metode fra Pizzamania: en egen poolish gjæres for seg i 12 timer og kjøles ned, blandes så inn i hoveddeigen som deretter kjøleskapheves samlet i 10 timer. Fast oppskrift, ingen justerbare variabler.'
 };
+const METHOD_WHY_EN={
+  standard:'A direct dough with no preferment step, with a long cold proof (1–6 days). Easiest to plan — you don\'t have to think about a separate preferment as well, and you control the depth of flavor yourself via how many days it stays cold.',
+  poolish:WHY_EN.pl,
+  biga:WHY_EN.bi,
+  hurtig:'No preferment and no long chill — more yeast compensates for the short time. The fastest route from bowl to oven, at the cost of some of the flavor depth the longer methods give.',
+  kveld:'A shorter chill than the long-ferment dough (5–24 hours, not days) — for when you want to knead tonight and bake tomorrow without planning several days ahead. Gives more flavor than the quick dough, but a bit less than a multi-day cold proof.',
+  mania:'A two-stage method from Pizzamania: a separate poolish ferments on its own for 12 hours and is cooled down, then mixed into the main dough which is then cold-proofed together for 10 hours. Fixed recipe, no adjustable variables.'
+};
+const METHOD_WHY=new Proxy({},{get:(_,k)=>((window._lang==='en'?METHOD_WHY_EN:METHOD_WHY_NO)[k])});
 function rtW(actualMins){
   const durTxt = fmtDur(actualMins);
   return L(`Romtemperaturhevingen lar gjæren produsere gass og utvikle smak samtidig som glutenstrukturen modnes. Ved ${S.temp}°C og valgt gjærmengde tar dette ca. ${durTxt}.`,`The room-temperature rise lets the yeast produce gas and develop flavor while the gluten structure matures. At ${S.temp}°C and the chosen amount of yeast this takes about ${durEn(durTxt)}.`);
@@ -1937,7 +1958,7 @@ function hurtigSteps(anchor){
 function kveldSteps(anchor){
   const kh=S.kveldH, mult=KCOLDMULT[kh]||2.0, r=R(), ie=S.mode==='end';
   const yd=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100, yf=Math.round(yd*3*10)/10;
-  const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+  const ya=S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
   const MIX_DUR=15, FORM_DUR=15, KVELD_MIN=kh*60, TEMPER_MIN=kh<=15?90:120;
   const total=MIX_DUR+FORM_DUR+KVELD_MIN+TEMPER_MIN;
   const t0=ie?sM(anchor,total):anchor;
@@ -1946,45 +1967,45 @@ function kveldSteps(anchor){
   const steps=[
     {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd':'Kjøkkenmaskin — bland deig',loc:'benk',at:t0,dur:MIX_DUR,
       desc:(S.kjokkenmaskin==='ankarsrum'
-        ?`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`
+        ?L(`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour ${r.water}g cold water + ${ya}${r.sugar?` + ${r.sugar}g sugar`:''} dissolved into the bowl. Start on speed 1. Add ${S.mel}g flour gradually${r.oil?` + ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 3 min. Increase to speed 3–4. Knead 10–12 min — measure the final dough temperature if you can, about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`)
         :S.kjokkenmaskin==='manuell'
-        ?`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`
-        :`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`)+langpanneHintText(),
-      needs:[`💧 ${r.water}g vann`, `🫙 ${ya}`, `🌾 ${S.mel}g mel`, `🧂 ${r.salt}g salt`, ...(r.oil?[`🫒 ${r.oil}g olje`]:[]), ...(r.butter?[`🧈 ${r.butter}g smør`]:[]), ...(r.sugar?[`🍯 ${r.sugar}g sukker`]:[])],
+        ?L(`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour ${r.water}g cold water + ${ya}${r.sugar?` + ${r.sugar}g sugar`:''} dissolved into a bowl. Mix in ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''} and ${r.salt}g salt. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) for 10–12 min since the dough is wet.':'press, fold, turn for 8–10 min until smooth.'} Measure the final dough temperature if you have a thermometer — about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`)
+        :L(`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour ${r.water}g cold water + ${ya}${r.sugar?` + ${r.sugar}g sugar`:''} dissolved into the bowl. Run the dough hook on low speed while you add ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 2 min. Increase to medium speed. Knead 6–8 min — measure the final dough temperature if you can, about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`))+langpanneHintText(),
+      needs:[L(`💧 ${r.water}g vann`,`💧 ${r.water}g water`), `🫙 ${ya}`, L(`🌾 ${S.mel}g mel`,`🌾 ${S.mel}g flour`), L(`🧂 ${r.salt}g salt`,`🧂 ${r.salt}g salt`), ...(r.oil?[L(`🫒 ${r.oil}g olje`,`🫒 ${r.oil}g oil`)]:[]), ...(r.butter?[L(`🧈 ${r.butter}g smør`,`🧈 ${r.butter}g butter`)]:[]), ...(r.sugar?[L(`🍯 ${r.sugar}g sukker`,`🍯 ${r.sugar}g sugar`)]:[])],
       substeps:[
-        `Hell ${r.water}g kaldt vann + ${ya} i bollen`,
-        `Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,
-        `Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,
-        `Øk hastigheten, elt til deigen er glatt — sikt mot 20–22°C`
+        L(`Hell ${r.water}g kaldt vann + ${ya} i bollen`,`Pour ${r.water}g cold water + ${ya} into the bowl`),
+        L(`Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,`Start on the lowest speed/setting, add ${S.mel}g flour gradually`),
+        L(`Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,`Add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}`),
+        L(`Øk hastigheten, elt til deigen er glatt — sikt mot 20–22°C`,`Increase the speed, knead until the dough is smooth — aim for 20–22°C`)
       ],
-      why:'Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen før kjøleskapet kjøler den ned.',
-      tip:'Deigtemperatur etter elting bør ligge på 20–22°C — litt kaldere enn standardmetoden er helt greit her, siden kjøleskapet uansett overtar snart.'},
+      why:L('Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen før kjøleskapet kjøler den ned.','Cold water makes it easier to hold the target dough temperature and gives more control over fermentation before the fridge cools it down.'),
+      tip:L('Deigtemperatur etter elting bør ligge på 20–22°C — litt kaldere enn standardmetoden er helt greit her, siden kjøleskapet uansett overtar snart.','Dough temperature after kneading should be 20–22°C — a bit colder than the standard method is perfectly fine here, since the fridge takes over soon anyway.')},
     {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:FORM_DUR,
-      desc:`Del i ${p.count} emner à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett rett i kjøleskap.`,
-      needs:[`📦 ${p.count} bokser m/lokk`, '🫒 litt olje'],
+      desc:L(`Del i ${p.count} emner à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett rett i kjøleskap.`,`Divide into ${p.count} balls of about ${p.perPizza}g each. Round well with both hands. Place in oiled containers with tight lids. Put straight into the fridge.`),
+      needs:[L(`📦 ${p.count} bokser m/lokk`,`📦 ${p.count} containers w/lids`), L('🫒 litt olje','🫒 a little oil')],
       substeps:[
-        `Del i ${p.count} emne${p.count>1?'r':''} à ca. ${p.perPizza}g`,
-        'Rund godt med begge hender',
-        'Legg i oljede bokser med tett lokk',
-        'Sett rett i kjøleskap'
+        L(`Del i ${p.count} emne${p.count>1?'r':''} à ca. ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of about ${p.perPizza}g each`),
+        L('Rund godt med begge hender','Round well with both hands'),
+        L('Legg i oljede bokser med tett lokk','Place in oiled containers with tight lids'),
+        L('Sett rett i kjøleskap','Put straight into the fridge')
       ],
-      why:'Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.',
-      tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
+      why:L('Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.','Shaping before chilling gives each ball even temperature and rise through the night.'),
+      tip:L('Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.','Use containers with lids — cloths dry out the surface and form a skin.')},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
-      desc:`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,
+      desc:L(`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,`Let the balls sit undisturbed in the fridge for about ${kh} hours. Don't open the containers.`),
       substeps:[
-        `La emnene stå urørt i kjøleskapet i ca. ${kh} timer`,
-        'Ikke åpne boksene'
+        L(`La emnene stå urørt i kjøleskapet i ca. ${kh} timer`,`Let the balls sit undisturbed in the fridge for about ${kh} hours`),
+        L('Ikke åpne boksene','Don\'t open the containers')
       ],
-      why:'Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.'},
+      why:L('Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.','Cold proofing over 5–15 hours gives more flavor than a pure room-temperature quick dough, without having to plan several days ahead like the standard method.')},
     {title:'Ta ut og temperer',loc:'rom',at:temperAt,dur:TEMPER_MIN,passive:true,
-      desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return `Ta emnene ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`;})(),
+      desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return L(`Ta emnene ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`,`Take the balls out of the fridge. Let them sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'} before you stretch and bake.`);})(),
       substeps:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return [
-        'Ta emnene ut av kjøleskapet',
-        `La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'}`,
-        'Ikke rør dem før du skal strekke og steke'
+        L('Ta emnene ut av kjøleskapet','Take the balls out of the fridge'),
+        L(`La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'}`,`Let them sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'}`),
+        L('Ikke rør dem før du skal strekke og steke','Don\'t touch them until you\'re ready to stretch and bake')
       ];})(),
-      why:'Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.'},
+      why:L('Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.','Cold dough is stiff — a short temper makes it stretchable again without tearing. Shorter than the standard method\'s 4 hours since the balls haven\'t been cold as long.')},
     {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),substeps:bakeSubsteps(S.type),why:WHY.st,tip:oT(S.type)}
   ];
   return {ya,steps};
