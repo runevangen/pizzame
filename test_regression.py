@@ -1209,6 +1209,47 @@ def run_behavioral_tests(page):
     )
     results.append(('substep_progress_persists_and_view_is_remembered', ok26b, r26b))
 
+    # v6.13 (BACKLOG F3): paabegynt oppsett persisteres til localStorage og
+    # rehydreres. Kun for USAGDE oppsett (no-op naar _activeDeigId er satt);
+    # rene visningspreferanser holdes utenfor; "Start ny deig" + standard rydder.
+    r26c = page.evaluate("""() => {
+      resetTestState();
+      window._activeDeigId = null;
+      // ikke-standard oppsett -> persistSetup lagrer det (uten view-prefs).
+      S.type='chicago'; S.method='kveld'; S.mel=750; S.hydro=60; S.mode='end';
+      try{ localStorage.removeItem('pizzaSetup'); }catch(e){}
+      persistSetup();
+      let stored=null; try{ stored = JSON.parse(localStorage.getItem('pizzaSetup')); }catch(e){}
+      const hasViewPrefs = !!stored && ('showHelp' in stored || 'showSubsteps' in stored);
+
+      // rehydrer fra localStorage etter aa ha nullstilt S i minnet.
+      Object.assign(S, DEF);
+      const restored = restoreSetup();
+      const after = { type:S.type, method:S.method, mel:S.mel, hydro:S.hydro, mode:S.mode };
+
+      // lagret deig eier egen tilstand -> persistSetup skal no-oppe.
+      try{ localStorage.removeItem('pizzaSetup'); }catch(e){}
+      window._activeDeigId='bake_x'; S.type='langpanne'; persistSetup();
+      let storedWhenActive=null; try{ storedWhenActive = localStorage.getItem('pizzaSetup'); }catch(e){}
+      window._activeDeigId=null;
+
+      // standard-oppsett -> ingenting aa gjenopprette, noekkel fjernes.
+      try{ localStorage.setItem('pizzaSetup','{\\"type\\":\\"chicago\\"}'); }catch(e){}
+      Object.assign(S, DEF); S.mode=DEF.mode; persistSetup();
+      let afterDefault=null; try{ afterDefault = localStorage.getItem('pizzaSetup'); }catch(e){}
+
+      try{ localStorage.removeItem('pizzaSetup'); }catch(e){}
+      return { stored, hasViewPrefs, restored, after, storedWhenActive, afterDefault };
+    }""")
+    ok26c = (
+      r26c['stored'] and r26c['stored']['type']=='chicago' and r26c['stored']['method']=='kveld' and
+      r26c['stored']['mel']==750 and r26c['stored']['mode']=='end' and
+      r26c['hasViewPrefs'] is False and
+      r26c['restored'] and r26c['after'] == {'type':'chicago','method':'kveld','mel':750,'hydro':60,'mode':'end'} and
+      r26c['storedWhenActive'] is None and r26c['afterDefault'] is None
+    )
+    results.append(('setup_persists_and_restores_across_reload', ok26c, r26c))
+
     # v5.98: REELL BUG (Rune) -- "jeg ser knappen, men ingenting skjer naar
     # jeg trykker". Ikke en klikk-feil: bryteren virket helt fint (label
     # byttet til PAA, S.showSubsteps flippet), men Kveldsdeig -- metoden Rune

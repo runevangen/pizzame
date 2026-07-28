@@ -163,12 +163,15 @@ redusere friksjon i den tidsstyrte kjøkkenflyten.
 > Samme test vokter localStorage-persisteringen og at etiketten ikke lenger
 > rammer det som en «utprøving».
 
-### F3. Gjenopprett påbegynt oppsett ved reload
-Deig-konfigurasjonen `S` persisteres aldri til localStorage (kun font, layout,
-guide-sett og bruker gjør det — `1072`, `4184`). v6.01-banneret «Fortsetter: X · Y»
-(`4474`) virker bare under SPA-navigasjon i økten; etter en ekte reload er
-oppsettet borte og banneret kan ikke utløses. Persister `S` til localStorage og
-rehydrer ved last — da innfrir «Start ny deig»/«Fortsetter» sitt løfte.
+### F3. Gjenopprett påbegynt oppsett ved reload ✅ GJORT (v6.13)
+> `persistSetup()`/`restoreSetup()` lagrer oppsettet (alle `DEF`-felt unntatt
+> `showHelp`/`showSubsteps`) til `localStorage['pizzaSetup']`. Persisteres fra
+> `gen()`/`mobGen()`, men kun for usagde oppsett (`_activeDeigId` falsy) — en
+> åpnet, lagret deig eier sin egen tilstand via `openBake`. Rehydreres i
+> `loadConfigThenStart`s `finish()` før layout/render, deretter `syncDesktop/
+> MobControls` + `setMode` (samme sync openBake bruker), så «Fortsetter»-banneret
+> og alle kontroller reflekterer oppsettet. `doReset` rydder nøkkelen. Testet i
+> `setup_persists_and_restores_across_reload`.
 
 ### F4. Uavhengig mørk/lys-bryter (frikoblet fra layout)
 Hele «Forno» mørk palett er gated bak `body.mob-mode` (`50–152`) — mørk modus er

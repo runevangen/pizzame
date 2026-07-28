@@ -749,6 +749,29 @@ const DOUGH_FIELDS=['type','method','mel','hydro','temp','gjaer','kjokkenmaskin'
 function isAtDefaultConfig(){
   return DOUGH_FIELDS.every(k=>S[k]===DEF[k]);
 }
+// v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett ved en EKTE reload. Deig-
+// konfigurasjonen S ble aldri lagret, så «Fortsetter: X · Y»-banneret virket bare
+// under SPA-navigasjon i økten — etter en sidelast var oppsettet borte. Persister
+// oppsettet (alt i DEF unntatt rene visningspreferanser) til localStorage og
+// rehydrer ved last. Kun for USAGDE oppsett: en åpnet, lagret deig eier sin egen
+// tilstand via openBake, så vi rører ikke den når _activeDeigId er satt.
+const SETUP_FIELDS = Object.keys(DEF).filter(k=>k!=='showHelp' && k!=='showSubsteps');
+function persistSetup(){
+  if(window._activeDeigId) return;
+  try{
+    if(isAtDefaultConfig() && S.mode===DEF.mode){ localStorage.removeItem('pizzaSetup'); return; }
+    const out={}; SETUP_FIELDS.forEach(k=>{ out[k]=S[k]; });
+    localStorage.setItem('pizzaSetup', JSON.stringify(out));
+  }catch(e){ /* stille — persistering er ikke kritisk */ }
+}
+function restoreSetup(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('pizzaSetup'));
+    if(!saved || typeof saved!=='object') return false;
+    SETUP_FIELDS.forEach(k=>{ if(saved[k]!==undefined) S[k]=saved[k]; });
+    return true;
+  }catch(e){ return false; }
+}
 // v6.01: REELL BUG funnet av Rune og verifisert 26.07 — avkrysning (steg,
 // ingredienser, understeg) er indeksbasert ("steg 0"), ikke innholdsbasert.
 // Bytter du pizzatype eller metode, blir det andre steg på samme indekser,
@@ -1064,6 +1087,7 @@ function setMode(m){
 function doReset(){
   Object.assign(S,DEF);
   window._activeDeigId=null;window._activeDeigName=null;
+  try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
   window._checkedIngredients=new Set();
   window._checkedSubsteps=new Set();
@@ -3672,6 +3696,7 @@ function deleteFeedbackConfirm(id){
 }
 
 function gen(){
+  persistSetup();
   if(S.type!=='ingenelting' && S.method==='hurtig'){hurtigRes();return;}
   if(S.type!=='ingenelting' && S.method==='kveld'){kveldRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
@@ -4361,9 +4386,17 @@ async function loadConfigThenStart(){
     initAdvancedState();
     // v6.13 (BACKLOG F2): gjenopprett husket understeg-visning før første render.
     try{ if(localStorage.getItem('pizzaSubsteps')==='1') S.showSubsteps=true; }catch(e){}
+    // v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett før layout/render, så
+    // «Fortsetter»-banneret og alle kontroller reflekterer det du hadde.
+    const restored = restoreSetup();
     let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
     const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
     setLayout(targetLayout);
+    if(restored){
+      // Speil oppsettet inn i piller/glidebrytere/modus — samme sync openBake bruker.
+      if(targetLayout==='mob'){ syncMobControls(); mobSetMode(S.mode); }
+      else { syncDesktopControls(); setMode(S.mode); }
+    }
     // Innstillinger-fanen er allerede markert aktiv i selve HTML-en fra start (statisk klasse),
     // så mobShowTab('settings') kalles aldri automatisk ved første sideinnlasting — uten dette
     // kallet her ville wizarden aldri vist seg før man bytter fane frem og tilbake manuelt.
@@ -5103,6 +5136,7 @@ function renderWizStatusBar(){
 function mobGen(){
   const mobEl=document.getElementById('mob-layout');
   if(!mobEl||!mobEl.classList.contains('active'))return;
+  persistSetup();
   renderWizStatusBar();
   try{ renderReturnBar(); }catch(e){}
   if(window._wizStep===3){ try{ wizCheckRender(); }catch(e){} }
