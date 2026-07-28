@@ -3,6 +3,20 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.11',
+    d: 'juli 2026',
+    changes: [
+      'Tre praktiske kald-gjæring-råd lagt til: (1) «Sett i kjøleskap»-steget minner nå om å <b>ikke stable boksene tett i høyden</b> — det kan blokkere luftsirkulasjonen og gi ujevn kjøling — og om at kjøleskapstallet på hjulet ikke er til å stole på (1–5-skalaene varierer mellom merker; sjekk med termometer at det ligger rundt 2–5°C). (2) «Hvorfor»-teksten på kjøleskapshevingen nevner at kald gjæring er <b>tilgivende</b>: siden kulda bremser hele prosessen, tåler deigen litt mer gjær enn man skulle tro før det blir et problem. Gjelder alle metoder med kjøleskapsheving.'
+    ]
+  },
+  {
+    v: '6.10',
+    d: 'juli 2026',
+    changes: [
+      'Gjæringsstegene forteller nå ikke bare <b>når</b>, men <b>hva du ser etter</b> — og hva du gjør hvis deigen henger etter eller er kommet for langt. Klokka er fortsatt planen, men tida stemmer sjelden på minuttet: kjøleskap og kjøkken varierer. Under «💡 Tips» får de kalde hevingene, romtemperatur-/bulk-hevingene, benktida og poolish-gjæringen et fast mønster med tegn å kjenne igjen (størrelse, bobler, lukt, fingertrykk) og et konkret «gi den mer tid» / «bak tidligere». Kald deig: fingertrykk-testen holdes bevisst ute — den er upålitelig når deigen er stiv av kulde. Gjelder alle metoder (Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania).'
+    ]
+  },
+  {
     v: '6.09',
     d: 'juli 2026',
     changes: [

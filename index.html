@@ -1356,11 +1356,27 @@ const LOC={
   benk:'<span class="sloc r">🔧 Kjøkkenbenk</span>'
 };
 const WHY={
-  fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
+  fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet. Kulda er også tilgivende — siden den bremser hele prosessen, tåler en kald deig litt mer gjær enn du skulle tro før det blir et problem.',
   tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 4°C, og 3–4 timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
+};
+// Sensoriske "les deigen"-tips til gjæringsstegene: hva du ser etter, og hva du
+// GJØR hvis deigen henger etter eller er kommet for langt fram. Klokka er plan A —
+// disse lar deg overstyre med øynene når temperatur/kjøleskap ikke stemmer med tallet.
+// Delt tekst så tegnene er like på tvers av metoder (jf. paritets-tanken i BACKLOG F11).
+// Ren tekst (ingen HTML) — s.tip kopieres ordrett til plan-teksten (📋 Kopier), så tagger
+// ville lekket dit. Fingertrykk-test: kun på VARM deig (roomRise) — på kald deig er den
+// upålitelig fordi deigen er stiv av kulde.
+const TIP={
+  coldRise:'Sjekk gjennom lokket uten å åpne: emnene skal vokse til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut og bak litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.',
+  roomRise:'Klar når den har vokst tydelig (ca. dobbelt), myk og luftig med bobler i overflaten. Fingertrykk-test: trykk lett med våt finger — gropa skal fjære sakte halvveis tilbake. Spretter den rett opp igjen, trenger den mer tid; blir gropa stående og deigen synker sammen, er den for langt fram — gå videre med en gang. Varmt kjøkken går raskere enn klokka antyder.',
+  benchTemper:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. Fortsatt stive og kalde — gi dem mer tid før du former. Slappe og flyter utover i boksen — de er tempererte nok; form og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.',
+  poolishFerment:'Klar når overflaten er full av bobler, hvelver seg lett oppover og lukter friskt syrlig av gjær. Flat og stille ennå — la den stå lenger; kaldt kjøkken bremser den. Falt sammen i midten og lukter skarpt/alkoholaktig — den er gått litt for langt; bruk den likevel, men regn med noe mer syrlig smak.',
+  // Praktisk "sett-i-kjøleskap"-tips (ikke "les deigen"): fysisk oppsett når emnene
+  // settes kaldt. Brukes på form→kjøleskap-stegene (tailSteps + Kveldsdeig).
+  intoFridge:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe. Ikke stable boksene tett i høyden; det kan blokkere luftsirkulasjonen og gi ujevn kjøling — spre dem litt utover. Og stol ikke blindt på tallet på kjøleskapshjulet: 1–5-skalaene varierer mellom merker, så har du et termometer, sjekk at det ligger rundt 2–5°C.'
 };
 // Kort "hvorfor"-forklaring til den dynamiske boksen under metodevalg-kortene
 // (wizardens Metode-steg, v5.70). Poolish/Biga gjenbruker WHY.pl/WHY.bi
@@ -1506,14 +1522,15 @@ function rawSteps(a){
           'Sett i kjøleskap'
         ],
         why:WHY.fk,
-        tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
+        tip:TIP.intoFridge},
       {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
         desc:`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}. Ikke åpne boksene.`,
         substeps:[
           `La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}`,
           'Ikke åpne boksene'
         ],
-        why:WHY.fk},
+        why:WHY.fk,
+        tip:TIP.coldRise},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
         desc:'Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. 4 timer før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.',
         substeps:[
@@ -1522,7 +1539,7 @@ function rawSteps(a){
           'Ikke åpne boksene ennå'
         ],
         why:WHY.tu,
-        tip:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.'},
+        tip:TIP.benchTemper},
       {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:oT(tp)}
     ];
   }
@@ -1632,7 +1649,7 @@ function rawSteps(a){
         ],
         why:'Poolishen har allerede fermentert halvparten av melet og bidrar med mye av smak- og aromautviklingen — resten inkorporeres effektivt uansett metode.',
         tip:'Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(mixAt,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rt} min ved ${S.temp}°C`],why:rtW(rt)},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(mixAt,20),dur:rt,passive:true,desc:`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rt} min ved ${S.temp}°C`],why:rtW(rt),tip:TIP.roomRise},
       ...tailSteps(aM(mixAt,20+rt))
     ];
   }
@@ -1666,7 +1683,7 @@ function rawSteps(a){
         ],
         why:'Bigaen er stiv — den løses opp gradvis uansett metode. Deigen kan virke tung i starten, det er normalt.',
         tip:'Deigtemperatur etter elting: 22–24°C. Bruk termometer.'},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rtB} min ved ${S.temp}°C`],why:rtW(rtB)},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,substeps:[`Dekk til`,`La heve ca. ${rtB} min ved ${S.temp}°C`],why:rtW(rtB),tip:TIP.roomRise},
       ...tailSteps(aM(rdy,20+rtB))
     ];
   }
@@ -1704,7 +1721,7 @@ function rawSteps(a){
         ],
         why:'Halvparten av oppskriftens mel og vann fermenterer for seg selv i mange timer før resten av deigen i det hele tatt blandes — poolishen bygger opp mesteparten av smaken.',
         tip:'La stå ved 18–21°C.'},
-      {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:'La stå i romtemperatur i 12 timer.',substeps:['La stå urørt i romtemperatur i 12 timer']},
+      {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:'La stå i romtemperatur i 12 timer.',substeps:['La stå urørt i romtemperatur i 12 timer'],why:WHY.pl,tip:TIP.poolishFerment},
       {title:'Poolish kjøles ned',loc:'kjol',at:chillAt,dur:0,
         desc:'Sett poolishen i kjøleskapet for nedkjøling.',
         substeps:['Sett poolishen i kjøleskapet'],
@@ -1737,7 +1754,8 @@ function rawSteps(a){
       {title:'Kjøleskapsheving (udelt)',loc:'kjol',at:coldBulkStart,dur:COLDBULK,passive:true,
         desc:'Hele deigen kjøleskapheves samlet, udelt — deles i emner først etterpå.',
         substeps:['La hele deigen stå samlet, udelt, i kjøleskapet'],
-        why:'Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.'},
+        why:'Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.',
+        tip:TIP.coldRise},
       {title:'Del i emner',loc:'benk',at:divideAt,dur:15,
         desc:'Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.',
         needs:['📦 boks/skål per emne', '🫒 litt olje'],
@@ -1812,7 +1830,7 @@ function hurtigSteps(anchor){
         :S.kjokkenmaskin==='manuell'
         ?'Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.'
         :'Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.'},
-    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,substeps:[`Dekk tett`,`Hev ved ${S.temp}°C i ca. ${ba} min`],why:rtW(ba)},
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,substeps:[`Dekk tett`,`Hev ved ${S.temp}°C i ca. ${ba} min`],why:rtW(ba),tip:TIP.roomRise},
     {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,needs:[`📦 ${p.count} emner`],substeps:[`Del i ${p.count} emner à ${p.perPizza}g`,'Rund godt — ikke kjevle, strekk for hånd senere'],tip:'Ikke kjevle — strekk for hånd.'},
     {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,substeps:[`Etterhev ${afm} min, tildekket`,`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`],why:'Gluten slapper av etter forming.'},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,substeps:[`Strekk/press emnet ut etter pizzatypens teknikk`,`Ha på saus, ost og topping`,`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`],
@@ -1855,14 +1873,15 @@ function kveldSteps(anchor){
         'Sett rett i kjøleskap'
       ],
       why:'Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.',
-      tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
+      tip:TIP.intoFridge},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
       desc:`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,
       substeps:[
         `La emnene stå urørt i kjøleskapet i ca. ${kh} timer`,
         'Ikke åpne boksene'
       ],
-      why:'Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.'},
+      why:'Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.',
+      tip:TIP.coldRise},
     {title:'Ta ut og temperer',loc:'rom',at:temperAt,dur:TEMPER_MIN,passive:true,
       desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return `Ta emnene ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`;})(),
       substeps:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return [
@@ -1870,7 +1889,8 @@ function kveldSteps(anchor){
         `La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'}`,
         'Ikke rør dem før du skal strekke og steke'
       ];})(),
-      why:'Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.'},
+      why:'Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.',
+      tip:TIP.benchTemper},
     {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),substeps:bakeSubsteps(S.type),why:WHY.st,tip:oT(S.type)}
   ];
   return {ya,steps};
