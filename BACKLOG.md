@@ -180,12 +180,18 @@ et mørkt kjøkken får ikke mørkt uten å også få den smale mobil-layouten. 
 ekte tema-preferanse (persistert som `pizzaLayout`) + `prefers-color-scheme`-default.
 Forno-tokenene finnes; det meste er å re-scope selektoren.
 
-### F5. Live «neste steg om X» / nåværende-steg-spotlight i appen
-Tidsplanen regner allerede ut `curIdx` og `nextIdx` (`1846–1856`), men ingenting
-teller ned eller løfter fram «hva gjør jeg nå/neste» uten å scrolle hele Tidsplan.
-Siden produktet ER en tidsplan, er en kompakt live-stripe («Neste: Ta ut av
-kjøleskap — om 3 t 20 min», ev. med Notification API) en naturlig utvidelse. I dag
-er eneste tidsnudge ICS-eksport med 10-min-varsler (`5220`).
+### F5. Live «neste steg om X» / nåværende-steg-spotlight i appen ✅ GJORT (v6.14, nivå 1–2)
+> `nextStepStripeHTML()` prependes i `renderSteps` (delt PC+mobil), viser neste
+> fremtidige ikke-avhakede steg + nedtelling («👉 Neste: X · om 3 t 20 min»).
+> `startNextStepTicker()` oppdaterer nedtellingen hvert 30. sek uten å bygge om
+> planen, og trigger én full render når tiden passerer et stegskille. Trykk på
+> stripa scroller til neste steg (`scrollToNextStep`). «Alle steg gjort» når alt
+> er avhaket; «på tide» når du er på etterskudd. Testet i
+> `f5_next_step_stripe_shows_upcoming_step_and_countdown`.
+>
+> **Gjenstår (nivå 3):** push-varsling via Notification API når neste steg nærmer
+> seg (krever tillatelse, ulik oppførsel iOS/Android — bevisst utsatt). I dag er
+> eneste tidsnudge fortsatt ICS-eksport med 10-min-varsler.
 
 ### F6. Fullfør den halvbygde PWA-en (offline) ✅ GJORT (commit `91d41ec`)
 > Manifest flyttet til site-roten (var 404), service worker lagt til (nettverk-

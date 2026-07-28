@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.14',
+    d: 'juli 2026',
+    changes: [
+      'Ny <b>«👉 Neste»-stripe</b> øverst i tidsplanen: den viser hva neste steg er og teller ned til det — «Ta ut av kjøleskap · om 3 t 20 min» — så du slipper å scrolle gjennom hele planen for å se hva som skjer nå. Nedtellingen oppdaterer seg selv, og et trykk på stripa hopper rett til neste steg. Står du midt i en lang heving, peker den på slutten av hevingen; er alt gjort, sier den fra. (Er du på etterskudd og har steg som skulle vært gjort, viser den «på tide».)'
+    ]
+  },
+  {
     v: '6.13',
     d: 'juli 2026',
     changes: [
