@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.12',
+    d: 'juli 2026',
+    changes: [
+      'Rettet en feil der avhaking kunne bli stående på utdatert innhold: bytter du <b>ovntype</b> eller <b>gjærtype</b> mens du har haket av steg, nullstilles avhakingen nå — på samme måte som ved bytte av pizzatype eller metode. Før kunne f.eks. «Varm pizzaovnen til 430°C» stå avhaket selv etter at du byttet til vanlig ovn (som sier 250°C), og gjær-chips beholde gammel grammengde. Gjelder både PC og mobil. (Melmengde/hydrering/temperatur/kjøletid nullstiller bevisst <b>ikke</b> — de justeres med glidebrytere som beveger seg kontinuerlig, og en nullstilling der ville rive vekk flere dagers avhaking midt i et dra.)'
+    ]
+  },
+  {
     v: '6.11',
     d: 'juli 2026',
     changes: [

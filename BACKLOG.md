@@ -81,7 +81,18 @@ Regresjon fra v6.01 «gjær-kickstart».
   temperaturen der (og vurder om 40–43 °C er riktig mål, eller om DDT skal styre
   kickstart-vannet).
 
-### 5. Avhaking blir stående ved endring av gjær/ovn/mel/hydrering/temp/kjøl
+### 5. Avhaking blir stående ved endring av gjær/ovn/mel/hydrering/temp/kjøl ✅ DELVIS FIKSET (v6.12)
+> **Fikset for de diskrete bryterne:** `oven` og `gjaer` er lagt til i den nye
+> `PROGRESS_RESETTING_FIELDS`-mengden, som både `pgrp` (PC) og `mobPillGroup`
+> (mobil) nå sjekker i stedet for en hardkodet `key==='type'`. Regresjonstesten
+> `checkbox_progress_clears_on_content_changing_fields_only` vokter kontrakten
+> (oven/gjaer nullstiller; kjøkkenmaskin gjør det bevisst ikke).
+>
+> **Bevisst IKKE fikset:** `mel`/`hydro`/`temp`/`cold` styres av kontinuerlige
+> `oninput`-slidere — å nullstille der ville rive vekk flere dagers avhaking midt
+> i ett enkelt dra. Stale tall på haket innhold er en akseptert begrensning av den
+> indeksbaserte modellen; en ekte fiks krever innholdsbasert nøkling (eget punkt).
+
 Samme klasse som v6.01-feilen, men bare halvfikset.
 - `clearStepProgress()` kalles kun ved endring av `type` og `method`
   (`932`, `943`, `4273`, `4319`). Men avhaking er indeksbasert over innhold som

@@ -1342,6 +1342,10 @@ def run_behavioral_tests(page):
     # den ALLEREDE valgte verdien IKKE tommer noe (ingen falsk nullstilling),
     # mens et faktisk bytte av type ELLER metode tommer alle tre tilstander,
     # bade pa mobil og PC.
+    # v6.12 (BACKLOG #5): utvidet -- oven og gjaer skriver ogsaa om steg-INNHOLD
+    # (steketemp/-tid, gjaertype/-mengde), saa endring av dem nullstiller na ogsaa
+    # avhaking. kjokkenmaskin er BEVISST utelatt (samme logiske eltesteg, kun
+    # teknikk-ordlyd) og skal fortsatt IKKE nullstille.
     r31 = page.evaluate("""() => {
       resetTestState();
       mobShowTab('settings'); wizGoto(1);
@@ -1364,14 +1368,42 @@ def run_behavioral_tests(page):
       kveldCard.click();
       const afterMethodChange = { c: [...window._checked], s: [...window._checkedSubsteps], method: S.method };
 
-      return { afterSameClick, afterTypeChange, afterMethodChange };
+      // oven: bytte av ovntype nullstiller (steketemp/-tid endres i steketrinnet).
+      wizGoto(1);
+      window._checked = new Set([0,1]); window._checkedSubsteps = new Set(['2-0']);
+      const otherOven = Array.from(document.querySelectorAll('#mob-govn .pill')).find(p => !p.classList.contains('on'));
+      otherOven.click();
+      const afterOvenChange = { c: [...window._checked], s: [...window._checkedSubsteps] };
+
+      // oven: klikk paa allerede valgt ovntype nullstiller IKKE.
+      window._checked = new Set([3]);
+      document.querySelector('#mob-govn .pill.on').click();
+      const afterSameOven = { c: [...window._checked] };
+
+      // gjaer: bytte av gjaertype nullstiller (grammengde/type endres i gjaer-stegene).
+      window._checked = new Set([0]); window._checkedIngredients = new Set(['x']);
+      const otherGjaer = Array.from(document.querySelectorAll('#mob-ggj .pill')).find(p => !p.classList.contains('on'));
+      otherGjaer.click();
+      const afterGjaerChange = { c: [...window._checked], i: [...window._checkedIngredients] };
+
+      // kjokkenmaskin: BEVISST utelatt -- endring skal IKKE nullstille.
+      window._checked = new Set([4,5]);
+      const otherKm = Array.from(document.querySelectorAll('#mob-gkm .pill')).find(p => !p.classList.contains('on'));
+      otherKm.click();
+      const afterKmChange = { c: [...window._checked] };
+
+      return { afterSameClick, afterTypeChange, afterMethodChange, afterOvenChange, afterSameOven, afterGjaerChange, afterKmChange };
     }""")
     ok31 = (
       r31['afterSameClick']['c'] == [0,1] and r31['afterSameClick']['i'] == ['a','b'] and r31['afterSameClick']['s'] == ['0-0'] and
       r31['afterTypeChange']['c'] == [] and r31['afterTypeChange']['i'] == [] and r31['afterTypeChange']['s'] == [] and
-      r31['afterMethodChange']['c'] == [] and r31['afterMethodChange']['s'] == [] and r31['afterMethodChange']['method'] == 'kveld'
+      r31['afterMethodChange']['c'] == [] and r31['afterMethodChange']['s'] == [] and r31['afterMethodChange']['method'] == 'kveld' and
+      r31['afterOvenChange']['c'] == [] and r31['afterOvenChange']['s'] == [] and
+      r31['afterSameOven']['c'] == [3] and
+      r31['afterGjaerChange']['c'] == [] and r31['afterGjaerChange']['i'] == [] and
+      r31['afterKmChange']['c'] == [4,5]
     )
-    results.append(('checkbox_progress_clears_on_real_type_or_method_change_only', ok31, r31))
+    results.append(('checkbox_progress_clears_on_content_changing_fields_only', ok31, r31))
 
     # v6.01: Hurtigdeig fikk et nytt forste steg (gjaer-kickstart: lunkent
     # vann + honning, ~5 min for melet tilsettes) og en semulegryn-tips paa
