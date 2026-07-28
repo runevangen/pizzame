@@ -192,7 +192,7 @@ const GUIDE = [
         '<b>🍽️ Deiger</b>-fanen er delt i <b>Aktive</b> og <b>Ferdige</b>.',
         '<b>Åpne</b> laster deigen inn igjen og hopper til Tidsplan. <b>Ferdig</b> åpner terningkast-vurderingen.',
         '<b>★</b>-stjerna gjør en deig til favoritt (nås også fra ☰ Meny → «★ Min favoritt»).',
-        'Lagret sammen med deigen: hele oppsettet, tidspunkt, avhakede steg og ingredienser, og hvem som lagret.'
+        'Lagret sammen med deigen: hele oppsettet, tidspunkt, avhakede steg, understeg og ingredienser, og hvem som lagret.'
       ]},
       {t:'sub', x:'«🍕 Hvordan ble den?»'},
       {t:'p', x:'Når du markerer en deig som ferdig, kan du gi den <b>terningkast (★)</b>, legge til et <b>📷 bilde</b> og et notat. Slik bygger du en liten historikk over hva som funket — perfekt til å gjenta suksessene.'}

@@ -749,6 +749,29 @@ const DOUGH_FIELDS=['type','method','mel','hydro','temp','gjaer','kjokkenmaskin'
 function isAtDefaultConfig(){
   return DOUGH_FIELDS.every(k=>S[k]===DEF[k]);
 }
+// v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett ved en EKTE reload. Deig-
+// konfigurasjonen S ble aldri lagret, så «Fortsetter: X · Y»-banneret virket bare
+// under SPA-navigasjon i økten — etter en sidelast var oppsettet borte. Persister
+// oppsettet (alt i DEF unntatt rene visningspreferanser) til localStorage og
+// rehydrer ved last. Kun for USAGDE oppsett: en åpnet, lagret deig eier sin egen
+// tilstand via openBake, så vi rører ikke den når _activeDeigId er satt.
+const SETUP_FIELDS = Object.keys(DEF).filter(k=>k!=='showHelp' && k!=='showSubsteps');
+function persistSetup(){
+  if(window._activeDeigId) return;
+  try{
+    if(isAtDefaultConfig() && S.mode===DEF.mode){ localStorage.removeItem('pizzaSetup'); return; }
+    const out={}; SETUP_FIELDS.forEach(k=>{ out[k]=S[k]; });
+    localStorage.setItem('pizzaSetup', JSON.stringify(out));
+  }catch(e){ /* stille — persistering er ikke kritisk */ }
+}
+function restoreSetup(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('pizzaSetup'));
+    if(!saved || typeof saved!=='object') return false;
+    SETUP_FIELDS.forEach(k=>{ if(saved[k]!==undefined) S[k]=saved[k]; });
+    return true;
+  }catch(e){ return false; }
+}
 // v6.01: REELL BUG funnet av Rune og verifisert 26.07 — avkrysning (steg,
 // ingredienser, understeg) er indeksbasert ("steg 0"), ikke innholdsbasert.
 // Bytter du pizzatype eller metode, blir det andre steg på samme indekser,
@@ -1064,6 +1087,7 @@ function setMode(m){
 function doReset(){
   Object.assign(S,DEF);
   window._activeDeigId=null;window._activeDeigName=null;
+  try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
   window._checkedIngredients=new Set();
   window._checkedSubsteps=new Set();
@@ -2110,6 +2134,17 @@ async function persistCheckedIngredients(){
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({checkedIngredients: [...window._checkedIngredients]})
+    });
+  }catch(e){ /* stille */ }
+}
+async function persistCheckedSubsteps(){
+  const id = window._activeDeigId;
+  if(!id) return; // Ulagret oppsett: avhaking lever kun i denne økten
+  try{
+    await fetch('/api/bakes/'+id, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({checkedSubsteps: [...window._checkedSubsteps]})
     });
   }catch(e){ /* stille */ }
 }
@@ -3661,6 +3696,7 @@ function deleteFeedbackConfirm(id){
 }
 
 function gen(){
+  persistSetup();
   if(S.type!=='ingenelting' && S.method==='hurtig'){hurtigRes();return;}
   if(S.type!=='ingenelting' && S.method==='kveld'){kveldRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
@@ -4348,9 +4384,19 @@ async function loadConfigThenStart(){
     document.getElementById('loading-overlay').style.display = 'none';
     checkAuthOnLoad();
     initAdvancedState();
+    // v6.13 (BACKLOG F2): gjenopprett husket understeg-visning før første render.
+    try{ if(localStorage.getItem('pizzaSubsteps')==='1') S.showSubsteps=true; }catch(e){}
+    // v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett før layout/render, så
+    // «Fortsetter»-banneret og alle kontroller reflekterer det du hadde.
+    const restored = restoreSetup();
     let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
     const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
     setLayout(targetLayout);
+    if(restored){
+      // Speil oppsettet inn i piller/glidebrytere/modus — samme sync openBake bruker.
+      if(targetLayout==='mob'){ syncMobControls(); mobSetMode(S.mode); }
+      else { syncDesktopControls(); setMode(S.mode); }
+    }
     // Innstillinger-fanen er allerede markert aktiv i selve HTML-en fra start (statisk klasse),
     // så mobShowTab('settings') kalles aldri automatisk ved første sideinnlasting — uten dette
     // kallet her ville wizarden aldri vist seg før man bytter fane frem og tilbake manuelt.
@@ -5022,9 +5068,9 @@ function substepToggleHTML(where){
   }
   if(where==='mob'){
     const btnStyle = 'width:100%;text-align:left;padding:8px 10px;border:1px solid var(--forno-border,#e0ddd8);border-radius:8px;background:var(--forno-bg-raised,#fff);color:var(--forno-text,#3A3A3C);font-size:11.5px;font-weight:600;cursor:pointer;margin:0 .9rem .6rem;width:calc(100% - 1.8rem)';
-    return `<div style="padding:.6rem .9rem 0"><button onclick="toggleSubsteps()" style="${btnStyle}">${on?'📋 Understeg PÅ — trykk for gammel visning':'📋 Prøv understeg (utprøving, kan slås av igjen)'}</button></div>`;
+    return `<div style="padding:.6rem .9rem 0"><button onclick="toggleSubsteps()" style="${btnStyle}">${on?'📋 Understeg PÅ — trykk for å skjule':'📋 Vis understeg'}</button></div>`;
   }
-  return `<button class="act-btn act-btn-sec" id="substep-toggle" onclick="toggleSubsteps()" title="Utprøvende: nummererte understeg med avhaking i stedet for avsnittstekst">${on?'📋 Understeg PÅ':'📋 Prøv understeg'}</button>`;
+  return `<button class="act-btn act-btn-sec" id="substep-toggle" onclick="toggleSubsteps()" title="Nummererte understeg med avhaking i stedet for avsnittstekst">${on?'📋 Understeg PÅ':'📋 Vis understeg'}</button>`;
 }
 // Tips/Hvorfor-bryteren fantes fra før KUN på PC (toggleHelpFromPlan/
 // actionGroupHTML). Denne gir den samme jobben et sted på mobil også, i den
@@ -5036,17 +5082,23 @@ function tipsToggleHTML(where){
 }
 function toggleSubsteps(){
   S.showSubsteps=!S.showSubsteps;
+  // v6.13 (BACKLOG F2): understeg er en ferdig, fullverdig visningsmodus — husk
+  // valget over reload (som layout/skriftstørrelse). Egen device-preferanse, ikke
+  // knyttet til deigen. showHelp forblir bevisst uendret (nullstilles ved reload).
+  try{ localStorage.setItem('pizzaSubsteps', S.showSubsteps?'1':'0'); }catch(e){}
   const mobEl=document.getElementById('mob-layout');
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
 }
 window._checkedSubsteps = new Set();
-// Kun i minnet så lenge dette er en utprøving bak bryter — ikke lagret til
-// server ennå. Blir den værende, er persistering (som checkedSteps) naturlig
-// neste steg.
+// v6.13 (BACKLOG F1): understeg-avhaking persisteres nå til server per aktiv
+// deig — samme mønster som checkedSteps/checkedIngredients — og lagres/hentes
+// sammen med deigen (saveBake/openBake). Ulagret oppsett lever fortsatt kun i
+// økten (persistCheckedSubsteps no-opper uten _activeDeigId).
 function toggleSubstepDone(stepIdx, subIdx){
   const key = stepIdx+'-'+subIdx;
   if(window._checkedSubsteps.has(key)) window._checkedSubsteps.delete(key);
   else window._checkedSubsteps.add(key);
+  persistCheckedSubsteps();
   const mobEl=document.getElementById('mob-layout');
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
 }
@@ -5084,6 +5136,7 @@ function renderWizStatusBar(){
 function mobGen(){
   const mobEl=document.getElementById('mob-layout');
   if(!mobEl||!mobEl.classList.contains('active'))return;
+  persistSetup();
   renderWizStatusBar();
   try{ renderReturnBar(); }catch(e){}
   if(window._wizStep===3){ try{ wizCheckRender(); }catch(e){} }
@@ -5298,7 +5351,7 @@ async function saveBake(){
       res = await fetch('/api/bakes', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])], savedBy: currentUserName() })
+        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])], checkedSubsteps: [...(window._checkedSubsteps||[])], savedBy: currentUserName() })
       });
     }
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -5496,6 +5549,7 @@ function openBake(id){
   window._activeDeigName = b.name;
   window._checked = new Set(Array.isArray(b.checkedSteps) ? b.checkedSteps : []);
   window._checkedIngredients = new Set(Array.isArray(b.checkedIngredients) ? b.checkedIngredients : []);
+  window._checkedSubsteps = new Set(Array.isArray(b.checkedSubsteps) ? b.checkedSubsteps : []);
   syncSaveBakeLabel();
   document.body.classList.remove('pre-interact');
   Object.assign(S, b.config);

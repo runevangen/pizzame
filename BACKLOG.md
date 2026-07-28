@@ -148,28 +148,30 @@ Rangert etter hvor godt de treffer produktets retning (changelog v5.49–v6.01):
 å tette dekningshull på tvers av alle 7 metoder, stramme årsak→virkning, og
 redusere friksjon i den tidsstyrte kjøkkenflyten.
 
-### F1. Husk avhaking av understeg (økt → server + inn i lagret deig)
-Understeg-avhaking lever kun i `window._checkedSubsteps` i minnet (`4799–4808`)
-og forsvinner ved reload; den blir heller ikke med når en deig lagres (`saveBake`
-sender bare `checkedSteps`/`checkedIngredients`, `5058`). Forfatteren har allerede
-flagget dette (v5.96: «blir ikke husket når du laster siden på nytt»; kommentar
-`4801` kaller persistering «naturlig neste steg»). Hovedsteg og ingredienser
-persisteres allerede per bruker til server (`1995–2006`) — understeg er den eneste
-som mangler.
+### F1. Husk avhaking av understeg (økt → server + inn i lagret deig) ✅ GJORT (v6.13)
+> `persistCheckedSubsteps()` PATCHer nå `checkedSubsteps` per aktiv deig (samme
+> mønster som `checkedSteps`/`checkedIngredients`), kalt fra `toggleSubstepDone`.
+> `saveBake` sender `checkedSubsteps` i POST, `openBake` hydrerer settet igjen, og
+> `bakes.js` lagrer feltet (POST + PATCH, cap 200 nøkler). Testet i
+> `substep_progress_persists_and_view_is_remembered` (load-veien via openBake).
 
-### F2. Gjør «Understeg» til en fullverdig, husket modus
-Bryteren kaller seg fortsatt forsøk: «📋 Prøv understeg (utprøving, kan slås av
-igjen)» (`4782`), men v5.99 fullførte dekning på alle metoder + selve steketrinnet,
-og v6.00 flyttet den til statuslinjen og fikset mobil. Funksjonen er ferdig;
-rammingen henger etter. Dropp «utprøving»-ordlyden og husk `S.showSubsteps` over
-reload (nullstilles i dag, som `showHelp`).
+### F2. Gjør «Understeg» til en fullverdig, husket modus ✅ GJORT (v6.13)
+> «utprøving»-ordlyden fjernet (knappen heter nå «📋 Vis understeg»), og
+> `S.showSubsteps` huskes over reload via `localStorage['pizzaSubsteps']` —
+> skrevet i `toggleSubsteps`, rehydrert i `loadConfigThenStart`s `finish()` før
+> første render. `showHelp` forblir bevisst uendret (nullstilles ved reload).
+> Samme test vokter localStorage-persisteringen og at etiketten ikke lenger
+> rammer det som en «utprøving».
 
-### F3. Gjenopprett påbegynt oppsett ved reload
-Deig-konfigurasjonen `S` persisteres aldri til localStorage (kun font, layout,
-guide-sett og bruker gjør det — `1072`, `4184`). v6.01-banneret «Fortsetter: X · Y»
-(`4474`) virker bare under SPA-navigasjon i økten; etter en ekte reload er
-oppsettet borte og banneret kan ikke utløses. Persister `S` til localStorage og
-rehydrer ved last — da innfrir «Start ny deig»/«Fortsetter» sitt løfte.
+### F3. Gjenopprett påbegynt oppsett ved reload ✅ GJORT (v6.13)
+> `persistSetup()`/`restoreSetup()` lagrer oppsettet (alle `DEF`-felt unntatt
+> `showHelp`/`showSubsteps`) til `localStorage['pizzaSetup']`. Persisteres fra
+> `gen()`/`mobGen()`, men kun for usagde oppsett (`_activeDeigId` falsy) — en
+> åpnet, lagret deig eier sin egen tilstand via `openBake`. Rehydreres i
+> `loadConfigThenStart`s `finish()` før layout/render, deretter `syncDesktop/
+> MobControls` + `setMode` (samme sync openBake bruker), så «Fortsetter»-banneret
+> og alle kontroller reflekterer oppsettet. `doReset` rydder nøkkelen. Testet i
+> `setup_persists_and_restores_across_reload`.
 
 ### F4. Uavhengig mørk/lys-bryter (frikoblet fra layout)
 Hele «Forno» mørk palett er gated bak `body.mob-mode` (`50–152`) — mørk modus er
