@@ -351,7 +351,10 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .sidenav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11px;font-weight:600;color:#3A3A3C;background:#fff;border:1px solid #E5E5EA;border-radius:20px;cursor:pointer}
 .sidenav-item:hover{border-color:#1D9E75;color:#085041}
 .sidenav-item .cnt{background:#1D9E75;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px))}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
+/* Når en modal er åpen låses bakgrunns-scroll, så «vinduet bak» ikke kan scrolle
+   mens man blar i modalen (styres av syncModalScrollLock via en MutationObserver). */
+body.modal-open{overflow:hidden}
 .modal-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:85vh;max-height:85dvh;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);display:flex;flex-direction:column}
 body.mob-mode .modal-box{background:var(--forno-bg-raised);color:var(--forno-text)}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:max(.85rem,env(safe-area-inset-top,0px)) 1.1rem .85rem;border-bottom:1px solid #EDEDED;flex-shrink:0}
@@ -1195,6 +1198,20 @@ function syncModalMaxHeight(){
   });
 }
 window.addEventListener('resize', syncModalMaxHeight);
+// Låser bakgrunns-scroll mens en modal er åpen. Tidligere kunne man komme til å
+// scrolle hovedvinduet BAK modalen (f.eks. bak Feedback) når man bladde forbi
+// modalinnholdets kanter. Vi observerer style-endringer på alle .modal-overlay og
+// slår body.modal-open av/på ut fra om minst én modal faktisk vises.
+function syncModalScrollLock(){
+  const open = [...document.querySelectorAll('.modal-overlay')].some(m=>getComputedStyle(m).display!=='none');
+  document.body.classList.toggle('modal-open', open);
+}
+(function watchModalScrollLock(){
+  const overlays=document.querySelectorAll('.modal-overlay');
+  if(!overlays.length) return;
+  const obs=new MutationObserver(syncModalScrollLock);
+  overlays.forEach(m=>obs.observe(m,{attributes:true,attributeFilter:['style']}));
+})();
 // Måler fanelinjas FAKTISKE, rendrede høyde (ekte skjerm-piksler) og setter
 // knapperadens sticky-avstand ut fra det — i stedet for et antatt, hardkodet
 // 56px-tall. CSS sin "zoom" (brukt til skriftstørrelse-innstillingen) gjør at
@@ -3719,7 +3736,7 @@ async function loadFeedbackList(){
       const adminBtns = isAdmin ? `
             <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?'Merk som ulest':'Merk som løst'}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
             <button onclick="deleteFeedbackConfirm('${it.id}')" title="Slett" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
-      return `<div style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
+      return `<div id="fbitem-${it.id}" style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
             <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
@@ -3765,9 +3782,18 @@ async function toggleFeedbackResolved(id, currentlyResolved){
 function deleteFeedbackConfirm(id){
   if(!window._adminPassword) return;
   if(!confirm('Slette denne tilbakemeldingen permanent?')) return;
-  fetch('/api/feedback/'+id, {method:'DELETE'}).catch(()=>{}).finally(()=>{
-    loadFeedbackList();
-  });
+  // Fjern kortet umiddelbart (optimistisk) så det ikke oppleves som treigt, og
+  // vis tom-tilstand hvis det var det siste. Sletter på serveren i bakgrunnen;
+  // ved feil hentes lista på nytt så visningen speiler serveren igjen.
+  const el = document.getElementById('fbitem-'+id);
+  if(el) el.remove();
+  const wrap = document.getElementById('feedback-list-wrap');
+  if(wrap && !wrap.querySelector('[id^="fbitem-"]')){
+    wrap.innerHTML = '<p style="color:var(--dyn-faint);font-size:12px">Ingen tilbakemeldinger ennå.</p>';
+  }
+  fetch('/api/feedback/'+id, {method:'DELETE'}).then(res=>{
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }).catch(()=>{ loadFeedbackList(); });
 }
 
 function gen(){
@@ -4133,7 +4159,7 @@ function renderAdminModal(users){
   body.innerHTML = users.map(u=>{
     let created=''; try{ created=fDT(new Date(u.createdAt)); }catch(e){}
     let lastLogin=''; try{ lastLogin=fDT(new Date(u.lastLoginAt)); }catch(e){}
-    return `<div class="admin-card">
+    return `<div class="admin-card" id="adminuser-${u.id}">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <div style="min-width:0">
           <div class="admin-uname">${escH(u.name)}</div>
@@ -4162,11 +4188,18 @@ async function adminResetPin(id, name){
 }
 async function adminDeleteUser(id, name){
   if(!confirm('Slette brukeren "'+name+'" permanent?')) return;
+  // Fjern kortet umiddelbart (optimistisk) så sletting ikke oppleves som treig,
+  // og vis tom-tilstand hvis det var siste bruker. Ved feil hentes lista på nytt.
+  const el = document.getElementById('adminuser-'+id);
+  if(el) el.remove();
+  const body = document.getElementById('admin-modal-body');
+  if(body && !body.querySelector('.admin-card')){
+    body.innerHTML = '<p style="color:#999;font-size:13px">Ingen registrerte brukere ennå.</p>';
+  }
   try{
     const res = await fetch('/api/users/admin/'+id+'?password='+encodeURIComponent(window._adminPassword), {method:'DELETE'});
-    if(!res.ok){ alert('Kunne ikke slette bruker.'); return; }
-    loadAdminView(window._adminPassword);
-  }catch(e){ alert('Fikk ikke kontakt med serveren.'); }
+    if(!res.ok){ alert('Kunne ikke slette bruker.'); loadAdminView(window._adminPassword); }
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); loadAdminView(window._adminPassword); }
 }
 function closeAdminModal(){
   document.getElementById('admin-modal').style.display = 'none';
