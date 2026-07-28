@@ -741,6 +741,60 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 <script src="guide.js"></script>
 <script>
 const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',showHelp:true,showSubsteps:false};
+
+// ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
+// Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
+// VISNINGS-lag: en enhets-post-prosessor på ferdig-rendret tekst + et t()-oppslag
+// for UI-krom + en display-oversettelse av steg-titler. Standard = no/metric, så
+// eksisterende utdata (og baseline) er uendret.
+window._lang  = (()=>{ try{ return localStorage.getItem('pizzaLang')||'no'; }catch(e){ return 'no'; } })();
+window._units = (()=>{ try{ return localStorage.getItem('pizzaUnits')||'metric'; }catch(e){ return 'metric'; } })();
+function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
+function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
+function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
+// Enhets-post-prosessor: konverterer ALLE °C og gram i en ferdig tekst-blokk til
+// °F/oz på én gang — «billig-trikset». Kjøres kun på plan-stegtekst (ikke attributter).
+function localizeUnits(html){
+  if(window._units!=='imperial') return html;
+  html = html.replace(/(\d+)\s*[–-]\s*(\d+)\s*°C/g,(m,a,b)=>Math.round(a*9/5+32)+'–'+Math.round(b*9/5+32)+'°F');
+  html = html.replace(/(\d+(?:[.,]\d+)?)\s*°C/g,(m,a)=>Math.round(parseFloat(a.replace(',','.'))*9/5+32)+'°F');
+  html = html.replace(/(\d+)\s*[–-]\s*(\d+)\s*g\b/g,(m,a,b)=>_oz(a)+'–'+_oz(b));
+  html = html.replace(/(\d+(?:[.,]\d+)?)\s*g\b/g,(m,a)=>_oz(a));
+  return html;
+}
+// UI-krom-oversettelse (Tier A). Kun et representativt utvalg i PoC-en.
+const TXT = {
+  no:{ tab_settings:'Planlegging',tab_plan:'Tidsplan',tab_recipe:'Oppskrift',tab_notes:'Notater',tab_bakster:'Deiger',tab_tips:'Info',tab_beta:'Beta',
+       li_section:'Språk / Enheter',li_lang:'Språk',li_units:'Enheter',u_metric:'Metrisk (g · °C)',u_imperial:'Imperial (oz · °F)' },
+  en:{ tab_settings:'Planner',tab_plan:'Schedule',tab_recipe:'Recipe',tab_notes:'Notes',tab_bakster:'Doughs',tab_tips:'Info',tab_beta:'Beta',
+       li_section:'Language / Units',li_lang:'Language',li_units:'Units',u_metric:'Metric (g · °C)',u_imperial:'Imperial (oz · °F)' } };
+function t(key){ const l=window._lang||'no'; return (TXT[l]&&TXT[l][key]!=null)?TXT[l][key]:(TXT.no[key]||key); }
+// Display-oversettelse av steg-titler (rører IKKE step.title-objektet → baseline trygg).
+const TITLES_EN = {
+  'Væk gjæren (kickstart)':'Wake the yeast (kickstart)',
+  'Ankarsrum — bland deig raskt':'Ankarsrum — mix dough quickly',
+  'Kjøkkenmaskin — bland deig raskt':'Stand mixer — mix dough quickly',
+  'Bland og elt for hånd — raskt':'Mix and knead by hand — quick',
+  'Form emner':'Shape the balls',
+  'Ta ut av kjøleskap':'Take out of the fridge',
+  'Kjøleskapsheving':'Cold proof',
+  'Romtemperaturheving':'Room-temperature rise',
+  'Strekk og stek 🔥':'Stretch and bake 🔥',
+  '🧊 Kjøleskapspause':'🧊 Cold pause'
+};
+function dispTitle(t){ return (window._lang==='en' && TITLES_EN[t]) ? TITLES_EN[t] : t; }
+const TAB_EMOJI = {settings:'⚙️',plan:'📅',recipe:'🍕',notes:'📝',bakster:'🍽️',tips:'ℹ️',beta:'🧭'};
+function syncI18nUI(){
+  Object.keys(TAB_EMOJI).forEach(id=>{ const el=document.getElementById('mob-tab-'+id); if(el) el.innerHTML=`<span aria-hidden="true">${TAB_EMOJI[id]}</span>${t('tab_'+id)}`; });
+  const seg=(id,active)=>{ const el=document.getElementById(id); if(el) el.style.cssText=`flex:1;padding:8px;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;${active?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)'}`; };
+  const s=document.getElementById('mob-i18n-section'); if(s) s.textContent=t('li_section');
+  const ll=document.getElementById('mob-i18n-lang-lbl'); if(ll) ll.textContent=t('li_lang');
+  const ul=document.getElementById('mob-i18n-units-lbl'); if(ul) ul.textContent=t('li_units');
+  const um=document.getElementById('mob-u-metric'); if(um) um.textContent=t('u_metric');
+  const ui=document.getElementById('mob-u-imperial'); if(ui) ui.textContent=t('u_imperial');
+  seg('mob-l-no', window._lang==='no'); seg('mob-l-en', window._lang==='en');
+  seg('mob-u-metric', window._units==='metric'); seg('mob-u-imperial', window._units==='imperial');
+}
 // v6.01: kun feltene som faktisk definerer HVILKEN deig dette er — bevisst
 // IKKE showHelp/showSubsteps (visningspreferanser) eller mode (bare start/
 // slutt-retning på samme deig). Testet 26.07 før bygging: skiller korrekt
@@ -1003,6 +1057,7 @@ function applyMobTypeUI(){
   const ksub=g('mob-ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
   const psub=g('mob-psub');if(psub)psub.style.display=(!isIE&&S.method==='poolish')?'block':'none';
   syncPoolishPauseUI();
+  try{ syncI18nUI(); }catch(e){}
   const bsub=g('mob-bsub');if(bsub)bsub.style.display=(!isIE&&S.method==='biga')?'block':'none';
 }
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
@@ -2007,7 +2062,7 @@ function renderSteps(steps, mode='desktop'){
           <div class="${C.chk} ${done ? 'on' : ''}">${done ? '✓' : ''}</div>
           <div class="${C.num} ${i===curIdx ? '' : C.numDim}">${i+1}</div>
           <div style="flex:1;min-width:0">
-            <div class="${C.title}">${s.title}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}${conflictFlag}</div>
+            <div class="${C.title}">${dispTitle(s.title)}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}${conflictFlag}</div>
             <div class="${C.meta}">
               <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + (s.passive ? fmtDur(s.dur)+' venting' : s.dur+(isMob ? ' min' : ' min aktivt')) : ''}</div>
               ${locHtml}
@@ -4966,7 +5021,7 @@ function mobGetAnchor(p){
 
 
 function mobStepH(steps){
-  return renderSteps(steps, 'mobile');
+  return localizeUnits(renderSteps(steps, 'mobile'));
 }
 // v5.96: liten switch for å veksle mellom dagens avsnittstekst og en utprøvende
 // visning med nummererte understeg (+ avhaking på aktive steg). Rune vil teste
@@ -5856,6 +5911,19 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <!-- TAB: TEKNIKK -->
   <div class="mob-screen" id="mob-tips">
+
+    <div class="mob-section-lbl" id="mob-i18n-section">Språk / Enheter</div>
+    <div style="padding:.3rem 1rem 0;font-size:10px;color:var(--forno-text-faint)" id="mob-i18n-lang-lbl">Språk</div>
+    <div style="display:flex;gap:6px;padding:.3rem 1rem .3rem">
+      <div id="mob-l-no" onclick="setLang('no')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">Norsk</div>
+      <div id="mob-l-en" onclick="setLang('en')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">English</div>
+    </div>
+    <div style="padding:.3rem 1rem 0;font-size:10px;color:var(--forno-text-faint)" id="mob-i18n-units-lbl">Enheter</div>
+    <div style="display:flex;gap:6px;padding:.3rem 1rem .5rem">
+      <div id="mob-u-metric" onclick="setUnits('metric')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">Metrisk (g · °C)</div>
+      <div id="mob-u-imperial" onclick="setUnits('imperial')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">Imperial (oz · °F)</div>
+    </div>
+    <div style="padding:0 1rem .3rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4">PoC: enheter konverteres app-bredt i tidsplanen; språk dekker faner + steg-titler (Hurtigdeig). Resten av oppskriftsteksten er ennå ikke oversatt.</div>
 
     <div class="mob-section-lbl">Visning</div>
     <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.5rem 1rem .65rem">
