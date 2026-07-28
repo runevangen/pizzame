@@ -753,14 +753,25 @@ function isAtDefaultConfig(){
 // ingredienser, understeg) er indeksbasert ("steg 0"), ikke innholdsbasert.
 // Bytter du pizzatype eller metode, blir det andre steg på samme indekser,
 // men gamle avkrysninger henger igjen og vises feilaktig som haket av på
-// det nye innholdet. Kalles når type/metode FAKTISK endres (ikke ved klikk
-// på allerede valgt verdi, og ikke ved gjær/kjøkkenmaskin/ovn — de endrer
-// ordlyd, ikke stegstruktur).
+// det nye innholdet. Kalles når et deig-felt som skriver om stegenes INNHOLD
+// faktisk endres (ikke ved klikk på allerede valgt verdi).
 function clearStepProgress(){
   window._checked=new Set();
   window._checkedIngredients=new Set();
   window._checkedSubsteps=new Set();
 }
+// v6.12 (BACKLOG #5): felt hvis endring gjør indeksbasert avhaking utdatert
+// fordi de skriver om INNHOLDET i stegene, ikke bare en visningspreferanse:
+//   type  — bytter hele stegstrukturen
+//   oven  — bytter steketemp/-tid i steketrinnet (checket «Varm til 430°C»
+//           ville ellers bli stående når planen nå sier 250°C)
+//   gjaer — bytter gjærtype og grammengde i gjær-stegene/-chipsene
+// 'method' håndteres i sin egen kort-klikk-handler (mCards / mobil), ikke via pgrp.
+// BEVISST UTELATT: mel/hydro/temp/cold endrer også tall, men styres av
+// kontinuerlige oninput-slidere — å nullstille der ville rive vekk flere dagers
+// avhaking midt i ett enkelt dra. kjokkenmaskin utelatt: samme logiske eltesteg,
+// kun teknikk-ordlyd (i tråd med den opprinnelige v6.01-avgrensningen).
+const PROGRESS_RESETTING_FIELDS=new Set(['type','oven','gjaer']);
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
@@ -961,7 +972,7 @@ function pgrp(id,key,cb){
     p.onclick=()=>{
       const changed = S[key] !== p.dataset.v;
       S[key]=p.dataset.v;
-      if(changed && key==='type') clearStepProgress();
+      if(changed && PROGRESS_RESETTING_FIELDS.has(key)) clearStepProgress();
       pgrp(id,key,cb);
       if(cb)cb();
       schedNow();
@@ -1791,7 +1802,12 @@ function hurtigSteps(anchor){
   const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
   const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
   const tmp=S.oven==='pizza'?o.tp:o.tv;
-  const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60),p=pc();
+  // v6.12 (BACKLOG #6): begge gjæringsfasene skaleres med tf(). Bulk (ba) var
+  // temp-justert, men etterhevingen (afm) var det ikke — samme deigs to
+  // gjæringsfaser reagerte da ulikt på temperatur (fysisk feil), og ved ≠22°C
+  // summerte ikke bulk+etterheving lenger konsistent. Forming (0,25t) er et fast
+  // manuelt steg og skal IKKE skaleres — derfor ligger den utenfor tf()-faktoren.
+  const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60*tf()),p=pc();
   // v6.01: gjær-kickstart lagt til fra backloggen — rør gjæren i lunkent vann
   // med litt honning og la den boble noen minutter FØR mel tilsettes, i
   // stedet for at alt blandes i ett steg uten venting. Egen KICK_DUR lagt
@@ -4454,7 +4470,7 @@ function mobPillGroup(id,key){
     el.onclick=()=>{
       const changed = S[key] !== v;
       S[key]=v;
-      if(changed && key==='type') clearStepProgress();
+      if(changed && PROGRESS_RESETTING_FIELDS.has(key)) clearStepProgress();
       mobPillGroup(id,key);
       if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
       mobGen();
