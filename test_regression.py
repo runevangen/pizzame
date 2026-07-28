@@ -1172,6 +1172,43 @@ def run_behavioral_tests(page):
     )
     results.append(('substep_toggle_switches_view_and_old_view_is_unchanged', ok26, r26))
 
+    # v6.13 (BACKLOG F1/F2): understeg-avhaking huskes na -- lastes med lagret
+    # deig (openBake), og understeg-VISNINGEN huskes over reload (localStorage).
+    # Etiketten skal ikke lenger ramme dette som en "utproving".
+    r26b = page.evaluate("""() => {
+      resetTestState();
+      // F1 (load-vei): openBake hydrerer _checkedSubsteps fra den lagrede deigen.
+      window._bakesCache = [{ id:'bake_test_ff', name:'Test', status:'active',
+        config:{...S}, anchorMode:'start', anchorISO:new Date().toISOString(),
+        checkedSteps:[0,1], checkedIngredients:['Mel'], checkedSubsteps:['0-0','2-1'] }];
+      try{ openBake('bake_test_ff'); }catch(e){}
+      const loadedSubsteps = [...window._checkedSubsteps].sort();
+
+      // F2: toggleSubsteps husker valget i localStorage.
+      try{ localStorage.removeItem('pizzaSubsteps'); }catch(e){}
+      const before = !!S.showSubsteps;
+      toggleSubsteps();
+      let persisted=null; try{ persisted = localStorage.getItem('pizzaSubsteps'); }catch(e){}
+      const flagFlipped = !!S.showSubsteps !== before;
+
+      // Etiketten er ikke lenger "Prov"/"utproving".
+      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
+      gen();
+      const pcLabel = (document.querySelector('#substep-toggle')||{}).textContent || '';
+      document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
+
+      // rydd opp saa vi ikke lekker til andre tester
+      S.showSubsteps=false; window._activeDeigId=null; window._checkedSubsteps=new Set();
+      try{ localStorage.removeItem('pizzaSubsteps'); }catch(e){}
+      return { loadedSubsteps, persisted, flagFlipped, pcLabel };
+    }""")
+    ok26b = (
+      r26b['loadedSubsteps'] == ['0-0','2-1'] and
+      r26b['persisted'] == '1' and r26b['flagFlipped'] and
+      'Prøv' not in r26b['pcLabel'] and 'utprøving' not in r26b['pcLabel']
+    )
+    results.append(('substep_progress_persists_and_view_is_remembered', ok26b, r26b))
+
     # v5.98: REELL BUG (Rune) -- "jeg ser knappen, men ingenting skjer naar
     # jeg trykker". Ikke en klikk-feil: bryteren virket helt fint (label
     # byttet til PAA, S.showSubsteps flippet), men Kveldsdeig -- metoden Rune

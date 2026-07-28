@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.13',
+    d: 'juli 2026',
+    changes: [
+      'Understeg er nå en fullverdig, husket visning — ikke lenger merket som «utprøving». To ting huskes: (1) <b>Avhakingen av understeg</b> lagres nå sammen med deigen og synkes mellom enheter, akkurat som hovedsteg og ingredienser. Legger du fra deg telefonen midt i en flerdagers heving, står understegene du har haket av der når du kommer tilbake — også på en annen enhet. (2) <b>Selve understeg-visningen</b> huskes mellom økter: slår du den på, er den på neste gang du åpner appen (som skriftstørrelse og layout). Knappen heter nå «📋 Vis understeg».'
+    ]
+  },
+  {
     v: '6.12',
     d: 'juli 2026',
     changes: [
