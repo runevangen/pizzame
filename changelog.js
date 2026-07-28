@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.10',
+    d: 'juli 2026',
+    changes: [
+      'Gjæringsstegene forteller nå ikke bare <b>når</b>, men <b>hva du ser etter</b> — og hva du gjør hvis deigen henger etter eller er kommet for langt. Klokka er fortsatt planen, men tida stemmer sjelden på minuttet: kjøleskap og kjøkken varierer. Under «💡 Tips» får de kalde hevingene, romtemperatur-/bulk-hevingene, benktida og poolish-gjæringen et fast mønster med tegn å kjenne igjen (størrelse, bobler, lukt, fingertrykk) og et konkret «gi den mer tid» / «bak tidligere». Kald deig: fingertrykk-testen holdes bevisst ute — den er upålitelig når deigen er stiv av kulde. Gjelder alle metoder (Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania).'
+    ]
+  },
+  {
     v: '6.09',
     d: 'juli 2026',
     changes: [
