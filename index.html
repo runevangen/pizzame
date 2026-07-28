@@ -1356,7 +1356,7 @@ const LOC={
   benk:'<span class="sloc r">🔧 Kjøkkenbenk</span>'
 };
 const WHY={
-  fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
+  fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet. Kulda er også tilgivende — siden den bremser hele prosessen, tåler en kald deig litt mer gjær enn du skulle tro før det blir et problem.',
   tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 4°C, og 3–4 timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
@@ -1373,7 +1373,10 @@ const TIP={
   coldRise:'Sjekk gjennom lokket uten å åpne: emnene skal vokse til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut og bak litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.',
   roomRise:'Klar når den har vokst tydelig (ca. dobbelt), myk og luftig med bobler i overflaten. Fingertrykk-test: trykk lett med våt finger — gropa skal fjære sakte halvveis tilbake. Spretter den rett opp igjen, trenger den mer tid; blir gropa stående og deigen synker sammen, er den for langt fram — gå videre med en gang. Varmt kjøkken går raskere enn klokka antyder.',
   benchTemper:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. Fortsatt stive og kalde — gi dem mer tid før du former. Slappe og flyter utover i boksen — de er tempererte nok; form og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.',
-  poolishFerment:'Klar når overflaten er full av bobler, hvelver seg lett oppover og lukter friskt syrlig av gjær. Flat og stille ennå — la den stå lenger; kaldt kjøkken bremser den. Falt sammen i midten og lukter skarpt/alkoholaktig — den er gått litt for langt; bruk den likevel, men regn med noe mer syrlig smak.'
+  poolishFerment:'Klar når overflaten er full av bobler, hvelver seg lett oppover og lukter friskt syrlig av gjær. Flat og stille ennå — la den stå lenger; kaldt kjøkken bremser den. Falt sammen i midten og lukter skarpt/alkoholaktig — den er gått litt for langt; bruk den likevel, men regn med noe mer syrlig smak.',
+  // Praktisk "sett-i-kjøleskap"-tips (ikke "les deigen"): fysisk oppsett når emnene
+  // settes kaldt. Brukes på form→kjøleskap-stegene (tailSteps + Kveldsdeig).
+  intoFridge:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe. Ikke stable boksene tett i høyden; det kan blokkere luftsirkulasjonen og gi ujevn kjøling — spre dem litt utover. Og stol ikke blindt på tallet på kjøleskapshjulet: 1–5-skalaene varierer mellom merker, så har du et termometer, sjekk at det ligger rundt 2–5°C.'
 };
 // Kort "hvorfor"-forklaring til den dynamiske boksen under metodevalg-kortene
 // (wizardens Metode-steg, v5.70). Poolish/Biga gjenbruker WHY.pl/WHY.bi
@@ -1519,7 +1522,7 @@ function rawSteps(a){
           'Sett i kjøleskap'
         ],
         why:WHY.fk,
-        tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
+        tip:TIP.intoFridge},
       {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
         desc:`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}. Ikke åpne boksene.`,
         substeps:[
@@ -1870,7 +1873,7 @@ function kveldSteps(anchor){
         'Sett rett i kjøleskap'
       ],
       why:'Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.',
-      tip:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.'},
+      tip:TIP.intoFridge},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
       desc:`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,
       substeps:[

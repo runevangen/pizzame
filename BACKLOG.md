@@ -231,18 +231,15 @@ seg igjen i. Kilde: egen diagnose av kald gjæring.
   `benchTemper`/`poolishFerment`, med et fast «henger etter / på skjema / for
   langt fram»-mønster (hva du ser + hva du gjør) på alle gjæringssteg i alle
   metoder. Løser samtidig størstedelen av F11-hullet på gjæringsstegene.
-- ⬜ **Kjøleskapstemperatur er ikke til å stole på.** Kjøleskap kan holde en helt
-  annen temperatur enn antatt, og 1–5-skalaene er ikke universelle mellom merker.
-  Mål selv med et termometer — ikke stol på tallet på hjulet alene. *(Ikke tatt
-  inn ennå — passer i `WHY.fk` eller et eget kjøleskaps-tips.)*
-- ⬜ **Ikke stable boksene i høyden.** Stabling kan blokkere luftsirkulasjonen og gi
-  ustabil/ujevn kjøling. Spre boksene utover i stedet. *(Ikke tatt inn ennå.)*
-- ⬜ **Kald gjæring tåler mer gjær enn man tror.** Siden kulden bremser hele
-  prosessen, kan man bruke mer ekstra gjær enn ventet før det blir et problem.
-  *(Ikke tatt inn ennå.)*
+- ✅ **Kjøleskapstemperatur er ikke til å stole på.** 1–5-skalaene er ikke
+  universelle mellom merker — sjekk med termometer. **Innbygget v6.11** i
+  `TIP.intoFridge` på «Sett i kjøleskap»-steget.
+- ✅ **Ikke stable boksene i høyden.** Blokkerer luftsirkulasjonen, gir ujevn
+  kjøling. **Innbygget v6.11** i `TIP.intoFridge`.
+- ✅ **Kald gjæring tåler mer gjær enn man tror.** Kulda bremser alt, så deigen er
+  tilgivende. **Innbygget v6.11** — lagt til i `WHY.fk` (kjøleskapsheving).
 
-De tre gjenstående (temperatur/stabling/gjærmengde) hører hjemme i `WHY.fk`
-(kjøleskapsheving), ikke i `TIP.coldRise` som nå er full av «les deigen»-tegn.
+Hele seksjonen er nå tatt inn (v6.10 «les deigen»-tegn + v6.11 praktiske råd).
 
 ---
 
