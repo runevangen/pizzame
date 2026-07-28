@@ -1405,6 +1405,28 @@ def run_behavioral_tests(page):
     )
     results.append(('checkbox_progress_clears_on_content_changing_fields_only', ok31, r31))
 
+    # v6.12 (BACKLOG #6): Hurtigdeig -- begge gjaeringsfasene (bulk ba,
+    # etterheving afm) skal temp-skaleres med tf(). Foer var kun ba skalert;
+    # afm sto fast, saa samme deigs to faser reagerte ulikt paa temperatur.
+    # Ved 22C (tf=1) skal tallene vaere uendret (baseline urort); ved 28C
+    # (tf=0.5) skal BEGGE krympe med samme faktor.
+    r31b = page.evaluate("""() => {
+      resetTestState();
+      S.method='hurtig'; S.hurtigH=5; S.gjaer='torr';
+      const anchor = new Date(2026,0,1,12,0);
+      S.temp=22; const a22 = hurtigSteps(anchor);
+      S.temp=28; const a28 = hurtigSteps(anchor);
+      return { ba22:a22.ba, afm22:a22.afm, ba28:a28.ba, afm28:a28.afm };
+    }""")
+    # 22C: uendret fra formelen (ba=5*0.6*60=180, afm=(5-3-0.25)*60=105).
+    baseline22 = r31b['ba22'] == 180 and r31b['afm22'] == 105
+    # 28C: begge krympet (afm var lik afm22 foer fiksen -> naa mindre).
+    both_shrink = r31b['ba28'] < r31b['ba22'] and r31b['afm28'] < r31b['afm22']
+    # Samme skaleringsfaktor paa begge faser (innenfor avrunding).
+    consistent = abs(r31b['ba28']/r31b['ba22'] - r31b['afm28']/r31b['afm22']) < 0.03
+    ok31b = baseline22 and both_shrink and consistent
+    results.append(('hurtig_both_ferment_phases_scale_with_temperature', ok31b, r31b))
+
     # v6.01: Hurtigdeig fikk et nytt forste steg (gjaer-kickstart: lunkent
     # vann + honning, ~5 min for melet tilsettes) og en semulegryn-tips paa
     # stekesteget. Tester at kjeden fortsatt henger sammen uten hull/overlapp

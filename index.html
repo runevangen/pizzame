@@ -1802,7 +1802,12 @@ function hurtigSteps(anchor){
   const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
   const ya=S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
   const tmp=S.oven==='pizza'?o.tp:o.tv;
-  const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60),p=pc();
+  // v6.12 (BACKLOG #6): begge gjæringsfasene skaleres med tf(). Bulk (ba) var
+  // temp-justert, men etterhevingen (afm) var det ikke — samme deigs to
+  // gjæringsfaser reagerte da ulikt på temperatur (fysisk feil), og ved ≠22°C
+  // summerte ikke bulk+etterheving lenger konsistent. Forming (0,25t) er et fast
+  // manuelt steg og skal IKKE skaleres — derfor ligger den utenfor tf()-faktoren.
+  const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60*tf()),p=pc();
   // v6.01: gjær-kickstart lagt til fra backloggen — rør gjæren i lunkent vann
   // med litt honning og la den boble noen minutter FØR mel tilsettes, i
   // stedet for at alt blandes i ett steg uten venting. Egen KICK_DUR lagt

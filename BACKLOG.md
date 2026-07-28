@@ -106,7 +106,15 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
 - **Fiks:** kall `clearStepProgress()` (eller en mildere «reindekser»-variant)
   også ved `oven`/`gjaer`, og vurder om numeriske endringer skal nullstille.
 
-### 6. Hurtigdeig: totaltid drifter fra sin egen «· X timer»-etikett ved ≠22 °C **[baseline]**
+### 6. Hurtigdeig: totaltid drifter fra sin egen «· X timer»-etikett ved ≠22 °C ✅ FIKSET (v6.12) **[baseline]**
+> **Fikset:** `afm` skaleres nå med `tf()` på samme måte som `ba` (`1805`), så begge
+> gjæringsfasene reagerer likt på temperatur. Ved 22 °C (tf=1) er tallene uendret —
+> `baseline_results.json` rørt ikke — så fiksen slår kun inn ved ≠22 °C. Ny test
+> `hurtig_both_ferment_phases_scale_with_temperature` vokter at begge faser skalerer
+> med samme faktor. (`· X timer`-etiketten beholdt som nominelt opsjonsnavn, som i
+> velgeren og Kveldsdeig; den eksisterende «varmt kjøkken — sjekk underveis»-advarselen
+> dekker at reell veggklokke-tid avviker ved høy temp.)
+
 - `ba = Math.round(o.h*0.6*60*tf())` (`1723`) er temperaturskalert, men
   `afm = Math.round((o.h - o.h*0.6 - 0.25)*60)` er det **ikke**. Toppteksten
   skriver `${o.h} timer` (`3511` + mobil).
