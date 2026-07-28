@@ -852,6 +852,98 @@ function syncI18nUI(){
   seg('mob-u-metric', window._units==='metric'); seg('mob-u-imperial', window._units==='imperial');
   const note=document.getElementById('mob-i18n-note');
   if(note) note.textContent = window._lang==='en' ? t('ai_note') : 'Under utbygging: enheter konverteres app-bredt; engelsk dekker foreløpig faner, steg-titler og enheter — oppskriftsteksten oversettes metode for metode.';
+  try{ syncStaticI18nUI(); }catch(e){}
+}
+// Statisk mobil-HTML (wizard/innstillinger/beta-skjermene) er ikke templat-
+// strenger, så L() kan ikke inlines der. Denne setter tekst/attributter for de
+// rent statiske elementene ut fra gjeldende språk. Kjøres fra syncI18nUI (som
+// setLang kaller) og ved oppstart. Elementer som allerede oppdateres av annen
+// JS (verdivisninger, ppause-knappen, faner) rører vi ikke her.
+function syncStaticI18nUI(){
+  const st=(id,no,en)=>{ const el=document.getElementById(id); if(el) el.textContent=L(no,en); };
+  const at=(id,attr,no,en)=>{ const el=document.getElementById(id); if(el) el.setAttribute(attr,L(no,en)); };
+  // Topbar
+  at('mob-topbar-title','title','Åpne guiden','Open the guide');
+  at('mob-active-deiger-btn','title','Mine deiger','My doughs');
+  at('mob-pc-toggle','title','Bytt til PC-visning','Switch to desktop view');
+  // Plan / recipe / bakster placeholders
+  st('mob-plan-empty','Tilpass innstillingene og se tidsplanen her','Adjust the settings and see the schedule here');
+  st('mob-recipe-empty','Generer tidsplan for å se oppskriften','Generate a schedule to see the recipe');
+  st('mob-bakster-empty','Laster deiger…','Loading doughs…');
+  // Wizard header + step 1
+  st('wiz-header-hint','Gå fritt frem og tilbake — Tidsplan-fanen viser alltid resultatet av gjeldende valg.','Move freely back and forth — the Schedule tab always shows the result of the current choices.');
+  st('wiz-s1-h','Hvilken pizza?','Which pizza?');
+  st('wiz-s1-reset','Start ny','Start over');
+  st('wiz-s1-q1','Pizzatype','Pizza type');
+  st('wiz-s1-q2','Antall pizzaer','Number of pizzas');
+  st('mob-me','🍕 Planlagt steketid','🍕 Planned baking time');
+  st('mob-ms','▶ Jeg begynner nå','▶ I start now');
+  st('mob-bs-hint','Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.','The dough is planned from now. The baking time is calculated automatically and shown in the status bar once you have chosen a method.');
+  st('wiz-s1-next','Neste →','Next →');
+  // Wizard step 2
+  st('wiz-s2-h','Hvilken metode?','Which method?');
+  st('wiz-s2-sub','Langtidsdeig fungerer fint om du er usikker','Long-ferment dough works fine if you are unsure');
+  st('wiz-s2-q1','Metode','Method');
+  st('mob-psub-lbl','Poolish-varighet','Poolish duration');
+  st('mob-p-rt-btn','🌡️ Romtemperatur','🌡️ Room temperature');
+  st('mob-p-cold-btn','❄️ Kjøleskap','❄️ Fridge');
+  st('mob-p-cold-hint','Bland når det passer deg — 1,5t romtemperatur for å sette i gang gjæren, deretter kjøleskap. Mye friere tidspunkt enn ren romtemperatur.','Mix when it suits you — 1.5h at room temperature to get the yeast going, then the fridge. A much more flexible schedule than pure room temperature.');
+  st('mob-ppause-lbl','Poolish kjøleskapspause','Poolish cold pause');
+  st('mob-ppause-hint','Er tidene vanskelige å få til å gå opp? Slå på, så finner appen en kald pause (opptil 18t) som skyver planen inn i den ledige tiden din — uten å endre når du spiser.','Hard to make the times work out? Turn it on and the app finds a cold pause (up to 18h) that shifts the plan into your free time — without changing when you eat.');
+  st('mob-bsub-lbl','Biga-varighet','Biga duration');
+  st('wiz-s2-q2','Meltype','Flour type');
+  st('wiz-s2-next','Neste →','Next →');
+  // Wizard step check
+  st('wiz-check-h','Holder dette?','Does this work?');
+  st('mob-cold-wiz-lbl','Kjøleskapsheving','Cold proof');
+  st('wiz-check-finish','Se tidsplanen →','See the schedule →');
+  st('wiz-check-beta','🧭 Finn oppskrift ut fra ledig tid → Beta-fanen','🧭 Find a recipe based on your free time → Beta tab');
+  // Finjuster
+  st('wiz-finjuster-title','Finjuster','Fine-tune');
+  st('wiz-finjuster-back-to-plan','Se tidsplanen →','See the schedule →');
+  st('wiz-finjuster-back-btn','← Tilbake til sjekken','← Back to the check');
+  st('mob-mel-lbl','Melmengde','Flour amount');
+  st('mob-hydro-lbl','Hydrering','Hydration');
+  st('mob-cold-lbl','Kjøleskapsheving','Cold proof');
+  st('mob-temp-lbl','Romtemperatur','Room temperature');
+  st('mob-ggj-lbl','Gjærtype','Yeast type');
+  st('mob-ggj-hint','Velg én','Choose one');
+  st('mob-gkm-lbl','Kjøkkenmaskin','Stand mixer');
+  st('mob-gkm-hint','Velg én','Choose one');
+  st('mob-govn-lbl','Ovntype','Oven type');
+  st('mob-govn-hint','Velg én','Choose one');
+  st('wiz-finjuster-done','✓ Ferdig — se steg for steg','✓ Done — see step by step');
+  // Info/settings tab
+  st('mob-visning-lbl','Visning','Display');
+  st('mob-fs-lbl','Skriftstørrelse','Font size');
+  st('mob-fs-normal','Normal','Normal');
+  st('mob-fs-large','Stor','Large');
+  st('mob-fs-xlarge','Ekstra stor','Extra large');
+  st('mob-del-lbl','Del','Share');
+  st('share-app-label','📤 Del appen','📤 Share app');
+  st('mob-hjelp-lbl','Hjelp','Help');
+  st('mob-help-manual','📖 Bruksanvisning','📖 User guide');
+  st('mob-help-guide','❓ Kom i gang (kort)','❓ Get started (short)');
+  st('mob-help-tech','💡 Tips og teknikk','💡 Tips and technique');
+  st('mob-help-feedback','💬 Feedback','💬 Feedback');
+  st('mob-admin-lbl','Admin','Admin');
+  st('mob-admin-formler','📊 Formler','📊 Formulas');
+  st('mob-admin-admin','🔒 Admin','🔒 Admin');
+  st('mob-konto-lbl','Konto','Account');
+  st('mob-konto-logout','Logg ut','Log out');
+  st('mob-whatsnew','Hva er nytt','What’s new');
+  // Beta tab
+  st('mob-beta-h','🧭 Finn oppskrift','🧭 Find a recipe');
+  st('mob-beta-sub','Oppgi når du er ledig og når du vil spise — få en anbefalt oppskrift tilbake. Søker på tvers av alle metoder.','Enter when you are free and when you want to eat — get a recommended recipe back. Searches across all methods.');
+  st('mob-pizzatid-lbl','Når er du ledig?','When are you free?');
+  // help contains HTML, so set innerHTML instead of textContent
+  { const el=document.getElementById('mob-pizzatid-help'); if(el) el.innerHTML=L('Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.','Set up the fixed times you are free to make pizza, per weekday. The app uses them in two places: here it <b style="color:var(--forno-text)">suggests</b> recipes that fit your time, and elsewhere in the app it <b style="color:var(--forno-text)">warns</b> you if a step lands at a time you have not set aside.'); }
+  st('mob-pizzatid-help2','Trykk «Vis» for å sette opp ukedagene dine.','Tap "Show" to set up your weekdays.');
+  st('mob-pizzatid-save','Lagre ledig tid','Save free time');
+  st('mob-beta-baketime-lbl','Steketidspunkt','Baking time');
+  st('mob-beta-search-btn','🔍 Finn oppskrift','🔍 Find a recipe');
+  st('mob-beta-popular-lbl','Eller velg et populært tidspunkt','Or pick a popular time');
+  st('mob-beta-popular-help','Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.','Tap a preset time, and we fill in the date and time above and run the search right away.');
 }
 // v6.01: kun feltene som faktisk definerer HVILKEN deig dette er — bevisst
 // IKKE showHelp/showSubsteps (visningspreferanser) eller mode (bare start/
@@ -874,11 +966,11 @@ function clearStepProgress(){
   window._checkedSubsteps=new Set();
 }
 const S={...DEF};let AT=null;
-const HOPTS=[{h:2,b:'Nøddeig',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
+const HOPTS=[{h:2,b:'Nøddeig',bEn:'Barely dough',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',bEn:'OK',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',bEn:'Recommended',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',bEn:'Good',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',bEn:'Very good',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',bEn:'Excellent',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',bEn:'Best quick',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',bEn:'Long day (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',bEn:'Evening-ready (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',bEn:'Cool kitchen (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
 // (som er kalibrert for 1–6 DAGER). Reell usikkerhet i kilder (2–3× vs. opptil 6× tregere enn
 // romtemp) — disse tallene er et fornuftig midtpunkt, ikke en eksakt fasit. Juster ved behov.
-const KOPTS=[{h:5,b:'Kveld til morgen'},{h:8,b:'Anbefalt'},{h:10,b:'Over natta'},{h:12,b:'Lang natt'},{h:15,b:'Kveld til sen kveld'},{h:18,b:'Lang kveld'},{h:24,b:'Ekte kveld-til-kveld'}];
+const KOPTS=[{h:5,b:'Kveld til morgen',bEn:'Evening to morning'},{h:8,b:'Anbefalt',bEn:'Recommended'},{h:10,b:'Over natta',bEn:'Overnight'},{h:12,b:'Lang natt',bEn:'Long night'},{h:15,b:'Kveld til sen kveld',bEn:'Evening to late evening'},{h:18,b:'Lang kveld',bEn:'Long evening'},{h:24,b:'Ekte kveld-til-kveld',bEn:'True evening-to-evening'}];
 // Poolish/biga sin forspill-varighet var tidligere et fast tall (14t/18t) i koden.
 // Nå justerbar innenfor spekteret appens egne tips allerede har lovet (12–16t /
 // 16–24t) — samme mønster som HOPTS/KOPTS. Gjær-multiplikatoren under er en
@@ -887,8 +979,8 @@ const KOPTS=[{h:5,b:'Kveld til morgen'},{h:8,b:'Anbefalt'},{h:10,b:'Over natta'}
 // gjær, lengre forspill noe mindre, med 14t/18t (dagens standard) som uendret
 // 1,0×-referansepunkt, slik at ingen som ikke rører denne innstillingen merker
 // noen endring i oppskriften sin.
-const POOLISH_OPTS=[{h:12,b:'Kortere, mildere smak'},{h:13,b:'Kort'},{h:14,b:'Anbefalt'},{h:15,b:'Lang'},{h:16,b:'Lengst, mest smak'}];
-const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak'},{h:18,b:'Anbefalt'},{h:20,b:'Lang'},{h:22,b:'Lengre'},{h:24,b:'Lengst, mest smak'}];
+const POOLISH_OPTS=[{h:12,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:13,b:'Kort',bEn:'Short'},{h:14,b:'Anbefalt',bEn:'Recommended'},{h:15,b:'Lang',bEn:'Long'},{h:16,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
+const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:18,b:'Anbefalt',bEn:'Recommended'},{h:20,b:'Lang',bEn:'Long'},{h:22,b:'Lengre',bEn:'Longer'},{h:24,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
 function prefermentYeastMult(){
   if(S.method==='poolish'){
     if(S.poolishCold){
@@ -948,7 +1040,7 @@ function coldMultForHours(h){
 // konsekvens med resten av det time-baserte systemet (Poolish/Biga-valgene,
 // Hurtigdeig/Kveldsdeig) som allerede viser timer gjennomgående.
 function coldTimeLabel(h){
-  return h+' timer';
+  return L(h+' timer', h+' hours');
 }
 // Leselig "Xt Ym"-tekst for øktbanneret (steg 2-4-i-én-økt).
 function fmtSessionDur(mins){
@@ -1058,12 +1150,12 @@ function updateEarliestHint(){
 
 function buildHrows(){
   const b=document.getElementById('hrows');if(!b)return;
-  b.innerHTML=HOPTS.map(o=>`<div class="hrow ${o.h===S.hurtigH?'on':''}" onclick="setH(${o.h})"><div class="hd"></div>${o.h} timer — <b>${o.b}</b></div>`).join('');
+  b.innerHTML=HOPTS.map(o=>`<div class="hrow ${o.h===S.hurtigH?'on':''}" onclick="setH(${o.h})"><div class="hd"></div>${o.h} ${L("timer","hours")} — <b>${L(o.b,o.bEn)}</b></div>`).join('');
 }
 function setH(h){S.hurtigH=h;buildHrows();schedNow();}
 function buildKrows(){
   const b=document.getElementById('krows');if(!b)return;
-  b.innerHTML=KOPTS.map(o=>`<div class="hrow ${o.h===S.kveldH?'on':''}" onclick="setK(${o.h})"><div class="hd"></div>${o.h} timer — <b>${o.b}</b></div>`).join('');
+  b.innerHTML=KOPTS.map(o=>`<div class="hrow ${o.h===S.kveldH?'on':''}" onclick="setK(${o.h})"><div class="hd"></div>${o.h} ${L("timer","hours")} — <b>${L(o.b,o.bEn)}</b></div>`).join('');
 }
 function setK(h){S.kveldH=h;buildKrows();schedNow();}
 
@@ -1136,13 +1228,13 @@ function uHydroUI(){
   document.getElementById('hdisp').textContent=p+'%';
   const b=document.getElementById('hcat');
   let tx,bg,co;
-  if(p<r.mn){tx='veldig fast';bg='#E6F1FB';co='#0C447C';}
-  else if(p<=HREC[S.type]-3){tx='fast';bg='#EAF3DE';co='#27500A';}
-  else if(p<=HREC[S.type]+3){tx='anbefalt';bg='#E1F5EE';co='#085041';}
-  else if(p<=r.mx){tx='høy';bg='#FAEEDA';co='#633806';}
-  else{tx='veldig høy';bg='#FAECE7';co='#712B13';}
+  if(p<r.mn){tx=L('veldig fast','very firm');bg='#E6F1FB';co='#0C447C';}
+  else if(p<=HREC[S.type]-3){tx=L('fast','firm');bg='#EAF3DE';co='#27500A';}
+  else if(p<=HREC[S.type]+3){tx=L('anbefalt','recommended');bg='#E1F5EE';co='#085041';}
+  else if(p<=r.mx){tx=L('høy','high');bg='#FAEEDA';co='#633806';}
+  else{tx=L('veldig høy','very high');bg='#FAECE7';co='#712B13';}
   b.textContent=tx;b.style.background=bg;b.style.color=co;
-  document.getElementById('hhint').textContent=p<r.mn?'Svært fast. Krever kraftig elting.':p<=HREC[S.type]-3?'Fast og lett å jobbe med.':p<=HREC[S.type]+3?'Anbefalt nivå. God balanse.':p<=r.mx?'Luftig. Krever litt øvelse.':'Veldig høy. Krever erfaring.';
+  document.getElementById('hhint').textContent=p<r.mn?L('Svært fast. Krever kraftig elting.','Very firm. Requires vigorous kneading.'):p<=HREC[S.type]-3?L('Fast og lett å jobbe med.','Firm and easy to work with.'):p<=HREC[S.type]+3?L('Anbefalt nivå. God balanse.','Recommended level. Good balance.'):p<=r.mx?L('Luftig. Krever litt øvelse.','Airy. Requires a little practice.'):L('Veldig høy. Krever erfaring.','Very high. Requires experience.');
 }
 function uTempUI(){
   const t=S.temp;
@@ -1273,6 +1365,8 @@ function initFontSize(){
 }
 const FS_LEVELS=['normal','large','xlarge'];
 const FS_LABELS={normal:'Normal',large:'Stor',xlarge:'Ekstra stor'};
+const FS_LABELS_EN={normal:'Normal',large:'Large',xlarge:'Extra large'};
+function fsLabel(k){ return (window._lang==='en' && FS_LABELS_EN[k]!=null) ? FS_LABELS_EN[k] : FS_LABELS[k]; }
 function currentFontLevel(){
   if(document.body.classList.contains('fs-xlarge'))return 'xlarge';
   if(document.body.classList.contains('fs-large'))return 'large';
@@ -1281,11 +1375,11 @@ function currentFontLevel(){
 function fontSizeStepperHTML(){
   const cur=currentFontLevel();
   return `<div style="display:flex;align-items:center;gap:8px;margin-top:.6rem;padding-top:.6rem;border-top:1px solid #f0ede8">
-    <span style="font-size:11px;color:#888">Skriftstørrelse</span>
+    <span style="font-size:11px;color:#888">${L('Skriftstørrelse','Font size')}</span>
     <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
-      <button onclick="stepFontSize(-1)" title="Mindre skrift" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">−</button>
-      <span style="font-size:12px;font-weight:600;color:var(--dyn-text);min-width:74px;text-align:center">${FS_LABELS[cur]}</span>
-      <button onclick="stepFontSize(1)" title="Større skrift" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">+</button>
+      <button onclick="stepFontSize(-1)" title="${L('Mindre skrift','Smaller text')}" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">−</button>
+      <span style="font-size:12px;font-weight:600;color:var(--dyn-text);min-width:74px;text-align:center">${fsLabel(cur)}</span>
+      <button onclick="stepFontSize(1)" title="${L('Større skrift','Larger text')}" style="width:26px;height:26px;border-radius:6px;border:1px solid #d0cdc8;background:#fff;font-size:14px;color:#555;cursor:pointer">+</button>
     </div>
   </div>`;
 }
@@ -1371,7 +1465,9 @@ function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinu
 
 function R(){
   const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:coldMultForHours(S.cold)*prefermentYeastMult())*100)/100,yf=Math.round(yd*3*10)/10;
-  const ns={napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
+  const ns=window._lang==='en'
+    ?{napoletana:'Neapolitan pizza',newyork:'New York pizza',langpanne:'Sheet-pan pizza',chicago:'Chicago deep dish',ingenelting:'No-knead pizza'}
+    :{napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
   return{name:ns[S.type],flour:m,water:w,salt:sa,oil:oi,butter:bu,sugar:su,yDry:yd,yFresh:yf};
 }
 // Mania-poolish (oppkalt etter Pizzamania, som la ut oppskriften): egne faste
@@ -2230,6 +2326,16 @@ async function persistCheckedIngredients(){
   }catch(e){ /* stille */ }
 }
 const INGREDIENT_KEYS = ['Mel','Vann','Salt','Olivenolje','Smør','Sukker','Gjær'];
+// Display-only oversettelse av oppskrift-radetiketter. Nøkkelen (row.k) forblir
+// norsk for logikk (INGREDIENT_KEYS, _checkedIngredients-persistering) — kun det
+// synlige tekstinnholdet byttes. Dekker både ingrediens-nøkler og de metode-
+// spesifikke radene kallerne legger på.
+const RECIPE_LABEL_EN = {
+  'Mel':'Flour','Vann':'Water','Salt':'Salt','Olivenolje':'Olive oil','Smør':'Butter','Sukker':'Sugar','Gjær':'Yeast',
+  'Steking':'Baking','Romtemperatur':'Room temperature','Ovntype':'Oven type','Kjøleskapsheving':'Cold proof',
+  'Poolish':'Poolish','Vann del 1':'Water part 1','Vann del 2':'Water part 2','Hoveddeig':'Main dough'
+};
+function recLbl(k){ return (window._lang==='en' && RECIPE_LABEL_EN[k]!=null) ? RECIPE_LABEL_EN[k] : k; }
 // ===== ARKITEKTUR: felles oppskrift-radbygging PC+mobil (v5.62) =====
 // Bygger de radene som er identiske uansett metode (Mel/Vann/Salt/olje/smør/
 // sukker/Gjær) — de resterende, metode-spesifikke radene (Steking, Kjøleskap,
@@ -2254,15 +2360,16 @@ function recipeRowsHTML(rr, mob=false){
   const rowClass = mob ? 'mob-rrow' : 'rrow';
   const valClass = mob ? 'mob-rval' : 'rval';
   return localizeUnits(rr.map(row=>{
+    const lbl=recLbl(row.k);
     if(!INGREDIENT_KEYS.includes(row.k)){
-      return `<div class="${rowClass}"><span>${row.k}</span><span class="${valClass}">${row.v}</span></div>`;
+      return `<div class="${rowClass}"><span>${lbl}</span><span class="${valClass}">${row.v}</span></div>`;
     }
     const checked = window._checkedIngredients && window._checkedIngredients.has(row.k);
     if(mob){
       return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}')" style="cursor:pointer">
         <span style="display:flex;align-items:center;gap:8px">
           <span class="ing-check${checked?' on':''}"></span>
-          <span style="${checked?'text-decoration:line-through' : ''}" class="${checked?'dyn-faint-text':''}">${row.k}</span>
+          <span style="${checked?'text-decoration:line-through' : ''}" class="${checked?'dyn-faint-text':''}">${lbl}</span>
         </span>
         <span class="${valClass}${checked?' dyn-faint-text':''}" style="${checked?'text-decoration:line-through':''}">${row.v}</span>
       </div>`;
@@ -2270,7 +2377,7 @@ function recipeRowsHTML(rr, mob=false){
     return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}')" style="cursor:pointer">
       <span style="display:flex;align-items:center;gap:8px">
         <span class="ing-check${checked?' on':''}"></span>
-        <span style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${row.k}</span>
+        <span style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${lbl}</span>
       </span>
       <span class="${valClass}" style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${row.v}</span>
     </div>`;
@@ -2325,12 +2432,12 @@ function currentYeastAmount(){
     const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3];
     const f=S.mel/500;
     const yd=Math.round(o.yp*f*100)/100, yf=Math.round(yd*3*10)/10;
-    return S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+    return S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
   }
   if(S.method==='kveld'){
     const mult=KCOLDMULT[S.kveldH]||2.0;
     const yd=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100, yf=Math.round(yd*3*10)/10;
-    return S.gjaer==='torr'?`${yd}g tørrgjær`:`${yf}g fersk gjær`;
+    return S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
   }
   return yA(R());
 }
@@ -2343,32 +2450,32 @@ function copyP(steps){
   const _f=(steps&&steps[0]&&steps[0].at)?new Date(steps[0].at):null;
   const _l=(steps&&steps.length&&steps[steps.length-1].at)?new Date(steps[steps.length-1].at):null;
   const _totMin=(_f&&_l&&!isNaN(_f.getTime())&&!isNaN(_l.getTime()))?Math.round((_l-_f)/60000):null;
-  const _totTxt=_totMin==null?null:(_totMin>=60?`${Math.round(_totMin/60)} timer`:`${_totMin} min`);
+  const _totTxt=_totMin==null?null:(_totMin>=60?L(`${Math.round(_totMin/60)} timer`,`${Math.round(_totMin/60)} hours`):`${_totMin} min`);
   const coldLine = S.type==='ingenelting' ? null
-    : S.method==='kveld' ? `Kjøleskapsheving: ${S.kveldH} timer · Ovn: ${oN()}`
-    : S.method==='hurtig' ? `Ovn: ${oN()}`
-    : `${_totTxt?`Total tid fra start til steking: ca. ${_totTxt} · `:''}Ovn: ${oN()}`;
-  const ovnLine = S.type==='ingenelting' ? `Ovn: Vanlig ovn, 250°C` : null;
+    : S.method==='kveld' ? L(`Kjøleskapsheving: ${S.kveldH} timer · Ovn: ${oN()}`,`Cold proof: ${S.kveldH} hours · Oven: ${oN()}`)
+    : S.method==='hurtig' ? L(`Ovn: ${oN()}`,`Oven: ${oN()}`)
+    : `${_totTxt?L(`Total tid fra start til steking: ca. ${_totTxt} · `,`Total time from start to baking: approx. ${_totTxt} · `):''}${L(`Ovn: ${oN()}`,`Oven: ${oN()}`)}`;
+  const ovnLine = S.type==='ingenelting' ? L(`Ovn: Vanlig ovn, 250°C`,`Oven: Regular oven, 250°C`) : null;
   // Toppen: en sjekk-instruksjon (for manuell kvalitetskontroll av oppskriften)
   // + appversjon og tidspunkt for kopieringen, slik at det er sporbart hvilken
   // versjon og når planen ble hentet ut.
   const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
   const _now=new Date();
-  const lines=['Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:','',`Pizzaplanlegger v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,'','PIZZAPLAN','=========','',`Type: ${r.name}`,`Metode: ${mN(S.method)}`,`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),`Romtemperatur: ${S.temp}°C`,'',`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,'','INGREDIENSER','------------',`Mel: ${r.flour}g`,`Vann: ${r.water}g`,`Salt: ${r.salt}g`,...(r.oil?[`Olivenolje: ${r.oil}g`]:[]),...(r.butter?[`Smør: ${r.butter}g`]:[]),...(r.sugar?[`Sukker: ${r.sugar}g`]:[]),`Gjær: ${currentYeastAmount()}`,'','TIDSPLAN','--------'];
+  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:',`Check this pizza recipe systematically for errors in ingredients, math and schedule — look especially for deviations from what I specified myself:`),'',L(`Pizzaplanlegger v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`Pizza planner v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${r.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,`Flour: ${S.mel}g · Hydration: ${S.hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Count ${pcUnitLabel(true)}: ${p.count} pcs (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${r.flour}g`,`Flour: ${r.flour}g`),L(`Vann: ${r.water}g`,`Water: ${r.water}g`),L(`Salt: ${r.salt}g`,`Salt: ${r.salt}g`),...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),L(`Gjær: ${currentYeastAmount()}`,`Yeast: ${currentYeastAmount()}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
   steps.forEach((s,i)=>{
-    const locMap={kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'};
+    const locMap=L({kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'},{kjol:'❄️ Fridge',rom:'🏠 Room temperature',ovn:'🔥 Oven',benk:'🔧 Counter'});
     const loc=locMap[s.loc]||s.loc;
     lines.push('');
-    lines.push(`${i+1}. ${s.title}`);
-    lines.push(`   Tid: ${fDT(s.at)}${s.dur?' · Varighet: '+s.dur+' min':''}${loc?' · Lokasjon: '+loc:''}`);
+    lines.push(`${i+1}. ${dispTitle(s.title)}`);
+    lines.push(`   ${L('Tid','Time')}: ${fDT(s.at)}${s.dur?' · '+L('Varighet','Duration')+': '+s.dur+' min':''}${loc?' · '+L('Lokasjon','Location')+': '+loc:''}`);
     if(s.desc)lines.push(`   ${s.desc}`);
-    if(s.why)lines.push(`   Hvorfor: ${s.why}`);
-    if(s.tip)lines.push(`   Tips: ${s.tip}`);
+    if(s.why)lines.push(`   ${L('Hvorfor','Why')}: ${s.why}`);
+    if(s.tip)lines.push(`   ${L('Tips','Tips')}: ${s.tip}`);
   });
   navigator.clipboard.writeText(lines.join('\n')).then(()=>{
     const b=document.getElementById('cbtn');
-    if(b){b.textContent='✓ Kopiert!';setTimeout(()=>{b.textContent='📋 Kopier tidsplan';},2000);}
-  }).catch(()=>alert('Kopi feilet — prøv manuelt.'));
+    if(b){b.textContent=L('✓ Kopiert!','✓ Copied!');setTimeout(()=>{b.textContent=L('📋 Kopier tidsplan','📋 Copy schedule');},2000);}
+  }).catch(()=>alert(L('Kopi feilet — prøv manuelt.','Copy failed — try manually.')));
 }
 
 
@@ -2571,6 +2678,7 @@ function flourMatchesForHours(hrs){
 
 // ===== BETA-fane: rendring =====
 const PIZZATID_DAY_LABELS=[['mon','Mandag'],['tue','Tirsdag'],['wed','Onsdag'],['thu','Torsdag'],['fri','Fredag'],['sat','Lørdag'],['sun','Søndag']];
+const PIZZATID_DAY_LABELS_EN={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
 window._betaResultRegistry=[];
 async function renderBetaPanel(){
   if(!window._pizzatidSchedule) await loadPizzatidSchedule();
@@ -2642,12 +2750,12 @@ function returnBarStatusHTML(){
   let c=null;
   try{ c=firstStepConflict(computeCurrentSteps()); }catch(e){ return ''; }
   if(!c){
-    return `<div class="mob-return-status" style="color:#0F6E56">✓ Alle steg ligger nå i tiden du har satt av</div>`;
+    return `<div class="mob-return-status" style="color:#0F6E56">${L('✓ Alle steg ligger nå i tiden du har satt av','✓ All steps now fall within the time you set aside')}</div>`;
   }
   let t='';
   try{ t=fT(c.at); }catch(e){}
   const same=c.step.title===_returnTo.stepTitle;
-  return `<div class="mob-return-status" style="color:#8a5a00">⚠ ${escH(c.step.title)} ligger ${same?'fortsatt':'nå'}${t?' kl. '+escH(t):''} utenfor</div>`;
+  return `<div class="mob-return-status" style="color:#8a5a00">${L(`⚠ ${escH(dispTitle(c.step.title))} ligger ${same?'fortsatt':'nå'}${t?' kl. '+escH(t):''} utenfor`,`⚠ ${escH(dispTitle(c.step.title))} is ${same?'still':'now'}${t?' at '+escH(t):''} outside`)}</div>`;
 }
 function renderReturnBar(){
   const bar=document.getElementById('mob-return-bar');
@@ -2658,7 +2766,7 @@ function renderReturnBar(){
   const show=_returnTo && currentMobTab() && currentMobTab()!==_returnTo.tab;
   bar.classList.toggle('on', !!show);
   if(!show){ bar.innerHTML=''; return; }
-  bar.innerHTML=`${returnBarStatusHTML()}<button class="mob-return-btn" onclick="goBackFromJump()">← Tilbake til ${escH(_returnTo.tab==='settings'?'planleggingen':'tidsplanen')}</button>`;
+  bar.innerHTML=`${returnBarStatusHTML()}<button class="mob-return-btn" onclick="goBackFromJump()">${L(`← Tilbake til ${escH(_returnTo.tab==='settings'?'planleggingen':'tidsplanen')}`,`← Back to ${escH(_returnTo.tab==='settings'?'the planner':'the schedule')}`)}</button>`;
 }
 function togglePizzatidMinimized(){
   const body=document.getElementById('mob-pizzatid-body');
@@ -2666,13 +2774,14 @@ function togglePizzatidMinimized(){
   if(!body) return;
   const nowHidden=body.style.display==='none';
   body.style.display=nowHidden?'block':'none';
-  if(toggle) toggle.textContent=nowHidden?'Skjul ▴':'Vis ▾';
+  if(toggle) toggle.textContent=nowHidden?L('Skjul ▴','Hide ▴'):L('Vis ▾','Show ▾');
 }
 function renderPizzatidDays(){
   const el=document.getElementById('mob-pizzatid-days');
   if(!el) return;
   const sched=window._pizzatidSchedule||defaultPizzatidSchedule();
   el.innerHTML=PIZZATID_DAY_LABELS.map(([key,label])=>{
+    label = L(label, PIZZATID_DAY_LABELS_EN[key]||label);
     const periods=sched[key]||[null,null];
     const rows=[0,1].map(i=>{
       const p=periods[i];
@@ -2710,11 +2819,11 @@ function renderResultBlock(containerId, label, anchorIso){
   const top=results[0];
   const ok=top.violations===0;
   const flours=flourMatchesForHours(top.totalHrs);
-  const flourTxt=flours.length ? flours.slice(0,3).join(', ')+(flours.length>3?' m.fl.':'') : 'Ingen registrert meltype dekker dette';
+  const flourTxt=flours.length ? flours.slice(0,3).join(', ')+(flours.length>3?L(' m.fl.',' & more'):'') : L('Ingen registrert meltype dekker dette','No registered flour type covers this');
   const altList=results.slice(1,3).map((c,i)=>`
       <div onclick="applyBetaResult(${regId},${i+1})" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;background:var(--forno-bg);margin-top:4px;cursor:pointer">
         <span style="font-size:11.5px;color:var(--forno-text)">${escH(c.label)}</span>
-        <span style="font-size:10.5px;color:${c.violations===0?'var(--forno-text-faint)':'#e8a06e'}">${c.violations===0?'Passer':c.violations+' avvik'} · ~${Math.round(c.totalHrs)}t</span>
+        <span style="font-size:10.5px;color:${c.violations===0?'var(--forno-text-faint)':'#e8a06e'}">${c.violations===0?L('Passer','Fits'):L(`${c.violations} avvik`,`${c.violations} conflicts`)} · ~${Math.round(c.totalHrs)}${L('t','h')}</span>
       </div>`).join('');
   const el=document.getElementById(containerId);
   if(!el) return;
@@ -2722,7 +2831,7 @@ function renderResultBlock(containerId, label, anchorIso){
   try{ startTxt=fDT(new Date(top.startIso)); }catch(e){}
   try{ bakeTxt=fDT(new Date(top.bakeIso)); }catch(e){}
   const tooLateWarning = !top.feasible
-    ? `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:7px 9px;margin-bottom:6px;font-size:11px;color:#633806">⏱️ Ingen kombinasjon rekker fra akkurat nå — denne krever oppstart som allerede er passert. Vurder et senere spisetidspunkt.</div>`
+    ? `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:7px 9px;margin-bottom:6px;font-size:11px;color:#633806">${L('⏱️ Ingen kombinasjon rekker fra akkurat nå — denne krever oppstart som allerede er passert. Vurder et senere spisetidspunkt.','⏱️ No combination fits starting right now — this one requires a start time that has already passed. Consider a later eating time.')}</div>`
     : '';
   el.innerHTML=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:10px;margin-top:6px">
     ${tooLateWarning}
@@ -2731,12 +2840,12 @@ function renderResultBlock(containerId, label, anchorIso){
       <div style="font-size:14px">${ok?'✅':'⚠️'}</div>
     </div>
     <div style="font-size:12px;color:var(--forno-accent-text);font-weight:600">${escH(top.label)}</div>
-    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">🚀 Oppstartstid: <b style="color:var(--forno-text)">${escH(startTxt)}</b></div>
-    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">🍕 Planlagt steketid: <b style="color:var(--forno-text)">${escH(bakeTxt)}</b></div>
-    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${ok?'Alt passer':top.violations+' steg utenfor ledig tid'} · ~${Math.round(top.totalHrs)}t total gjæring</div>
-    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">Mel som passer: ${escH(flourTxt)}</div>
-    <button onclick="applyBetaResult(${regId},0)" style="width:100%;margin-top:8px;height:34px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Bruk denne</button>
-    ${altList?`<div style="text-align:center;margin-top:6px"><span onclick="this.parentElement.nextElementSibling.style.display='block';this.style.display='none'" style="font-size:11px;color:var(--forno-accent-text);cursor:pointer;text-decoration:underline">Se flere alternativer</span></div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${L('🚀 Oppstartstid:','🚀 Start time:')} <b style="color:var(--forno-text)">${escH(startTxt)}</b></div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${L('🍕 Planlagt steketid:','🍕 Planned baking time:')} <b style="color:var(--forno-text)">${escH(bakeTxt)}</b></div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${ok?L('Alt passer','Everything fits'):L(`${top.violations} steg utenfor ledig tid`,`${top.violations} steps outside free time`)} · ~${Math.round(top.totalHrs)}${L('t','h')} ${L('total gjæring','total fermentation')}</div>
+    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">${L('Mel som passer:','Flour that fits:')} ${escH(flourTxt)}</div>
+    <button onclick="applyBetaResult(${regId},0)" style="width:100%;margin-top:8px;height:34px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">${L('Bruk denne','Use this one')}</button>
+    ${altList?`<div style="text-align:center;margin-top:6px"><span onclick="this.parentElement.nextElementSibling.style.display='block';this.style.display='none'" style="font-size:11px;color:var(--forno-accent-text);cursor:pointer;text-decoration:underline">${L('Se flere alternativer','See more options')}</span></div>
     <div style="display:none">${altList}</div>`:''}
   </div>`;
 }
@@ -2771,11 +2880,11 @@ function applyBetaResult(regId,altIdx){
 }
 function renderBetaFasteTider(){
   const targets=[
-    {label:'Fredag 19:00', d:nextWeekdayAt(5,19,0)},
-    {label:'Lørdag 16:00', d:nextWeekdayAt(6,16,0)},
-    {label:'Lørdag 19:00', d:nextWeekdayAt(6,19,0)},
-    {label:'Søndag 16:00', d:nextWeekdayAt(0,16,0)},
-    {label:'Søndag 19:00', d:nextWeekdayAt(0,19,0)}
+    {label:L('Fredag 19:00','Friday 19:00'), d:nextWeekdayAt(5,19,0)},
+    {label:L('Lørdag 16:00','Saturday 16:00'), d:nextWeekdayAt(6,16,0)},
+    {label:L('Lørdag 19:00','Saturday 19:00'), d:nextWeekdayAt(6,19,0)},
+    {label:L('Søndag 16:00','Sunday 16:00'), d:nextWeekdayAt(0,16,0)},
+    {label:L('Søndag 19:00','Sunday 19:00'), d:nextWeekdayAt(0,19,0)}
   ];
   const el=document.getElementById('mob-beta-faste');
   if(!el) return;
@@ -2799,20 +2908,20 @@ function runBetaSearch(){
   const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
   const resultEl=document.getElementById('mob-beta-result');
   if(!dEl||!dEl.value){
-    if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:#e8a06e">Sett en dato først.</div>';
+    if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:#e8a06e">${L('Sett en dato først.','Set a date first.')}</div>`;
     return;
   }
   const anchor=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'19:00'));
   if(isNaN(anchor.getTime())){
-    if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:#e8a06e">Ugyldig dato/klokkeslett.</div>';
+    if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:#e8a06e">${L('Ugyldig dato/klokkeslett.','Invalid date/time.')}</div>`;
     return;
   }
-  if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:var(--forno-text-faint)">Søker …</div>';
+  if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:var(--forno-text-faint)">${L('Søker …','Searching …')}</div>`;
   try{
     renderResultBlock('mob-beta-result', fDT(anchor), anchor.toISOString());
     if(resultEl) resultEl.scrollIntoView({behavior:'smooth', block:'center'});
   }catch(e){
-    if(resultEl) resultEl.innerHTML='<div style="padding:8px;font-size:12px;color:#e8a06e">Noe gikk galt under søket. Prøv igjen, eller si fra hvis det gjentar seg.</div>';
+    if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:#e8a06e">${L('Noe gikk galt under søket. Prøv igjen, eller si fra hvis det gjentar seg.','Something went wrong during the search. Try again, or let us know if it keeps happening.')}</div>`;
     console.error('Beta-søk feilet:', e);
   }
 }
@@ -2965,7 +3074,7 @@ function warningWrapHTML(keySource, innerHTML){
   if(_warnShowAll) return innerHTML;
   const k=warnKey(keySource);
   if(_dismissedWarnings.has(k)) return '';
-  return `<div class="warn-dismiss-wrap">${innerHTML}<button class="warn-dismiss-btn" onclick="dismissWarning('${k}')" title="Skjul dette varselet" aria-label="Skjul dette varselet">✕</button></div>`;
+  return `<div class="warn-dismiss-wrap">${innerHTML}<button class="warn-dismiss-btn" onclick="dismissWarning('${k}')" title="${L('Skjul dette varselet','Hide this warning')}" aria-label="${L('Skjul dette varselet','Hide this warning')}">✕</button></div>`;
 }
 function meltypeWarningHTML(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
@@ -2978,33 +3087,33 @@ function meltypeWarningHTML(){
   const issues=[];
   if(!fermOk){
     const tooShort=hrs<flour.ferm.mn;
-    issues.push(`Du har planlagt ca. ${hrs} timer total gjæringstid, mens ${flour.t} er ment for ${flour.ferm.mn}–${flour.ferm.mx} timer. ${tooShort?'For kort tid gir dårlig utviklet gluten og lite smak — melet rekker ikke å bygge den strukturen den er laget for.':'For lang tid kan bryte ned glutenet mer enn det bygges — deigen kan bli slapp og vanskelig å håndtere.'} Vurder ${tooShort?'et svakere mel (f.eks. Dallari eller Doppio Zero) eller kortere hevetid':'et sterkere mel (lenger ned på listen) eller kortere hevetid'} for bedre match.`);
+    issues.push(L(`Du har planlagt ca. ${hrs} timer total gjæringstid, mens ${flour.t} er ment for ${flour.ferm.mn}–${flour.ferm.mx} timer. ${tooShort?'For kort tid gir dårlig utviklet gluten og lite smak — melet rekker ikke å bygge den strukturen den er laget for.':'For lang tid kan bryte ned glutenet mer enn det bygges — deigen kan bli slapp og vanskelig å håndtere.'} Vurder ${tooShort?'et svakere mel (f.eks. Dallari eller Doppio Zero) eller kortere hevetid':'et sterkere mel (lenger ned på listen) eller kortere hevetid'} for bedre match.`,`You have planned about ${hrs} hours of total fermentation time, while ${flour.t} is meant for ${flour.ferm.mn}–${flour.ferm.mx} hours. ${tooShort?'Too short a time gives poorly developed gluten and little flavor — the flour does not have time to build the structure it is made for.':'Too long a time can break down the gluten faster than it builds — the dough can become slack and hard to handle.'} Consider ${tooShort?'a weaker flour (e.g. Dallari or Doppio Zero) or a shorter rise time':'a stronger flour (further down the list) or a shorter rise time'} for a better match.`));
   }
   if(!hydroOk){
     const tooLow = S.hydro<flour.hydroRange.mn;
-    issues.push(`Du har satt ${S.hydro}% hydrering, mens ${flour.t} er beregnet for ${flour.hydro} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}). ${tooLow?'Lavere hydrering enn anbefalt er ikke farlig i seg selv, men gir en fastere, tørrere deig enn melet egentlig er designet for — du utnytter ikke potensialet i det.':'Høyere hydrering enn dette melet er designet for kan gi en for løs, klissete deig som er vanskelig å håndtere, siden det ikke har nok proteinstyrke til å holde på så mye vann.'} Juster hydreringen til ${flour.hydro}, eller bytt til et mel som passer bedre med ${S.hydro}%.`);
+    issues.push(L(`Du har satt ${S.hydro}% hydrering, mens ${flour.t} er beregnet for ${flour.hydro} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}). ${tooLow?'Lavere hydrering enn anbefalt er ikke farlig i seg selv, men gir en fastere, tørrere deig enn melet egentlig er designet for — du utnytter ikke potensialet i det.':'Høyere hydrering enn dette melet er designet for kan gi en for løs, klissete deig som er vanskelig å håndtere, siden det ikke har nok proteinstyrke til å holde på så mye vann.'} Juster hydreringen til ${flour.hydro}, eller bytt til et mel som passer bedre med ${S.hydro}%.`,`You have set ${S.hydro}% hydration, while ${flour.t} is intended for ${flour.hydro} (${flour.protein} protein${flour.w!=='–'?`, W${flour.w}`:''}). ${tooLow?'Lower hydration than recommended is not dangerous in itself, but gives a firmer, drier dough than the flour is really designed for — you are not using its full potential.':'Higher hydration than this flour is designed for can give too loose, sticky a dough that is hard to handle, since it does not have enough protein strength to hold that much water.'} Adjust the hydration to ${flour.hydro}, or switch to a flour that suits ${S.hydro}% better.`));
   }
   const _wk = `meltype|${S.meltype}|${hrs}|${S.hydro}|${fermOk}|${hydroOk}`;
-  const title = (!fermOk && !hydroOk) ? `${flour.t}: gjæringstid og hydrering stemmer ikke` : (!fermOk ? `${flour.t} er ${hrs<flour.ferm.mn?'ikke gjæret lenge nok':'gjæret lenger enn anbefalt'}` : `${flour.t}: hydreringen stemmer ikke med melet`);
+  const title = (!fermOk && !hydroOk) ? L(`${flour.t}: gjæringstid og hydrering stemmer ikke`,`${flour.t}: fermentation time and hydration do not match`) : (!fermOk ? L(`${flour.t} er ${hrs<flour.ferm.mn?'ikke gjæret lenge nok':'gjæret lenger enn anbefalt'}`,`${flour.t} is ${hrs<flour.ferm.mn?'not fermented long enough':'fermented longer than recommended'}`) : L(`${flour.t}: hydreringen stemmer ikke med melet`,`${flour.t}: the hydration does not match the flour`));
 
   // Hurtigjustering direkte i varselet — samme funksjoner som Pizzaplanlegger-fanen bruker,
   // så resultatet blir identisk uansett hvor endringen gjøres fra.
   const actions=[];
   if(!fermOk && S.type!=='ingenelting' && S.method!=='mania'){
-    actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?'Øk hevetiden':'Reduser hevetiden'}</button>`);
+    actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?L('Øk hevetiden','Increase rise time'):L('Reduser hevetiden','Reduce rise time')}</button>`);
   }
   if(!hydroOk){
     const tooLow = S.hydro<flour.hydroRange.mn;
     const target = tooLow ? flour.hydroRange.mn : flour.hydroRange.mx;
-    actions.push(`<button onclick="meltypeWarnSetHydro(${target})" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Sett hydrering til ${target}%</button>`);
+    actions.push(`<button onclick="meltypeWarnSetHydro(${target})" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Sett hydrering til ${target}%`,`Set hydration to ${target}%`)}</button>`);
   }
   const betterFlour = findBestMatchingFlour(hrs, S.hydro);
   if(betterFlour && betterFlour.v!==S.meltype){
-    actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:12px;font-weight:600;cursor:pointer">Bytt til ${betterFlour.t}</button>`);
+    actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:12px;font-weight:600;cursor:pointer">${L(`Bytt til ${betterFlour.t}`,`Switch to ${betterFlour.t}`)}</button>`);
   }
   const actionsHtml = actions.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${actions.join('')}</div>` : '';
-  const finjusterLink = `<div style="margin-top:.5rem"><span onclick="meltypeWarnOpenFinjuster()" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>`;
-  const estNote = flour.estimated ? `<div style="font-size:11px;color:#8a5a00;margin-top:.4rem;font-style:italic">Gjærings-/hydreringstallene for ${flour.t} er anslått av oss, ikke oppgitt av produsenten.</div>` : '';
+  const finjusterLink = `<div style="margin-top:.5rem"><span onclick="meltypeWarnOpenFinjuster()" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">${L('⚙️ Se i Finjuster','⚙️ See in Fine-tune')}</span></div>`;
+  const estNote = flour.estimated ? `<div style="font-size:11px;color:#8a5a00;margin-top:.4rem;font-style:italic">${L(`Gjærings-/hydreringstallene for ${flour.t} er anslått av oss, ikke oppgitt av produsenten.`,`The fermentation/hydration figures for ${flour.t} are estimated by us, not stated by the manufacturer.`)}</div>` : '';
 
   return warningWrapHTML(_wk, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌾 ${title}</div>
@@ -3020,8 +3129,8 @@ function meltypeWarningHTML(){
 // universell regel; opptatt tid kommer fra brukerens egen Pizzatid (v5.73).
 // Samme mekanisme for begge, og begge kan skjules med kryss (v5.74).
 const ACTIVE_STEP_TIME_WINDOWS=[
-  {id:'night', test:(h,mm,day)=>h>=23||h<6, label:'natten', icon:'🌙'},
-  {id:'busy',  test:(h,mm,day)=>outsidePizzatid(h,mm,day), label:'tid du ikke har satt av til pizza', icon:'📅'}
+  {id:'night', test:(h,mm,day)=>h>=23||h<6, label:'natten', labelEn:'the night', icon:'🌙'},
+  {id:'busy',  test:(h,mm,day)=>outsidePizzatid(h,mm,day), label:'tid du ikke har satt av til pizza', labelEn:'time you have not set aside for pizza', icon:'📅'}
 ];
 // v5.75: varselet pleide å tilby de samme knappene uansett hvilket steg som
 // kolliderte. Det var direkte feil for steg som er låst til steketiden: i
@@ -3105,11 +3214,11 @@ function pastStartWarningHTML(){
     // som fortsatt holder når man faktisk trykker på den.
     const t=new Date(Math.ceil((eb.getTime()+5*60000)/(15*60000))*(15*60000));
     let tTxt=''; try{ tTxt=fDT(t); }catch(e){}
-    if(tTxt) btn=`<div style="margin-top:.6rem"><button onclick="applyAnchorShift('${t.toISOString()}')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Spis ${escH(tTxt)} i stedet</button></div>`;
+    if(tTxt) btn=`<div style="margin-top:.6rem"><button onclick="applyAnchorShift('${t.toISOString()}')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Spis ${escH(tTxt)} i stedet`,`Eat at ${escH(tTxt)} instead`)}</button></div>`;
   }
   return warningWrapHTML(`paststart|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
-    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⏰ Oppstarten har allerede passert</div>
-    <div style="font-size:12px;color:#4a2a05;line-height:1.5">For å rekke steketidspunktet du har valgt, måtte du ha startet ${escH(dt)}. Velg et senere tidspunkt, eller la appen finne det tidligste som går.</div>
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L('⏰ Oppstarten har allerede passert','⏰ The start time has already passed')}</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`For å rekke steketidspunktet du har valgt, måtte du ha startet ${escH(dt)}. Velg et senere tidspunkt, eller la appen finne det tidligste som går.`,`To make the baking time you have chosen, you would have had to start ${escH(dt)}. Choose a later time, or let the app find the earliest one that works.`)}</div>
     ${btn}
   </div>`);
 }
@@ -3136,31 +3245,31 @@ function activeStepTimeWarningHTML(){
     const shift = (S.mode==='end') ? findAnchorShift(anchor) : null;
 
     let prefBtn='';
-    if(prefWorks) prefBtn=`<button onclick="activeStepWarnGoTo('${S.method}')" style="${btnSolid}">Juster hevetid i ${S.method==='poolish'?'Poolish':'Biga'}</button>`;
-    const coldBtn=coldWorks ? `<button onclick="activeStepWarnGoTo('cold')" style="${btnOutline}">Juster kjøleskapstid</button>` : '';
-    const findBestBtn=(prefWorks && coldWorks) ? `<button onclick="activeStepWarnFindBest()" style="padding:6px 12px;border:none;border-radius:8px;background:#8a5a00;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🔍 Finn beste kombinasjon</button>` : '';
+    if(prefWorks) prefBtn=`<button onclick="activeStepWarnGoTo('${S.method}')" style="${btnSolid}">${L(`Juster hevetid i ${S.method==='poolish'?'Poolish':'Biga'}`,`Adjust rise time in ${S.method==='poolish'?'Poolish':'Biga'}`)}</button>`;
+    const coldBtn=coldWorks ? `<button onclick="activeStepWarnGoTo('cold')" style="${btnOutline}">${L('Juster kjøleskapstid','Adjust cold time')}</button>` : '';
+    const findBestBtn=(prefWorks && coldWorks) ? `<button onclick="activeStepWarnFindBest()" style="padding:6px 12px;border:none;border-radius:8px;background:#8a5a00;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('🔍 Finn beste kombinasjon','🔍 Find best combination')}</button>` : '';
     let shiftTxt='', shiftBtn='';
     if(shift){
       let st=''; try{ st=fDT(shift.at); }catch(e){}
       const moved=new Date(at.getTime()+shift.minutes*60000);
       const movedTxt=String(moved.getHours()).padStart(2,'0')+':'+String(moved.getMinutes()).padStart(2,'0');
-      shiftBtn=`<button onclick="applyAnchorShift('${shift.at.toISOString()}')" style="${btnSolid}">Spis ${escH(st)} i stedet</button>`;
-      shiftTxt=` Spiser du ${escH(st)}, faller <b>${escH(s.title)}</b> på ${movedTxt} og hele planen går opp.`;
+      shiftBtn=`<button onclick="applyAnchorShift('${shift.at.toISOString()}')" style="${btnSolid}">${L(`Spis ${escH(st)} i stedet`,`Eat at ${escH(st)} instead`)}</button>`;
+      shiftTxt=L(` Spiser du ${escH(st)}, faller <b>${escH(dispTitle(s.title))}</b> på ${movedTxt} og hele planen går opp.`,` If you eat at ${escH(st)}, <b>${escH(dispTitle(s.title))}</b> falls at ${movedTxt} and the whole plan works out.`);
     }
-    const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="${btnOutline}">Prøv Kveldsdeig i stedet</button>` : '';
+    const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="${btnOutline}">${L('Prøv Kveldsdeig i stedet','Try Evening dough instead')}</button>` : '';
     // Poolish-spesifikk hjelpespak: sett inn en kald pause som skyver planen inn i
     // ledig tid uten å endre middagen. Vises kun for poolish når pausen er av.
-    const pauseBtn=(S.method==='poolish' && (S.poolishPauseH||0)===0) ? `<button onclick="activeStepWarnPoolishPause()" style="${btnSolid}">🧊 Sett inn kjøleskapspause</button>` : '';
-    const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="${btnOutline}">Rediger pizzatiden din</button>` : '';
+    const pauseBtn=(S.method==='poolish' && (S.poolishPauseH||0)===0) ? `<button onclick="activeStepWarnPoolishPause()" style="${btnSolid}">${L('🧊 Sett inn kjøleskapspause','🧊 Insert a cold pause')}</button>` : '';
+    const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="${btnOutline}">${L('Rediger pizzatiden din','Edit your pizza time')}</button>` : '';
     const conflictKey=warnKey(`activestep|${win.id}|${s.title}|${dt}`);
-    const acceptBtn=(win.id==='busy'||win.id==='night') ? `<button onclick="acceptStepConflict('${conflictKey}')" style="padding:6px 12px;border:none;background:transparent;color:#8a5a05;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline">Dette er greit — fortsett likevel</button>` : '';
+    const acceptBtn=(win.id==='busy'||win.id==='night') ? `<button onclick="acceptStepConflict('${conflictKey}')" style="padding:6px 12px;border:none;background:transparent;color:#8a5a05;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline">${L('Dette er greit — fortsett likevel','This is fine — continue anyway')}</button>` : '';
 
     // Ingen spak beveger steget, og måltidet kan ikke flyttes til noe som går
     // opp: da er det ærligere å si at metoden ikke passer enn å tilby knapper
     // som ikke virker.
     const stuck = !prefWorks && !coldWorks && !shift;
     const lockedNote = stuck
-      ? ` Dette steget er låst til steketidspunktet, så verken hevetid eller kjøleskapstid kan flytte det — og det finnes ingen spisetid innenfor det neste døgnet som får hele planen til å gå opp.${isShort?'':' En metode med kortere temperering, som Kveldsdeig, er sannsynligvis det som skal til.'}`
+      ? L(` Dette steget er låst til steketidspunktet, så verken hevetid eller kjøleskapstid kan flytte det — og det finnes ingen spisetid innenfor det neste døgnet som får hele planen til å gå opp.${isShort?'':' En metode med kortere temperering, som Kveldsdeig, er sannsynligvis det som skal til.'}`,` This step is locked to the baking time, so neither the rise time nor the cold time can move it — and there is no eating time within the next 24 hours that makes the whole plan work out.${isShort?'':' A method with shorter tempering, such as Evening dough, is probably what it takes.'}`)
       : shiftTxt;
 
     // Godtatt fra før: bytt til en nøytral bekreftelse i stedet for
@@ -3171,15 +3280,15 @@ function activeStepTimeWarningHTML(){
     // Steg-fanen, akkurat som alt annet der.
     if((win.id==='busy'||win.id==='night') && _acceptedConflicts.has(conflictKey)){
       return warningWrapHTML(`accepted|${conflictKey}`, `<div data-accepted="1" style="background:var(--forno-bg-raised,#F2F2F7);border:1px solid var(--forno-border,#ddd);border-radius:10px;padding:.65rem .9rem;margin-bottom:.8rem">
-        <div style="font-size:12px;color:var(--forno-text-faint,#666);line-height:1.5">✓ Du har godtatt at <b style="color:var(--forno-text,#333)">${escH(s.title)}</b> havner i ${win.label} (${dt}).</div>
-        <div style="margin-top:.4rem"><span onclick="unacceptStepConflict('${conflictKey}')" style="font-size:11px;color:#8a5a05;font-weight:600;text-decoration:underline;cursor:pointer">Angre</span></div>
+        <div style="font-size:12px;color:var(--forno-text-faint,#666);line-height:1.5">${L(`✓ Du har godtatt at <b style="color:var(--forno-text,#333)">${escH(dispTitle(s.title))}</b> havner i ${win.label} (${dt}).`,`✓ You have accepted that <b style="color:var(--forno-text,#333)">${escH(dispTitle(s.title))}</b> lands in ${win.labelEn} (${dt}).`)}</div>
+        <div style="margin-top:.4rem"><span onclick="unacceptStepConflict('${conflictKey}')" style="font-size:11px;color:#8a5a05;font-weight:600;text-decoration:underline;cursor:pointer">${L('Angre','Undo')}</span></div>
       </div>`);
     }
     const row1=`${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}${pauseBtn}`;
     const row2=`${pizzatidBtn}${stuck?kveldBtn:''}${acceptBtn}`;
     return warningWrapHTML(`activestep|${win.id}|${s.title}|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
-      <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} Et steg havner i ${win.label}</div>
-      <div style="font-size:12px;color:#4a2a05;line-height:1.5"><b>${escH(s.title)}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.${lockedNote}</div>
+      <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} ${L(`Et steg havner i ${win.label}`,`A step lands in ${win.labelEn}`)}</div>
+      <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`<b>${escH(dispTitle(s.title))}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.`,`<b>${escH(dispTitle(s.title))}</b> is set to <b>${dt}</b> — probably not a time you want to be disturbed.`)}${lockedNote}</div>
       ${row1?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${row1}</div>`:''}
       ${row2?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${row2}</div>`:''}
     </div>`);
@@ -3195,7 +3304,7 @@ function showEarlyPlanningHint(elId){
   if(!el) return;
   const day=new Date().getDay();
   if(day>=3 && day<=5){
-    el.textContent='💡 Planlegger du helgepizza? Start så tidlig du kan for mest fleksibilitet på tidspunkt.';
+    el.textContent=L('💡 Planlegger du helgepizza? Start så tidlig du kan for mest fleksibilitet på tidspunkt.','💡 Planning weekend pizza? Start as early as you can for the most flexibility on timing.');
     el.style.display='block';
   }else{
     el.style.display='none';
@@ -3341,11 +3450,11 @@ function renderFasteTidspunkter(){
   const el=document.getElementById('mob-faste-tidspunkter');
   if(!el) return;
   const targets=[
-    {label:'Fredag 19:00', d:nextWeekdayAt(5,19,0)},
-    {label:'Lørdag 16:00', d:nextWeekdayAt(6,16,0)},
-    {label:'Lørdag 19:00', d:nextWeekdayAt(6,19,0)},
-    {label:'Søndag 16:00', d:nextWeekdayAt(0,16,0)},
-    {label:'Søndag 19:00', d:nextWeekdayAt(0,19,0)}
+    {label:L('Fredag 19:00','Friday 19:00'), d:nextWeekdayAt(5,19,0)},
+    {label:L('Lørdag 16:00','Saturday 16:00'), d:nextWeekdayAt(6,16,0)},
+    {label:L('Lørdag 19:00','Saturday 19:00'), d:nextWeekdayAt(6,19,0)},
+    {label:L('Søndag 16:00','Sunday 16:00'), d:nextWeekdayAt(0,16,0)},
+    {label:L('Søndag 19:00','Sunday 19:00'), d:nextWeekdayAt(0,19,0)}
   ];
   window._fasteTidspunkterResults=targets.map(t=>({...t, best:findBestFreeWindowCombo(t.d)}));
   el.innerHTML='<div style="font-size:10px;color:var(--forno-text-faint);margin-bottom:6px">Beste hevetid/kjøleskapstid for hvert mål, i dine ledige vinduer — trykk for å sette den opp</div>'
@@ -3432,15 +3541,16 @@ function methodTimeWarningHTML(){
   const startTime = new Date(eatTime.getTime() - hours*3600000);
   const leadHours = (startTime.getTime() - Date.now())/3600000;
   if(leadHours < 20) return ''; // mindre enn ~et døgns slakk er ikke et reelt problem
-  const methodName = S.method==='hurtig' ? 'Hurtigdeig' : 'Kveldsdeig';
+  const methodName = S.method==='hurtig' ? L('Hurtigdeig','Quick dough') : L('Kveldsdeig','Evening dough');
+  const methodNameLow = S.method==='hurtig' ? L('hurtigdeig','quick dough') : L('kveldsdeig','evening dough');
   const leadDays = (Math.round(leadHours/24*10)/10).toString().replace('.',',');
   return warningWrapHTML(`methodtime|${S.method}|${Math.round(leadHours)}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
-    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⏱ ${methodName} passer dårlig med god tid til rådighet</div>
-    <div style="font-size:12px;color:#4a2a05;line-height:1.5">Du har satt av ca. ${leadDays} dager fram til du vil spise, men ${methodName.toLowerCase()} er en rask metode ment for et par timers gjæring rett før steking — resten av tiden går til spille. Med så mye tid til rådighet gir Langtidsdeig eller Kveldsdeig gjerne bedre smak for samme innsats.</div>
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L(`⏱ ${methodName} passer dårlig med god tid til rådighet`,`⏱ ${methodName} is a poor fit when you have plenty of time`)}</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`Du har satt av ca. ${leadDays} dager fram til du vil spise, men ${methodName.toLowerCase()} er en rask metode ment for et par timers gjæring rett før steking — resten av tiden går til spille. Med så mye tid til rådighet gir Langtidsdeig eller Kveldsdeig gjerne bedre smak for samme innsats.`,`You have set aside about ${leadDays} days until you want to eat, but ${methodNameLow} is a fast method meant for a couple of hours of fermentation right before baking — the rest of the time is wasted. With this much time available, Long-ferment dough or Evening dough usually gives better flavor for the same effort.`)}</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">
-      <button onclick="methodWarnSwitchToStandard()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Bytt til Langtidsdeig</button>
+      <button onclick="methodWarnSwitchToStandard()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('Bytt til Langtidsdeig','Switch to Long-ferment dough')}</button>
     </div>
-    <div style="margin-top:.5rem"><span onclick="setReturnTo(false);mobShowTab('settings');wizGoto(2)" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Metode</span></div>
+    <div style="margin-top:.5rem"><span onclick="setReturnTo(false);mobShowTab('settings');wizGoto(2)" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">${L('⚙️ Se i Metode','⚙️ See in Method')}</span></div>
   </div>`);
 }
 function methodWarnSwitchToStandard(){
@@ -3454,9 +3564,9 @@ function methodWarnSwitchToStandard(){
 function hurtigWarmRoomWarningHTML(){
   if(S.method!=='hurtig' || S.hurtigH<12 || S.temp<22) return '';
   return warningWrapHTML(`warmroom|${S.hurtigH}|${S.temp}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
-    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">🌡️ ${S.hurtigH} timer ved ${S.temp}°C — sjekk deigen underveis</div>
-    <div style="font-size:12px;color:#4a2a05;line-height:1.5">De lengste hurtigdeig-alternativene (12–16t) er beregnet for et kjøligere kjøkken (18–20°C). Ved ${S.temp}°C går gjæringen fortere enn ventet, og deigen kan bli overmoden før tiden er ute. Sjekk den gjerne en time eller to før planlagt slutt — er den allerede stor og blank med bobler som kollapser lett, er den klar til bruk selv om klokken ikke stemmer helt.</div>
-    <div style="margin-top:.5rem"><span onclick="openFinjusterAt('mob-tlbl')" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L(`🌡️ ${S.hurtigH} timer ved ${S.temp}°C — sjekk deigen underveis`,`🌡️ ${S.hurtigH} hours at ${S.temp}°C — check the dough along the way`)}</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`De lengste hurtigdeig-alternativene (12–16t) er beregnet for et kjøligere kjøkken (18–20°C). Ved ${S.temp}°C går gjæringen fortere enn ventet, og deigen kan bli overmoden før tiden er ute. Sjekk den gjerne en time eller to før planlagt slutt — er den allerede stor og blank med bobler som kollapser lett, er den klar til bruk selv om klokken ikke stemmer helt.`,`The longest quick-dough options (12–16h) are calculated for a cooler kitchen (18–20°C). At ${S.temp}°C the fermentation goes faster than expected, and the dough can over-ripen before the time is up. Feel free to check it an hour or two before the planned end — if it is already large and shiny with bubbles that collapse easily, it is ready to use even if the clock does not quite match.`)}</div>
+    <div style="margin-top:.5rem"><span onclick="openFinjusterAt('mob-tlbl')" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">${L('⚙️ Se i Finjuster','⚙️ See in Fine-tune')}</span></div>
   </div>`);
 }
 function overfermentWarningHTML(){
@@ -3467,13 +3577,13 @@ function overfermentWarningHTML(){
   const threshold = S.method==='biga' ? 92 : 96;
   if(totalHours < threshold) return '';
   const totalDays = (Math.round(totalHours/24*10)/10).toString().replace('.',',');
-  const methodTxt = S.method==='poolish' ? ` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.poolishH}t poolish-forgjæring)`
-    : S.method==='biga' ? ` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.bigaH}t biga-forgjæring)`
-    : ` (${coldTimeLabel(S.cold)} kjøleskap)`;
+  const methodTxt = S.method==='poolish' ? L(` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.poolishH}t poolish-forgjæring)`,` (${coldTimeLabel(S.cold)} fridge + about ${S.poolishH}h poolish pre-ferment)`)
+    : S.method==='biga' ? L(` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.bigaH}t biga-forgjæring)`,` (${coldTimeLabel(S.cold)} fridge + about ${S.bigaH}h biga pre-ferment)`)
+    : L(` (${coldTimeLabel(S.cold)} kjøleskap)`,` (${coldTimeLabel(S.cold)} fridge)`);
   return warningWrapHTML(`overferment|${S.method}|${Math.round(totalHours)}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
-    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">⚠️ Lang gjæringstid — fare for overfermentering</div>
-    <div style="font-size:12px;color:#4a2a05;line-height:1.5">Total effektiv gjæringstid er ca. ${totalDays} døgn${methodTxt}. Ved denne lengden bryter enzymer gradvis ned glutenstrukturen mer enn de bygger den — deigen kan bli slapp, klissete og vanskelig å forme, med en flat, tydelig sur smak. Sjekk deigen jevnlig mot slutten, og vær klar til å bake litt tidligere enn planlagt hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).</div>
-    <div style="margin-top:.5rem"><span onclick="openFinjusterAt('mob-cwrap')" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">⚙️ Se i Finjuster</span></div>
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L('⚠️ Lang gjæringstid — fare for overfermentering','⚠️ Long fermentation time — risk of over-fermentation')}</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`Total effektiv gjæringstid er ca. ${totalDays} døgn${methodTxt}. Ved denne lengden bryter enzymer gradvis ned glutenstrukturen mer enn de bygger den — deigen kan bli slapp, klissete og vanskelig å forme, med en flat, tydelig sur smak. Sjekk deigen jevnlig mot slutten, og vær klar til å bake litt tidligere enn planlagt hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).`,`Total effective fermentation time is about ${totalDays} days${methodTxt}. At this length, enzymes gradually break down the gluten structure faster than they build it — the dough can become slack, sticky and hard to shape, with a flat, distinctly sour taste. Check the dough regularly toward the end, and be ready to bake a little earlier than planned if it looks over-ripe (large, shiny surface with bubbles that collapse easily).`)}</div>
+    <div style="margin-top:.5rem"><span onclick="openFinjusterAt('mob-cwrap')" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">${L('⚙️ Se i Finjuster','⚙️ See in Fine-tune')}</span></div>
   </div>`);
 }
 
@@ -3542,7 +3652,7 @@ function buildChangelogHTML(){
     <div class="clog-ver">
       <div class="vh"><b>v${entry.v}</b><span>${entry.d}</span></div>
       <ul>${entry.changes.map(c => `<li>${c}</li>`).join('')}</ul>
-    </div>`).join('') + `<button onclick="closeChangelogModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:14px;font-weight:600;cursor:pointer;margin-top:1rem">Lukk</button>`;
+    </div>`).join('') + `<button onclick="closeChangelogModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:14px;font-weight:600;cursor:pointer;margin-top:1rem">${L('Lukk','Close')}</button>`;
 }
 function openChangelogModal(){
   document.getElementById('changelog-modal-body').innerHTML = buildChangelogHTML();
@@ -3601,39 +3711,39 @@ function shareApp(labelId){
   const done = () => {
     if(labelId){
       const el=document.getElementById(labelId);
-      if(el){ const o=el.textContent; el.textContent='✓ Lenke kopiert!'; setTimeout(()=>{ el.textContent=o; },2000); return; }
+      if(el){ const o=el.textContent; el.textContent=L('✓ Lenke kopiert!','✓ Link copied!'); setTimeout(()=>{ el.textContent=o; },2000); return; }
     }
-    alert('Lenke kopiert til utklippstavla:\n'+url);
+    alert(L('Lenke kopiert til utklippstavla:\n'+url,'Link copied to clipboard:\n'+url));
   };
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(done).catch(()=>window.prompt('Kopier lenken:', url));
+    navigator.clipboard.writeText(url).then(done).catch(()=>window.prompt(L('Kopier lenken:','Copy the link:'), url));
   } else {
-    window.prompt('Kopier lenken:', url);
+    window.prompt(L('Kopier lenken:','Copy the link:'), url);
   }
 }
 
 // ===== TILBAKEMELDING (delt liste via Netlify Blobs) =====
 const FEEDBACK_CATEGORIES = [
-  {v:'mel', t:'Mangler mel'},
-  {v:'feil', t:'Noe er feil'},
-  {v:'forslag', t:'Forslag'},
-  {v:'annet', t:'Annet'}
+  {v:'mel', t:'Mangler mel', tEn:'Missing flour'},
+  {v:'feil', t:'Noe er feil', tEn:'Something is wrong'},
+  {v:'forslag', t:'Forslag', tEn:'Suggestion'},
+  {v:'annet', t:'Annet', tEn:'Other'}
 ];
 window._feedbackCategory = 'feil';
 
 function buildFeedbackFormHTML(){
   return `
-    <div style="font-size:12px;margin-bottom:.8rem;line-height:1.5" class="dyn-faint-text">Fant du en feil, savner du et mel, eller har du et forslag? Skriv det her — versjon og innstillingene dine sendes med automatisk, så det er lettere å finne igjen problemet.</div>
+    <div style="font-size:12px;margin-bottom:.8rem;line-height:1.5" class="dyn-faint-text">${L('Fant du en feil, savner du et mel, eller har du et forslag? Skriv det her — versjon og innstillingene dine sendes med automatisk, så det er lettere å finne igjen problemet.','Found a bug, missing a flour, or have a suggestion? Write it here — the version and your settings are sent along automatically, making the problem easier to trace.')}</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.7rem" id="feedback-cat-pills">
-      ${FEEDBACK_CATEGORIES.map(c=>`<span class="pill${window._feedbackCategory===c.v?' on':''}" data-v="${c.v}" onclick="setFeedbackCategory('${c.v}')" style="cursor:pointer">${c.t}</span>`).join('')}
+      ${FEEDBACK_CATEGORIES.map(c=>`<span class="pill${window._feedbackCategory===c.v?' on':''}" data-v="${c.v}" onclick="setFeedbackCategory('${c.v}')" style="cursor:pointer">${L(c.t,c.tEn)}</span>`).join('')}
     </div>
-    <textarea id="feedback-msg" placeholder="Skriv her..." style="width:100%;min-height:90px;padding:.6rem;border:1px solid #d0cdc8;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+    <textarea id="feedback-msg" placeholder="${L('Skriv her...','Write here...')}" style="width:100%;min-height:90px;padding:.6rem;border:1px solid #d0cdc8;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
     <div style="display:flex;align-items:center;gap:8px;margin-top:.6rem">
-      <button onclick="submitFeedback()" style="padding:8px 14px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Send</button>
+      <button onclick="submitFeedback()" style="padding:8px 14px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('Send','Send')}</button>
       <span id="feedback-status" style="font-size:12px;color:#888"></span>
     </div>
     <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
-      <div style="font-size:12px;font-weight:600;color:var(--dyn-text);margin-bottom:.5rem">📋 Tidligere tilbakemeldinger</div>
+      <div style="font-size:12px;font-weight:600;color:var(--dyn-text);margin-bottom:.5rem">${L('📋 Tidligere tilbakemeldinger','📋 Previous feedback')}</div>
       <div id="feedback-list-wrap"></div>
     </div>`;
 }
@@ -3654,8 +3764,8 @@ async function submitFeedback(){
   const ta = document.getElementById('feedback-msg');
   const statusEl = document.getElementById('feedback-status');
   const msg = ta ? ta.value.trim() : '';
-  if(!msg){ if(statusEl) statusEl.textContent = 'Skriv en melding først.'; return; }
-  if(statusEl) statusEl.textContent = 'Sender...';
+  if(!msg){ if(statusEl) statusEl.textContent = L('Skriv en melding først.','Write a message first.'); return; }
+  if(statusEl) statusEl.textContent = L('Sender...','Sending...');
   try{
     const res = await fetch('/api/feedback', {
       method: 'POST',
@@ -3668,12 +3778,12 @@ async function submitFeedback(){
       })
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    if(statusEl) statusEl.textContent = '✓ Takk! Sendt.';
+    if(statusEl) statusEl.textContent = L('✓ Takk! Sendt.','✓ Thanks! Sent.');
     if(ta) ta.value='';
     loadFeedbackList();
     setTimeout(()=>{ closeFeedbackModal(); }, 1100);
   }catch(e){
-    if(statusEl) statusEl.textContent = 'Kunne ikke sende — prøv igjen.';
+    if(statusEl) statusEl.textContent = L('Kunne ikke sende — prøv igjen.','Could not send — try again.');
   }
 }
 // v5.94: REELL BUG — currentUserName() ble kalt fire steder (lagre bakst,
@@ -3707,40 +3817,40 @@ function feedbackVotedSet(){
 async function loadFeedbackList(){
   const wrap = document.getElementById('feedback-list-wrap');
   if(!wrap) return;
-  wrap.innerHTML = '<p style="color:var(--dyn-faint);font-size:12px">Laster...</p>';
+  wrap.innerHTML = `<p style="color:var(--dyn-faint);font-size:12px">${L('Laster...','Loading...')}</p>`;
   try{
     const res = await fetch('/api/feedback');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     const items = data.feedback || [];
-    if(!items.length){ wrap.innerHTML = '<p style="color:var(--dyn-faint);font-size:12px">Ingen tilbakemeldinger ennå.</p>'; return; }
+    if(!items.length){ wrap.innerHTML = `<p style="color:var(--dyn-faint);font-size:12px">${L('Ingen tilbakemeldinger ennå.','No feedback yet.')}</p>`; return; }
     items.sort((a,b)=>(b.votes||0)-(a.votes||0));
     const isAdmin = !!window._adminPassword;
     const voted = feedbackVotedSet();
-    const catLbl = v => (FEEDBACK_CATEGORIES.find(c=>c.v===v)||{t:v}).t;
+    const catLbl = v => { const c=FEEDBACK_CATEGORIES.find(c=>c.v===v); return c?L(c.t,c.tEn):v; };
     wrap.innerHTML = items.map(it=>{
       let dt=''; try{ dt=fDT(new Date(it.createdAt)); }catch(e){}
       const ctx = it.context||{};
       const hasVoted = voted.has(it.id);
       const adminBtns = isAdmin ? `
-            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?'Merk som ulest':'Merk som løst'}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
-            <button onclick="deleteFeedbackConfirm('${it.id}')" title="Slett" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
+            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?L('Merk som ulest','Mark as unread'):L('Merk som løst','Mark as resolved')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
+            <button onclick="deleteFeedbackConfirm('${it.id}')" title="${L('Slett','Delete')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
       return `<div style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
             <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
-            <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}${it.submittedBy?' · av '+escH(it.submittedBy):''}</span>
+            <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}${it.submittedBy?L(' · av ',' · by ')+escH(it.submittedBy):''}</span>
             <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
-            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?'Du har allerede stemt':'Stem opp'}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#1D9E75':'var(--dyn-border)'};border-radius:6px;background:${hasVoted?'#E1F5EE':'var(--dyn-btn-bg)'};color:${hasVoted?'#0F6E56':'var(--dyn-text)'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
+            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?L('Du har allerede stemt','You have already voted'):L('Stem opp','Vote up')}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#1D9E75':'var(--dyn-border)'};border-radius:6px;background:${hasVoted?'#E1F5EE':'var(--dyn-btn-bg)'};color:${hasVoted?'#0F6E56':'var(--dyn-text)'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
             ${adminBtns}
           </div>
         </div>
       </div>`;
     }).join('');
   }catch(e){
-    wrap.innerHTML = '<p style="color:#993C1D;font-size:12px">Kunne ikke laste tilbakemeldinger.</p>';
+    wrap.innerHTML = `<p style="color:#993C1D;font-size:12px">${L('Kunne ikke laste tilbakemeldinger.','Could not load feedback.')}</p>`;
   }
 }
 async function voteFeedback(id){
@@ -3867,7 +3977,7 @@ function updatePcountDisp(){
   ['pcount-disp','mob-pcount-disp'].forEach(id=>{
     const e=document.getElementById(id);if(e)e.textContent=c;
   });
-  const lblTxt='eller antall '+pcUnitLabel(true)+':';
+  const lblTxt=L('eller antall '+pcUnitLabel(true)+':','or number of '+pcUnitLabel(true)+':');
   ['pcount-lbl','mob-pcount-lbl'].forEach(id=>{
     const e=document.getElementById(id);if(e)e.textContent=lblTxt;
   });
@@ -3895,9 +4005,9 @@ function updateRoundupNotice(){
     if(!info){ el.style.display='none'; return; }
     el.style.display='flex';
     const txt=el.querySelector('.roundup-txt');
-    if(txt) txt.textContent=`${info.currentPerPan}g deig/panne — rund opp til ${info.count===1?'1 hel langpanne':info.count+' fulle langpanner'}?`;
+    if(txt) txt.textContent=L(`${info.currentPerPan}g deig/panne — rund opp til ${info.count===1?'1 hel langpanne':info.count+' fulle langpanner'}?`,`${info.currentPerPan}g dough/pan — round up to ${info.count===1?'1 full sheet pan':info.count+' full sheet pans'}?`);
     const btn=el.querySelector('.roundup-btn');
-    if(btn) btn.textContent=`+${info.extraFlour}g mel`;
+    if(btn) btn.textContent=L(`+${info.extraFlour}g mel`,`+${info.extraFlour}g flour`);
   });
 }
 function roundUpToFullLangpanne(){
@@ -3915,8 +4025,8 @@ function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
 
 function noNoteDeigHTML(){
   return `<div style="padding:1.5rem 0;text-align:center;color:#999;font-size:13px;line-height:1.6">
-    <p>Ingen aktiv deig valgt.</p>
-    <p style="margin-top:.4rem">Trykk <b>💾 Lagre deig</b> på en tidsplan, eller åpne en fra <b>Deiger</b>-fanen, for å skrive notater.</p>
+    <p>${L('Ingen aktiv deig valgt.','No active dough selected.')}</p>
+    <p style="margin-top:.4rem">${L('Trykk <b>💾 Lagre deig</b> på en tidsplan, eller åpne en fra <b>Deiger</b>-fanen, for å skrive notater.','Tap <b>💾 Save dough</b> on a schedule, or open one from the <b>Doughs</b> tab, to write notes.')}</p>
   </div>`;
 }
 
@@ -3928,10 +4038,10 @@ async function renderNotesPanel(targetId){
   const statusId = isMob ? 'mob-note-save-status' : 'note-save-status';
   const id = window._activeDeigId;
   if(!id){ el.innerHTML = noNoteDeigHTML(); return; }
-  el.innerHTML = '<p style="color:#999;font-size:13px;padding:.5rem 0">Laster notat…</p>';
+  el.innerHTML = `<p style="color:#999;font-size:13px;padding:.5rem 0">${L('Laster notat…','Loading note…')}</p>`;
   const bakes = await fetchBakes();
   if(bakes===null){
-    el.innerHTML = '<p style="color:#993C1D;font-size:12px;padding:.5rem 0">Kunne ikke hente notatet. Sjekk nettforbindelsen.</p>';
+    el.innerHTML = `<p style="color:#993C1D;font-size:12px;padding:.5rem 0">${L('Kunne ikke hente notatet. Sjekk nettforbindelsen.','Could not fetch the note. Check your connection.')}</p>`;
     return;
   }
   window._bakesCache = bakes;
@@ -3941,16 +4051,16 @@ async function renderNotesPanel(targetId){
     el.innerHTML = noNoteDeigHTML();
     return;
   }
-  const statusTxt = b.status==='finished' ? 'Ferdig' : 'Aktiv';
-  const noteByTxt = b.noteBy ? ` · sist lagret av ${escH(b.noteBy)}` : '';
+  const statusTxt = b.status==='finished' ? L('Ferdig','Finished') : L('Aktiv','Active');
+  const noteByTxt = b.noteBy ? L(` · sist lagret av ${escH(b.noteBy)}`,` · last saved by ${escH(b.noteBy)}`) : '';
   el.innerHTML = `
-    <div style="font-size:12px;color:#888;margin-bottom:.5rem">Notater for: <b class="admin-uname" style="font-size:12px">${escH(b.name)}</b> <span style="color:#1D9E75">· ${statusTxt}</span>${noteByTxt}</div>
-    <textarea id="${inputId}" rows="6" placeholder="Hvordan gikk det? Smak, heving, justeringer til neste gang..." style="width:100%;border:1px solid #d0cdc8;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box">${escH(b.note||'')}</textarea>
+    <div style="font-size:12px;color:#888;margin-bottom:.5rem">${L('Notater for:','Notes for:')} <b class="admin-uname" style="font-size:12px">${escH(b.name)}</b> <span style="color:#1D9E75">· ${statusTxt}</span>${noteByTxt}</div>
+    <textarea id="${inputId}" rows="6" placeholder="${L('Hvordan gikk det? Smak, heving, justeringer til neste gang...','How did it go? Taste, rise, adjustments for next time...')}" style="width:100%;border:1px solid #d0cdc8;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box">${escH(b.note||'')}</textarea>
     <div style="margin-top:.5rem;display:flex;gap:10px;align-items:center">
-      <button onclick="saveDeigNote('${inputId}','${statusId}')" style="padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">💾 Lagre notat</button>
+      <button onclick="saveDeigNote('${inputId}','${statusId}')" style="padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">${L('💾 Lagre notat','💾 Save note')}</button>
       <span id="${statusId}" style="font-size:12px;color:#1D9E75"></span>
     </div>
-    <div style="font-size:11px;color:#999;margin-top:6px">Lagres sammen med deigen — synlig for alle som åpner den, uansett enhet.</div>`;
+    <div style="font-size:11px;color:#999;margin-top:6px">${L('Lagres sammen med deigen — synlig for alle som åpner den, uansett enhet.','Saved with the dough — visible to everyone who opens it, on any device.')}</div>`;
 }
 
 async function saveDeigNote(inputId, statusId){
@@ -3967,9 +4077,9 @@ async function saveDeigNote(inputId, statusId){
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     if(window._bakesCache){ const b=window._bakesCache.find(x=>x.id===id); if(b){ b.note=val; b.noteBy=currentUserName(); } }
-    if(statusEl){ statusEl.textContent='✓ Lagret'; setTimeout(()=>{ if(statusEl) statusEl.textContent=''; }, 2000); }
+    if(statusEl){ statusEl.textContent=L('✓ Lagret','✓ Saved'); setTimeout(()=>{ if(statusEl) statusEl.textContent=''; }, 2000); }
   }catch(e){
-    alert('Kunne ikke lagre notat. Sjekk nettforbindelsen. ('+e.message+')');
+    alert(L('Kunne ikke lagre notat. Sjekk nettforbindelsen. ('+e.message+')','Could not save note. Check your connection. ('+e.message+')'));
   }
 }
 
@@ -3989,7 +4099,7 @@ function setLayout(mode){
   if(mobEl){mobEl.classList.toggle('active',isMob);}
   try{localStorage.setItem('pizzaLayout',mode);}catch(e){}
   if(isMob){
-    syncMobControls();mobGen();
+    syncMobControls();mobGen();try{syncI18nUI();}catch(e){}
   }
   else{gen();}
 }
@@ -3999,19 +4109,19 @@ function escAttr(s){return String(s).replace(/'/g,"&#39;").replace(/"/g,'&quot;'
 
 function authNameScreenHTML(){
   return `
-    <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">Hva heter du?</div>
-    <input id="auth-name" type="text" placeholder="Navnet ditt" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:15px;box-sizing:border-box;text-align:center" onkeydown="if(event.key==='Enter')authSubmitName()">
-    <button onclick="authSubmitName()" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Fortsett</button>
+    <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">${L('Hva heter du?','What is your name?')}</div>
+    <input id="auth-name" type="text" placeholder="${L('Navnet ditt','Your name')}" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:15px;box-sizing:border-box;text-align:center" onkeydown="if(event.key==='Enter')authSubmitName()">
+    <button onclick="authSubmitName()" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${L('Fortsett','Continue')}</button>
     <div id="auth-error" style="text-align:center;font-size:12px;color:#993C1D;margin-top:.5rem"></div>`;
 }
 function authPinScreenHTML(name, isNew){
   return `
-    <div style="font-size:13px;color:var(--dyn-text);margin-bottom:.2rem;text-align:center;font-weight:600">Hei, ${escH(name)}!</div>
-    <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">${isNew?'Lag en 4-sifret PIN-kode':'Skriv inn PIN-koden din'}</div>
+    <div style="font-size:13px;color:var(--dyn-text);margin-bottom:.2rem;text-align:center;font-weight:600">${L(`Hei, ${escH(name)}!`,`Hi, ${escH(name)}!`)}</div>
+    <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">${isNew?L('Lag en 4-sifret PIN-kode','Create a 4-digit PIN'):L('Skriv inn PIN-koden din','Enter your PIN')}</div>
     <input id="auth-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')${isNew?'authSubmitNewPin()':'authSubmitPin()'}">
-    ${isNew?`<input id="auth-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Gjenta PIN" autocomplete="off" style="width:100%;margin-top:.5rem;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')authSubmitNewPin()">`:''}
-    <button onclick="${isNew?'authSubmitNewPin()':'authSubmitPin()'}" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${isNew?'Registrer':'Logg inn'}</button>
-    <div onclick="authShowNameScreen()" style="text-align:center;font-size:11px;color:#888;margin-top:.6rem;cursor:pointer;text-decoration:underline">Feil navn? Start på nytt</div>
+    ${isNew?`<input id="auth-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="${L('Gjenta PIN','Repeat PIN')}" autocomplete="off" style="width:100%;margin-top:.5rem;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')authSubmitNewPin()">`:''}
+    <button onclick="${isNew?'authSubmitNewPin()':'authSubmitPin()'}" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${isNew?L('Registrer','Register'):L('Logg inn','Log in')}</button>
+    <div onclick="authShowNameScreen()" style="text-align:center;font-size:11px;color:#888;margin-top:.6rem;cursor:pointer;text-decoration:underline">${L('Feil navn? Start på nytt','Wrong name? Start over')}</div>
     <div id="auth-error" style="text-align:center;font-size:12px;color:#993C1D;margin-top:.5rem"></div>`;
 }
 function authShowNameScreen(){
@@ -4023,8 +4133,8 @@ async function authSubmitName(){
   const input = document.getElementById('auth-name');
   const name = input ? input.value.trim() : '';
   const errEl = document.getElementById('auth-error');
-  if(!name){ if(errEl) errEl.textContent = 'Skriv inn et navn.'; return; }
-  if(errEl) errEl.textContent = 'Sjekker...';
+  if(!name){ if(errEl) errEl.textContent = L('Skriv inn et navn.','Enter a name.'); return; }
+  if(errEl) errEl.textContent = L('Sjekker...','Checking...');
   try{
     const res = await fetch('/api/users?name='+encodeURIComponent(name));
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -4034,43 +4144,43 @@ async function authSubmitName(){
     const pinEl = document.getElementById('auth-pin');
     if(pinEl) pinEl.focus();
   }catch(e){
-    if(errEl) errEl.textContent = 'Fikk ikke kontakt — prøv igjen.';
+    if(errEl) errEl.textContent = L('Fikk ikke kontakt — prøv igjen.','Could not connect — try again.');
   }
 }
 async function authSubmitNewPin(){
   const pin1 = document.getElementById('auth-pin').value;
   const pin2 = document.getElementById('auth-pin2').value;
   const errEl = document.getElementById('auth-error');
-  if(!/^\d{4}$/.test(pin1)){ if(errEl) errEl.textContent = 'PIN må være 4 siffer.'; return; }
-  if(pin1!==pin2){ if(errEl) errEl.textContent = 'PIN-kodene er ikke like.'; return; }
-  if(errEl) errEl.textContent = 'Registrerer...';
+  if(!/^\d{4}$/.test(pin1)){ if(errEl) errEl.textContent = L('PIN må være 4 siffer.','PIN must be 4 digits.'); return; }
+  if(pin1!==pin2){ if(errEl) errEl.textContent = L('PIN-kodene er ikke like.','The PINs do not match.'); return; }
+  if(errEl) errEl.textContent = L('Registrerer...','Registering...');
   try{
     const res = await fetch('/api/users', {
       method: 'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({name: window._authName, pin: pin1})
     });
     const data = await res.json();
-    if(!res.ok){ if(errEl) errEl.textContent = data.error || 'Kunne ikke registrere.'; return; }
+    if(!res.ok){ if(errEl) errEl.textContent = data.error || L('Kunne ikke registrere.','Could not register.'); return; }
     authComplete(data.id, data.name);
   }catch(e){
-    if(errEl) errEl.textContent = 'Fikk ikke kontakt — prøv igjen.';
+    if(errEl) errEl.textContent = L('Fikk ikke kontakt — prøv igjen.','Could not connect — try again.');
   }
 }
 async function authSubmitPin(){
   const pin = document.getElementById('auth-pin').value;
   const errEl = document.getElementById('auth-error');
-  if(!/^\d{4}$/.test(pin)){ if(errEl) errEl.textContent = 'PIN må være 4 siffer.'; return; }
-  if(errEl) errEl.textContent = 'Sjekker...';
+  if(!/^\d{4}$/.test(pin)){ if(errEl) errEl.textContent = L('PIN må være 4 siffer.','PIN must be 4 digits.'); return; }
+  if(errEl) errEl.textContent = L('Sjekker...','Checking...');
   try{
     const res = await fetch('/api/users/verify', {
       method: 'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({name: window._authName, pin})
     });
     const data = await res.json();
-    if(!data.ok){ if(errEl) errEl.textContent = 'Feil PIN.'; return; }
+    if(!data.ok){ if(errEl) errEl.textContent = L('Feil PIN.','Wrong PIN.'); return; }
     authComplete(data.id, data.name);
   }catch(e){
-    if(errEl) errEl.textContent = 'Fikk ikke kontakt — prøv igjen.';
+    if(errEl) errEl.textContent = L('Fikk ikke kontakt — prøv igjen.','Could not connect — try again.');
   }
 }
 async function authComplete(id, name){
@@ -4095,7 +4205,7 @@ function syncLoggedInAs(){
   let saved = null;
   try{ saved = JSON.parse(localStorage.getItem('pizzaUser')); }catch(e){}
   const el = document.getElementById('logged-in-as');
-  if(el) el.textContent = saved && saved.name ? 'Pålogget som '+saved.name : '';
+  if(el) el.textContent = saved && saved.name ? L('Pålogget som ','Logged in as ')+saved.name : '';
 }
 function authLogout(){
   try{ localStorage.removeItem('pizzaUser'); }catch(e){}
@@ -4617,12 +4727,12 @@ function methodFitNote(v){
 function mobMethodCards(){
   const wrap=document.getElementById('mob-gmet');if(!wrap)return;
   wrap.innerHTML='';
-  [{v:'standard',t:'Langtidsdeig',s:'Direkte + kjøleskapsheving'},
-   {v:'poolish',t:'Poolish',s:'Løs fordeig, 12–16t'},
-   {v:'biga',t:'Biga',s:'Fast fordeig, 16–24t'},
-   {v:'mania',t:'Mania-poolish',s:'To-trinns, udelt kald heving'},
-   {v:'hurtig',t:'Hurtigdeig',s:'2–16 timer, romtemperatur'},
-   {v:'kveld',t:'Kveldsdeig',s:'5–24 timer i kjøleskap'}
+  [{v:'standard',t:L('Langtidsdeig','Long-ferment dough'),s:L('Direkte + kjøleskapsheving','Direct + cold proof')},
+   {v:'poolish',t:'Poolish',s:L('Løs fordeig, 12–16t','Loose pre-ferment, 12–16h')},
+   {v:'biga',t:'Biga',s:L('Fast fordeig, 16–24t','Stiff pre-ferment, 16–24h')},
+   {v:'mania',t:L('Mania-poolish','Mania poolish'),s:L('To-trinns, udelt kald heving','Two-stage, undivided cold proof')},
+   {v:'hurtig',t:L('Hurtigdeig','Quick dough'),s:L('2–16 timer, romtemperatur','2–16 hours, room temperature')},
+   {v:'kveld',t:L('Kveldsdeig','Evening dough'),s:L('5–24 timer i kjøleskap','5–24 hours in the fridge')}
   ].forEach(({v,t,s})=>{
     const el=document.createElement('div');
     const isOn=S.method===v;
@@ -4658,23 +4768,25 @@ function updateMethodWhyBox(){
   const titleEl=document.getElementById('mob-method-why-title');
   const textEl=document.getElementById('mob-method-why-text');
   if(!titleEl||!textEl) return;
-  const names={standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',kveld:'Kveldsdeig',mania:'Mania-poolish'};
-  titleEl.textContent='Hvorfor '+(names[S.method]||S.method)+'?';
+  const names = window._lang==='en'
+    ? {standard:'Long-ferment dough',poolish:'Poolish',biga:'Biga',hurtig:'Quick dough',kveld:'Evening dough',mania:'Mania poolish'}
+    : {standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',kveld:'Kveldsdeig',mania:'Mania-poolish'};
+  titleEl.textContent=L('Hvorfor '+(names[S.method]||S.method)+'?','Why '+(names[S.method]||S.method)+'?');
   textEl.textContent=METHOD_WHY[S.method]||'';
 }
 
 function mobBuildHrows(){
   const b=document.getElementById('mob-hrows');if(!b)return;
-  b.innerHTML=HOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.hurtigH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.hurtigH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.hurtigH?600:400}" onclick="mobSetH(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.hurtigH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+  b.innerHTML=HOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.hurtigH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.hurtigH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.hurtigH?600:400}" onclick="mobSetH(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.hurtigH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} ${L("timer","hours")} — ${L(o.b,o.bEn)}</div>`).join('');
 }
 function mobSetH(h){S.hurtigH=h;mobBuildHrows();mobGen();}
 function mobBuildKrows(){
   const b=document.getElementById('mob-krows');if(!b)return;
-  b.innerHTML=KOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.kveldH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.kveldH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.kveldH?600:400}" onclick="mobSetK(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.kveldH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+  b.innerHTML=KOPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.kveldH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.kveldH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.kveldH?600:400}" onclick="mobSetK(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.kveldH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} ${L("timer","hours")} — ${L(o.b,o.bEn)}</div>`).join('');
 }
 function mobBuildProws(){
   const b=document.getElementById('mob-prows');if(!b)return;
-  b.innerHTML=POOLISH_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.poolishH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.poolishH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.poolishH?600:400}" onclick="mobSetP(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.poolishH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+  b.innerHTML=POOLISH_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.poolishH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.poolishH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.poolishH?600:400}" onclick="mobSetP(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.poolishH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} ${L("timer","hours")} — ${L(o.b,o.bEn)}</div>`).join('');
 }
 function mobSetP(h){armStartDelta();S.poolishH=h;mobBuildProws();mobGen();}
 // Kjøleskaps-poolish: mye bredere, friere varighet (12–48t) enn den navngitte
@@ -4695,7 +4807,7 @@ function setPoolishCold(cold){
   if(cold && (S.poolishH<12 || S.poolishH>16)){ /* behold verdi hvis allerede satt av stepperen */ }
   else if(cold && S.poolishH<=16){ S.poolishH=24; } // fornuftig startpunkt for kjøleskapsvarianten
   else if(!cold && S.poolishH>16){ S.poolishH=14; } // tilbake til et gyldig romtemperatur-alternativ
-  const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=S.poolishH+' timer';
+  const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=S.poolishH+L(' timer',' hours');
   mobBuildProws();
   mobGen();
 }
@@ -4703,7 +4815,7 @@ function stepPoolishCold(delta){
   armStartDelta();
   const next=Math.max(12,Math.min(48,(S.poolishH||24)+delta*6));
   S.poolishH=next;
-  const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=next+' timer';
+  const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=next+L(' timer',' hours');
   mobGen();
 }
 // Poolish kjøleskapspause: velg den korteste pausen (6/12/18t, tak 18) som gir
@@ -4732,8 +4844,8 @@ function syncPoolishPauseUI(){
   const btn=document.getElementById('mob-ppause-btn'); if(!btn) return;
   const on=(S.poolishPauseH||0)>0;
   btn.textContent = on
-    ? `🧊 På — kald pause på ca. ${fmtDur(S.poolishPauseH*60)} (trykk for å slå av)`
-    : '🧊 Slå på — la poolishen vente i kjøleskapet';
+    ? L(`🧊 På — kald pause på ca. ${fmtDur(S.poolishPauseH*60)} (trykk for å slå av)`,`🧊 On — cold pause of about ${durEn(fmtDur(S.poolishPauseH*60))} (tap to turn off)`)
+    : L('🧊 Slå på — la poolishen vente i kjøleskapet','🧊 Turn on — let the poolish wait in the fridge');
   btn.style.cssText = `padding:9px 10px;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;line-height:1.35;${on?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)'}`;
 }
 // Snarvei fra tidskonflikt-varselet: slå på pausen (auto) og vis resultatet.
@@ -4745,7 +4857,7 @@ function activeStepWarnPoolishPause(){
 }
 function mobBuildBrows(){
   const b=document.getElementById('mob-brows');if(!b)return;
-  b.innerHTML=BIGA_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.bigaH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.bigaH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.bigaH?600:400}" onclick="mobSetB(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.bigaH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} timer — ${o.b}</div>`).join('');
+  b.innerHTML=BIGA_OPTS.map(o=>`<div style="display:flex;align-items:center;gap:7px;padding:4px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:${o.h===S.bigaH?'var(--forno-accent-text)':'var(--forno-text-faint)'};background:${o.h===S.bigaH?'var(--forno-accent-soft)':'transparent'};font-weight:${o.h===S.bigaH?600:400}" onclick="mobSetB(${o.h})"><div style="width:7px;height:7px;border-radius:50%;background:${o.h===S.bigaH?'var(--forno-accent)':'var(--forno-border)'};flex-shrink:0"></div>${o.h} ${L("timer","hours")} — ${L(o.b,o.bEn)}</div>`).join('');
 }
 function mobSetB(h){armStartDelta();S.bigaH=h;mobBuildBrows();mobGen();}
 function mobSetK(h){S.kveldH=h;mobBuildKrows();mobGen();}
@@ -4795,9 +4907,9 @@ function startDeltaChipHTML(startMs){
   const diff=startMs-_startDelta.baseMs;
   if(Math.abs(diff) < 60000) return '';
   const h=Math.abs(diff)/3600000;
-  const txt=(Math.abs(h-Math.round(h))<0.05 ? String(Math.round(h)) : h.toFixed(1))+' t ';
+  const txt=(Math.abs(h-Math.round(h))<0.05 ? String(Math.round(h)) : h.toFixed(1))+L(' t ',' h ');
   return '<span class="wiz-start-delta" style="margin-left:5px;padding:1px 6px;border-radius:5px;background:var(--forno-accent-soft);color:var(--forno-accent-text);font-size:10px;font-weight:600;white-space:nowrap">'
-    + escH(txt + (diff<0 ? 'tidligere' : 'senere')) + '</span>';
+    + escH(txt + (diff<0 ? L('tidligere','earlier') : L('senere','later'))) + '</span>';
 }
 function stepColdWiz(delta){
   const next=Math.max(24,Math.min(144,(S.cold||24)+delta*6));
@@ -4817,14 +4929,14 @@ function stepColdWiz(delta){
 // nøyaktig samme sluttilstand som før.
 function wizStep1Refresh(){
   const lbl=document.getElementById('wiz-step1-when-lbl');
-  if(lbl) lbl.textContent = S.mode==='start' ? 'Du begynner nå' : 'Når vil du spise?';
+  if(lbl) lbl.textContent = S.mode==='start' ? L('Du begynner nå','You start now') : L('Når vil du spise?','When do you want to eat?');
   const banner=document.getElementById('wiz-fresh-banner');
   if(banner){
     const fresh=isAtDefaultConfig();
     banner.style.display = fresh ? 'none' : 'flex';
     if(!fresh){
       const txt=document.getElementById('wiz-fresh-banner-txt');
-      if(txt) txt.textContent = `Fortsetter: ${tnShort(S.type)} · ${mN(S.method)}`;
+      if(txt) txt.textContent = L(`Fortsetter: ${tnShort(S.type)} · ${mN(S.method)}`,`Continuing: ${tnShort(S.type)} · ${mN(S.method)}`);
     }
   }
 }
@@ -4865,13 +4977,13 @@ function wizCheckRender(){
   if(!openCount){
     const hasAccepted = parts.some(p=>p.includes('data-accepted'));
     el.innerHTML=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem;margin-bottom:${hasAccepted?'.6rem':'0'}">
-      <div style="font-size:13px;font-weight:700;color:#085041;margin-bottom:.25rem">✓ ${hasAccepted?'Planen holder — med ett godtatt forbehold':'Planen holder'}</div>
-      <div style="font-size:12px;color:#0F6E56;line-height:1.5">${hasAccepted?'Alt annet stemmer, og du har selv godtatt resten.':'Alle steg ligger i tiden du har satt av, og melet passer til gjæringstiden.'}</div>
+      <div style="font-size:13px;font-weight:700;color:#085041;margin-bottom:.25rem">✓ ${hasAccepted?L('Planen holder — med ett godtatt forbehold','The plan works — with one accepted caveat'):L('Planen holder','The plan works')}</div>
+      <div style="font-size:12px;color:#0F6E56;line-height:1.5">${hasAccepted?L('Alt annet stemmer, og du har selv godtatt resten.','Everything else checks out, and you have accepted the rest yourself.'):L('Alle steg ligger i tiden du har satt av, og melet passer til gjæringstiden.','All steps fall within the time you set aside, and the flour matches the fermentation time.')}</div>
     </div>`+parts.join('');
     return;
   }
   const n=openCount;
-  const lead=`<div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.5rem">${n===1?'Én ting å se på':n+' ting å se på'}</div>`;
+  const lead=`<div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.5rem">${n===1?L('Én ting å se på','One thing to look at'):L(`${n} ting å se på`,`${n} things to look at`)}</div>`;
   el.innerHTML=lead+parts.join('');
 }
 
@@ -4888,11 +5000,11 @@ function mobHydroUI(){
   if(hl)hl.textContent=p+'%';
   const b=document.getElementById('mob-hcat');
   let tx,bg,co;
-  if(p<r.mn){tx='veldig fast';bg='#E6F1FB';co='#0C447C';}
-  else if(p<=HREC[S.type]-3){tx='fast';bg='#EAF3DE';co='#27500A';}
-  else if(p<=HREC[S.type]+3){tx='anbefalt';bg='#E1F5EE';co='#085041';}
-  else if(p<=r.mx){tx='høy';bg='#FAEEDA';co='#633806';}
-  else{tx='veldig høy';bg='#FAECE7';co='#712B13';}
+  if(p<r.mn){tx=L('veldig fast','very firm');bg='#E6F1FB';co='#0C447C';}
+  else if(p<=HREC[S.type]-3){tx=L('fast','firm');bg='#EAF3DE';co='#27500A';}
+  else if(p<=HREC[S.type]+3){tx=L('anbefalt','recommended');bg='#E1F5EE';co='#085041';}
+  else if(p<=r.mx){tx=L('høy','high');bg='#FAEEDA';co='#633806';}
+  else{tx=L('veldig høy','very high');bg='#FAECE7';co='#712B13';}
   if(b){b.textContent=tx;b.style.background=bg;b.style.color=co;}
 }
 
@@ -4986,9 +5098,9 @@ function wizEnterSettingsTab(){
 // nummerert steg i rekken i stedet for en sidedør, og siste steg er en
 // kvalitetssjekk som svarer på om planen faktisk holder.
 const WIZ_STEPS = [
-  {id:1, label:'Pizza', el:'wiz-step-1'},
-  {id:2, label:'Metode', el:'wiz-step-2'},
-  {id:3, label:'Sjekk', el:'wiz-step-check'}
+  {id:1, label:'Pizza', labelEn:'Pizza', el:'wiz-step-1'},
+  {id:2, label:'Metode', labelEn:'Method', el:'wiz-step-2'},
+  {id:3, label:'Sjekk', labelEn:'Check', el:'wiz-step-check'}
 ];
 function wizStepEl(step){
   const s=WIZ_STEPS.find(x=>x.id===step);
@@ -5000,7 +5112,9 @@ function wizHideAllSteps(){
   });
 }
 function tnShort(type){
-  return {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago',ingenelting:'Ingen elting'}[type]||type;
+  return (window._lang==='en'
+    ? {napoletana:'Neapolitan',newyork:'New York',langpanne:'Sheet pan',chicago:'Chicago',ingenelting:'No-knead'}
+    : {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago',ingenelting:'Ingen elting'})[type]||type;
 }
 function wizGoto(step, onSettled){
   // v5.81: Finjuster er ute av stegrekken igjen og nås fra varslene. Den
@@ -5053,7 +5167,7 @@ function wizRenderHeader(step){
   const labelsHtml = WIZ_STEPS.map(s=>{
     const done = s.id < idx;
     const cur = s.id === idx;
-    const txt = (s.id===1 && (done||cur)) ? tnShort(S.type) : (s.id===2 && (done||cur)) ? mN(S.method) : s.label;
+    const txt = (s.id===1 && (done||cur)) ? tnShort(S.type) : (s.id===2 && (done||cur)) ? mN(S.method) : L(s.label, s.labelEn);
     const color = cur ? '#1D9E75' : done ? '#085041' : '#8E8E93';
     const weight = (done||cur) ? '700' : '400';
     return `<span style="font-size:9px;color:${color};font-weight:${weight};flex:1;text-align:center">${txt}</span>`;
@@ -5151,8 +5265,8 @@ function substepToggleHTML(where){
 // nye verktøyraden — samme S.showHelp-flagg, ingen ny tilstand.
 function tipsToggleHTML(where){
   const on = !!S.showHelp;
-  if(where==='mob-compact') return _toolbarToggleBtn('toggleHelpFromPlan()', '💡', 'Tips', on);
-  return `<button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${on?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</button>`;
+  if(where==='mob-compact') return _toolbarToggleBtn('toggleHelpFromPlan()', '💡', L('Tips','Tips'), on);
+  return `<button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="${L('Vis eller skjul forklaringer og tips','Show or hide explanations and tips')}">${on?L('💡 Skjul forklaringer','💡 Hide explanations'):L('💡 Vis forklaringer','💡 Show explanations')}</button>`;
 }
 function toggleSubsteps(){
   S.showSubsteps=!S.showSubsteps;
@@ -5215,7 +5329,7 @@ function mobGen(){
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     const rrH=[...baseIngredientRows({mel:S.mel,vann:w2,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
-    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rrH, true)}</div></div>`;
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${t('r_count')}</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">${t('r_size')}</div><div class="pv">${p.perPizza}g</div><div class="ps">${t('r_dough')}</div></div></div><div class="mob-rec">${recipeRowsHTML(rrH, true)}</div></div>`;
     return;
   }
 
@@ -5224,8 +5338,8 @@ function mobGen(){
     window._steps=steps;
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const r2=R(),p=pc();
-    const rrK=[...baseIngredientRows({mel:S.mel,vann:r2.water,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Kjøleskapsheving',v:`${S.kveldH} timer`},{k:'Ovntype',v:oN()}];
-    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rrK, true)}</div></div>`;
+    const rrK=[...baseIngredientRows({mel:S.mel,vann:r2.water,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Kjøleskapsheving',v:L(`${S.kveldH} timer`,`${S.kveldH} hours`)},{k:'Ovntype',v:oN()}];
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${t('r_count')}</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">${t('r_size')}</div><div class="pv">${p.perPizza}g</div><div class="ps">${t('r_dough')}</div></div></div><div class="mob-rec">${recipeRowsHTML(rrK, true)}</div></div>`;
     return;
   }
 
@@ -5234,9 +5348,9 @@ function mobGen(){
     window._steps=steps;
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
     const rm=maniaRecipe(),p=pc();
-    const rrPoolish=[{k:'Mel',v:`${rm.poolishMel}g`},{k:'Vann',v:`${rm.poolishVann}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.poolishYd}g tørrgjær`:`${rm.poolishYf}g fersk gjær`}];
-    const rrHoved=[{k:'Poolish',v:'Hele poolishen over'},{k:'Mel',v:`${rm.hovedMel}g`},{k:'Vann del 1',v:`${rm.vann1}g`},{k:'Vann del 2',v:`${rm.vann2}g`},{k:'Gjær',v:S.gjaer==='torr'?`${rm.hovedYd}g tørrgjær`:`${rm.hovedYf}g fersk gjær`},{k:'Salt',v:`${rm.salt}g`}];
-    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Hydrering</div><div class="pv">64%</div><div class="ps">total</div></div></div><div class="mob-section-lbl">Poolish</div><div class="mob-rec">${recipeRowsHTML(rrPoolish, true)}</div><div class="mob-section-lbl">Hoveddeig</div><div class="mob-rec">${recipeRowsHTML(rrHoved, true)}</div><div class="mob-swhy"><b>Mania-poolish:</b> To-trinns metode fra Pizzamania — poolish gjæres for seg i 12t, kjøles ned, blandes så inn i hoveddeigen. Hele deigen kjøleskapheves udelt i 10t før den deles i emner.</div></div>`;
+    const rrPoolish=[{k:'Mel',v:`${rm.poolishMel}g`},{k:'Vann',v:`${rm.poolishVann}g`},{k:'Gjær',v:S.gjaer==='torr'?L(`${rm.poolishYd}g tørrgjær`,`${rm.poolishYd}g dry yeast`):L(`${rm.poolishYf}g fersk gjær`,`${rm.poolishYf}g fresh yeast`)}];
+    const rrHoved=[{k:'Poolish',v:L('Hele poolishen over','The whole poolish, poured in')},{k:'Mel',v:`${rm.hovedMel}g`},{k:'Vann del 1',v:`${rm.vann1}g`},{k:'Vann del 2',v:`${rm.vann2}g`},{k:'Gjær',v:S.gjaer==='torr'?L(`${rm.hovedYd}g tørrgjær`,`${rm.hovedYd}g dry yeast`):L(`${rm.hovedYf}g fersk gjær`,`${rm.hovedYf}g fresh yeast`)},{k:'Salt',v:`${rm.salt}g`}];
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${L('Antall','Count')} ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">${L('stk','pcs')}</div></div><div class="mob-pcc"><div class="pl">${L('Hydrering','Hydration')}</div><div class="pv">64%</div><div class="ps">${L('total','total')}</div></div></div><div class="mob-section-lbl">Poolish</div><div class="mob-rec">${recipeRowsHTML(rrPoolish, true)}</div><div class="mob-section-lbl">${L('Hoveddeig','Main dough')}</div><div class="mob-rec">${recipeRowsHTML(rrHoved, true)}</div><div class="mob-swhy"><b>Mania-poolish:</b> ${L('To-trinns metode fra Pizzamania — poolish gjæres for seg i 12t, kjøles ned, blandes så inn i hoveddeigen. Hele deigen kjøleskapheves udelt i 10t før den deles i emner.','Two-stage method from Pizzamania — the poolish ferments on its own for 12h, is cooled down, then mixed into the main dough. The whole dough is cold-proofed undivided for 10h before being divided into balls.')}</div></div>`;
     return;
   }
 
@@ -5246,8 +5360,8 @@ function mobGen(){
   const p=pc();
   document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content"><div style="display:flex;align-items:center;gap:8px;padding:.5rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0);font-size:12px">${activeDeigIndicatorHTML()}</div>${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
   // recipe tab
-  const rr=[...baseIngredientRows({mel:r.flour,vann:r.water,hydro:S.hydro,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,gjaer:yA(r)}),...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
-  document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">Antall ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">stk</div></div><div class="mob-pcc"><div class="pl">Emnestørrelse</div><div class="pv">${p.perPizza}g</div><div class="ps">ferdig deig</div></div></div><div class="mob-rec">${recipeRowsHTML(rr, true)}</div><div class="mob-swhy"><b>Ankarsrum:</b> Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.</div></div>`;
+  const rr=[...baseIngredientRows({mel:r.flour,vann:r.water,hydro:S.hydro,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,gjaer:yA(r)}),...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemperatur',v:L(`${S.temp}°C — heving ca. ${rtM(60)} min`,`${S.temp}°C — rise about ${rtM(60)} min`)},{k:'Ovntype',v:S.type==='ingenelting'?L('Vanlig ovn, 250°C','Regular oven, 250°C'):oN()}];
+  document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${L('Antall','Count')} ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">${L('stk','pcs')}</div></div><div class="mob-pcc"><div class="pl">${t('r_size')}</div><div class="pv">${p.perPizza}g</div><div class="ps">${t('r_dough')}</div></div></div><div class="mob-rec">${recipeRowsHTML(rr, true)}</div><div class="mob-swhy"><b>Ankarsrum:</b> ${L('Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.','Water + yeast in the bowl. Flour gradually on speed 1–2. Salt after 5 min. Speed 3–4. Total 12–15 min. Dough temp: 22–24°C.')}</div></div>`;
 
   updatePcountDisp();
 }
@@ -5312,9 +5426,9 @@ async function openFavorite(){
 }
 
 function bakeMetaLine(b){
-  const tn = {napoletana:'Napoletansk',newyork:'New York',langpanne:'Langpanne',chicago:'Chicago'}[b.config.type] || b.config.type;
-  const mn = {standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig'}[b.config.method] || b.config.method;
-  const lbl = b.anchorMode==='end' ? 'Steketid' : 'Startet';
+  const tn = tnShort(b.config.type);
+  const mn = mN(b.config.method);
+  const lbl = b.anchorMode==='end' ? L('Steketid','Baking time') : L('Startet','Started');
   let dtStr = '';
   try{ dtStr = fDT(new Date(b.anchorISO)); }catch(e){}
   return `${tn} · ${mn} · ${lbl}: ${dtStr}`;
@@ -5322,7 +5436,7 @@ function bakeMetaLine(b){
 
 function bakeCardHTML(b, mob){
   const pad = mob ? '.6rem .7rem' : '.7rem .9rem';
-  const starBtn = `<span onclick="event.stopPropagation();toggleFavorite('${b.id}',${!!b.favorite})" title="${b.favorite?'Fjern som favoritt':'Sett som favoritt'}" style="cursor:pointer;font-size:16px;color:${b.favorite?'#EFAB27':'var(--dyn-border)'};flex-shrink:0;line-height:1">${b.favorite?'★':'☆'}</span>`;
+  const starBtn = `<span onclick="event.stopPropagation();toggleFavorite('${b.id}',${!!b.favorite})" title="${b.favorite?L('Fjern som favoritt','Remove as favorite'):L('Sett som favoritt','Set as favorite')}" style="cursor:pointer;font-size:16px;color:${b.favorite?'#EFAB27':'var(--dyn-border)'};flex-shrink:0;line-height:1">${b.favorite?'★':'☆'}</span>`;
   if(b.status==='active'){
     return `<div style="border:1px solid ${b.favorite?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
@@ -5330,12 +5444,12 @@ function bakeCardHTML(b, mob){
           ${starBtn}
           <div>
             <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}</div>
-            <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?' · av '+escH(b.savedBy):''}</div>
+            <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''}</div>
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;cursor:pointer">Åpne</button>
-          <button onclick="finishBakePrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">Ferdig</button>
+          <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;cursor:pointer">${L('Åpne','Open')}</button>
+          <button onclick="finishBakePrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${L('Ferdig','Finished')}</button>
         </div>
       </div>
     </div>`;
@@ -5349,16 +5463,16 @@ function bakeCardHTML(b, mob){
         ${starBtn}
         <div style="flex:1;min-width:0">
           <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}</div>
-          <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?' · av '+escH(b.savedBy):''} · Ferdig: ${finDt}</div>
+          <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''} · ${L('Ferdig:','Finished:')} ${finDt}</div>
           ${ratingHtml}
           ${photoHtml}
           ${b.note?`<div style="font-size:12px;color:var(--dyn-text);margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>${b.noteBy?`<div style="font-size:10px;color:var(--dyn-faint);margin-top:2px">— ${escH(b.noteBy)}</div>`:''}`:''}
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer" title="${b.rating||b.photo?'Rediger vurdering':'Gi vurdering'}">✏️</button>
-        <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">Se</button>
-        <button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:#993C1D;font-size:11px;cursor:pointer">Slett</button>
+        <button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer" title="${b.rating||b.photo?L('Rediger vurdering','Edit rating'):L('Gi vurdering','Give a rating')}">✏️</button>
+        <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${L('Se','View')}</button>
+        <button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:#993C1D;font-size:11px;cursor:pointer">${L('Slett','Delete')}</button>
       </div>
     </div>
   </div>`;
@@ -5370,16 +5484,16 @@ async function renderBaksterPanel(targetId){
   const mob = targetId.startsWith('mob-');
   const bakes = await fetchBakes();
   if(bakes===null){
-    el.innerHTML = '<p style="color:#993C1D;font-size:12px;padding:.5rem 0">Kunne ikke hente deiger. Sjekk at appen kjører på Netlify med bakes-funksjonen koblet til.</p>';
+    el.innerHTML = `<p style="color:#993C1D;font-size:12px;padding:.5rem 0">${L('Kunne ikke hente deiger. Sjekk at appen kjører på Netlify med bakes-funksjonen koblet til.','Could not fetch doughs. Make sure the app is running on Netlify with the bakes function connected.')}</p>`;
     return;
   }
   window._bakesCache = bakes;
   const active = bakes.filter(b=>b.status==='active');
   const finished = bakes.filter(b=>b.status==='finished');
-  let html = `<div class="lbl" style="margin-bottom:.4rem">Aktive</div>`;
-  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : '<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".</p>';
-  html += `<div class="lbl" style="margin:.8rem 0 .4rem">Ferdige</div>`;
-  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : '<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">Ingen ferdige deiger ennå.</p>';
+  let html = `<div class="lbl" style="margin-bottom:.4rem">${L('Aktive','Active')}</div>`;
+  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${L('Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".','No active doughs. Set up a recipe and tap "Save dough".')}</p>`;
+  html += `<div class="lbl" style="margin:.8rem 0 .4rem">${L('Ferdige','Finished')}</div>`;
+  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">${L('Ingen ferdige deiger ennå.','No finished doughs yet.')}</p>`;
   el.innerHTML = html;
 }
 
@@ -5398,7 +5512,7 @@ async function saveBake(){
   if(activeId){
     name = window._activeDeigName || 'Deig';
   }else{
-    const typed = prompt('Navn på deigen (f.eks. "Rune — fredagspizza"):');
+    const typed = prompt(L('Navn på deigen (f.eks. "Rune — fredagspizza"):','Name the dough (e.g. "Rune — Friday pizza"):'));
     if(!typed || !typed.trim()) return;
     name = typed.trim();
   }
@@ -5432,28 +5546,30 @@ async function saveBake(){
     const freshBtn = isMob ? document.getElementById('mob-savebake-btn') : document.getElementById('savebake-btn');
     if(freshBtn){
       const freshOrig = freshBtn.innerHTML;
-      freshBtn.innerHTML = isMob ? '<i>✓</i>Lagret' : '✓ Lagret!';
+      freshBtn.innerHTML = isMob ? L('<i>✓</i>Lagret','<i>✓</i>Saved') : L('✓ Lagret!','✓ Saved!');
       setTimeout(()=>{ if(freshBtn) freshBtn.innerHTML = freshOrig; }, 2000);
     }
   }catch(e){
-    alert('Kunne ikke lagre deig. Sjekk nettforbindelsen og at Netlify-funksjonen er koblet til.\n('+e.message+')');
+    alert(L('Kunne ikke lagre deig. Sjekk nettforbindelsen og at Netlify-funksjonen er koblet til.\n('+e.message+')','Could not save dough. Check your connection and that the Netlify function is connected.\n('+e.message+')'));
   }
 }
 
 function saveBakeLabel(){
-  return window._activeDeigId ? '💾 Oppdater lagring' : '💾 Lagre deig';
+  return window._activeDeigId ? L('💾 Oppdater lagring','💾 Update save') : L('💾 Lagre deig','💾 Save dough');
 }
 
 function syncSaveBakeLabel(){
   const mobBtn=document.getElementById('mob-savebake-btn');
-  if(mobBtn) mobBtn.innerHTML = window._activeDeigId ? '<i>💾</i>Oppdater' : '<i>💾</i>Lagre';
+  if(mobBtn) mobBtn.innerHTML = window._activeDeigId ? L('<i>💾</i>Oppdater','<i>💾</i>Update') : L('<i>💾</i>Lagre','<i>💾</i>Save');
 }
 
 // Deig-statuslinje (Skisse A): samme mønster som Beta-fanens kort — viser
 // tydelig 🚀 oppstartstid og 🍕 steketid for oppsettet man jobber med, pluss
 // en fast "Juster"-inngang til Finjuster med retur-sløyfe tilbake til Steg.
 function deigStatusBarHTML(steps, showActions, showDelta){
-  const methodNames={standard:'Langtidsdeig',poolish:(S.poolishCold?'Poolish (kjøleskap)':'Poolish'),biga:'Biga',mania:'Mania-poolish',hurtig:'Hurtigdeig',kveld:'Kveldsdeig'};
+  const methodNames = window._lang==='en'
+    ? {standard:'Long-ferment dough',poolish:(S.poolishCold?'Poolish (fridge)':'Poolish'),biga:'Biga',mania:'Mania poolish',hurtig:'Quick dough',kveld:'Evening dough'}
+    : {standard:'Langtidsdeig',poolish:(S.poolishCold?'Poolish (kjøleskap)':'Poolish'),biga:'Biga',mania:'Mania-poolish',hurtig:'Hurtigdeig',kveld:'Kveldsdeig'};
   let typeName='';
   try{ typeName=S.method==='mania'?'Napoletansk pizza':R().name; }catch(e){}
   const firstActive=(steps||[]).find(s=>!s.passive)||(steps||[])[0];
@@ -5465,9 +5581,9 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   try{ if(firstActive){ let at=firstActive.at; if(!(at instanceof Date)) at=new Date(at); if(!isNaN(at.getTime())) startMs=at.getTime(); } }catch(e){}
   const deltaHTML = showDelta ? startDeltaChipHTML(startMs) : '';
   const actionsHTML = showActions ? `<div style="display:flex;gap:6px;margin-top:8px">
-      <button onclick="copyP(window._steps||[])" title="Kopier tidsplan" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📋</span>${t('a_copy')}</button>
-      <button onclick="downloadIcs(window._steps||[])" title="Last ned til kalender" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📅</span>${t('a_cal')}</button>
-      <button id="mob-savebake-btn" onclick="saveBake()" title="Lagre denne deigen" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>💾</span>${t('a_save')}</button>
+      <button onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan','Copy schedule')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📋</span>${t('a_copy')}</button>
+      <button onclick="downloadIcs(window._steps||[])" title="${L('Last ned til kalender','Download to calendar')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📅</span>${t('a_cal')}</button>
+      <button id="mob-savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen','Save this dough')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>💾</span>${t('a_save')}</button>
     </div>` : '';
   // v6.00: skisse B — Juster/Understeg/Tips samlet på én rad UNDER navnet, kun
   // i Tidsplan-visningen (showActions). Wizardens kompakte statuslinjer
@@ -5487,8 +5603,8 @@ function deigStatusBarHTML(steps, showActions, showDelta){
       ${showActions ? '' : justerBtn}
     </div>
     ${toolbarHTML}
-    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:3px">🚀 Oppstart: <b style="color:var(--forno-text,#222)">${escH(startTxt)}</b>${deltaHTML}</div>
-    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">🍕 Steketid: <b style="color:var(--forno-text,#222)">${escH(bakeTxt)}</b></div>
+    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:3px">${L('🚀 Oppstart:','🚀 Start:')} <b style="color:var(--forno-text,#222)">${escH(startTxt)}</b>${deltaHTML}</div>
+    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🍕 Steketid:','🍕 Baking time:')} <b style="color:var(--forno-text,#222)">${escH(bakeTxt)}</b></div>
     ${actionsHTML}
   </div>`;
 }
@@ -5503,12 +5619,12 @@ function wizOpenFinjusterFromPlan(){
 function activeDeigIndicatorHTML(){
   if(window._activeDeigId){
     return '<span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span>'
-      +'<span style="color:#5f5e5a">Du redigerer</span>'
+      +'<span style="color:#5f5e5a">'+L('Du redigerer','You are editing')+'</span>'
       +'<span style="font-weight:600;color:#085041">'+escH(window._activeDeigName||'')+'</span>'
-      +'<button onclick="closeActiveDeig()" style="margin-left:auto;font-size:11px;color:#993C1D;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">Lukk</button>';
+      +'<button onclick="closeActiveDeig()" style="margin-left:auto;font-size:11px;color:#993C1D;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">'+L('Lukk','Close')+'</button>';
   }
   return '<span style="width:8px;height:8px;border-radius:50%;background:#d0cdc8;flex-shrink:0"></span>'
-    +'<span style="color:#999">Ulagret oppsett — endringer lagres ikke automatisk</span>';
+    +'<span style="color:#999">'+L('Ulagret oppsett — endringer lagres ikke automatisk','Unsaved setup — changes are not saved automatically')+'</span>';
 }
 
 function closeActiveDeig(){
@@ -5549,10 +5665,10 @@ async function refreshDeigerBanner(){
 }
 
 function methodMetaLabel(){
-  if(S.type==='ingenelting') return 'Ingen elting, ~16t rom';
-  const c=coldTimeLabel(S.cold)+' kjøl';
-  if(S.method==='poolish') return 'Poolish '+S.poolishH+'t + '+c;
-  if(S.method==='biga') return 'Biga '+S.bigaH+'t + '+c;
+  if(S.type==='ingenelting') return L('Ingen elting, ~16t rom','No-knead, ~16h room');
+  const c=coldTimeLabel(S.cold)+L(' kjøl',' fridge');
+  if(S.method==='poolish') return 'Poolish '+S.poolishH+L('t','h')+' + '+c;
+  if(S.method==='biga') return 'Biga '+S.bigaH+L('t','h')+' + '+c;
   if(S.method==='standard') return c;
   return '';
 }
@@ -5567,7 +5683,7 @@ function methodFlashHTML(){
   // metodebytter fra brukeren) eier den jobben og tømmer alle tre settene.
   // Å tømme + persistere her slettet den nettopp innlastede avhakingen når
   // openBake() byttet metode — reelt datatap på server, og kun på desktop.
-  return changed ? ' <span class="method-flash" style="margin-left:4px;font-size:10px;font-weight:600;color:#fff;background:#1D9E75;padding:2px 8px;border-radius:6px;vertical-align:2px">endret</span>' : '';
+  return changed ? ` <span class="method-flash" style="margin-left:4px;font-size:10px;font-weight:600;color:#fff;background:#1D9E75;padding:2px 8px;border-radius:6px;vertical-align:2px">${L('endret','changed')}</span>` : '';
 }
 
 function startHintHTML(){
@@ -5578,13 +5694,13 @@ function startHintHTML(){
 function actionGroupHTML(){
   return `<div style="background:#fff;border:1px solid #e0ddd8;border-radius:10px;padding:.75rem .9rem;margin-bottom:1rem">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid #f0ede8;font-size:12px">${activeDeigIndicatorHTML()}</div>
-    <div class="act-group-lbl">Denne deigen</div>
+    <div class="act-group-lbl">${L('Denne deigen','This dough')}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="Lagre denne deigen slik at du eller andre kan hente den frem igjen senere">${saveBakeLabel()}</button>
-      <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="Se alle lagrede deiger">🍽️ Mine deiger</button>
-      <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="Kopier tidsplan som tekst">📋 Kopier</button>
-      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert steg">📅 Påminnelser</button>
-      <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="Vis eller skjul forklaringer og tips">${S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer'}</button>
+      <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen slik at du eller andre kan hente den frem igjen senere','Save this dough so you or others can bring it back later')}">${saveBakeLabel()}</button>
+      <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="${L('Se alle lagrede deiger','See all saved doughs')}">${L('🍽️ Mine deiger','🍽️ My doughs')}</button>
+      <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan som tekst','Copy schedule as text')}">${L('📋 Kopier','📋 Copy')}</button>
+      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert steg','Download the schedule as a calendar file, with a reminder 10 min before each step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
+      <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="${L('Vis eller skjul forklaringer og tips','Show or hide explanations and tips')}">${S.showHelp?L('💡 Skjul forklaringer','💡 Hide explanations'):L('💡 Vis forklaringer','💡 Show explanations')}</button>
       ${substepToggleHTML('pc')}
     </div>
     ${fontSizeStepperHTML()}
@@ -5667,14 +5783,14 @@ function buildFinishBakeFormHTML(alreadyFinished){
   const photo = window._pendingPhoto;
   const stars = [1,2,3,4,5].map(n=>`<span onclick="setPendingRating(${n})" style="font-size:28px;cursor:pointer;color:${rating&&n<=rating?'#EFAB27':'#E5E5EA'}">★</span>`).join('');
   return `
-    <div style="font-size:12px;margin-bottom:1rem;line-height:1.5" class="dyn-faint-text">${alreadyFinished?'Endre vurdering og bilde for denne baksten.':'Gi den en rask vurdering og legg gjerne ved et bilde — så husker du hva som fungerte neste gang.'}</div>
+    <div style="font-size:12px;margin-bottom:1rem;line-height:1.5" class="dyn-faint-text">${alreadyFinished?L('Endre vurdering og bilde for denne baksten.','Edit the rating and photo for this bake.'):L('Gi den en rask vurdering og legg gjerne ved et bilde — så husker du hva som fungerte neste gang.','Give it a quick rating and feel free to add a photo — so you remember what worked next time.')}</div>
     <div style="text-align:center;margin-bottom:1rem" id="finish-stars">${stars}</div>
     <div id="finish-photo-preview" style="margin-bottom:.8rem;text-align:center">${photo?`<img src="${photo}" style="max-width:100%;max-height:200px;border-radius:10px">`:''}</div>
     <input type="file" accept="image/*" id="finish-photo-input" onchange="handlePhotoUpload(event)" style="display:none">
-    <button onclick="document.getElementById('finish-photo-input').click()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:.8rem">📷 ${photo?'Bytt bilde':'Legg til bilde'}</button>
+    <button onclick="document.getElementById('finish-photo-input').click()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:.8rem">📷 ${photo?L('Bytt bilde','Change photo'):L('Legg til bilde','Add photo')}</button>
     <div style="display:flex;gap:8px">
-      <button onclick="confirmFinishBake(${alreadyFinished})" style="flex:1;height:38px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${alreadyFinished?'Lagre':'Merk som ferdig'}</button>
-      ${alreadyFinished?'':'<button onclick="confirmFinishBake(false,true)" style="flex-shrink:0;height:38px;padding:0 14px;border:none;border-radius:10px;background:transparent;color:#6E6E73;font-size:13px;cursor:pointer">Hopp over</button>'}
+      <button onclick="confirmFinishBake(${alreadyFinished})" style="flex:1;height:38px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${alreadyFinished?L('Lagre','Save'):L('Merk som ferdig','Mark as finished')}</button>
+      ${alreadyFinished?'':`<button onclick="confirmFinishBake(false,true)" style="flex-shrink:0;height:38px;padding:0 14px;border:none;border-radius:10px;background:transparent;color:#6E6E73;font-size:13px;cursor:pointer">${L('Hopp over','Skip')}</button>`}
     </div>
     <div id="finish-status" style="text-align:center;font-size:12px;margin-top:.5rem" class="dyn-faint-text"></div>`;
 }
@@ -5707,7 +5823,7 @@ async function confirmFinishBake(alreadyFinished, skip){
   const id = _finishBakeId;
   if(!id) return;
   const statusEl = document.getElementById('finish-status');
-  if(statusEl) statusEl.textContent = 'Lagrer...';
+  if(statusEl) statusEl.textContent = L('Lagrer...','Saving...');
   const body = {};
   if(!alreadyFinished) body.status = 'finished';
   if(!skip){
@@ -5727,7 +5843,7 @@ async function confirmFinishBake(alreadyFinished, skip){
     refreshDeigerBanner();
     syncFavoriteButton();
   }catch(e){
-    if(statusEl) statusEl.textContent = 'Kunne ikke lagre — prøv igjen.';
+    if(statusEl) statusEl.textContent = L('Kunne ikke lagre — prøv igjen.','Could not save — try again.');
   }
 }
 function closeFinishBakeModal(){
@@ -5739,7 +5855,7 @@ function closeFinishBakeModal(){
 }
 
 async function deleteBakeConfirm(id){
-  if(!confirm('Slette denne deigen permanent? Dette kan ikke angres.')) return;
+  if(!confirm(L('Slette denne deigen permanent? Dette kan ikke angres.','Delete this dough permanently? This cannot be undone.'))) return;
   try{
     const res = await fetch('/api/bakes/'+id, { method: 'DELETE' });
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -5749,7 +5865,7 @@ async function deleteBakeConfirm(id){
     refreshDeigerBanner();
   syncFavoriteButton();
   }catch(e){
-    alert('Kunne ikke slette deigen. ('+e.message+')');
+    alert(L('Kunne ikke slette deigen. ('+e.message+')','Could not delete the dough. ('+e.message+')'));
   }
 }
 
@@ -5781,13 +5897,13 @@ document.addEventListener('change', firstInteractionCheck, true);
 <div class="mob-layout" id="mob-layout">
 
   <div class="mob-topbar">
-    <div class="mob-topbar-title" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden">
+    <div class="mob-topbar-title" id="mob-topbar-title" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden">
       <span>🍕 Pizzaplanlegger <b id="mob-name-version" style="font-size:12px;font-weight:600;color:var(--forno-accent)"></b></span>
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
       <button class="mob-icon-btn" id="mob-active-deiger-btn" onclick="jumpToDeiger()" title="Mine deiger" style="display:none;position:relative">🍽️<span id="mob-active-deiger-count" style="position:absolute;top:-4px;right:-4px;background:var(--forno-accent);color:#1a1512;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;line-height:14px;min-width:14px;text-align:center">0</span></button>
-      <button class="layout-toggle mob-style" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
+      <button class="layout-toggle mob-style" id="mob-pc-toggle" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
     </div>
   </div>
 
@@ -5795,7 +5911,7 @@ document.addEventListener('change', firstInteractionCheck, true);
   <div class="mob-screen" id="mob-plan">
     <div id="mob-plan-content">
       <div class="mob-content" style="padding-top:.75rem;text-align:center;color:#aaa;font-size:13px">
-        <p>Tilpass innstillingene og se tidsplanen her</p>
+        <p id="mob-plan-empty">Tilpass innstillingene og se tidsplanen her</p>
       </div>
     </div>
   </div>
@@ -5807,19 +5923,19 @@ document.addEventListener('change', firstInteractionCheck, true);
         <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px;flex-shrink:0">←</span>
         <div id="wiz-timeline" style="flex:1"></div>
       </div>
-      <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:5px;padding-left:2px">Gå fritt frem og tilbake — Tidsplan-fanen viser alltid resultatet av gjeldende valg.</div>
+      <div id="wiz-header-hint" style="font-size:10.5px;color:var(--forno-text-faint);margin-top:5px;padding-left:2px">Gå fritt frem og tilbake — Tidsplan-fanen viser alltid resultatet av gjeldende valg.</div>
     </div>
 
     <div id="wiz-step-1" class="wiz-step" style="display:none">
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken pizza?</div>
+      <div id="wiz-s1-h" style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken pizza?</div>
       <div id="wiz-fresh-banner" style="display:none;margin:.5rem 1rem 0;padding:8px 10px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:8px;font-size:11.5px;color:var(--forno-text-muted);align-items:center;justify-content:space-between;gap:8px">
         <span id="wiz-fresh-banner-txt">Fortsetter: </span>
-        <button onclick="doReset()" style="flex-shrink:0;padding:4px 9px;border:1px solid var(--forno-border);border-radius:7px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Start ny</button>
+        <button id="wiz-s1-reset" onclick="doReset()" style="flex-shrink:0;padding:4px 9px;border:1px solid var(--forno-border);border-radius:7px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Start ny</button>
       </div>
-      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl">Pizzatype</div></div>
+      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-s1-q1">Pizzatype</div></div>
       <div class="mob-pill-wrap" id="mob-gtype"></div>
 
-      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Antall pizzaer</div></div>
+      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl" id="wiz-s1-q2">Antall pizzaer</div></div>
       <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <span style="font-size:12px;color:var(--forno-text-faint);display:none" id="mob-pcount-lbl">eller antall pizzaer:</span>
         <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
@@ -5837,7 +5953,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">▶ Jeg begynner nå</div>
       </div>
       <div id="mob-bs" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="font-size:11px;color:var(--forno-text-faint);line-height:1.5">Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.</div>
+        <div id="mob-bs-hint" style="font-size:11px;color:var(--forno-text-faint);line-height:1.5">Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.</div>
       </div>
       <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
@@ -5847,14 +5963,14 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
       <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
 
-      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
+      <div style="padding:.8rem 1rem"><button id="wiz-s1-next" onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
     <div id="wiz-step-2" class="wiz-step" style="display:none">
       <div id="wiz-status-step2"></div>
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken metode?</div>
-      <div style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Langtidsdeig fungerer fint om du er usikker</div>
-      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl">Metode</div></div>
+      <div id="wiz-s2-h" style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Hvilken metode?</div>
+      <div id="wiz-s2-sub" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Langtidsdeig fungerer fint om du er usikker</div>
+      <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-s2-q1">Metode</div></div>
       <div id="mob-gmet-wrap">
         <div class="mob-mcard-wrap" id="mob-gmet"></div>
       </div>
@@ -5869,7 +5985,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
       </div>
       <div id="mob-psub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish-varighet</div>
+        <div id="mob-psub-lbl" style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish-varighet</div>
         <div style="display:flex;gap:6px;padding:.3rem 1rem .5rem">
           <div id="mob-p-rt-btn" onclick="setPoolishCold(false)" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🌡️ Romtemperatur</div>
           <div id="mob-p-cold-btn" onclick="setPoolishCold(true)" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">❄️ Kjøleskap</div>
@@ -5882,18 +5998,18 @@ document.addEventListener('change', firstInteractionCheck, true);
           <button onclick="stepPoolishCold(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:15px;color:var(--forno-text-muted)">+</button>
         </div>
         <div id="mob-p-early-hint" style="display:none;padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
-        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish kjøleskapspause</div>
+        <div id="mob-ppause-lbl" style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish kjøleskapspause</div>
         <div style="padding:.3rem 1rem .6rem">
           <div id="mob-ppause-btn" onclick="togglePoolishPause()" style="padding:9px 10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer;line-height:1.35">🧊 Slå på — la poolishen vente i kjøleskapet</div>
-          <div style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;margin-top:6px">Er tidene vanskelige å få til å gå opp? Slå på, så finner appen en kald pause (opptil 18t) som skyver planen inn i den ledige tiden din — uten å endre når du spiser.</div>
+          <div id="mob-ppause-hint" style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;margin-top:6px">Er tidene vanskelige å få til å gå opp? Slå på, så finner appen en kald pause (opptil 18t) som skyver planen inn i den ledige tiden din — uten å endre når du spiser.</div>
         </div>
       </div>
       <div id="mob-bsub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Biga-varighet</div>
+        <div id="mob-bsub-lbl" style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Biga-varighet</div>
         <div id="mob-brows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
         <div id="mob-b-early-hint" style="display:none;padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
       </div>
-      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl">Meltype</div></div>
+      <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl" id="wiz-s2-q2">Meltype</div></div>
       <div class="dropdown-select" style="margin:0 1rem .4rem">
         <select id="mob-gmel">
           <option value="dallari">Dallari pizzamel</option>
@@ -5908,16 +6024,16 @@ document.addEventListener('change', firstInteractionCheck, true);
         </select>
       </div>
       <div id="mob-gmel-info" style="margin:2px 1rem 8px;font-size:12px;color:var(--forno-text-faint);background:var(--forno-bg-raised);border-radius:6px;padding:6px 9px;line-height:1.4"></div>
-      <div style="padding:.8rem 1rem"><button onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
+      <div style="padding:.8rem 1rem"><button id="wiz-s2-next" onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>
     </div>
 
     <div id="wiz-step-check" class="wiz-step" style="display:none">
       <div id="wiz-status-check"></div>
-      <div style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Holder dette?</div>
+      <div id="wiz-check-h" style="padding:1rem 1rem .2rem;font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Holder dette?</div>
       <div id="wiz-check" style="padding:.4rem 1rem .2rem"></div>
 
       <div id="mob-cold-wiz-wrap" style="display:none">
-        <div class="mob-section-lbl">Kjøleskapsheving</div>
+        <div class="mob-section-lbl" id="mob-cold-wiz-lbl">Kjøleskapsheving</div>
         <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .5rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
           <button onclick="stepColdWiz(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
           <span id="mob-cold-wiz-disp" style="font-family:var(--forno-font-mono);font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:70px;text-align:center">24 timer</span>
@@ -5925,19 +6041,19 @@ document.addEventListener('change', firstInteractionCheck, true);
         </div>
       </div>
 
-      <div style="padding:.8rem 1rem .4rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se tidsplanen →</button></div>
-      <div style="padding:0 1rem .8rem;text-align:center"><span onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 Finn oppskrift ut fra ledig tid → Beta-fanen</span></div>
+      <div style="padding:.8rem 1rem .4rem"><button id="wiz-check-finish" onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se tidsplanen →</button></div>
+      <div style="padding:0 1rem .8rem;text-align:center"><span id="wiz-check-beta" onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 Finn oppskrift ut fra ledig tid → Beta-fanen</span></div>
     </div>
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
       <div style="padding:.8rem 1rem .2rem;display:flex;align-items:center;gap:8px">
         <span onclick="wizGoto(3)" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px" title="Tilbake til sjekken">←</span>
-        <span style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Finjuster</span>
+        <span id="wiz-finjuster-title" style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">Finjuster</span>
         <button id="wiz-finjuster-back-to-plan" onclick="mobGen();mobShowTab('plan')" style="display:none;margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">Se tidsplanen →</button>
       </div>
       <div id="wiz-status-finjuster"></div>
-      <div id="wiz-finjuster-next" style="padding:.6rem 1rem .2rem"><button onclick="wizGoto(3)" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">← Tilbake til sjekken</button></div>
-    <div class="mob-section-lbl">Melmengde — <span id="mob-mdisp">500g</span></div>
+      <div id="wiz-finjuster-next" style="padding:.6rem 1rem .2rem"><button id="wiz-finjuster-back-btn" onclick="wizGoto(3)" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">← Tilbake til sjekken</button></div>
+    <div class="mob-section-lbl"><span id="mob-mel-lbl">Melmengde</span> — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
       <button onclick="stepMobSlider('mob-msl',-100,mobUMel)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
       <input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)" style="flex:1;min-width:0">
@@ -5945,7 +6061,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="finjuster-hydro-section">
-    <div class="mob-section-lbl">Hydrering — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>
+    <div class="mob-section-lbl"><span id="mob-hydro-lbl">Hydrering</span> — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>
     <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
       <button onclick="stepMobSlider('mob-hsl',-1,mobUHydro)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
       <input type="range" id="mob-hsl" min="55" max="80" step="1" value="65" oninput="mobUHydro(this.value)" style="flex:1;min-width:0">
@@ -5954,7 +6070,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="mob-cwrap">
-      <div class="mob-section-lbl">Kjøleskapsheving — <span id="mob-clbl">24 timer</span></div>
+      <div class="mob-section-lbl"><span id="mob-cold-lbl">Kjøleskapsheving</span> — <span id="mob-clbl">24 timer</span></div>
       <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
         <button onclick="stepMobSlider('mob-csl',-6,mobUCold)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
         <input type="range" id="mob-csl" min="24" max="144" step="6" value="24" oninput="mobUCold(this.value)" style="flex:1;min-width:0">
@@ -5962,7 +6078,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
     </div>
 
-    <div class="mob-section-lbl">Romtemperatur — <span id="mob-tlbl">22°C</span></div>
+    <div class="mob-section-lbl"><span id="mob-temp-lbl">Romtemperatur</span> — <span id="mob-tlbl">22°C</span></div>
     <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
       <button onclick="stepMobSlider('mob-tsl',-2,mobUTemp)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
       <input type="range" id="mob-tsl" min="18" max="28" step="2" value="22" oninput="mobUTemp(this.value)" style="flex:1;min-width:0">
@@ -5970,14 +6086,14 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div id="mob-ggj-group">
-    <div class="mob-section-lbl">Gjærtype</div>
+    <div class="mob-section-lbl" id="mob-ggj-lbl">Gjærtype</div>
     <div id="mob-ggj-hint" style="display:none;font-size:10.5px;color:#854F0B;padding:0 1rem 4px;margin-top:-4px">Velg én</div>
     <div class="mob-pill-wrap" id="mob-ggj"></div>
     </div>
 
     <div id="mob-gkm-wrap">
       <div id="mob-gkm-group">
-      <div class="mob-section-lbl">Kjøkkenmaskin</div>
+      <div class="mob-section-lbl" id="mob-gkm-lbl">Kjøkkenmaskin</div>
       <div id="mob-gkm-hint" style="display:none;font-size:10.5px;color:#854F0B;padding:0 1rem 4px;margin-top:-4px">Velg én</div>
       <div class="mob-pill-wrap" id="mob-gkm"></div>
       </div>
@@ -5985,12 +6101,12 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div id="mob-govn-wrap">
       <div id="mob-govn-group">
-      <div class="mob-section-lbl">Ovntype</div>
+      <div class="mob-section-lbl" id="mob-govn-lbl">Ovntype</div>
       <div id="mob-govn-hint" style="display:none;font-size:10.5px;color:#854F0B;padding:0 1rem 4px;margin-top:-4px">Velg én</div>
       <div class="mob-pill-wrap" id="mob-govn"></div>
       </div>
     </div>
-    <div style="padding:1rem"><button onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">✓ Ferdig — se steg for steg</button></div>
+    <div style="padding:1rem"><button id="wiz-finjuster-done" onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">✓ Ferdig — se steg for steg</button></div>
     </div>
 
     <div style="height:80px"></div>
@@ -5999,14 +6115,14 @@ document.addEventListener('change', firstInteractionCheck, true);
   <!-- TAB: OPPSKRIFT -->
   <div class="mob-screen" id="mob-recipe">
     <div class="mob-content" id="mob-recipe-content">
-      <p style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se oppskriften</p>
+      <p id="mob-recipe-empty" style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se oppskriften</p>
     </div>
   </div>
 
   <!-- TAB: DEIGER -->
   <div class="mob-screen" id="mob-bakster">
     <div class="mob-content" id="mob-bakster-content">
-      <p style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p>
+      <p id="mob-bakster-empty" style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p>
     </div>
   </div>
 
@@ -6026,58 +6142,58 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
     <div id="mob-i18n-note" style="padding:0 1rem .3rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
 
-    <div class="mob-section-lbl">Visning</div>
+    <div class="mob-section-lbl" id="mob-visning-lbl">Visning</div>
     <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.5rem 1rem .65rem">
-      <div style="font-size:11px;color:var(--forno-text-faint,#888);margin-bottom:4px">Skriftstørrelse</div>
+      <div id="mob-fs-lbl" style="font-size:11px;color:var(--forno-text-faint,#888);margin-bottom:4px">Skriftstørrelse</div>
       <div class="fs-seg" id="mob-fs-seg">
-        <div class="o on" data-v="normal" onclick="setFontSize('normal')">Normal</div>
-        <div class="o" data-v="large" onclick="setFontSize('large')">Stor</div>
-        <div class="o" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
+        <div class="o on" id="mob-fs-normal" data-v="normal" onclick="setFontSize('normal')">Normal</div>
+        <div class="o" id="mob-fs-large" data-v="large" onclick="setFontSize('large')">Stor</div>
+        <div class="o" id="mob-fs-xlarge" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
       </div>
     </div>
 
-    <div class="mob-section-lbl">Del</div>
+    <div class="mob-section-lbl" id="mob-del-lbl">Del</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="shareApp('share-app-label')">
       <span id="share-app-label" style="font-size:13px;color:var(--dyn-text);font-weight:600">📤 Del appen</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
 
-    <div class="mob-section-lbl">Hjelp</div>
+    <div class="mob-section-lbl" id="mob-hjelp-lbl">Hjelp</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openManualModal()">
-      <span style="font-size:13px;color:var(--dyn-text);font-weight:600">📖 Bruksanvisning</span>
+      <span id="mob-help-manual" style="font-size:13px;color:var(--dyn-text);font-weight:600">📖 Bruksanvisning</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openGuideModal()">
-      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">❓ Kom i gang (kort)</span>
+      <span id="mob-help-guide" style="font-size:13px;color:var(--dyn-text);font-weight:500">❓ Kom i gang (kort)</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openTechModal()">
-      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">💡 Tips og teknikk</span>
+      <span id="mob-help-tech" style="font-size:13px;color:var(--dyn-text);font-weight:500">💡 Tips og teknikk</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openFeedbackModal()">
-      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">💬 Feedback</span>
+      <span id="mob-help-feedback" style="font-size:13px;color:var(--dyn-text);font-weight:500">💬 Feedback</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
 
-    <div class="mob-section-lbl">Admin</div>
+    <div class="mob-section-lbl" id="mob-admin-lbl">Admin</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openFormlerModal()">
-      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">📊 Formler</span>
+      <span id="mob-admin-formler" style="font-size:13px;color:var(--dyn-text);font-weight:500">📊 Formler</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openAdminLogin()">
-      <span style="font-size:13px;color:var(--dyn-text);font-weight:500">🔒 Admin</span>
+      <span id="mob-admin-admin" style="font-size:13px;color:var(--dyn-text);font-weight:500">🔒 Admin</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
 
-    <div class="mob-section-lbl">Konto</div>
+    <div class="mob-section-lbl" id="mob-konto-lbl">Konto</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="authLogout()">
-      <span style="font-size:13px;color:#993C1D;font-weight:600">Logg ut</span>
+      <span id="mob-konto-logout" style="font-size:13px;color:#993C1D;font-weight:600">Logg ut</span>
     </div>
 
     <div style="text-align:center;padding:1.1rem 1rem .5rem">
       <span style="font-size:11px;color:var(--forno-text-faint,#aaa)">Pizzaplanlegger <span id="mob-footer-version"></span> · </span>
-      <span style="font-size:11px;color:var(--forno-accent,#1D9E75);font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
+      <span id="mob-whatsnew" style="font-size:11px;color:var(--forno-accent,#1D9E75);font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
     </div>
 
     <div style="height:80px"></div>
@@ -6092,36 +6208,36 @@ document.addEventListener('change', firstInteractionCheck, true);
   <div class="mob-screen" id="mob-beta">
     <div class="mob-content">
       <div style="padding:.7rem 1rem .3rem">
-        <div style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">🧭 Finn oppskrift</div>
-        <div style="font-size:11px;color:var(--forno-text-faint);margin-top:2px">Oppgi når du er ledig og når du vil spise — få en anbefalt oppskrift tilbake. Søker på tvers av alle metoder.</div>
+        <div id="mob-beta-h" style="font-size:16px;font-weight:700;font-family:var(--forno-font-display,inherit)">🧭 Finn oppskrift</div>
+        <div id="mob-beta-sub" style="font-size:11px;color:var(--forno-text-faint);margin-top:2px">Oppgi når du er ledig og når du vil spise — få en anbefalt oppskrift tilbake. Søker på tvers av alle metoder.</div>
       </div>
 
       <div class="mob-section-lbl" onclick="togglePizzatidMinimized()" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding-right:1rem">
-        <span>Når er du ledig?</span>
+        <span id="mob-pizzatid-lbl">Når er du ledig?</span>
         <span id="mob-pizzatid-toggle" style="font-size:11px;color:var(--forno-accent-text)">Vis ▾</span>
       </div>
       <div style="margin:.2rem 1rem .55rem;padding:12px 14px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px">
-        <div style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted)">Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.</div>
-        <div style="font-size:11px;color:var(--forno-text-faint);margin-top:6px">Trykk «Vis» for å sette opp ukedagene dine.</div>
+        <div id="mob-pizzatid-help" style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted)">Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.</div>
+        <div id="mob-pizzatid-help2" style="font-size:11px;color:var(--forno-text-faint);margin-top:6px">Trykk «Vis» for å sette opp ukedagene dine.</div>
       </div>
       <div id="mob-pizzatid-body" style="display:none">
         <div id="mob-pizzatid-days" style="padding:.3rem 1rem .5rem"></div>
-        <div style="padding:0 1rem .8rem"><button onclick="saveBetaPizzatid()" style="width:100%;height:36px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text-muted);font-size:12px;font-weight:600;cursor:pointer">Lagre ledig tid</button></div>
+        <div style="padding:0 1rem .8rem"><button id="mob-pizzatid-save" onclick="saveBetaPizzatid()" style="width:100%;height:36px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text-muted);font-size:12px;font-weight:600;cursor:pointer">Lagre ledig tid</button></div>
       </div>
 
-      <div class="mob-section-lbl">Steketidspunkt</div>
+      <div class="mob-section-lbl" id="mob-beta-baketime-lbl">Steketidspunkt</div>
       <div style="padding:.3rem 1rem .8rem">
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px;margin-bottom:8px">
           <input type="date" id="mob-beta-ed">
           <input type="time" id="mob-beta-et" value="19:00">
         </div>
-        <button onclick="runBetaSearch()" style="width:100%;height:40px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:600;cursor:pointer">🔍 Finn oppskrift</button>
+        <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:40px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:600;cursor:pointer">🔍 Finn oppskrift</button>
         <div id="mob-beta-result"></div>
       </div>
 
       <div style="height:1px;background:var(--forno-border);margin:1.7rem 1rem 0"></div>
-      <div class="mob-section-lbl" style="padding-top:.9rem">Eller velg et populært tidspunkt</div>
-      <div style="font-size:11px;color:var(--forno-text-faint);padding:0 1rem .15rem;line-height:1.4">Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.</div>
+      <div class="mob-section-lbl" id="mob-beta-popular-lbl" style="padding-top:.9rem">Eller velg et populært tidspunkt</div>
+      <div id="mob-beta-popular-help" style="font-size:11px;color:var(--forno-text-faint);padding:0 1rem .15rem;line-height:1.4">Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.</div>
       <div id="mob-beta-faste" style="padding:.3rem 1rem .8rem"></div>
 
       <div style="height:80px"></div>
