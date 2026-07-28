@@ -3666,8 +3666,12 @@ function closeChangelogModal(){
 // Innholdet ligger som ren data i guide.js (const GUIDE), rendret her. Skal alltid
 // holdes i takt med appen: endrer vi en funksjon, oppdaterer vi guide.js også.
 function buildManualHTML(){
-  if(typeof GUIDE==='undefined' || !Array.isArray(GUIDE) || !GUIDE.length){
-    return '<p class="man-p">Bruksanvisningen kunne ikke lastes akkurat nå.</p>';
+  // Engelsk bruksanvisning ligger som en parallell GUIDE_EN/GUIDE_INTRO_EN i guide.js.
+  const useEn = window._lang==='en' && typeof GUIDE_EN!=='undefined' && Array.isArray(GUIDE_EN) && GUIDE_EN.length;
+  const G = useEn ? GUIDE_EN : GUIDE;
+  const INTRO = useEn ? (typeof GUIDE_INTRO_EN!=='undefined' ? GUIDE_INTRO_EN : GUIDE_INTRO) : GUIDE_INTRO;
+  if(typeof G==='undefined' || !Array.isArray(G) || !G.length){
+    return `<p class="man-p">${L('Bruksanvisningen kunne ikke lastes akkurat nå.','The user guide could not be loaded right now.')}</p>`;
   }
   const renderBlock = b => {
     switch(b.t){
@@ -3680,15 +3684,15 @@ function buildManualHTML(){
       default:        return '';
     }
   };
-  const lead = GUIDE_INTRO ? `<p class="man-lead">${GUIDE_INTRO}</p>` : '';
-  const toc = `<div class="man-toc-wrap">${GUIDE.map((s,i)=>
+  const lead = INTRO ? `<p class="man-lead">${INTRO}</p>` : '';
+  const toc = `<div class="man-toc-wrap">${G.map((s,i)=>
     `<button type="button" class="man-toc" onclick="document.getElementById('man-sec-${i}').scrollIntoView({behavior:'smooth',block:'start'})">${s.icon} ${s.title}</button>`
   ).join('')}</div>`;
-  const secs = GUIDE.map((s,i)=>
+  const secs = G.map((s,i)=>
     `<div class="man-sec" id="man-sec-${i}"><div class="man-h">${s.icon} ${s.title}</div>${(s.body||[]).map(renderBlock).join('')}</div>`
   ).join('');
   return lead + toc + secs +
-    `<button type="button" onclick="closeManualModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:14px;font-weight:600;cursor:pointer;margin-top:.5rem">Lukk</button>`;
+    `<button type="button" onclick="closeManualModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:14px;font-weight:600;cursor:pointer;margin-top:.5rem">${L('Lukk','Close')}</button>`;
 }
 function openManualModal(){
   document.getElementById('manual-modal-body').innerHTML = buildManualHTML();
