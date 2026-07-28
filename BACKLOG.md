@@ -219,6 +219,29 @@ allerede vokter konsistens på.
 
 ---
 
+## Tips og triks (idéer til in-app-tekst)
+
+Kandidater til «💡 Tips»/«Hvorfor»-tekst på de kalde stegene (kjøleskapsheving,
+benktid). Ikke bare relevant for én bruker — noe mange som kald-gjærer kjenner
+seg igjen i. Kilde: egen diagnose av kald gjæring.
+
+- **Kjøleskapstemperatur er ikke til å stole på.** Kjøleskap kan holde en helt
+  annen temperatur enn antatt, og 1–5-skalaene er ikke universelle mellom merker.
+  Mål selv med et termometer — ikke stol på tallet på hjulet alene.
+- **Ikke stable boksene i høyden.** Stabling kan blokkere luftsirkulasjonen og gi
+  ustabil/ujevn kjøling. Spre boksene utover i stedet.
+- **Tegn å se etter underveis (kald deig):** størrelse (1,5–2×), bobler under
+  overflaten, og risting/«jiggle»-test. Men *ikke* fingertrykk-testen på en kald
+  deig — den er upålitelig når deigen er stiv av kulde.
+- **Kald gjæring tåler mer gjær enn man tror.** Siden kulden bremser hele
+  prosessen, kan man bruke mer ekstra gjær enn ventet før det blir et problem.
+
+Naturlig hjem i appen: `WHY.fk` (kjøleskapsheving) og `WHY.tu` (benktid), evt. et
+eget «Tips» på kjøleskaps-steget i `tailSteps`. Jiggle-/tegn-punktet passer godt
+i «Ta ut av kjøleskap»-tipset (som alt sier «hevet litt synlig i boksen»).
+
+---
+
 ## Teknisk / prosess
 
 - **Regresjonstest ved hver tallendring.** Punkt 6 (og ev. 7) flytter frosne tall —
