@@ -95,7 +95,7 @@ Regresjon fra v6.01 «gjær-kickstart».
 >
 > **Bevisst IKKE fikset:** `mel`/`hydro`/`temp`/`cold` styres av kontinuerlige
 > `oninput`-slidere — å nullstille der ville rive vekk flere dagers avhaking midt
-> i ett enkelt dra. Stale tall på haket innhold er en akseptert begrensning av den
+> i ett enkelt dra. Utdaterte tall på haket innhold er en akseptert begrensning av den
 > indeksbaserte modellen; en ekte fiks krever innholdsbasert nøkling (eget punkt).
 >
 > **I klartekst (det som gjenstår):** Endrer du melmengde, hydrering, temperatur
@@ -157,7 +157,7 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
 > som #5. For ovntype/gjær er dette nå løst (v6.12); resten forsvinner automatisk
 > når #5-resten (glidebryterne) løses. Ingen egen jobb.
 - Vente-rader og «neste steg»-markører nøkler på `window._checked`-indekser
-  (`1855`, `1929–1930`). Med stale avhaking fra punkt 5 kan markørene peke på feil
+  (`1855`, `1929–1930`). Med utdatert avhaking fra punkt 5 kan markørene peke på feil
   steg til et type-/metodebytte tvinger en nullstilling. Løses av 5.
 
 ---
