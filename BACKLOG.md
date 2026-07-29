@@ -310,6 +310,15 @@ spesielt nyttig for fler-dagers metoder (Poolish/Biga/Mania) der ingrediensene e
 splittet over faser. Utvider v5.95-retningen og den eksisterende Kopier/Kalender-raden
 (`5105–5107`).
 
+**Utvidelses-idé (parkert):** koble handlelisten til en «Hvor får jeg tak i dette?»-seksjon
+med kuraterte norske kilder for mel (Tipo 00 / sterkt hvetemel) og utstyr (pizzastål/-stein,
+spade, gjæringsbokser, vekt, deigskraper). Anbefalt løsning er en *statisk kuratert kildeliste*
+i appen (som guiden) — null infrastruktur, ingen sporing, offline. Alternativet «finn butikk nær
+deg» (geolokasjon + kart-API) er bevisst vraket: krever backend, API-nøkkel, kostnad og
+posisjons-personvern for tvilsom nytte. Åpne valg: lenke ut vs. bare navngi; hvilke kilder vi
+faktisk står inne for (bør bestemmes av bruker, ikke oppdiktes); og om EN-visningen skjuler
+seksjonen eller viser samme liste med «norske kilder»-merknad.
+
 ### F11. Paritets-sjekk av tips/why på tvers av metoder
 > **I klartekst:** Vi tettet gjæringsstegene i v6.10, men en *full* gjennomgang av
 > at alle steg i alle metoder har jevn `tip`/`hvorfor`-dekning — pluss en test som
