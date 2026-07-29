@@ -4050,6 +4050,7 @@ function setFeedbackCategory(v){
 }
 function closeFeedbackModal(){
   document.getElementById('feedback-modal').style.display = 'none';
+  window._newFeedbackId = null; window._newFeedbackItem = null;
 }
 async function submitFeedback(){
   const ta = document.getElementById('feedback-msg');
@@ -4069,10 +4070,14 @@ async function submitFeedback(){
       })
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    if(statusEl) statusEl.textContent = L('✓ Takk! Sendt.','✓ Thanks! Sent.');
+    // Behold den innsendte saken (201-svaret) så vi kan vise den med det samme,
+    // selv om Netlify Blobs sin list() henger et øyeblikk etter skriving.
+    const created = await res.json().catch(()=>null);
+    if(created && created.id){ window._newFeedbackId = created.id; window._newFeedbackItem = created; }
+    if(statusEl) statusEl.textContent = L('✓ Takk! Sendt — se den øverst i lista.','✓ Thanks! Sent — see it at the top of the list.');
     if(ta) ta.value='';
     loadFeedbackList();
-    setTimeout(()=>{ closeFeedbackModal(); }, 1100);
+    // Ikke lukk modalen automatisk — brukeren skal få se at meldingen havner i lista.
   }catch(e){
     if(statusEl) statusEl.textContent = L('Kunne ikke sende — prøv igjen.','Could not send — try again.');
   }
@@ -4113,9 +4118,20 @@ async function loadFeedbackList(){
     const res = await fetch('/api/feedback');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
-    const items = data.feedback || [];
+    let items = data.feedback || [];
+    // Optimistisk: hvis nettopp innsendt sak ennå ikke er kommet med fra serveren
+    // (kort lager-forsinkelse), sett den inn selv så brukeren ser den.
+    if(window._newFeedbackItem && !items.some(it=>it.id===window._newFeedbackItem.id)){
+      items = [window._newFeedbackItem, ...items];
+    }
     if(!items.length){ wrap.innerHTML = `<p style="color:var(--dyn-faint);font-size:12px">${L('Ingen tilbakemeldinger ennå.','No feedback yet.')}</p>`; return; }
-    items.sort((a,b)=>(b.votes||0)-(a.votes||0));
+    const newId = window._newFeedbackId || null;
+    items.sort((a,b)=>{
+      const an=a.id===newId?1:0, bn=b.id===newId?1:0; // nettopp innsendt alltid øverst
+      if(an!==bn) return bn-an;
+      const v=(b.votes||0)-(a.votes||0); if(v) return v; // deretter mest stemt
+      return new Date(b.createdAt||0)-new Date(a.createdAt||0); // ellers nyeste først
+    });
     const isAdmin = !!window._adminPassword;
     const voted = feedbackVotedSet();
     const catLbl = v => { const c=FEEDBACK_CATEGORIES.find(c=>c.v===v); return c?L(c.t,c.tEn):v; };
@@ -4123,14 +4139,15 @@ async function loadFeedbackList(){
       let dt=''; try{ dt=fDT(new Date(it.createdAt)); }catch(e){}
       const ctx = it.context||{};
       const hasVoted = voted.has(it.id);
+      const isNew = it.id===newId;
       const adminBtns = isAdmin ? `
             <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?L('Merk som ulest','Mark as unread'):L('Merk som løst','Mark as resolved')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
             <button onclick="deleteFeedbackConfirm('${it.id}')" title="${L('Slett','Delete')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
-      return `<div id="fbitem-${it.id}" style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
+      return `<div id="fbitem-${it.id}" style="border:1px solid ${isNew?'#1D9E75':'var(--dyn-border)'};box-shadow:${isNew?'0 0 0 2px #E1F5EE':'none'};border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
 
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
-            <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
+            <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>${isNew?`<span style="font-size:10px;font-weight:700;color:#fff;background:#1D9E75;border-radius:6px;padding:1px 6px;margin-left:4px">${L('✓ nettopp sendt','✓ just sent')}</span>`:''}
             <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}${it.submittedBy?L(' · av ',' · by ')+escH(it.submittedBy):''}</span>
             <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
