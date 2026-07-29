@@ -177,6 +177,27 @@ body.mob-mode .sdesc{color:var(--forno-text-muted)}
 .mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;background:#FAFAF9}
 body.mob-mode .mob-layout{background:var(--forno-bg);color:var(--forno-text);font-family:var(--forno-font-body)}
 body.mob-mode{--dyn-text:var(--forno-text);--dyn-surface:var(--forno-bg-raised);--dyn-border:var(--forno-border);--dyn-faint:var(--forno-text-faint);--dyn-btn-bg:var(--forno-bg);}
+/* BACKLOG F4: lys tema for mobil-layouten. Hele Forno-UI-et er token-drevet, så en
+   ny palett = å redefinere --forno-*-tokenene. Varm krem/pergament-palett hentet fra
+   Runes egen Tons of Rock-app (body.light), med samme brente oransje aksent som Forno
+   allerede bruker (#e8590c). Aktiveres ved klassen .theme-light på body. */
+body.mob-mode.theme-light{
+  --forno-bg:#f5f0e6;
+  --forno-bg-raised:#fffdf8;
+  --forno-bg-sunken:#e8dcc4;
+  --forno-border:#e0d3b5;
+  --forno-border-soft:#ece3d2;
+  --forno-text:#3f2d10;
+  --forno-text-muted:#7c6a4d;
+  --forno-text-faint:#9c8861;
+  --forno-accent:#e8590c;
+  --forno-accent-soft:#fbe4d4;
+  --forno-accent-text:#c2410c;
+}
+/* Native kontroller (dropdown, dato/tid) skal følge lys palett i lys modus. */
+body.mob-mode.theme-light .dropdown-select select,
+body.mob-mode.theme-light input[type=date],
+body.mob-mode.theme-light input[type=time]{color-scheme:light}
 .mob-layout.active{display:flex}
 .app.pc-active{display:grid}
 
@@ -230,7 +251,7 @@ body.mob-mode .mob-step.now{border-color:var(--forno-accent)}
 body.mob-mode .mob-sn{background:var(--forno-border);color:var(--forno-accent-text);font-family:var(--forno-font-mono)}
 body.mob-mode .mob-step.now .mob-sn{background:var(--forno-accent);color:#1a1512}
 .mob-stepchk{width:18px;height:18px;border-radius:6px;border:2px solid #d0cdc8;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;background:#fff}
-body.mob-mode .mob-stepchk{width:24px;height:24px;border-radius:7px;border-color:#c9926a;background:transparent;font-size:14px;margin-top:1px}
+body.mob-mode .mob-stepchk{width:24px;height:24px;border-radius:7px;border-color:var(--forno-text-faint);background:transparent;font-size:14px;margin-top:1px}
 .mob-stepchk.on{background:#1D9E75;border-color:#1D9E75}
 body.mob-mode .mob-stepchk.on{background:var(--forno-accent);border-color:var(--forno-accent);color:#1a1512}
 .mob-sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
@@ -929,6 +950,10 @@ function syncStaticI18nUI(){
   st('wiz-finjuster-done','✓ Ferdig — se steg for steg','✓ Done — see step by step');
   // Info/settings tab
   st('mob-visning-lbl','Visning','Display');
+  st('mob-theme-lbl','Tema','Theme');
+  st('mob-theme-system','System','System');
+  st('mob-theme-light','Lys','Light');
+  st('mob-theme-dark','Mørk','Dark');
   st('mob-fs-lbl','Skriftstørrelse','Font size');
   st('mob-fs-normal','Normal','Normal');
   st('mob-fs-large','Stor','Large');
@@ -1352,6 +1377,39 @@ function syncHelpUI(){
   if(pcBtn)pcBtn.textContent=S.showHelp?'💡 Skjul forklaringer':'💡 Vis forklaringer';
 }
 
+// BACKLOG F4: uavhengig lys/mørk-tema for mobil-layouten. 'system' følger
+// telefonens innstilling, 'light'/'dark' overstyrer. Standard er 'dark' så
+// eksisterende brukere ser ingen endring før de selv velger noe annet.
+const THEME_LEVELS=['system','light','dark'];
+function effectiveTheme(mode){
+  if(mode==='light') return 'light';
+  if(mode==='dark') return 'dark';
+  try{ return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark'; }
+  catch(e){ return 'dark'; }
+}
+function applyThemeClass(mode){
+  document.body.classList.toggle('theme-light', effectiveTheme(mode)==='light');
+}
+function setTheme(mode){
+  window._theme=mode;
+  try{ localStorage.setItem('pizzaTheme',mode); }catch(e){}
+  applyThemeClass(mode);
+  const seg=document.getElementById('mob-theme-seg');
+  if(seg) seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===mode));
+}
+function initTheme(){
+  let saved='dark';
+  try{ saved=localStorage.getItem('pizzaTheme')||'dark'; }catch(e){}
+  setTheme(saved);
+  try{
+    if(window.matchMedia){
+      const mq=window.matchMedia('(prefers-color-scheme: light)');
+      const onCh=()=>{ if((window._theme||'dark')==='system') applyThemeClass('system'); };
+      if(mq.addEventListener) mq.addEventListener('change', onCh);
+      else if(mq.addListener) mq.addListener(onCh);
+    }
+  }catch(e){}
+}
 function setFontSize(level){
   document.body.classList.remove('fs-large','fs-xlarge');
   if(level==='large')document.body.classList.add('fs-large');
@@ -4843,6 +4901,7 @@ function initLayout(){
   const mode=saved||auto;
   if(mode==='mob') setLayout('mob');
   initFontSize();
+  initTheme();
 }
 
 // ===== MOBILE CONTROL SYNC =====
@@ -6391,7 +6450,15 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div id="mob-i18n-note" style="padding:0 1rem .3rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
 
     <div class="mob-section-lbl" id="mob-visning-lbl">Visning</div>
-    <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.5rem 1rem .65rem">
+    <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.5rem 1rem .35rem">
+      <div id="mob-theme-lbl" style="font-size:11px;color:var(--forno-text-faint,#888);margin-bottom:4px">Tema</div>
+      <div class="fs-seg" id="mob-theme-seg">
+        <div class="o" id="mob-theme-system" data-v="system" onclick="setTheme('system')">System</div>
+        <div class="o" id="mob-theme-light" data-v="light" onclick="setTheme('light')">Lys</div>
+        <div class="o" id="mob-theme-dark" data-v="dark" onclick="setTheme('dark')">Mørk</div>
+      </div>
+    </div>
+    <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.15rem 1rem .65rem">
       <div id="mob-fs-lbl" style="font-size:11px;color:var(--forno-text-faint,#888);margin-bottom:4px">Skriftstørrelse</div>
       <div class="fs-seg" id="mob-fs-seg">
         <div class="o on" id="mob-fs-normal" data-v="normal" onclick="setFontSize('normal')">Normal</div>

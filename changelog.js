@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.17',
+    d: 'juli 2026',
+    changes: [
+      'Ny <b>lys modus</b> ved siden av den mørke. Under <b>Info → Visning → Tema</b> velger du <b>System</b> (følger telefonens innstilling), <b>Lys</b> eller <b>Mørk</b>. Den lyse paletten er en varm krem/pergament-tone med samme oransje aksent som før. Valget huskes, og standard er fortsatt mørk — så ingenting endrer seg før du selv velger noe annet.'
+    ]
+  },
+  {
     v: '6.16',
     d: 'juli 2026',
     changes: [
