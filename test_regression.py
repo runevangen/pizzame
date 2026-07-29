@@ -1538,6 +1538,51 @@ def run_behavioral_tests(page):
     ok31b = baseline22 and both_shrink and consistent
     results.append(('hurtig_both_ferment_phases_scale_with_temperature', ok31b, r31b))
 
+    # BACKLOG #5 (full fiks): avhaking er na INNHOLDSBASERT. Aa dra en glidebryter
+    # (mel/hydro/temp/kjol) skal fjerne haken paa steg hvis INNHOLD endret seg
+    # (grammengder/temp/minutter), men beholde haken paa steg som IKKE endret seg.
+    # Tester ogsaa bakoverkompatibilitet: en gammel indeks-basert hake (lagret for
+    # denne endringen) lyser fortsatt, og migreres til signatur naar den toggles.
+    r31c = page.evaluate("""() => {
+      resetTestState();
+      setLayout('mob');
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.mode='start'; S.gjaer='torr';
+      mobShowTab('plan'); mobGen();
+      const s500 = (window._steps||[]).slice();
+      S.mel=600; mobGen();
+      const s600 = (window._steps||[]).slice();
+      S.mel=500; mobGen();
+      // finn ett mel-avhengig steg (signatur endres) og ett mel-uavhengig steg
+      let depIdx=-1, indepIdx=-1;
+      for(let i=0;i<Math.min(s500.length,s600.length);i++){
+        if(stepSig(s500[i])!==stepSig(s600[i])){ if(depIdx<0) depIdx=i; }
+        else if(indepIdx<0) indepIdx=i;
+      }
+      // hak av begge (innholdsbasert) ved mel=500
+      window._checked=new Set();
+      toggleStepDone(depIdx); toggleStepDone(indepIdx);
+      const before={dep:stepChecked(window._steps[depIdx],depIdx), indep:stepChecked(window._steps[indepIdx],indepIdx)};
+      // dra mel til 600 -> dep-stegets innhold endres, indep-steget ikke
+      S.mel=600; mobGen();
+      const st=window._steps||[];
+      const after={dep:stepChecked(st[depIdx],depIdx), indep:stepChecked(st[indepIdx],indepIdx)};
+      // legacy: en gammel indeks-hake skal fortsatt vises som avhaket
+      S.mel=500; mobGen();
+      window._checked=new Set([indepIdx]);
+      const legacyShown = stepChecked(window._steps[indepIdx], indepIdx);
+      // og toggling av den fjerner den (migrerer bort fra indeks)
+      toggleStepDone(indepIdx);
+      const legacyClearedOff = !stepChecked(window._steps[indepIdx], indepIdx) && window._checked.size===0;
+      return { depIdx, indepIdx, before, after, legacyShown, legacyClearedOff };
+    }""")
+    ok31c = (
+      r31c['depIdx'] >= 0 and r31c['indepIdx'] >= 0 and
+      r31c['before']['dep'] is True and r31c['before']['indep'] is True and
+      r31c['after']['dep'] is False and r31c['after']['indep'] is True and
+      r31c['legacyShown'] is True and r31c['legacyClearedOff'] is True
+    )
+    results.append(('checkbox_content_keyed_drops_stale_slider_changes_keeps_unaffected', ok31c, r31c))
+
     # v6.01: Hurtigdeig fikk et nytt forste steg (gjaer-kickstart: lunkent
     # vann + honning, ~5 min for melet tilsettes) og en semulegryn-tips paa
     # stekesteget. Tester at kjeden fortsatt henger sammen uten hull/overlapp

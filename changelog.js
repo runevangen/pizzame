@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.16',
+    d: 'juli 2026',
+    changes: [
+      'Avhaking av steg følger nå <b>innholdet</b> i steget, ikke bare posisjonen. Justerer du melmengde, hydrering, temperatur eller kjøletid <i>etter</i> at du har haket av noe, faller haken automatisk av de stegene som faktisk endret seg (nye grammengder, temperaturer eller minutter) — mens steg som ikke ble berørt beholder haken. Før kunne en hake bli stående på et tall som var endret (f.eks. en avhaket «500 g mel» etter at du dro til 600 g). Haken rives aldri vekk midt i et glidebryter-dra, og den overlever språk- og enhetsbytte.'
+    ]
+  },
+  {
     v: '6.15',
     d: 'juli 2026',
     changes: [
