@@ -795,6 +795,14 @@ function fmtT(c){ return window._units==='imperial' ? Math.round(parseFloat(Stri
 function L(no, en){ return (window._lang==='en' && en!=null) ? en : no; }
 // Oversetter en norsk varighetsstreng fra fmtDur() ("2,5 timer", "45 min", "1,5 døgn") til engelsk.
 function durEn(s){ return String(s).replace(' timer',' hours').replace(' time',' hour').replace(' døgn',' days'); }
+// Timer + minutter for varigheter i steg-tekst ("8 t 25 min" / "8 h 25 min"),
+// språk-bevisst. Brukes i beskrivelsene i stedet for rå "504 min" / desimal "1.3 time".
+function fmtHM(mins){
+  mins=Math.round(mins);
+  if(mins<60) return mins+' min';
+  const h=Math.floor(mins/60), m=mins%60, u=window._lang==='en'?'h':'t';
+  return m ? h+' '+u+' '+m+' min' : h+' '+u;
+}
 // Enhets-post-prosessor: konverterer ALLE °C og gram i en ferdig tekst-blokk til
 // °F/oz på én gang — «billig-trikset». Kjøres kun på plan-stegtekst (ikke attributter).
 function localizeUnits(html){
@@ -816,11 +824,11 @@ const TXT = {
        li_section:'Language / Units',li_lang:'Language',li_units:'Units',u_metric:'Metric (g · °C)',u_imperial:'Imperial (oz · °F)',
        ai_note:'⚠️ English is machine-translated (AI). Double-check critical steps — the recipe text is not yet fully reviewed.',
        a_copy:'Copy',a_cal:'Calendar',a_save:'Save',tb_juster:'⚙️ Adjust',tb_understeg:'📋 Substeps',tb_tips:'💡 Tips',
-       r_count:'Count',r_size:'Ball size',r_dough:'final dough' } };
+       r_count:'Quantity',r_size:'Dough ball size',r_dough:'final dough' } };
 function t(key){ const l=window._lang||'no'; return (TXT[l]&&TXT[l][key]!=null)?TXT[l][key]:(TXT.no[key]||key); }
 // Display-oversettelse av steg-titler (rører IKKE step.title-objektet → baseline trygg).
 const TITLES_EN = {
-  'Væk gjæren (kickstart)':'Wake the yeast (kickstart)',
+  'Vekk gjæren (kickstart)':'Wake the yeast (kickstart)',
   'Ankarsrum — bland deig raskt':'Ankarsrum — mix dough quickly',
   'Kjøkkenmaskin — bland deig raskt':'Stand mixer — mix dough quickly',
   'Bland og elt for hånd — raskt':'Mix and knead by hand — quick',
@@ -859,7 +867,7 @@ const TITLES_EN = {
   'Romtemperaturheving (delt)':'Room-temperature rise (divided)',
   'Form emner → kjøleskap':'Shape the balls → fridge',
   'Del i langpanner → kjøleskap':'Divide into sheet pans → fridge',
-  'Ta ut og temperer':'Take out and temper',
+  'Ta ut og temperer':'Take out and let it warm up',
   'Ankarsrum — bland deig':'Ankarsrum — mix dough',
   'Bland og elt for hånd':'Mix and knead by hand',
   'Kjøkkenmaskin — bland deig':'Stand mixer — mix dough'
@@ -869,7 +877,7 @@ function dispTitle(t){
   if(window._lang!=='en') return t;
   if(TITLES_EN[t]) return TITLES_EN[t];
   let m;
-  if((m=t.match(/^Bulk-heving \(ca\. (.+)t\)$/))) return `Bulk rise (approx. ${m[1]}h)`;
+  if((m=t.match(/^Bulk-heving \(ca\. (.+)t\)$/))) return `Bulk rise (about ${m[1]}h)`;
   if((m=t.match(/^Etterheving \+ forvarme \((.+) min\)$/))) return `Final proof + preheat (${m[1]} min)`;
   if((m=t.match(/^Kjøleskapsheving \((.+)t\)$/))) return `Cold proof (${m[1]}h)`;
   return t;
@@ -929,7 +937,7 @@ function syncStaticI18nUI(){
   st('wiz-s2-q2','Meltype','Flour type');
   st('wiz-s2-next','Neste →','Next →');
   // Wizard step check
-  st('wiz-check-h','Holder dette?','Does this work?');
+  st('wiz-check-h','Holder dette?','Will this work?');
   st('mob-cold-wiz-lbl','Kjøleskapsheving','Cold proof');
   st('wiz-check-finish','Se tidsplanen →','See the schedule →');
   st('wiz-check-beta','🧭 Finn oppskrift ut fra ledig tid → Beta-fanen','🧭 Find a recipe based on your free time → Beta tab');
@@ -1631,6 +1639,10 @@ function pc(){
 }
 function pcUnitLabel(plural){
   const isPan = S.type==='langpanne' || S.type==='ingenelting';
+  if(window._lang==='en'){
+    if(isPan) return plural?'sheet pans':'sheet pan';
+    return plural?'pizzas':'pizza';
+  }
   if(isPan) return plural?'langpanner':'langpanne';
   return plural?'pizzaer':'pizza';
 }
@@ -1672,7 +1684,7 @@ function bakeSubsteps(type){
     ? L('Press deigen ned og opp langs kantene i smørsmurt jernpanne','Press the dough down and up along the edges in a buttered cast-iron pan')
     : type==='newyork'
     ? L('Strekk tynt og bredt — kantene skal kunne brettes','Stretch thin and wide — the edges should be foldable')
-    : L('Strekk emnet rundt, la kanten være tykkere enn midten','Stretch the ball round, keep the edge thicker than the center');
+    : L('Strekk emnet rundt, la kanten være tykkere enn midten','Stretch the ball out into a round, keeping the edge thicker than the center');
   const top = type==='chicago' ? L('Ost først, så fyll, saus øverst — Chicago-tradisjonen','Cheese first, then filling, sauce on top — the Chicago tradition') : L('Ha på saus, ost og ønsket topping','Add sauce, cheese and your chosen toppings');
   const bakeLine = type==='napoletana'
     ? (p?L('Stek 90–120 sek til leopardmønster og sprø kanter','Bake 90–120 sec until leopard-spotted with crisp edges'):L('Stek 6–9 min øverste rille','Bake 6–9 min on the top rack'))
@@ -1684,8 +1696,8 @@ function bakeSubsteps(type){
   return [warm, shape, top, bakeLine];
 }
 function mN(m){return (window._lang==='en'
-  ?{standard:'Long-ferment dough',poolish:'Poolish',biga:'Biga',hurtig:'Quick dough',ingenelting:'No-knead',kveld:'Evening dough'}
-  :{standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig'})[m]||m;}
+  ?{standard:'Long-ferment dough',poolish:'Poolish',biga:'Biga',hurtig:'Quick dough',ingenelting:'No-knead',kveld:'Evening dough',mania:'Mania poolish'}
+  :{standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig',mania:'Mania-poolish'})[m]||m;}
 
 const LOC_NO={
   kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
@@ -1737,7 +1749,7 @@ const TIP_EN={
   coldRise:'Check through the lid without opening: the balls should grow to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out and bake a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.',
   roomRise:'Ready when it has grown clearly (about doubled), soft and airy with bubbles on the surface. Finger-poke test: press lightly with a wet finger — the dimple should spring back slowly, halfway. If it springs right back, it needs more time; if the dimple stays and the dough sinks, it is too far along — move on right away. A warm kitchen goes faster than the clock suggests.',
   benchTemper:'Ready when they are no longer cold and have risen a little visibly in the box. Still stiff and cold — give them more time before you shape. Slack and spreading out in the box — they are tempered enough; shape and bake without waiting longer. Too short gives stiff, dense dough that is hard to open; far too long and they can over-proof and go slack.',
-  poolishFerment:'Ready when the surface is full of bubbles, domes up easily and smells freshly sour of yeast. Flat and still — let it stand longer; a cold kitchen slows it down. Collapsed in the middle and smelling sharp/alcoholic — it has gone a bit too far; use it anyway, but expect a somewhat more sour taste.',
+  poolishFerment:'Ready when the surface is full of bubbles, domes up easily and has a fresh, slightly tangy yeast smell. Flat and still — let it stand longer; a cold kitchen slows it down. Collapsed in the middle and smelling sharp/alcoholic — it has gone a bit too far; use it anyway, but expect a somewhat more sour taste.',
   intoFridge:'Use boxes with lids — cloths dry out the surface and form a skin. Don\'t stack the boxes tightly on top of each other; it can block air circulation and cause uneven cooling — spread them out a little. And don\'t trust the number on the fridge dial blindly: the 1–5 scales vary between brands, so if you have a thermometer, check that it sits around 2–5°C.'
 };
 // Proxy slik at eksisterende TIP.xx-oppslag følger valgt språk (byte-identisk norsk).
@@ -1810,7 +1822,7 @@ function whySg(){
 function langpanneHintText(){
   if(S.type!=='langpanne' && S.type!=='ingenelting') return '';
   const p=pc();
-  return L(` Denne mengden gir ${p.count} langpanne${p.count>1?'r':''} (ca. ${p.melPer}g mel per langpanne).`,` This amount makes ${p.count} sheet pan${p.count>1?'s':''} (approx. ${p.melPer}g flour per pan).`);
+  return L(` Denne mengden gir ${p.count} langpanne${p.count>1?'r':''} (ca. ${p.melPer}g mel per langpanne).`,` This amount makes ${p.count} sheet pan${p.count>1?'s':''} (about ${p.melPer}g flour per pan).`);
 }
 
 function rawSteps(a){
@@ -1886,15 +1898,15 @@ function rawSteps(a){
     return[
       {title:S.type==='langpanne'?'Del i langpanner → kjøleskap':'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:15,
         desc:S.type==='langpanne'
-          ?L(`Del deigen i ${pc().count} del${pc().count>1?'er':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per langpanne). Rund hver del løst sammen — du strekker den ut i formen senere. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,`Divide the dough into ${pc().count} piece${pc().count>1?'s':''} of about ${pc().perPizza}g each (${pc().melPer}g flour per sheet pan). Round each piece loosely together — you stretch it out in the pan later. Place in oiled containers with tight lids. Put in the fridge.`)
+          ?L(`Del deigen i ${pc().count} del${pc().count>1?'er':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per langpanne). Rund ${pc().count>1?'hver del':'delen'} løst sammen — du strekker den ut i formen senere. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap.`,`Divide the dough into ${pc().count} piece${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (${pc().melPer}g flour per sheet pan). Loosely round ${pc().count>1?'each piece':'the piece'} — you stretch it out in the pan later. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge.`)
           :S.type==='chicago'
-          ?L(`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap — du presser emnet ut i den runde jernpanna når du skal steke.`,`Divide into ${pc().count} balls of about ${pc().perPizza}g each (${pc().melPer}g flour per pizza). Round well with both hands. Place in oiled containers with tight lids. Put in the fridge — you press the ball out into the round cast-iron pan when you're ready to bake.`)
-          :L(`Del i ${pc().count} emner à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett i kjøleskap.`,`Divide into ${pc().count} balls of about ${pc().perPizza}g each (${pc().melPer}g flour per pizza). Round well with both hands. Place in oiled containers with tight lids. Put in the fridge.`),
-        needs:[L(`📦 ${pc().count} bokser m/lokk`,`📦 ${pc().count} containers w/lids`), L('🫒 litt olje',`🫒 a little oil`)],
+          ?L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap — du presser emnet ut i den runde jernpanna når du skal steke.`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (${pc().melPer}g flour per pizza). Round well with both hands. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge — you press the ball out into the round cast-iron pan when you're ready to bake.`)
+          :L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap.`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (${pc().melPer}g flour per pizza). Round well with both hands. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge.`),
+        needs:[L(`📦 ${pc().count} boks${pc().count>1?'er':''} m/lokk`,`📦 ${pc().count} container${pc().count>1?'s':''} w/lid${pc().count>1?'s':''}`), L('🫒 litt olje',`🫒 a little oil`)],
         substeps:[
-          L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g each`),
-          S.type==='langpanne' ? L('Rund hver del løst sammen',`Round each piece loosely together`) : L('Rund godt med begge hender',`Round well with both hands`),
-          L('Legg i oljede bokser med tett lokk',`Place in oiled containers with tight lids`),
+          L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''}`),
+          S.type==='langpanne' ? L(`Rund ${pc().count>1?'hver del':'delen'} løst sammen`,`Loosely round ${pc().count>1?'each piece':'the piece'}`) : L('Rund godt med begge hender',`Round well with both hands`),
+          L(`Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk`,`Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}`),
           L('Sett i kjøleskap',`Put in the fridge`)
         ],
         why:WHY.fk,
@@ -1908,7 +1920,7 @@ function rawSteps(a){
         why:WHY.fk,
         tip:TIP.coldRise},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
-        desc:L('Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. 4 timer før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.',`Take the dough balls out onto the counter — this is the bench time (tempering) after the cold fermentation. Let them sit covered at room temperature for about 4 hours before baking, so the dough both becomes stretchable and gets a final rise. Don't open the containers yet.`),
+        desc:L('Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. 4 timer før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.',`Take the dough balls out onto the counter — this is the bench rest (warming up) after the cold fermentation. Let them sit covered at room temperature for about 4 hours before baking, so the dough both becomes stretchable and gets a final rise. Don't open the containers yet.`),
         substeps:[
           L('Ta deigemnene ut av kjøleskapet, over på benken',`Take the dough balls out of the fridge, onto the counter`),
           L('La stå dekket ved romtemperatur i ca. 4 timer (benktid)',`Let sit covered at room temperature for about 4 hours (bench time)`),
@@ -2088,11 +2100,11 @@ function rawSteps(a){
     }
     return[
       {title:'Bland poolish',loc:'benk',at:poolishAt,dur:8,
-        desc:L(`Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C). Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt. Dekk til med lokk eller plastfolie.`,`Stir ${rm.poolishYd}g dry yeast into ${rm.poolishVann}g water (18–21°C). Add ${rm.poolishMel}g flour, stir to a thick porridge. Cover with a lid or plastic wrap.`),
+        desc:L(`Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C). Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt. Dekk til med lokk eller plastfolie.`,`Stir ${rm.poolishYd}g dry yeast into ${rm.poolishVann}g water (18–21°C). Add ${rm.poolishMel}g flour, stir to a thick batter. Cover with a lid or plastic wrap.`),
         needs:[L(`🫙 ${rm.poolishYd}g tørrgjær`,`🫙 ${rm.poolishYd}g dry yeast`), L(`💧 ${rm.poolishVann}g vann`,`💧 ${rm.poolishVann}g water`), L(`🌾 ${rm.poolishMel}g mel`,`🌾 ${rm.poolishMel}g flour`)],
         substeps:[
           L(`Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C)`,`Stir ${rm.poolishYd}g dry yeast into ${rm.poolishVann}g water (18–21°C)`),
-          L(`Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt`,`Add ${rm.poolishMel}g flour, stir to a thick porridge`),
+          L(`Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt`,`Add ${rm.poolishMel}g flour, stir to a thick batter`),
           L(`Dekk til med lokk eller plastfolie`,`Cover with a lid or plastic wrap`)
         ],
         why:L('Halvparten av oppskriftens mel og vann fermenterer for seg selv i mange timer før resten av deigen i det hele tatt blandes — poolishen bygger opp mesteparten av smaken.',`Half the recipe's flour and water ferment on their own for many hours before the rest of the dough is even mixed — the poolish builds up most of the flavor.`),
@@ -2125,8 +2137,8 @@ function rawSteps(a){
           L('Legg i bakebolle eller lignende',`Place in a baking bowl or similar`),
           L('Dekk med lokk eller plastfolie',`Cover with a lid or plastic wrap`)
         ],
-        why:L('Formingen bygger opp spenning i deigoverflaten, som gir bedre holdbarhet og struktur gjennom den lange kalde hevingen som følger.',`Shaping builds up tension in the dough surface, which gives better durability and structure through the long cold rise that follows.`),
-        tip:L(`La stå i romtemperatur i ca. ${Math.round(ROOMTEMP1/60*10)/10} time før kjøleskapet.`,`Let sit at room temperature for about ${Math.round(ROOMTEMP1/60*10)/10} hours before the fridge.`)},
+        why:L('Formingen bygger opp spenning i deigoverflaten, som gir bedre holdbarhet og struktur gjennom den lange kalde hevingen som følger.',`Shaping builds up tension in the dough surface, which helps the balls hold their shape and structure through the long cold proof that follows.`),
+        tip:L(`La stå i romtemperatur i ca. ${fmtHM(ROOMTEMP1)} før kjøleskapet.`,`Let sit at room temperature for about ${fmtHM(ROOMTEMP1)} before the fridge.`)},
       {title:'Kjøleskapsheving (udelt)',loc:'kjol',at:coldBulkStart,dur:COLDBULK,passive:true,
         desc:L('Hele deigen kjøleskapheves samlet, udelt — deles i emner først etterpå.',`The whole dough is cold-proofed together, undivided — divided into balls only afterward.`),
         substeps:[L('La hele deigen stå samlet, udelt, i kjøleskapet',`Let the whole dough sit together, undivided, in the fridge`)],
@@ -2182,7 +2194,7 @@ function hurtigSteps(anchor){
   const t0=ie?sM(anchor,KICK_DUR+30+ba+afm):anchor;
   const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
-    {title:'Væk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
+    {title:'Vekk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
       desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (40–43°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min til det bobler og skummer. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (40–43°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min until it bubbles and foams. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
       needs:[`🫙 ${ya}`, L(`💧 ${wk}g lunkent vann`,`💧 ${wk}g lukewarm water`), L('🍯 1 ts honning','🍯 1 tsp honey')],
       substeps:[
@@ -2205,15 +2217,15 @@ function hurtigSteps(anchor){
         L(`Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,`Add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}`),
         L(`Øk hastigheten, elt godt til deigen er glatt — sikt mot 24°C`,`Increase the speed, knead well until the dough is smooth — aim for 24°C`)
       ];})(),
-      why:L('Vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvor lenge den skal gjære — det er gjærmengden over, ikke vanntemperaturen, som gjør denne varianten rask.','The water temperature is calculated to hit about 24°C finished dough no matter how long it ferments — it is the amount of yeast above, not the water temperature, that makes this variant fast.'),
+      why:L('Vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvor lenge den skal gjære — det er gjærmengden over, ikke vanntemperaturen, som gjør denne varianten rask.','The water temperature is calculated to land the finished dough at about 24°C no matter how long it will ferment — it\'s the amount of yeast above, not the water temperature, that makes this variant fast.'),
       tip:S.kjokkenmaskin==='ankarsrum'
-        ?L('Hurtigdeig: bruk trinn 3–4 litt raskere enn vanlig siden du ikke har tid til lang heving.','Quick dough: use speed 3–4 a bit faster than usual since you don\'t have time for a long rise.')
+        ?L('Hurtigdeig: gå opp til trinn 3–4 litt tidligere enn vanlig siden du ikke har tid til lang heving.','Quick dough: move up to speed 3–4 a bit sooner than usual, since you don\'t have time for a long rise.')
         :S.kjokkenmaskin==='manuell'
         ?L('Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.','The windowpane test is extra important here since you don\'t have a long rise to compensate for under-kneading.')
         :L('Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.','Knead a bit longer than you would with a longer rise — quick dough has less time for gluten to develop on its own.')},
-    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,`Cover tightly. Rise at ${S.temp}°C for about ${ba} min.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${ba} min`,`Rise at ${S.temp}°C for about ${ba} min`)],why:rtW(ba),tip:TIP.roomRise},
-    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} balls of ${p.perPizza}g each. Round well.`),needs:[L(`📦 ${p.count} emner`,`📦 ${p.count} balls`)],substeps:[L(`Del i ${p.count} emner à ${p.perPizza}g`,`Divide into ${p.count} balls of ${p.perPizza}g each`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
-    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${afm} min. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${afm} min, tildekket`,`Final proof ${afm} min, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}.`,`Cover tightly. Rise at ${S.temp}°C for about ${fmtHM(ba)}.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}`,`Rise at ${S.temp}°C for about ${fmtHM(ba)}`)],why:rtW(ba),tip:TIP.roomRise},
+    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}. Round well.`),needs:[L(`📦 ${p.count} emne${p.count>1?'r':''}`,`📦 ${p.count} ball${p.count>1?'s':''}`)],substeps:[L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
+    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${fmtHM(afm)}. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${fmtHM(afm)}. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${fmtHM(afm)}, tildekket`,`Final proof ${fmtHM(afm)}, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
       tip:(oT(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
   ]};
@@ -2245,12 +2257,12 @@ function kveldSteps(anchor){
       why:L('Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen før kjøleskapet kjøler den ned.','Cold water makes it easier to hold the target dough temperature and gives more control over fermentation before the fridge cools it down.'),
       tip:L('Deigtemperatur etter elting bør ligge på 20–22°C — litt kaldere enn standardmetoden er helt greit her, siden kjøleskapet uansett overtar snart.','Dough temperature after kneading should be 20–22°C — a bit colder than the standard method is perfectly fine here, since the fridge takes over soon anyway.')},
     {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:FORM_DUR,
-      desc:L(`Del i ${p.count} emner à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i oljede bokser med tett lokk. Sett rett i kjøleskap.`,`Divide into ${p.count} balls of about ${p.perPizza}g each. Round well with both hands. Place in oiled containers with tight lids. Put straight into the fridge.`),
-      needs:[L(`📦 ${p.count} bokser m/lokk`,`📦 ${p.count} containers w/lids`), L('🫒 litt olje','🫒 a little oil')],
+      desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i ${p.count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett rett i kjøleskap.`,`Divide into ${p.count} ball${p.count>1?'s':''} of about ${p.perPizza}g${p.count>1?' each':''}. Round well with both hands. Place in ${p.count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put straight into the fridge.`),
+      needs:[L(`📦 ${p.count} boks${p.count>1?'er':''} m/lokk`,`📦 ${p.count} container${p.count>1?'s':''} w/lid${p.count>1?'s':''}`), L('🫒 litt olje','🫒 a little oil')],
       substeps:[
-        L(`Del i ${p.count} emne${p.count>1?'r':''} à ca. ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of about ${p.perPizza}g each`),
+        L(`Del i ${p.count} emne${p.count>1?'r':''} à ca. ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of about ${p.perPizza}g${p.count>1?' each':''}`),
         L('Rund godt med begge hender','Round well with both hands'),
-        L('Legg i oljede bokser med tett lokk','Place in oiled containers with tight lids'),
+        L(`Legg i ${p.count>1?'oljede bokser':'oljet boks'} med tett lokk`,`Place in ${p.count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}`),
         L('Sett rett i kjøleskap','Put straight into the fridge')
       ],
       why:L('Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.','Shaping before chilling gives each ball even temperature and rise through the night.'),
@@ -2672,7 +2684,7 @@ function waitRow(s,next){
     icon='⏱';txt=L('Hvil ved romtemperatur','Rest at room temperature');val=mins+' min';
   } else if(next.loc==='ovn'||s.title.toLowerCase().includes('ta ut')){
     const hrs=Math.round(mins/60);
-    icon='🌡';txt=L('La temperere på benken','Temper on the counter');val=hrs>=1?L(`${hrs} time${hrs>1?'r':''}`,`${hrs} hour${hrs>1?'s':''}`):mins+' min';
+    icon='🌡';txt=L('La temperere på benken','Let it warm up on the counter');val=hrs>=1?L(`${hrs} time${hrs>1?'r':''}`,`${hrs} hour${hrs>1?'s':''}`):mins+' min';
   } else {
     const hrs=Math.round(mins/60);
     icon='⏱';txt=L('La hvile / heve','Rest / rise');val=hrs>=1?L(`${hrs} time${hrs>1?'r':''}`,`${hrs} hour${hrs>1?'s':''}`):mins+' min';
@@ -2717,14 +2729,14 @@ function copyP(steps){
   const coldLine = S.type==='ingenelting' ? null
     : S.method==='kveld' ? L(`Kjøleskapsheving: ${S.kveldH} timer · Ovn: ${oN()}`,`Cold proof: ${S.kveldH} hours · Oven: ${oN()}`)
     : S.method==='hurtig' ? L(`Ovn: ${oN()}`,`Oven: ${oN()}`)
-    : `${_totTxt?L(`Total tid fra start til steking: ca. ${_totTxt} · `,`Total time from start to baking: approx. ${_totTxt} · `):''}${L(`Ovn: ${oN()}`,`Oven: ${oN()}`)}`;
+    : `${_totTxt?L(`Total tid fra start til steking: ca. ${_totTxt} · `,`Total time from start to baking: about ${_totTxt} · `):''}${L(`Ovn: ${oN()}`,`Oven: ${oN()}`)}`;
   const ovnLine = S.type==='ingenelting' ? L(`Ovn: Vanlig ovn, 250°C`,`Oven: Regular oven, 250°C`) : null;
   // Toppen: en sjekk-instruksjon (for manuell kvalitetskontroll av oppskriften)
   // + appversjon og tidspunkt for kopieringen, slik at det er sporbart hvilken
   // versjon og når planen ble hentet ut.
   const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
   const _now=new Date();
-  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:',`Check this pizza recipe systematically for errors in ingredients, math and schedule — look especially for deviations from what I specified myself:`),'',L(`Pizzaplanlegger v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`Pizza planner v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${r.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,`Flour: ${S.mel}g · Hydration: ${S.hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Count ${pcUnitLabel(true)}: ${p.count} pcs (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${r.flour}g`,`Flour: ${r.flour}g`),L(`Vann: ${r.water}g`,`Water: ${r.water}g`),L(`Salt: ${r.salt}g`,`Salt: ${r.salt}g`),...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),L(`Gjær: ${currentYeastAmount()}`,`Yeast: ${currentYeastAmount()}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
+  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:',`Check this pizza recipe systematically for errors in ingredients, math and schedule — look especially for deviations from what I specified myself:`),'',L(`Pizzaplanlegger v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`Pizza Planner v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${r.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,`Flour: ${S.mel}g · Hydration: ${S.hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${r.flour}g`,`Flour: ${r.flour}g`),L(`Vann: ${r.water}g`,`Water: ${r.water}g`),L(`Salt: ${r.salt}g`,`Salt: ${r.salt}g`),...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),L(`Gjær: ${currentYeastAmount()}`,`Yeast: ${currentYeastAmount()}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
   steps.forEach((s,i)=>{
     const locMap=L({kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'},{kjol:'❄️ Fridge',rom:'🏠 Room temperature',ovn:'🔥 Oven',benk:'🔧 Counter'});
     const loc=locMap[s.loc]||s.loc;
@@ -3878,7 +3890,7 @@ function buildTechHTML(){
   if(S.type==='ingenelting'){
     return `
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">🥣 Ingen elting — hele poenget</div><div class="sdesc">Samme prinsipp som klassisk no-knead-brød: lang, langsom heving ved romtemperatur bygger opp glutennettverket helt av seg selv. Ingen kjøkkenmaskin, ingen håndelting, ingen windowpane-test underveis — bare tid.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">🥣 No knead — the whole point</div><div class="sdesc">Same principle as classic no-knead bread: a long, slow rise at room temperature builds the gluten network entirely on its own. No stand mixer, no hand kneading, no windowpane test along the way — just time.</div></div>`)}
-    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor ingen kjøleskapsdager?</div><div class="sdesc">Denne metoden bruker kun én lang romtemperert heving (~15 timer) i stedet for dager i kjøleskap. Vil du ha mer kompleks smak, kan du sette bollen i kjøleskapet i stedet for på benken og heller la den stå 24–36 timer kaldt — men da mister du noe av "sett det og glem det"-enkelheten.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Why no fridge days?</div><div class="sdesc">This method uses just one long room-temperature rise (~15 hours) instead of days in the fridge. If you want more complex flavour, you can put the bowl in the fridge instead of on the counter and let it stand 24–36 hours cold — but then you lose some of the "set it and forget it" simplicity.</div></div>`)}
+    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor ingen kjøleskapsdager?</div><div class="sdesc">Denne metoden bruker kun én lang romtemperert heving (~15 timer) i stedet for dager i kjøleskap. Vil du ha mer kompleks smak, kan du sette bollen i kjøleskapet i stedet for på benken og heller la den stå 24–36 timer kaldt — men da mister du noe av "sett det og glem det"-enkelheten.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Why no fridge days?</div><div class="sdesc">This method uses just one long room-temperature rise (~15 hours) instead of days in the fridge. If you want more complex flavor, you can put the bowl in the fridge instead of on the counter and let it stand 24–36 hours cold — but then you lose some of the "set it and forget it" simplicity.</div></div>`)}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvordan vet jeg at den er klar?</div><div class="sdesc">Se etter bobler i overflaten og at deigen har mer enn doblet seg — ikke stol blindt på klokken. Er den ikke klar etter 15 timer, gi den et par timer til. Romtemperatur styrer farten mer enn for andre metoder siden det ikke er noen elting som kompenserer.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">How do I know it's ready?</div><div class="sdesc">Look for bubbles on the surface and that the dough has more than doubled — don't blindly trust the clock. If it's not ready after 15 hours, give it a couple more hours. Room temperature governs the pace more than with other methods, since there's no kneading to compensate.</div></div>`)}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">${L('Gjærtype: ','Yeast type: ')}${S.gjaer==='torr'?L('tørrgjær','dry yeast'):L('fersk gjær','fresh yeast')}</div><div class="sdesc">${S.gjaer==='torr'?L('Tørrgjær er stabil og enkel — dryss rett i de tørre ingrediensene.','Dry yeast is stable and easy — sprinkle it straight into the dry ingredients.'):L('Fersk gjær gir mer aroma. Løs den opp i litt av vannet før du blander alt sammen. Bruk 3× mengden av tørrgjær.','Fresh yeast gives more aroma. Dissolve it in a little of the water before mixing everything together. Use 3× the amount of dry yeast.')}</div></div>
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor blir resultatet fokaccia-aktig?</div><div class="sdesc">Uten elting og med en våt, ublandet deig som presses rett i en oljet form, blir bunnen luftigere og mer uregelmessig enn en tynn, hånd-strukket napoletansk bunn. Det er en bevisst avveining — du bytter presisjon og tynnhet mot enkelhet.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Why does the result turn out focaccia-like?</div><div class="sdesc">Without kneading, and with a wet, barely-mixed dough pressed straight into an oiled pan, the base turns out airier and more irregular than a thin, hand-stretched Neapolitan base. It's a deliberate trade-off — you swap precision and thinness for simplicity.</div></div>`)}`;
@@ -3888,7 +3900,7 @@ function buildTechHTML(){
     ${machineSeqHTML()}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor regnet vanntemperatur, ikke bare "lunkent"?</div><div class="sdesc">Vanntemperaturen er beregnet ut fra en formel bakere bruker for å styre sluttdeigens temperatur uansett hvor lenge den skal gjære: <b>3 × ønsket deigtemperatur − (romtemperatur × 2 + friksjon fra eltemetoden)</b>. Målet er ca. 24°C ferdig deig. Ved ${S.temp}°C rom med ${machineLabel()} lander det på ca. ${calcWaterTempC()}°C vann akkurat nå — endrer du romtemperatur eller kjøkkenmaskin i sidepanelet, endrer tallet seg med. Et kaldere rom trenger varmere vann for å nå samme sluttemperatur, og omvendt.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Why a calculated water temperature, not just "lukewarm"?</div><div class="sdesc">The water temperature is calculated from a formula bakers use to control the final dough temperature no matter how long it will ferment: <b>3 × desired dough temperature − (room temperature × 2 + friction from the kneading method)</b>. The target is about 24°C finished dough. At ${S.temp}°C room with ${machineLabel()} it lands at about ${calcWaterTempC()}°C water right now — change the room temperature or mixer in the side panel and the number changes with it. A colder room needs warmer water to reach the same final temperature, and vice versa.</div></div>`)}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane test</div><div class="sdesc">Take a small piece of dough and gently stretch it between your fingers. If it turns thin and translucent without tearing — like a windowpane — the gluten network is well developed and the dough is ready.</div></div>`)}
-    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Det er <b>gjærmengden</b> som kompenserer for tiden, ikke vanntemperaturen — vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvilket timevalg du velger, akkurat som ved lengre gjæringer. Resultatet blir godt, men ikke like komplekst i smaken.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Quick dough — what you sacrifice</div><div class="sdesc">A short fermentation gives less flavour development and somewhat poorer digestibility than a cold rise over several days. It's the <b>amount of yeast</b> that compensates for the time, not the water temperature — the water temperature is calculated to hit about 24°C finished dough no matter which hour option you choose, just as with longer ferments. The result is good, but not as complex in flavour.</div></div>`)}
+    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Det er <b>gjærmengden</b> som kompenserer for tiden, ikke vanntemperaturen — vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvilket timevalg du velger, akkurat som ved lengre gjæringer. Resultatet blir godt, men ikke like komplekst i smaken.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Quick dough — what you sacrifice</div><div class="sdesc">A short fermentation gives less flavor development and somewhat poorer digestibility than a cold rise over several days. It's the <b>amount of yeast</b> that compensates for the time, not the water temperature — the water temperature is calculated to land the finished dough at about 24°C no matter which hour option you choose, just as with longer ferments. The result is good, but not as complex in flavor.</div></div>`)}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">${L('Gjærtype: ','Yeast type: ')}${S.gjaer==='torr'?L('tørrgjær','dry yeast'):L('fersk gjær','fresh yeast')}</div><div class="sdesc">${S.gjaer==='torr'?L('Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.','Dry yeast is stable and easy. Dissolve it in a spoonful of the water, pour it into the bowl, add the rest of the water and start.'):L('Fersk gjær gir mer aroma. Løs opp en liten del av vannmengden litt lunkent (rundt 35°C) for å få gjæren til å løse seg lett, tilsett så resten av vannet ved den beregnede temperaturen. Bruk 3× mengden av tørrgjær.','Fresh yeast gives more aroma. Dissolve the yeast in a small part of the water made slightly lukewarm (around 35°C) so it dissolves easily, then add the rest of the water at the calculated temperature. Use 3× the amount of dry yeast.')}</div></div>
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Meltyper og vannmengde</div><div class="sdesc"><b>Tipo 00</b> (finmalt italiensk, 11–12% protein) er standarden appen regner ut fra — absorberer vann jevnt. <b>Siktet norsk hvete</b> har noe lavere glutenstyrke og trenger ca. 5–10% mer vann enn tipo 00 for samme konsistens. <b>Sammalt/fullkorn</b> (20–30% innblanding) trekker til seg mer vann på grunn av kliet. Uansett meltype: bruk windowpane-testen som fasit, ikke bare oppskriftens vanntall.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Flour types and water amount</div><div class="sdesc"><b>Tipo 00</b> (finely milled Italian, 11–12% protein) is the standard the app calculates from — it absorbs water evenly. <b>Sifted Norwegian wheat</b> has somewhat lower gluten strength and needs about 5–10% more water than tipo 00 for the same consistency. <b>Wholemeal/wholegrain</b> (20–30% blend) draws in more water because of the bran. Whatever the flour type: use the windowpane test as your guide, not just the recipe's water figure.</div></div>`)}`;
   }
@@ -3898,14 +3910,14 @@ function buildTechHTML(){
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor kaldt vann, ikke lunkent?</div><div class="sdesc">I motsetning til Hurtigdeig skal denne varianten roe seg ned i kjøleskapet, ikke få full fart før den kommer dit. Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen i minuttene før kjøleskapet kjøler deigen ned.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Why cold water, not lukewarm?</div><div class="sdesc">Unlike Quick dough, this variant should settle down in the fridge, not get up to full speed before it gets there. Cold water makes it easier to hold the desired dough temperature and gives more control over the fermentation in the minutes before the fridge cools the dough down.</div></div>`)}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Om gjærmengden</div><div class="sdesc">Gjærkurven for 5–24 timer i kjøleskap er anslått ut fra at kald gjæring er 4–8× tregere enn romtemperatur — kildene spriker noe her, så tallene er et fornuftig utgangspunkt, ikke en eksakt fasit. Virker deigen for aktiv eller for treg i forhold til valgt tid, juster gjerne timeantallet neste gang.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">About the amount of yeast</div><div class="sdesc">The yeast curve for 5–24 hours in the fridge is estimated on the basis that cold fermentation is 4–8× slower than room temperature — the sources vary somewhat here, so the figures are a sensible starting point, not an exact answer. If the dough seems too active or too sluggish relative to the chosen time, feel free to adjust the number of hours next time.</div></div>`)}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane test</div><div class="sdesc">Take a small piece of dough and gently stretch it between your fingers. If it turns thin and translucent without tearing — like a windowpane — the gluten network is well developed and the dough is ready.</div></div>`)}
-    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Kortere temperering enn Langtidsdeig</div><div class="sdesc">Langtidsdeig-metoden bruker 4 timer temperering fordi deigen har vært kald i flere dager og bygget opp en isolerende gjæringsvarme. Kveldsdeig har vært kald i timer, ikke dager, så ${S.kveldH<=15?L('90 minutter','90 minutes'):L('2 timer','2 hours')} er nok til å gjøre den strekkbar igjen.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Shorter tempering than Long-ferment dough</div><div class="sdesc">The Long-ferment dough method uses 4 hours of tempering because the dough has been cold for several days and built up an insulating fermentation warmth. Evening dough has been cold for hours, not days, so ${S.kveldH<=15?L('90 minutter','90 minutes'):L('2 timer','2 hours')} is enough to make it stretchable again.</div></div>`)}
+    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Kortere temperering enn Langtidsdeig</div><div class="sdesc">Langtidsdeig-metoden bruker 4 timer temperering fordi deigen har vært kald i flere dager og bygget opp en isolerende gjæringsvarme. Kveldsdeig har vært kald i timer, ikke dager, så ${S.kveldH<=15?L('90 minutter','90 minutes'):L('2 timer','2 hours')} er nok til å gjøre den strekkbar igjen.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">A shorter warm-up than Long-ferment dough</div><div class="sdesc">The Long-ferment dough method uses 4 hours on the counter because the dough has been cold for several days and built up an insulating fermentation warmth. Evening dough has been cold for hours, not days, so ${S.kveldH<=15?L('90 minutter','90 minutes'):L('2 timer','2 hours')} is enough to make it stretchable again.</div></div>`)}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">${L('Gjærtype: ','Yeast type: ')}${S.gjaer==='torr'?L('tørrgjær','dry yeast'):L('fersk gjær','fresh yeast')}</div><div class="sdesc">${S.gjaer==='torr'?L('Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.','Dry yeast is stable and easy. Dissolve it in a spoonful of the water, pour it into the bowl, add the rest of the water and start.'):L('Fersk gjær gir mer aroma. Løs alltid i litt lunkent vann (35°C) først, adskilt fra resten av det kalde vannet. Bruk 3× mengden av tørrgjær.','Fresh yeast gives more aroma. Always dissolve it in a little lukewarm water (35°C) first, separate from the rest of the cold water. Use 3× the amount of dry yeast.')}</div></div>`;
   }
   return `
     ${overfermentWarningHTML()}
     ${chicagoButterHTML()}
     ${machineSeqHTML()}
-    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar. Reiver den med én gang trenger den mer elting.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane test</div><div class="sdesc">Take a small piece of dough and gently stretch it between your fingers. If it turns thin and translucent without tearing — like a windowpane — the gluten network is well developed and the dough is ready. If it tears right away it needs more kneading.</div></div>`)}
+    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar. River den med én gang trenger den mer elting.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane test</div><div class="sdesc">Take a small piece of dough and gently stretch it between your fingers. If it turns thin and translucent without tearing — like a windowpane — the gluten network is well developed and the dough is ready. If it tears right away it needs more kneading.</div></div>`)}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Autolyse</div><div class="sdesc">Mel og vann hviler 20–30 min uten gjær og salt. Melet får trekke til seg vannet og glutennettverket bygges naturlig, uansett om du bruker maskin eller hånd. Gir smidigere deig med langt kortere eltetid etterpå.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Autolyse</div><div class="sdesc">Flour and water rest for 20–30 min without yeast and salt. The flour gets to absorb the water and the gluten network builds naturally, whether you use a machine or your hands. Gives a smoother dough with much shorter kneading time afterwards.</div></div>`)}
     ${waterTempTechHTML()}
     ${S.method==='poolish'?`<div class="step"><div class="stit" style="margin-bottom:.3rem">Poolish</div><div class="sdesc">${WHY.pl} ${L('Poolishen fermenterer i egen bolle uansett kjøkkenmaskin — det er først når du blander ferdig deig at maskinvalget spiller inn.','The poolish ferments in its own bowl regardless of mixer — the machine choice only comes into play once you mix the final dough.')}</div></div>`:''}
