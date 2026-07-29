@@ -3,6 +3,20 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.19',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at en nettopp sendt <b>tilbakemelding</b> så ut til å forsvinne. To ting: (1) tilbakemeldings-vinduet lukket seg selv etter ett sekund, så du rakk ikke se at meldingen kom inn — nå blir det stående åpent. (2) Lista var sortert etter stemmer, så en fersk melding (0 stemmer) havnet nederst — nå vises den du nettopp sendte <b>øverst</b>, tydelig merket «✓ nettopp sendt», selv om serveren skulle henge et øyeblikk. Meldingene ble alltid lagret; de var bare vanskelige å få øye på.'
+    ]
+  },
+  {
+    v: '6.18',
+    d: 'juli 2026',
+    changes: [
+      'Bedre <b>kalender-eksport</b> (📅 Påminnelser). Kalenderfila følger nå språk og enheter du har valgt (engelske titler og oz/°F når det er valgt), varsel kommer 10 min før hvert <b>handlingssteg</b> (ikke lenger et pling før hver passive heving), og hvert innslag har fått «trenger»-liste og sted (kjøleskap/benk/ovn). Under panseret er fila gjort robust etter kalender-standarden — den manglet et påkrevd tidsstempel og escaping, som kunne få enkelte kalendere (bl.a. Google) til å avvise eller vise hendelser feil.'
+    ]
+  },
+  {
     v: '6.17',
     d: 'juli 2026',
     changes: [

@@ -2745,23 +2745,47 @@ function copyP(steps){
 function icsStamp(d){
   return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
 }
+// iCal-teksten må escapes: backslash, semikolon, komma og linjeskift har spesiell
+// betydning i RFC 5545. Uten dette brekker et komma i en tittel hele hendelsen.
+function icsEsc(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
+// RFC 5545: linjer over 75 oktetter skal brytes med CRLF + mellomrom.
+function icsFold(line){
+  if(line.length<=74) return line;
+  let out='', s=line;
+  while(s.length>74){ out+=s.slice(0,74)+'\r\n '; s=s.slice(74); }
+  return out+s;
+}
 function downloadIcs(steps){
-  const r=R();
-  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pizzaplanlegger//NO\r\nCALSCALE:GREGORIAN\r\n';
+  const now=new Date();
+  const stamp=icsStamp(now);
+  const planId=(window._activeDeigId||'plan')+'-'+stamp;
+  // Lokaliser fri tekst til valgt enhet (localizeUnits konverterer °C/g i imperial).
+  const uLoc=t=>window._units==='imperial'?localizeUnits(String(t==null?'':t)):String(t==null?'':t);
+  const locName={kjol:L('Kjøleskap','Fridge'),rom:L('Romtemperatur','Room temperature'),ovn:L('Ovn','Oven'),benk:L('Kjøkkenbenk','Counter')};
+  let lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pizzaplanlegger//NO','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
   steps.forEach((s,i)=>{
     const start=s.at;
     const end=aM(s.at,Math.max(s.dur||15,15));
-    const title=s.title.replace(/🔥/g,'').trim();
-    ics+='BEGIN:VEVENT\r\n';
-    ics+='UID:pizza-'+Date.now()+'-'+i+'@pizzaplanlegger\r\n';
-    ics+='DTSTART:'+icsStamp(start)+'\r\n';
-    ics+='DTEND:'+icsStamp(end)+'\r\n';
-    ics+='SUMMARY:🍕 '+title+'\r\n';
-    if(s.desc)ics+='DESCRIPTION:'+s.desc.replace(/\n/g,' ').substring(0,200)+'\r\n';
-    ics+='BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:'+title+'\r\nTRIGGER:-PT10M\r\nEND:VALARM\r\n';
-    ics+='END:VEVENT\r\n';
+    const title=dispTitle(s.title).replace(/🔥/g,'').trim();
+    // Beskrivelse: stegets tekst (uten HTML, enhets-lokalisert) + «trenger»-liste.
+    const descPlain=uLoc((s.desc||'').replace(/<[^>]+>/g,''));
+    const needsPlain=(s.needs&&s.needs.length)?L('\n\nTrenger: ','\n\nNeeds: ')+uLoc(s.needs.join(', ')):'';
+    const descVal=descPlain+needsPlain;
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:pizza-'+planId+'-'+i+'@pizzaplanlegger');
+    lines.push('DTSTAMP:'+stamp);
+    lines.push('DTSTART:'+icsStamp(start));
+    lines.push('DTEND:'+icsStamp(end));
+    lines.push('SUMMARY:🍕 '+icsEsc(title));
+    if(descVal.trim()) lines.push('DESCRIPTION:'+icsEsc(descVal));
+    if(s.loc&&locName[s.loc]) lines.push('LOCATION:'+icsEsc(locName[s.loc]));
+    // Varsel kun på handlingssteg (ikke passive «heving»-venter) — så du får pling
+    // når du faktisk skal gjøre noe, ikke før hver hvile.
+    if(!s.passive) lines.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(title),'TRIGGER:-PT10M','END:VALARM');
+    lines.push('END:VEVENT');
   });
-  ics+='END:VCALENDAR\r\n';
+  lines.push('END:VCALENDAR');
+  const ics=lines.map(icsFold).join('\r\n')+'\r\n';
   const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -4026,6 +4050,7 @@ function setFeedbackCategory(v){
 }
 function closeFeedbackModal(){
   document.getElementById('feedback-modal').style.display = 'none';
+  window._newFeedbackId = null; window._newFeedbackItem = null;
 }
 async function submitFeedback(){
   const ta = document.getElementById('feedback-msg');
@@ -4045,10 +4070,14 @@ async function submitFeedback(){
       })
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    if(statusEl) statusEl.textContent = L('✓ Takk! Sendt.','✓ Thanks! Sent.');
+    // Behold den innsendte saken (201-svaret) så vi kan vise den med det samme,
+    // selv om Netlify Blobs sin list() henger et øyeblikk etter skriving.
+    const created = await res.json().catch(()=>null);
+    if(created && created.id){ window._newFeedbackId = created.id; window._newFeedbackItem = created; }
+    if(statusEl) statusEl.textContent = L('✓ Takk! Sendt — se den øverst i lista.','✓ Thanks! Sent — see it at the top of the list.');
     if(ta) ta.value='';
     loadFeedbackList();
-    setTimeout(()=>{ closeFeedbackModal(); }, 1100);
+    // Ikke lukk modalen automatisk — brukeren skal få se at meldingen havner i lista.
   }catch(e){
     if(statusEl) statusEl.textContent = L('Kunne ikke sende — prøv igjen.','Could not send — try again.');
   }
@@ -4089,9 +4118,20 @@ async function loadFeedbackList(){
     const res = await fetch('/api/feedback');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
-    const items = data.feedback || [];
+    let items = data.feedback || [];
+    // Optimistisk: hvis nettopp innsendt sak ennå ikke er kommet med fra serveren
+    // (kort lager-forsinkelse), sett den inn selv så brukeren ser den.
+    if(window._newFeedbackItem && !items.some(it=>it.id===window._newFeedbackItem.id)){
+      items = [window._newFeedbackItem, ...items];
+    }
     if(!items.length){ wrap.innerHTML = `<p style="color:var(--dyn-faint);font-size:12px">${L('Ingen tilbakemeldinger ennå.','No feedback yet.')}</p>`; return; }
-    items.sort((a,b)=>(b.votes||0)-(a.votes||0));
+    const newId = window._newFeedbackId || null;
+    items.sort((a,b)=>{
+      const an=a.id===newId?1:0, bn=b.id===newId?1:0; // nettopp innsendt alltid øverst
+      if(an!==bn) return bn-an;
+      const v=(b.votes||0)-(a.votes||0); if(v) return v; // deretter mest stemt
+      return new Date(b.createdAt||0)-new Date(a.createdAt||0); // ellers nyeste først
+    });
     const isAdmin = !!window._adminPassword;
     const voted = feedbackVotedSet();
     const catLbl = v => { const c=FEEDBACK_CATEGORIES.find(c=>c.v===v); return c?L(c.t,c.tEn):v; };
@@ -4099,14 +4139,15 @@ async function loadFeedbackList(){
       let dt=''; try{ dt=fDT(new Date(it.createdAt)); }catch(e){}
       const ctx = it.context||{};
       const hasVoted = voted.has(it.id);
+      const isNew = it.id===newId;
       const adminBtns = isAdmin ? `
             <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?L('Merk som ulest','Mark as unread'):L('Merk som løst','Mark as resolved')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
             <button onclick="deleteFeedbackConfirm('${it.id}')" title="${L('Slett','Delete')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
-      return `<div id="fbitem-${it.id}" style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
+      return `<div id="fbitem-${it.id}" style="border:1px solid ${isNew?'#1D9E75':'var(--dyn-border)'};box-shadow:${isNew?'0 0 0 2px #E1F5EE':'none'};border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
 
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
-            <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
+            <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>${isNew?`<span style="font-size:10px;font-weight:700;color:#fff;background:#1D9E75;border-radius:6px;padding:1px 6px;margin-left:4px">${L('✓ nettopp sendt','✓ just sent')}</span>`:''}
             <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}${it.submittedBy?L(' · av ',' · by ')+escH(it.submittedBy):''}</span>
             <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
@@ -6005,7 +6046,7 @@ function actionGroupHTML(){
       <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen slik at du eller andre kan hente den frem igjen senere','Save this dough so you or others can bring it back later')}">${saveBakeLabel()}</button>
       <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="${L('Se alle lagrede deiger','See all saved doughs')}">${L('🍽️ Mine deiger','🍽️ My doughs')}</button>
       <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan som tekst','Copy schedule as text')}">${L('📋 Kopier','📋 Copy')}</button>
-      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert steg','Download the schedule as a calendar file, with a reminder 10 min before each step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
+      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert handlingssteg','Download the schedule as a calendar file, with a reminder 10 min before each action step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
       <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="${L('Vis eller skjul forklaringer og tips','Show or hide explanations and tips')}">${S.showHelp?L('💡 Skjul forklaringer','💡 Hide explanations'):L('💡 Vis forklaringer','💡 Show explanations')}</button>
       ${substepToggleHTML('pc')}
     </div>
