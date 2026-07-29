@@ -2745,23 +2745,47 @@ function copyP(steps){
 function icsStamp(d){
   return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
 }
+// iCal-teksten må escapes: backslash, semikolon, komma og linjeskift har spesiell
+// betydning i RFC 5545. Uten dette brekker et komma i en tittel hele hendelsen.
+function icsEsc(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
+// RFC 5545: linjer over 75 oktetter skal brytes med CRLF + mellomrom.
+function icsFold(line){
+  if(line.length<=74) return line;
+  let out='', s=line;
+  while(s.length>74){ out+=s.slice(0,74)+'\r\n '; s=s.slice(74); }
+  return out+s;
+}
 function downloadIcs(steps){
-  const r=R();
-  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pizzaplanlegger//NO\r\nCALSCALE:GREGORIAN\r\n';
+  const now=new Date();
+  const stamp=icsStamp(now);
+  const planId=(window._activeDeigId||'plan')+'-'+stamp;
+  // Lokaliser fri tekst til valgt enhet (localizeUnits konverterer °C/g i imperial).
+  const uLoc=t=>window._units==='imperial'?localizeUnits(String(t==null?'':t)):String(t==null?'':t);
+  const locName={kjol:L('Kjøleskap','Fridge'),rom:L('Romtemperatur','Room temperature'),ovn:L('Ovn','Oven'),benk:L('Kjøkkenbenk','Counter')};
+  let lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pizzaplanlegger//NO','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
   steps.forEach((s,i)=>{
     const start=s.at;
     const end=aM(s.at,Math.max(s.dur||15,15));
-    const title=s.title.replace(/🔥/g,'').trim();
-    ics+='BEGIN:VEVENT\r\n';
-    ics+='UID:pizza-'+Date.now()+'-'+i+'@pizzaplanlegger\r\n';
-    ics+='DTSTART:'+icsStamp(start)+'\r\n';
-    ics+='DTEND:'+icsStamp(end)+'\r\n';
-    ics+='SUMMARY:🍕 '+title+'\r\n';
-    if(s.desc)ics+='DESCRIPTION:'+s.desc.replace(/\n/g,' ').substring(0,200)+'\r\n';
-    ics+='BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:'+title+'\r\nTRIGGER:-PT10M\r\nEND:VALARM\r\n';
-    ics+='END:VEVENT\r\n';
+    const title=dispTitle(s.title).replace(/🔥/g,'').trim();
+    // Beskrivelse: stegets tekst (uten HTML, enhets-lokalisert) + «trenger»-liste.
+    const descPlain=uLoc((s.desc||'').replace(/<[^>]+>/g,''));
+    const needsPlain=(s.needs&&s.needs.length)?L('\n\nTrenger: ','\n\nNeeds: ')+uLoc(s.needs.join(', ')):'';
+    const descVal=descPlain+needsPlain;
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:pizza-'+planId+'-'+i+'@pizzaplanlegger');
+    lines.push('DTSTAMP:'+stamp);
+    lines.push('DTSTART:'+icsStamp(start));
+    lines.push('DTEND:'+icsStamp(end));
+    lines.push('SUMMARY:🍕 '+icsEsc(title));
+    if(descVal.trim()) lines.push('DESCRIPTION:'+icsEsc(descVal));
+    if(s.loc&&locName[s.loc]) lines.push('LOCATION:'+icsEsc(locName[s.loc]));
+    // Varsel kun på handlingssteg (ikke passive «heving»-venter) — så du får pling
+    // når du faktisk skal gjøre noe, ikke før hver hvile.
+    if(!s.passive) lines.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(title),'TRIGGER:-PT10M','END:VALARM');
+    lines.push('END:VEVENT');
   });
-  ics+='END:VCALENDAR\r\n';
+  lines.push('END:VCALENDAR');
+  const ics=lines.map(icsFold).join('\r\n')+'\r\n';
   const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -6005,7 +6029,7 @@ function actionGroupHTML(){
       <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen slik at du eller andre kan hente den frem igjen senere','Save this dough so you or others can bring it back later')}">${saveBakeLabel()}</button>
       <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="${L('Se alle lagrede deiger','See all saved doughs')}">${L('🍽️ Mine deiger','🍽️ My doughs')}</button>
       <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan som tekst','Copy schedule as text')}">${L('📋 Kopier','📋 Copy')}</button>
-      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert steg','Download the schedule as a calendar file, with a reminder 10 min before each step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
+      <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert handlingssteg','Download the schedule as a calendar file, with a reminder 10 min before each action step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
       <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="${L('Vis eller skjul forklaringer og tips','Show or hide explanations and tips')}">${S.showHelp?L('💡 Skjul forklaringer','💡 Hide explanations'):L('💡 Vis forklaringer','💡 Show explanations')}</button>
       ${substepToggleHTML('pc')}
     </div>
