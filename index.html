@@ -2243,7 +2243,7 @@ function f5CountdownFromMs(ms){
 function nextStepStripeHTML(steps){
   if(!steps || !steps.length) return '';
   const now = Date.now();
-  const isChecked = i => window._checked && window._checked.has(i);
+  const isChecked = i => stepChecked(steps[i], i);
   if(steps.every((s,i)=>isChecked(i))){
     return `<div class="next-strip done">✓ Alle steg gjort — nyt pizzaen 🍕</div>`;
   }
@@ -2316,7 +2316,7 @@ function renderSteps(steps, mode='desktop'){
   // Faller de sammen, holder "nå"-fremhevingen alene — ingen grunn til to markører på samme kort.
   let nextIdx = -1;
   for(let i=0;i<steps.length;i++){
-    if(!(window._checked && window._checked.has(i))){ nextIdx = i; break; }
+    if(!stepChecked(steps[i], i)){ nextIdx = i; break; }
   }
 
   const C = isMob ? {
@@ -2391,7 +2391,7 @@ function renderSteps(steps, mode='desktop'){
 
     const locHtml = isMob ? (LOC[s.loc] || '').replace(C.locReplaceFrom, C.locReplaceTo) : (LOC[s.loc] || '');
 
-    const done = window._checked && window._checked.has(i);
+    const done = stepChecked(s, i);
     const missed = i < curIdx && !done;
     const isNext = i === nextIdx && nextIdx !== curIdx;
     // Nedtonet tidskonflikt-merke: faller et aktivt steg i «natten» eller «tid du
@@ -2446,10 +2446,37 @@ function stepH(steps){
 window._checked = new Set();
 window._checkedIngredients = new Set();
 
+// BACKLOG #5 (full fiks): avhaking nøkles nå på INNHOLDET i steget, ikke posisjonen.
+// Signaturen er stegets tittel (kanonisk norsk, språk-uavhengig) + alle tall i
+// tittel/desc/understeg/needs (mengder, temperaturer, minutter). Steg-objektene er
+// kanoniske metrisk, og L()/localizeUnits er rene visningslag, så signaturen er
+// stabil på tvers av språk OG enheter — men endrer seg når du drar mel/hydrering/
+// temp/kjøletid (tallene endres). Da faller haken av seg selv, uten å nullstille
+// urelaterte steg og uten å rive avhaking midt i et glidebryter-dra.
+// Bakoverkompatibelt: gamle indeks-/etikett-baserte haker (lagret før denne
+// endringen) lyser fortsatt via en «legacy»-sjekk, og migreres til signatur i det
+// øyeblikket brukeren toggler dem.
+function _ckNums(x){ return (String(x==null?'':x).match(/\d+/g)||[]).join(','); }
+function stepSig(s){
+  if(!s) return '';
+  const body=[s.title, s.desc].concat(s.substeps||[]).concat(s.needs||[]).join(' ');
+  return 'S|'+(s.title||'')+'|'+_ckNums(body);
+}
+function substepSig(s, j){
+  if(!s) return 'B||'+j+'|';
+  return 'B|'+(s.title||'')+'|'+j+'|'+_ckNums((s.substeps&&s.substeps[j])||'');
+}
+function ingSig(k, nums){ return 'I|'+k+'|'+(nums||''); }
+// Er dette steget avhaket? Godtar både ny signatur og gammel indeks (legacy).
+function stepChecked(s, i){ return !!(window._checked && (window._checked.has(stepSig(s)) || window._checked.has(i))); }
+
 function toggleStepDone(i){
   if(!window._checked) window._checked = new Set();
-  if(window._checked.has(i)) window._checked.delete(i);
-  else window._checked.add(i);
+  const s=(window._steps||[])[i];
+  const sig=stepSig(s);
+  const on = window._checked.has(sig) || window._checked.has(i);
+  window._checked.delete(sig); window._checked.delete(i); // rydd begge former
+  if(!on) window._checked.add(sig);
   persistCheckedSteps();
   const mobEl=document.getElementById('mob-layout');
   const isMob=mobEl&&mobEl.classList.contains('active');
@@ -2539,9 +2566,10 @@ function recipeRowsHTML(rr, mob=false){
     if(!INGREDIENT_KEYS.includes(row.k)){
       return `<div class="${rowClass}"><span>${lbl}</span><span class="${valClass}">${row.v}</span></div>`;
     }
-    const checked = window._checkedIngredients && window._checkedIngredients.has(row.k);
+    const _ingNums=_ckNums(row.v);
+    const checked = window._checkedIngredients && (window._checkedIngredients.has(ingSig(row.k,_ingNums)) || window._checkedIngredients.has(row.k));
     if(mob){
-      return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}')" style="cursor:pointer">
+      return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" style="cursor:pointer">
         <span style="display:flex;align-items:center;gap:8px">
           <span class="ing-check${checked?' on':''}"></span>
           <span style="${checked?'text-decoration:line-through' : ''}" class="${checked?'dyn-faint-text':''}">${lbl}</span>
@@ -2549,7 +2577,7 @@ function recipeRowsHTML(rr, mob=false){
         <span class="${valClass}${checked?' dyn-faint-text':''}" style="${checked?'text-decoration:line-through':''}">${row.v}</span>
       </div>`;
     }
-    return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}')" style="cursor:pointer">
+    return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" style="cursor:pointer">
       <span style="display:flex;align-items:center;gap:8px">
         <span class="ing-check${checked?' on':''}"></span>
         <span style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${lbl}</span>
@@ -2558,10 +2586,12 @@ function recipeRowsHTML(rr, mob=false){
     </div>`;
   }).join(''));
 }
-function toggleIngredientCheck(key){
+function toggleIngredientCheck(key, nums){
   if(!window._checkedIngredients) window._checkedIngredients = new Set();
-  if(window._checkedIngredients.has(key)) window._checkedIngredients.delete(key);
-  else window._checkedIngredients.add(key);
+  const sig=ingSig(key, nums||'');
+  const on = window._checkedIngredients.has(sig) || window._checkedIngredients.has(key);
+  window._checkedIngredients.delete(sig); window._checkedIngredients.delete(key); // rydd begge former
+  if(!on) window._checkedIngredients.add(sig);
   persistCheckedIngredients();
   const mobEl=document.getElementById('mob-layout');
   const isMob=mobEl&&mobEl.classList.contains('active');
@@ -5490,9 +5520,12 @@ window._checkedSubsteps = new Set();
 // sammen med deigen (saveBake/openBake). Ulagret oppsett lever fortsatt kun i
 // økten (persistCheckedSubsteps no-opper uten _activeDeigId).
 function toggleSubstepDone(stepIdx, subIdx){
-  const key = stepIdx+'-'+subIdx;
-  if(window._checkedSubsteps.has(key)) window._checkedSubsteps.delete(key);
-  else window._checkedSubsteps.add(key);
+  const s=(window._steps||[])[stepIdx];
+  const sig=substepSig(s, subIdx);
+  const legacy=stepIdx+'-'+subIdx;
+  const on = window._checkedSubsteps.has(sig) || window._checkedSubsteps.has(legacy);
+  window._checkedSubsteps.delete(sig); window._checkedSubsteps.delete(legacy); // rydd begge former
+  if(!on) window._checkedSubsteps.add(sig);
   persistCheckedSubsteps();
   const mobEl=document.getElementById('mob-layout');
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
@@ -5500,8 +5533,8 @@ function toggleSubstepDone(stepIdx, subIdx){
 function substepsHTML(step, stepIdx){
   const checkable = !step.passive;
   const items = step.substeps.map((txt,subIdx)=>{
-    const key=stepIdx+'-'+subIdx;
-    const done = checkable && window._checkedSubsteps.has(key);
+    const legacy=stepIdx+'-'+subIdx;
+    const done = checkable && (window._checkedSubsteps.has(substepSig(step, subIdx)) || window._checkedSubsteps.has(legacy));
     const numHtml = done ? '✓' : (subIdx+1);
     const clickAttr = checkable ? ` onclick="toggleSubstepDone(${stepIdx},${subIdx})" style="cursor:pointer"` : '';
     return `<li class="substep-item${done?' substep-done':''}"${clickAttr}><span class="substep-num${done?' substep-num-done':''}">${numHtml}</span><span class="substep-txt">${escH(txt)}</span></li>`;

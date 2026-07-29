@@ -1,15 +1,16 @@
 # Backlog — Pizzaplanlegger
 
-Sist oppdatert: 28.07.2026 · gjelder index.html rundt v6.14.
+Sist oppdatert: 29.07.2026 · gjelder index.html rundt v6.15.
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
 Rekkefølgen innen hver bolk er omtrent synkende viktighet. Hvert gjenstående punkt
 har en **I klartekst**-linje som forklarer hva det er og hvor stort, i vanlig språk.
 
-Status per v6.14: alle P0 + #3–6 fikset (#5 delvis), F1–F3/F5/F6 + hele «Tips og
-triks» gjort. Gjenstår: #5-rest + #7 (kosmetisk), og funksjonene F4/F7/F8/F9/F10/F11
-pluss F5 nivå 3.
+Status per v6.15: alle P0 + #1–6 fikset (#5 nå FULLT fikset via innholdsbasert
+nøkling), #8 dermed løst. F1–F3/F5/F6 + hele «Tips og triks» gjort, og engelsk
+språk + imperiske enheter lagt til (v6.15). Gjenstår kun: #7 (kosmetisk), og
+funksjonene F4/F7/F8/F9/F10/F11 pluss F5 nivå 3.
 
 Disiplin: `test_regression.py` + `baseline_results.json` fryser dagens tall for
 oppskrift og tidsplan. Endrer du noe som flytter et tall, kjør testen og
@@ -86,7 +87,18 @@ Regresjon fra v6.01 «gjær-kickstart».
   temperaturen der (og vurder om 40–43 °C er riktig mål, eller om DDT skal styre
   kickstart-vannet).
 
-### 5. Avhaking blir stående ved endring av gjær/ovn/mel/hydrering/temp/kjøl ✅ DELVIS FIKSET (v6.12)
+### 5. Avhaking blir stående ved endring av gjær/ovn/mel/hydrering/temp/kjøl ✅ FIKSET (v6.12 diskret + v6.15 innholdsbasert)
+
+> ✅ **FULLT FIKSET i v6.15.** Avhaking nøkles nå på *innholdet* i steget
+> (`stepSig`/`substepSig`/`ingSig` = kanonisk tittel + alle tall i tekst/understeg/
+> chips), ikke på posisjonen. Drar du mel/hydrering/temp/kjøletid, endres tallene
+> → signaturen endres → haken faller av seg selv, men KUN på de stegene som
+> faktisk endret innhold; urelaterte steg beholder haken, og ingenting rives midt
+> i et dra. Signaturen er kanonisk metrisk/norsk, så den er stabil på tvers av
+> språk- og enhetsbytte (verifisert). Bakoverkompatibelt: gamle indeks-/etikett-
+> haker lyser fortsatt og migreres til signatur når de toggles. Ny test:
+> `checkbox_content_keyed_drops_stale_slider_changes_keeps_unaffected`. Render-
+> baseline oppdatert (ingrediens-`onclick` bærer nå mengden — eneste endring).
 > **Fikset for de diskrete bryterne:** `oven` og `gjaer` er lagt til i den nye
 > `PROGRESS_RESETTING_FIELDS`-mengden, som både `pgrp` (PC) og `mobPillGroup`
 > (mobil) nå sjekker i stedet for en hardkodet `key==='type'`. Regresjonstesten
@@ -152,10 +164,10 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
   et varsel, men de to er ikke lenger garantert like.
 - **Fiks:** bruk samme avrundede verdi begge steder.
 
-### 8. «👉 neste»- / «⚠️ ikke avhaket»-markører kan peke feil (følge av 5)
-> **I klartekst:** «Neste»- og «ikke avhaket»-markørene bruker samme indeks-modell
-> som #5. For ovntype/gjær er dette nå løst (v6.12); resten forsvinner automatisk
-> når #5-resten (glidebryterne) løses. Ingen egen jobb.
+### 8. «👉 neste»- / «⚠️ ikke avhaket»-markører kan peke feil (følge av 5) ✅ FIKSET (v6.15)
+> ✅ **Løst sammen med #5.** «Neste»- og «ikke avhaket»-markørene gikk via samme
+> `stepChecked()`-hjelper, som nå er innholdsbasert. Når haken faller riktig av ved
+> innholdsendring, peker markørene også riktig. Ingen egen jobb — dekket av #5-fiksen.
 - Vente-rader og «neste steg»-markører nøkler på `window._checked`-indekser
   (`1855`, `1929–1930`). Med utdatert avhaking fra punkt 5 kan markørene peke på feil
   steg til et type-/metodebytte tvinger en nullstilling. Løses av 5.
