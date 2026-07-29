@@ -1172,6 +1172,117 @@ def run_behavioral_tests(page):
     )
     results.append(('substep_toggle_switches_view_and_old_view_is_unchanged', ok26, r26))
 
+    # v6.13 (BACKLOG F1/F2): understeg-avhaking huskes na -- lastes med lagret
+    # deig (openBake), og understeg-VISNINGEN huskes over reload (localStorage).
+    # Etiketten skal ikke lenger ramme dette som en "utproving".
+    r26b = page.evaluate("""() => {
+      resetTestState();
+      // F1 (load-vei): openBake hydrerer _checkedSubsteps fra den lagrede deigen.
+      window._bakesCache = [{ id:'bake_test_ff', name:'Test', status:'active',
+        config:{...S}, anchorMode:'start', anchorISO:new Date().toISOString(),
+        checkedSteps:[0,1], checkedIngredients:['Mel'], checkedSubsteps:['0-0','2-1'] }];
+      try{ openBake('bake_test_ff'); }catch(e){}
+      const loadedSubsteps = [...window._checkedSubsteps].sort();
+
+      // F2: toggleSubsteps husker valget i localStorage.
+      try{ localStorage.removeItem('pizzaSubsteps'); }catch(e){}
+      const before = !!S.showSubsteps;
+      toggleSubsteps();
+      let persisted=null; try{ persisted = localStorage.getItem('pizzaSubsteps'); }catch(e){}
+      const flagFlipped = !!S.showSubsteps !== before;
+
+      // Etiketten er ikke lenger "Prov"/"utproving".
+      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
+      gen();
+      const pcLabel = (document.querySelector('#substep-toggle')||{}).textContent || '';
+      document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
+
+      // rydd opp saa vi ikke lekker til andre tester
+      S.showSubsteps=false; window._activeDeigId=null; window._checkedSubsteps=new Set();
+      try{ localStorage.removeItem('pizzaSubsteps'); }catch(e){}
+      return { loadedSubsteps, persisted, flagFlipped, pcLabel };
+    }""")
+    ok26b = (
+      r26b['loadedSubsteps'] == ['0-0','2-1'] and
+      r26b['persisted'] == '1' and r26b['flagFlipped'] and
+      'Prøv' not in r26b['pcLabel'] and 'utprøving' not in r26b['pcLabel']
+    )
+    results.append(('substep_progress_persists_and_view_is_remembered', ok26b, r26b))
+
+    # v6.13 (BACKLOG F3): paabegynt oppsett persisteres til localStorage og
+    # rehydreres. Kun for USAGDE oppsett (no-op naar _activeDeigId er satt);
+    # rene visningspreferanser holdes utenfor; "Start ny deig" + standard rydder.
+    r26c = page.evaluate("""() => {
+      resetTestState();
+      window._activeDeigId = null;
+      // ikke-standard oppsett -> persistSetup lagrer det (uten view-prefs).
+      S.type='chicago'; S.method='kveld'; S.mel=750; S.hydro=60; S.mode='end';
+      try{ localStorage.removeItem('pizzaSetup'); }catch(e){}
+      persistSetup();
+      let stored=null; try{ stored = JSON.parse(localStorage.getItem('pizzaSetup')); }catch(e){}
+      const hasViewPrefs = !!stored && ('showHelp' in stored || 'showSubsteps' in stored);
+
+      // rehydrer fra localStorage etter aa ha nullstilt S i minnet.
+      Object.assign(S, DEF);
+      const restored = restoreSetup();
+      const after = { type:S.type, method:S.method, mel:S.mel, hydro:S.hydro, mode:S.mode };
+
+      // lagret deig eier egen tilstand -> persistSetup skal no-oppe.
+      try{ localStorage.removeItem('pizzaSetup'); }catch(e){}
+      window._activeDeigId='bake_x'; S.type='langpanne'; persistSetup();
+      let storedWhenActive=null; try{ storedWhenActive = localStorage.getItem('pizzaSetup'); }catch(e){}
+      window._activeDeigId=null;
+
+      // standard-oppsett -> ingenting aa gjenopprette, noekkel fjernes.
+      try{ localStorage.setItem('pizzaSetup','{\\"type\\":\\"chicago\\"}'); }catch(e){}
+      Object.assign(S, DEF); S.mode=DEF.mode; persistSetup();
+      let afterDefault=null; try{ afterDefault = localStorage.getItem('pizzaSetup'); }catch(e){}
+
+      try{ localStorage.removeItem('pizzaSetup'); }catch(e){}
+      return { stored, hasViewPrefs, restored, after, storedWhenActive, afterDefault };
+    }""")
+    ok26c = (
+      r26c['stored'] and r26c['stored']['type']=='chicago' and r26c['stored']['method']=='kveld' and
+      r26c['stored']['mel']==750 and r26c['stored']['mode']=='end' and
+      r26c['hasViewPrefs'] is False and
+      r26c['restored'] and r26c['after'] == {'type':'chicago','method':'kveld','mel':750,'hydro':60,'mode':'end'} and
+      r26c['storedWhenActive'] is None and r26c['afterDefault'] is None
+    )
+    results.append(('setup_persists_and_restores_across_reload', ok26c, r26c))
+
+    # v6.14 (BACKLOG F5): live «nå/neste»-stripe. nextStepStripeHTML skal peke paa
+    # neste FREMTIDIGE ikke-avhakede steg med en nedtelling, vise «Alle steg gjort»
+    # naar alt er avhaket, «Naa» naar ingen fremtidige steg gjenstaar, og '' tomt.
+    r26d = page.evaluate("""() => {
+      resetTestState();
+      const now = Date.now();
+      const steps = [
+        {title:'A fortid', at:new Date(now - 3600000)},
+        {title:'Ta ut av kjøleskap', at:new Date(now + 200*60000)},
+        {title:'Strekk og stek', at:new Date(now + 999*60000)}
+      ];
+      window._checked = new Set([0]);
+      const html = nextStepStripeHTML(steps);
+
+      window._checked = new Set([0,1,2]);
+      const doneHtml = nextStepStripeHTML(steps);
+
+      window._checked = new Set();
+      const nowHtml = nextStepStripeHTML([{title:'Strekk og stek', at:new Date(now - 600000)}]);
+
+      const emptyHtml = nextStepStripeHTML([]);
+      window._checked = new Set();
+      return { html, doneHtml, nowHtml, emptyHtml };
+    }""")
+    ok26d = (
+      'Neste' in r26d['html'] and 'Ta ut av kjøleskap' in r26d['html'] and
+      'om 3 t' in r26d['html'] and 'next-strip-count' in r26d['html'] and
+      'Alle steg gjort' in r26d['doneHtml'] and
+      'Nå' in r26d['nowHtml'] and 'Strekk og stek' in r26d['nowHtml'] and
+      r26d['emptyHtml'] == ''
+    )
+    results.append(('f5_next_step_stripe_shows_upcoming_step_and_countdown', ok26d, r26d))
+
     # v5.98: REELL BUG (Rune) -- "jeg ser knappen, men ingenting skjer naar
     # jeg trykker". Ikke en klikk-feil: bryteren virket helt fint (label
     # byttet til PAA, S.showSubsteps flippet), men Kveldsdeig -- metoden Rune
@@ -1342,6 +1453,10 @@ def run_behavioral_tests(page):
     # den ALLEREDE valgte verdien IKKE tommer noe (ingen falsk nullstilling),
     # mens et faktisk bytte av type ELLER metode tommer alle tre tilstander,
     # bade pa mobil og PC.
+    # v6.12 (BACKLOG #5): utvidet -- oven og gjaer skriver ogsaa om steg-INNHOLD
+    # (steketemp/-tid, gjaertype/-mengde), saa endring av dem nullstiller na ogsaa
+    # avhaking. kjokkenmaskin er BEVISST utelatt (samme logiske eltesteg, kun
+    # teknikk-ordlyd) og skal fortsatt IKKE nullstille.
     r31 = page.evaluate("""() => {
       resetTestState();
       mobShowTab('settings'); wizGoto(1);
@@ -1364,14 +1479,64 @@ def run_behavioral_tests(page):
       kveldCard.click();
       const afterMethodChange = { c: [...window._checked], s: [...window._checkedSubsteps], method: S.method };
 
-      return { afterSameClick, afterTypeChange, afterMethodChange };
+      // oven: bytte av ovntype nullstiller (steketemp/-tid endres i steketrinnet).
+      wizGoto(1);
+      window._checked = new Set([0,1]); window._checkedSubsteps = new Set(['2-0']);
+      const otherOven = Array.from(document.querySelectorAll('#mob-govn .pill')).find(p => !p.classList.contains('on'));
+      otherOven.click();
+      const afterOvenChange = { c: [...window._checked], s: [...window._checkedSubsteps] };
+
+      // oven: klikk paa allerede valgt ovntype nullstiller IKKE.
+      window._checked = new Set([3]);
+      document.querySelector('#mob-govn .pill.on').click();
+      const afterSameOven = { c: [...window._checked] };
+
+      // gjaer: bytte av gjaertype nullstiller (grammengde/type endres i gjaer-stegene).
+      window._checked = new Set([0]); window._checkedIngredients = new Set(['x']);
+      const otherGjaer = Array.from(document.querySelectorAll('#mob-ggj .pill')).find(p => !p.classList.contains('on'));
+      otherGjaer.click();
+      const afterGjaerChange = { c: [...window._checked], i: [...window._checkedIngredients] };
+
+      // kjokkenmaskin: BEVISST utelatt -- endring skal IKKE nullstille.
+      window._checked = new Set([4,5]);
+      const otherKm = Array.from(document.querySelectorAll('#mob-gkm .pill')).find(p => !p.classList.contains('on'));
+      otherKm.click();
+      const afterKmChange = { c: [...window._checked] };
+
+      return { afterSameClick, afterTypeChange, afterMethodChange, afterOvenChange, afterSameOven, afterGjaerChange, afterKmChange };
     }""")
     ok31 = (
       r31['afterSameClick']['c'] == [0,1] and r31['afterSameClick']['i'] == ['a','b'] and r31['afterSameClick']['s'] == ['0-0'] and
       r31['afterTypeChange']['c'] == [] and r31['afterTypeChange']['i'] == [] and r31['afterTypeChange']['s'] == [] and
-      r31['afterMethodChange']['c'] == [] and r31['afterMethodChange']['s'] == [] and r31['afterMethodChange']['method'] == 'kveld'
+      r31['afterMethodChange']['c'] == [] and r31['afterMethodChange']['s'] == [] and r31['afterMethodChange']['method'] == 'kveld' and
+      r31['afterOvenChange']['c'] == [] and r31['afterOvenChange']['s'] == [] and
+      r31['afterSameOven']['c'] == [3] and
+      r31['afterGjaerChange']['c'] == [] and r31['afterGjaerChange']['i'] == [] and
+      r31['afterKmChange']['c'] == [4,5]
     )
-    results.append(('checkbox_progress_clears_on_real_type_or_method_change_only', ok31, r31))
+    results.append(('checkbox_progress_clears_on_content_changing_fields_only', ok31, r31))
+
+    # v6.12 (BACKLOG #6): Hurtigdeig -- begge gjaeringsfasene (bulk ba,
+    # etterheving afm) skal temp-skaleres med tf(). Foer var kun ba skalert;
+    # afm sto fast, saa samme deigs to faser reagerte ulikt paa temperatur.
+    # Ved 22C (tf=1) skal tallene vaere uendret (baseline urort); ved 28C
+    # (tf=0.5) skal BEGGE krympe med samme faktor.
+    r31b = page.evaluate("""() => {
+      resetTestState();
+      S.method='hurtig'; S.hurtigH=5; S.gjaer='torr';
+      const anchor = new Date(2026,0,1,12,0);
+      S.temp=22; const a22 = hurtigSteps(anchor);
+      S.temp=28; const a28 = hurtigSteps(anchor);
+      return { ba22:a22.ba, afm22:a22.afm, ba28:a28.ba, afm28:a28.afm };
+    }""")
+    # 22C: uendret fra formelen (ba=5*0.6*60=180, afm=(5-3-0.25)*60=105).
+    baseline22 = r31b['ba22'] == 180 and r31b['afm22'] == 105
+    # 28C: begge krympet (afm var lik afm22 foer fiksen -> naa mindre).
+    both_shrink = r31b['ba28'] < r31b['ba22'] and r31b['afm28'] < r31b['afm22']
+    # Samme skaleringsfaktor paa begge faser (innenfor avrunding).
+    consistent = abs(r31b['ba28']/r31b['ba22'] - r31b['afm28']/r31b['afm22']) < 0.03
+    ok31b = baseline22 and both_shrink and consistent
+    results.append(('hurtig_both_ferment_phases_scale_with_temperature', ok31b, r31b))
 
     # v6.01: Hurtigdeig fikk et nytt forste steg (gjaer-kickstart: lunkent
     # vann + honning, ~5 min for melet tilsettes) og en semulegryn-tips paa

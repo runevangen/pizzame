@@ -351,7 +351,10 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 .sidenav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11px;font-weight:600;color:#3A3A3C;background:#fff;border:1px solid #E5E5EA;border-radius:20px;cursor:pointer}
 .sidenav-item:hover{border-color:#1D9E75;color:#085041}
 .sidenav-item .cnt{background:#1D9E75;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px))}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
+/* Når en modal er åpen låses bakgrunns-scroll, så «vinduet bak» ikke kan scrolle
+   mens man blar i modalen (styres av syncModalScrollLock via en MutationObserver). */
+body.modal-open{overflow:hidden}
 .modal-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:85vh;max-height:85dvh;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);display:flex;flex-direction:column}
 body.mob-mode .modal-box{background:var(--forno-bg-raised);color:var(--forno-text)}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:max(.85rem,env(safe-area-inset-top,0px)) 1.1rem .85rem;border-bottom:1px solid #EDEDED;flex-shrink:0}
@@ -472,6 +475,17 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 .step-next{border-left:3px solid #1D7FE9}
 .mob-step.step-next{border-left:3px solid #1D7FE9}
 .next-flag{display:inline-block;font-size:10px;font-weight:600;color:#1257A0;background:#E3F0FD;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+/* F5: live «nå/neste»-stripe øverst i planen */
+.next-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 .7rem;padding:9px 12px;background:#eaf3fd;border:1px solid #cfe3fa;border-left:3px solid #1D7FE9;border-radius:8px;font-size:13px;cursor:pointer}
+.next-strip:focus-visible{outline:2px solid #1D7FE9;outline-offset:2px}
+.next-strip-lbl{font-weight:700;color:#1560b8;font-size:11px;letter-spacing:.03em;white-space:nowrap}
+.next-strip-title{font-weight:600;color:#1a1a1a}
+.next-strip-count{margin-left:auto;font-weight:700;color:#1560b8;font-variant-numeric:tabular-nums;white-space:nowrap}
+.next-strip.done{border-left-color:#1D9E75;background:#e8f7f1;color:#0F6E56;cursor:default;font-weight:600}
+body.mob-mode .next-strip{background:var(--forno-accent-soft);border-color:var(--forno-border);border-left-color:var(--forno-accent);color:var(--forno-text)}
+body.mob-mode .next-strip-lbl,body.mob-mode .next-strip-count{color:var(--forno-accent-text)}
+body.mob-mode .next-strip-title{color:var(--forno-text)}
+body.mob-mode .next-strip.done{border-left-color:#1D9E75}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .conflict-flag{display:inline-block;font-size:10px;font-weight:600;color:#8a5a00;background:#FAEEDA;border:1px solid #EF9F27;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
 .adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#F2F2F7;border-radius:8px;font-size:12px;font-weight:600;color:#3A3A3C;cursor:pointer;margin:.6rem 0}
@@ -953,18 +967,52 @@ const DOUGH_FIELDS=['type','method','mel','hydro','temp','gjaer','kjokkenmaskin'
 function isAtDefaultConfig(){
   return DOUGH_FIELDS.every(k=>S[k]===DEF[k]);
 }
+// v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett ved en EKTE reload. Deig-
+// konfigurasjonen S ble aldri lagret, så «Fortsetter: X · Y»-banneret virket bare
+// under SPA-navigasjon i økten — etter en sidelast var oppsettet borte. Persister
+// oppsettet (alt i DEF unntatt rene visningspreferanser) til localStorage og
+// rehydrer ved last. Kun for USAGDE oppsett: en åpnet, lagret deig eier sin egen
+// tilstand via openBake, så vi rører ikke den når _activeDeigId er satt.
+const SETUP_FIELDS = Object.keys(DEF).filter(k=>k!=='showHelp' && k!=='showSubsteps');
+function persistSetup(){
+  if(window._activeDeigId) return;
+  try{
+    if(isAtDefaultConfig() && S.mode===DEF.mode){ localStorage.removeItem('pizzaSetup'); return; }
+    const out={}; SETUP_FIELDS.forEach(k=>{ out[k]=S[k]; });
+    localStorage.setItem('pizzaSetup', JSON.stringify(out));
+  }catch(e){ /* stille — persistering er ikke kritisk */ }
+}
+function restoreSetup(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('pizzaSetup'));
+    if(!saved || typeof saved!=='object') return false;
+    SETUP_FIELDS.forEach(k=>{ if(saved[k]!==undefined) S[k]=saved[k]; });
+    return true;
+  }catch(e){ return false; }
+}
 // v6.01: REELL BUG funnet av Rune og verifisert 26.07 — avkrysning (steg,
 // ingredienser, understeg) er indeksbasert ("steg 0"), ikke innholdsbasert.
 // Bytter du pizzatype eller metode, blir det andre steg på samme indekser,
 // men gamle avkrysninger henger igjen og vises feilaktig som haket av på
-// det nye innholdet. Kalles når type/metode FAKTISK endres (ikke ved klikk
-// på allerede valgt verdi, og ikke ved gjær/kjøkkenmaskin/ovn — de endrer
-// ordlyd, ikke stegstruktur).
+// det nye innholdet. Kalles når et deig-felt som skriver om stegenes INNHOLD
+// faktisk endres (ikke ved klikk på allerede valgt verdi).
 function clearStepProgress(){
   window._checked=new Set();
   window._checkedIngredients=new Set();
   window._checkedSubsteps=new Set();
 }
+// v6.12 (BACKLOG #5): felt hvis endring gjør indeksbasert avhaking utdatert
+// fordi de skriver om INNHOLDET i stegene, ikke bare en visningspreferanse:
+//   type  — bytter hele stegstrukturen
+//   oven  — bytter steketemp/-tid i steketrinnet (checket «Varm til 430°C»
+//           ville ellers bli stående når planen nå sier 250°C)
+//   gjaer — bytter gjærtype og grammengde i gjær-stegene/-chipsene
+// 'method' håndteres i sin egen kort-klikk-handler (mCards / mobil), ikke via pgrp.
+// BEVISST UTELATT: mel/hydro/temp/cold endrer også tall, men styres av
+// kontinuerlige oninput-slidere — å nullstille der ville rive vekk flere dagers
+// avhaking midt i ett enkelt dra. kjokkenmaskin utelatt: samme logiske eltesteg,
+// kun teknikk-ordlyd (i tråd med den opprinnelige v6.01-avgrensningen).
+const PROGRESS_RESETTING_FIELDS=new Set(['type','oven','gjaer']);
 const S={...DEF};let AT=null;
 const HOPTS=[{h:2,b:'Nøddeig',bEn:'Barely dough',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',bEn:'OK',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',bEn:'Recommended',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',bEn:'Good',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',bEn:'Very good',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',bEn:'Excellent',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',bEn:'Best quick',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',bEn:'Long day (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',bEn:'Evening-ready (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',bEn:'Cool kitchen (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
 // Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
@@ -1165,7 +1213,7 @@ function pgrp(id,key,cb){
     p.onclick=()=>{
       const changed = S[key] !== p.dataset.v;
       S[key]=p.dataset.v;
-      if(changed && key==='type') clearStepProgress();
+      if(changed && PROGRESS_RESETTING_FIELDS.has(key)) clearStepProgress();
       pgrp(id,key,cb);
       if(cb)cb();
       schedNow();
@@ -1258,6 +1306,7 @@ function setMode(m){
 function doReset(){
   Object.assign(S,DEF);
   window._activeDeigId=null;window._activeDeigName=null;
+  try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
   window._checkedIngredients=new Set();
   window._checkedSubsteps=new Set();
@@ -1354,6 +1403,20 @@ function syncModalMaxHeight(){
   });
 }
 window.addEventListener('resize', syncModalMaxHeight);
+// Låser bakgrunns-scroll mens en modal er åpen. Tidligere kunne man komme til å
+// scrolle hovedvinduet BAK modalen (f.eks. bak Feedback) når man bladde forbi
+// modalinnholdets kanter. Vi observerer style-endringer på alle .modal-overlay og
+// slår body.modal-open av/på ut fra om minst én modal faktisk vises.
+function syncModalScrollLock(){
+  const open = [...document.querySelectorAll('.modal-overlay')].some(m=>getComputedStyle(m).display!=='none');
+  document.body.classList.toggle('modal-open', open);
+}
+(function watchModalScrollLock(){
+  const overlays=document.querySelectorAll('.modal-overlay');
+  if(!overlays.length) return;
+  const obs=new MutationObserver(syncModalScrollLock);
+  overlays.forEach(m=>obs.observe(m,{attributes:true,attributeFilter:['style']}));
+})();
 // Måler fanelinjas FAKTISKE, rendrede høyde (ekte skjerm-piksler) og setter
 // knapperadens sticky-avstand ut fra det — i stedet for et antatt, hardkodet
 // 56px-tall. CSS sin "zoom" (brukt til skriftstørrelse-innstillingen) gjør at
@@ -1581,14 +1644,14 @@ const LOC_EN={
 // Bruk en Proxy slik at eksisterende `LOC[s.loc]`-oppslag automatisk følger valgt språk.
 const LOC=new Proxy({},{get:(_,k)=>((window._lang==='en'?LOC_EN:LOC_NO)[k])});
 const WHY_NO={
-  fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet.',
+  fk:'Kald fermentering (2–8°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet. Kulda er også tilgivende — siden den bremser hele prosessen, tåler en kald deig litt mer gjær enn du skulle tro før det blir et problem.',
   tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 4°C, og 3–4 timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
 };
 const WHY_EN={
-  fk:'Cold fermentation (2–8°C) slows the yeast so enzymes break down starch over time. Gives deep flavor, good digestibility and a long shelf life.',
+  fk:'Cold fermentation (2–8°C) slows the yeast so enzymes break down starch over time. Gives deep flavor, good digestibility and a long shelf life. The cold is also forgiving — since it slows the whole process, a cold dough tolerates a bit more yeast than you would think before it becomes a problem.',
   tu:'The counter time after the fridge does two things at once. The gluten relaxes — cold dough is stiff and tough at 4°C, and 3–4 hours at room temperature makes it stretchable so you can open the ball without it tearing. And the yeast, which lay almost dormant in the cold, wakes up again and gives one last short rise that makes the crust airy and light. If you skip the counter time, the dough is both hard to stretch and denser once baked. How long it needs depends on how warm the room is — a warmer room goes faster, so use the time as a guide and the dough itself as the final word.',
   st:'High heat gives a fast "oven spring" — the pizza rises in a flash for airy edges and a crisp base.',
   pl:'Poolish ferments for a long time with little yeast. Enzymes break starch down into sugar that the yeast ferments, and aromatic compounds and mild organic acids develop that give more complex flavor and better digestibility.',
@@ -1596,6 +1659,31 @@ const WHY_EN={
 };
 // Proxy slik at eksisterende WHY.xx-oppslag følger valgt språk (byte-identisk norsk).
 const WHY=new Proxy({},{get:(_,k)=>((window._lang==='en'?WHY_EN:WHY_NO)[k])});
+// Sensoriske "les deigen"-tips til gjæringsstegene: hva du ser etter, og hva du
+// GJØR hvis deigen henger etter eller er kommet for langt fram. Klokka er plan A —
+// disse lar deg overstyre med øynene når temperatur/kjøleskap ikke stemmer med tallet.
+// Delt tekst så tegnene er like på tvers av metoder (jf. paritets-tanken i BACKLOG F11).
+// Ren tekst (ingen HTML) — s.tip kopieres ordrett til plan-teksten (📋 Kopier), så tagger
+// ville lekket dit. Fingertrykk-test: kun på VARM deig (roomRise) — på kald deig er den
+// upålitelig fordi deigen er stiv av kulde.
+const TIP_NO={
+  coldRise:'Sjekk gjennom lokket uten å åpne: emnene skal vokse til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut og bak litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.',
+  roomRise:'Klar når den har vokst tydelig (ca. dobbelt), myk og luftig med bobler i overflaten. Fingertrykk-test: trykk lett med våt finger — gropa skal fjære sakte halvveis tilbake. Spretter den rett opp igjen, trenger den mer tid; blir gropa stående og deigen synker sammen, er den for langt fram — gå videre med en gang. Varmt kjøkken går raskere enn klokka antyder.',
+  benchTemper:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. Fortsatt stive og kalde — gi dem mer tid før du former. Slappe og flyter utover i boksen — de er tempererte nok; form og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.',
+  poolishFerment:'Klar når overflaten er full av bobler, hvelver seg lett oppover og lukter friskt syrlig av gjær. Flat og stille ennå — la den stå lenger; kaldt kjøkken bremser den. Falt sammen i midten og lukter skarpt/alkoholaktig — den er gått litt for langt; bruk den likevel, men regn med noe mer syrlig smak.',
+  // Praktisk "sett-i-kjøleskap"-tips (ikke "les deigen"): fysisk oppsett når emnene
+  // settes kaldt. Brukes på form→kjøleskap-stegene (tailSteps + Kveldsdeig).
+  intoFridge:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe. Ikke stable boksene tett i høyden; det kan blokkere luftsirkulasjonen og gi ujevn kjøling — spre dem litt utover. Og stol ikke blindt på tallet på kjøleskapshjulet: 1–5-skalaene varierer mellom merker, så har du et termometer, sjekk at det ligger rundt 2–5°C.'
+};
+const TIP_EN={
+  coldRise:'Check through the lid without opening: the balls should grow to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out and bake a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.',
+  roomRise:'Ready when it has grown clearly (about doubled), soft and airy with bubbles on the surface. Finger-poke test: press lightly with a wet finger — the dimple should spring back slowly, halfway. If it springs right back, it needs more time; if the dimple stays and the dough sinks, it is too far along — move on right away. A warm kitchen goes faster than the clock suggests.',
+  benchTemper:'Ready when they are no longer cold and have risen a little visibly in the box. Still stiff and cold — give them more time before you shape. Slack and spreading out in the box — they are tempered enough; shape and bake without waiting longer. Too short gives stiff, dense dough that is hard to open; far too long and they can over-proof and go slack.',
+  poolishFerment:'Ready when the surface is full of bubbles, domes up easily and smells freshly sour of yeast. Flat and still — let it stand longer; a cold kitchen slows it down. Collapsed in the middle and smelling sharp/alcoholic — it has gone a bit too far; use it anyway, but expect a somewhat more sour taste.',
+  intoFridge:'Use boxes with lids — cloths dry out the surface and form a skin. Don\'t stack the boxes tightly on top of each other; it can block air circulation and cause uneven cooling — spread them out a little. And don\'t trust the number on the fridge dial blindly: the 1–5 scales vary between brands, so if you have a thermometer, check that it sits around 2–5°C.'
+};
+// Proxy slik at eksisterende TIP.xx-oppslag følger valgt språk (byte-identisk norsk).
+const TIP=new Proxy({},{get:(_,k)=>((window._lang==='en'?TIP_EN:TIP_NO)[k])});
 // Kort "hvorfor"-forklaring til den dynamiske boksen under metodevalg-kortene
 // (wizardens Metode-steg, v5.70). Poolish/Biga gjenbruker WHY.pl/WHY.bi
 // ordrett i stedet for å duplisere teksten. Skrevet i samme stil, godkjent
@@ -1752,14 +1840,15 @@ function rawSteps(a){
           L('Sett i kjøleskap',`Put in the fridge`)
         ],
         why:WHY.fk,
-        tip:L('Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.',`Use containers with lids — cloths dry out the surface and form a skin.`)},
+        tip:TIP.intoFridge},
       {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
         desc:L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}. Ikke åpne boksene.`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(cM2-240-15))}. Don't open the containers.`),
         substeps:[
           L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(cM2-240-15))}`),
           L('Ikke åpne boksene',`Don't open the containers`)
         ],
-        why:WHY.fk},
+        why:WHY.fk,
+        tip:TIP.coldRise},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
         desc:L('Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. 4 timer før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.',`Take the dough balls out onto the counter — this is the bench time (tempering) after the cold fermentation. Let them sit covered at room temperature for about 4 hours before baking, so the dough both becomes stretchable and gets a final rise. Don't open the containers yet.`),
         substeps:[
@@ -1768,7 +1857,7 @@ function rawSteps(a){
           L('Ikke åpne boksene ennå',`Don't open the containers yet`)
         ],
         why:WHY.tu,
-        tip:L('Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.',`Ready when they are no longer cold and have risen a little visibly in the container. Too short gives stiff, dense dough that is hard to open; far too long and they can overproof and go slack.`)},
+        tip:TIP.benchTemper},
       {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:oT(tp)}
     ];
   }
@@ -1878,7 +1967,7 @@ function rawSteps(a){
         ],
         why:L('Poolishen har allerede fermentert halvparten av melet og bidrar med mye av smak- og aromautviklingen — resten inkorporeres effektivt uansett metode.',`The poolish has already fermented half the flour and contributes much of the flavor and aroma development — the rest is incorporated efficiently regardless of method.`),
         tip:L('Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.',`The dough will feel more active and lightly sticky than standard. That's normal — poolish makes the dough more extensible (easier to stretch) while it develops flavor. Dough temperature: 22–24°C.`)},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(mixAt,20),dur:rt,passive:true,desc:L(`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,`Let rise about ${rt} min at ${S.temp}°C, covered.`),substeps:[L(`Dekk til`,`Cover`),L(`La heve ca. ${rt} min ved ${S.temp}°C`,`Let rise about ${rt} min at ${S.temp}°C`)],why:rtW(rt)},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(mixAt,20),dur:rt,passive:true,desc:L(`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,`Let rise about ${rt} min at ${S.temp}°C, covered.`),substeps:[L(`Dekk til`,`Cover`),L(`La heve ca. ${rt} min ved ${S.temp}°C`,`Let rise about ${rt} min at ${S.temp}°C`)],why:rtW(rt),tip:TIP.roomRise},
       ...tailSteps(aM(mixAt,20+rt))
     ];
   }
@@ -1912,7 +2001,7 @@ function rawSteps(a){
         ],
         why:L('Bigaen er stiv — den løses opp gradvis uansett metode. Deigen kan virke tung i starten, det er normalt.',`The biga is stiff — it dissolves gradually regardless of method. The dough may seem heavy at first, that's normal.`),
         tip:L('Deigtemperatur etter elting: 22–24°C. Bruk termometer.',`Dough temperature after kneading: 22–24°C. Use a thermometer.`)},
-      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:L(`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,`Let rise about ${rtB} min at ${S.temp}°C, covered.`),substeps:[L(`Dekk til`,`Cover`),L(`La heve ca. ${rtB} min ved ${S.temp}°C`,`Let rise about ${rtB} min at ${S.temp}°C`)],why:rtW(rtB)},
+      {title:'Romtemperaturheving',loc:'rom',at:aM(rdy,20),dur:rtB,passive:true,desc:L(`La heve ca. ${rtB} min ved ${S.temp}°C, dekket.`,`Let rise about ${rtB} min at ${S.temp}°C, covered.`),substeps:[L(`Dekk til`,`Cover`),L(`La heve ca. ${rtB} min ved ${S.temp}°C`,`Let rise about ${rtB} min at ${S.temp}°C`)],why:rtW(rtB),tip:TIP.roomRise},
       ...tailSteps(aM(rdy,20+rtB))
     ];
   }
@@ -1950,7 +2039,7 @@ function rawSteps(a){
         ],
         why:L('Halvparten av oppskriftens mel og vann fermenterer for seg selv i mange timer før resten av deigen i det hele tatt blandes — poolishen bygger opp mesteparten av smaken.',`Half the recipe's flour and water ferment on their own for many hours before the rest of the dough is even mixed — the poolish builds up most of the flavor.`),
         tip:L('La stå ved 18–21°C.',`Let sit at 18–21°C.`)},
-      {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:L('La stå i romtemperatur i 12 timer.',`Let sit at room temperature for 12 hours.`),substeps:[L('La stå urørt i romtemperatur i 12 timer',`Let sit undisturbed at room temperature for 12 hours`)]},
+      {title:'Poolish gjærer',loc:'rom',at:poolishAt,dur:720,passive:true,desc:L('La stå i romtemperatur i 12 timer.',`Let sit at room temperature for 12 hours.`),substeps:[L('La stå urørt i romtemperatur i 12 timer',`Let sit undisturbed at room temperature for 12 hours`)],why:WHY.pl,tip:TIP.poolishFerment},
       {title:'Poolish kjøles ned',loc:'kjol',at:chillAt,dur:0,
         desc:L('Sett poolishen i kjøleskapet for nedkjøling.',`Put the poolish in the fridge to cool down.`),
         substeps:[L('Sett poolishen i kjøleskapet',`Put the poolish in the fridge`)],
@@ -1983,7 +2072,8 @@ function rawSteps(a){
       {title:'Kjøleskapsheving (udelt)',loc:'kjol',at:coldBulkStart,dur:COLDBULK,passive:true,
         desc:L('Hele deigen kjøleskapheves samlet, udelt — deles i emner først etterpå.',`The whole dough is cold-proofed together, undivided — divided into balls only afterward.`),
         substeps:[L('La hele deigen stå samlet, udelt, i kjøleskapet',`Let the whole dough sit together, undivided, in the fridge`)],
-        why:L('Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.',`Cold fermentation of the whole dough together (instead of divided into balls) is the structural core of this method — gives even, controlled maturation.`)},
+        why:L('Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.',`Cold fermentation of the whole dough together (instead of divided into balls) is the structural core of this method — gives even, controlled maturation.`),
+        tip:TIP.coldRise},
       {title:'Del i emner',loc:'benk',at:divideAt,dur:15,
         desc:L('Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.',`Divide into balls of the desired weight (weigh them for equal size). Shape balls and place each in its own oiled container or deep bowl, cover with a lid or plastic wrap.`),
         needs:[L('📦 boks/skål per emne',`📦 container/bowl per ball`), L('🫒 litt olje',`🫒 a little oil`)],
@@ -2019,7 +2109,12 @@ function hurtigSteps(anchor){
   const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
   const ya=S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
   const tmp=S.oven==='pizza'?o.tp:o.tv;
-  const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60),p=pc();
+  // v6.12 (BACKLOG #6): begge gjæringsfasene skaleres med tf(). Bulk (ba) var
+  // temp-justert, men etterhevingen (afm) var det ikke — samme deigs to
+  // gjæringsfaser reagerte da ulikt på temperatur (fysisk feil), og ved ≠22°C
+  // summerte ikke bulk+etterheving lenger konsistent. Forming (0,25t) er et fast
+  // manuelt steg og skal IKKE skaleres — derfor ligger den utenfor tf()-faktoren.
+  const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60*tf()),p=pc();
   // v6.01: gjær-kickstart lagt til fra backloggen — rør gjæren i lunkent vann
   // med litt honning og la den boble noen minutter FØR mel tilsettes, i
   // stedet for at alt blandes i ett steg uten venting. Egen KICK_DUR lagt
@@ -2058,7 +2153,7 @@ function hurtigSteps(anchor){
         :S.kjokkenmaskin==='manuell'
         ?L('Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.','The windowpane test is extra important here since you don\'t have a long rise to compensate for under-kneading.')
         :L('Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.','Knead a bit longer than you would with a longer rise — quick dough has less time for gluten to develop on its own.')},
-    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,`Cover tightly. Rise at ${S.temp}°C for about ${ba} min.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${ba} min`,`Rise at ${S.temp}°C for about ${ba} min`)],why:rtW(ba)},
+    {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${ba} min.`,`Cover tightly. Rise at ${S.temp}°C for about ${ba} min.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${ba} min`,`Rise at ${S.temp}°C for about ${ba} min`)],why:rtW(ba),tip:TIP.roomRise},
     {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emner à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} balls of ${p.perPizza}g each. Round well.`),needs:[L(`📦 ${p.count} emner`,`📦 ${p.count} balls`)],substeps:[L(`Del i ${p.count} emner à ${p.perPizza}g`,`Divide into ${p.count} balls of ${p.perPizza}g each`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
     {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${afm} min. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${afm} min. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${afm} min, tildekket`,`Final proof ${afm} min, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
@@ -2101,14 +2196,15 @@ function kveldSteps(anchor){
         L('Sett rett i kjøleskap','Put straight into the fridge')
       ],
       why:L('Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.','Shaping before chilling gives each ball even temperature and rise through the night.'),
-      tip:L('Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe.','Use containers with lids — cloths dry out the surface and form a skin.')},
+      tip:TIP.intoFridge},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
       desc:L(`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,`Let the balls sit undisturbed in the fridge for about ${kh} hours. Don't open the containers.`),
       substeps:[
         L(`La emnene stå urørt i kjøleskapet i ca. ${kh} timer`,`Let the balls sit undisturbed in the fridge for about ${kh} hours`),
         L('Ikke åpne boksene','Don\'t open the containers')
       ],
-      why:L('Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.','Cold proofing over 5–15 hours gives more flavor than a pure room-temperature quick dough, without having to plan several days ahead like the standard method.')},
+      why:L('Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.','Cold proofing over 5–15 hours gives more flavor than a pure room-temperature quick dough, without having to plan several days ahead like the standard method.'),
+      tip:TIP.coldRise},
     {title:'Ta ut og temperer',loc:'rom',at:temperAt,dur:TEMPER_MIN,passive:true,
       desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return L(`Ta emnene ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`,`Take the balls out of the fridge. Let them sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'} before you stretch and bake.`);})(),
       substeps:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return [
@@ -2116,7 +2212,8 @@ function kveldSteps(anchor){
         L(`La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'}`,`Let them sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'}`),
         L('Ikke rør dem før du skal strekke og steke','Don\'t touch them until you\'re ready to stretch and bake')
       ];})(),
-      why:L('Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.','Cold dough is stiff — a short temper makes it stretchable again without tearing. Shorter than the standard method\'s 4 hours since the balls haven\'t been cold as long.')},
+      why:L('Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.','Cold dough is stiff — a short temper makes it stretchable again without tearing. Shorter than the standard method\'s 4 hours since the balls haven\'t been cold as long.'),
+      tip:TIP.benchTemper},
     {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),substeps:bakeSubsteps(S.type),why:WHY.st,tip:oT(S.type)}
   ];
   return {ya,steps};
@@ -2126,6 +2223,69 @@ function fmtDur(mins){
   if(mins>=1440){ return (Math.round(mins/144)/10).toString().replace('.',',')+' døgn'; }
   if(mins>=60){ const h=Math.round(mins/6)/10; return h.toString().replace('.',',')+(h===1?' time':' timer'); }
   return mins+' min';
+}
+// ===== F5 (BACKLOG): live «nå/neste»-stripe øverst i planen =====
+// Produktet ER en tidsplan, men «hva gjør jeg nå / når er neste» krevde scrolling.
+// Stripa løfter det fram med en nedtelling som en ticker oppdaterer hvert 30. sek,
+// uten å bygge om hele planen (kun ved et stegskille, så nå/neste flytter seg).
+function f5CountdownFromMs(ms){
+  if(ms <= 0) return 'nå';
+  let mins = Math.round(ms/60000);
+  if(mins < 1) return 'nå';
+  const days = Math.floor(mins/1440); mins -= days*1440;
+  const hrs = Math.floor(mins/60); mins -= hrs*60;
+  const parts = [];
+  if(days) parts.push(days+' d');
+  if(hrs) parts.push(hrs+' t');
+  if(mins || (!days && !hrs)) parts.push(mins+' min');
+  return 'om '+parts.join(' ');
+}
+function nextStepStripeHTML(steps){
+  if(!steps || !steps.length) return '';
+  const now = Date.now();
+  const isChecked = i => window._checked && window._checked.has(i);
+  if(steps.every((s,i)=>isChecked(i))){
+    return `<div class="next-strip done">✓ Alle steg gjort — nyt pizzaen 🍕</div>`;
+  }
+  // Neste kommende (fremtidig, ikke avhaket) steg — det nedtellingen tjener. Er du
+  // midt i en passiv heving, peker dette på slutten av hevingen, ikke hevingen selv.
+  let up = -1;
+  for(let i=0;i<steps.length;i++){ if(!isChecked(i) && steps[i].at.getTime() > now){ up = i; break; } }
+  let label, title, count;
+  if(up !== -1){
+    label = '👉 Neste'; title = steps[up].title;
+    count = `<span class="next-strip-count" id="next-strip-count" data-at="${steps[up].at.getTime()}" data-future="1">${f5CountdownFromMs(steps[up].at.getTime()-now)}</span>`;
+  } else {
+    // Ingen fremtidig steg igjen — det første ikke-avhakede skal gjøres nå.
+    let cur = -1;
+    for(let i=0;i<steps.length;i++){ if(!isChecked(i)){ cur = i; break; } }
+    if(cur === -1) return `<div class="next-strip done">✓ Alle steg gjort — nyt pizzaen 🍕</div>`;
+    label = '👉 Nå'; title = steps[cur].title;
+    count = `<span class="next-strip-count">på tide</span>`;
+  }
+  return `<div class="next-strip" onclick="scrollToNextStep()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToNextStep();}" title="Hopp til neste steg" role="button" tabindex="0">`
+    + `<span class="next-strip-lbl">${label}</span><span class="next-strip-title">${escH(title)}</span>${count}</div>`;
+}
+function scrollToNextStep(){
+  const el = document.querySelector('.step-next') || document.querySelector('.now');
+  if(el && el.scrollIntoView){ try{ el.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }
+}
+let _f5Ticker = null;
+function startNextStepTicker(){
+  if(_f5Ticker) return;
+  _f5Ticker = setInterval(()=>{
+    const el = document.getElementById('next-strip-count');
+    if(!el) return;                       // ingen stripe akkurat nå (annen fane / ingen plan)
+    const at = parseInt(el.getAttribute('data-at')||'0', 10);
+    if(!at) return;
+    const ms = at - Date.now();
+    el.textContent = f5CountdownFromMs(ms);
+    if(el.getAttribute('data-future')==='1' && ms <= 0){
+      el.setAttribute('data-future','0');  // tiden passerte stegskillet
+      const mobEl=document.getElementById('mob-layout');
+      if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
+    }
+  }, 30000);
 }
 function renderSteps(steps, mode='desktop'){
   const isMob = mode === 'mobile';
@@ -2207,7 +2367,8 @@ function renderSteps(steps, mode='desktop'){
     tip: 'stip',
   };
 
-  let html = '';
+  startNextStepTicker();
+  let html = nextStepStripeHTML(steps);
   let lastDay = null;
   let conflictFlagged = false; // kun det FØRSTE steget som kolliderer merkes (som varselkortet)
 
@@ -2325,6 +2486,17 @@ async function persistCheckedIngredients(){
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({checkedIngredients: [...window._checkedIngredients]})
+    });
+  }catch(e){ /* stille */ }
+}
+async function persistCheckedSubsteps(){
+  const id = window._activeDeigId;
+  if(!id) return; // Ulagret oppsett: avhaking lever kun i denne økten
+  try{
+    await fetch('/api/bakes/'+id, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({checkedSubsteps: [...window._checkedSubsteps]})
     });
   }catch(e){ /* stille */ }
 }
@@ -3842,7 +4014,8 @@ async function loadFeedbackList(){
       const adminBtns = isAdmin ? `
             <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?L('Merk som ulest','Mark as unread'):L('Merk som løst','Mark as resolved')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
             <button onclick="deleteFeedbackConfirm('${it.id}')" title="${L('Slett','Delete')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
-      return `<div style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
+      return `<div id="fbitem-${it.id}" style="border:1px solid var(--dyn-border);border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
+
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
             <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>
@@ -3888,12 +4061,22 @@ async function toggleFeedbackResolved(id, currentlyResolved){
 function deleteFeedbackConfirm(id){
   if(!window._adminPassword) return;
   if(!confirm('Slette denne tilbakemeldingen permanent?')) return;
-  fetch('/api/feedback/'+id, {method:'DELETE'}).catch(()=>{}).finally(()=>{
-    loadFeedbackList();
-  });
+  // Fjern kortet umiddelbart (optimistisk) så det ikke oppleves som treigt, og
+  // vis tom-tilstand hvis det var det siste. Sletter på serveren i bakgrunnen;
+  // ved feil hentes lista på nytt så visningen speiler serveren igjen.
+  const el = document.getElementById('fbitem-'+id);
+  if(el) el.remove();
+  const wrap = document.getElementById('feedback-list-wrap');
+  if(wrap && !wrap.querySelector('[id^="fbitem-"]')){
+    wrap.innerHTML = '<p style="color:var(--dyn-faint);font-size:12px">Ingen tilbakemeldinger ennå.</p>';
+  }
+  fetch('/api/feedback/'+id, {method:'DELETE'}).then(res=>{
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }).catch(()=>{ loadFeedbackList(); });
 }
 
 function gen(){
+  persistSetup();
   if(S.type!=='ingenelting' && S.method==='hurtig'){hurtigRes();return;}
   if(S.type!=='ingenelting' && S.method==='kveld'){kveldRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
@@ -4255,7 +4438,7 @@ function renderAdminModal(users){
   body.innerHTML = users.map(u=>{
     let created=''; try{ created=fDT(new Date(u.createdAt)); }catch(e){}
     let lastLogin=''; try{ lastLogin=fDT(new Date(u.lastLoginAt)); }catch(e){}
-    return `<div class="admin-card">
+    return `<div class="admin-card" id="adminuser-${u.id}">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <div style="min-width:0">
           <div class="admin-uname">${escH(u.name)}</div>
@@ -4284,11 +4467,18 @@ async function adminResetPin(id, name){
 }
 async function adminDeleteUser(id, name){
   if(!confirm('Slette brukeren "'+name+'" permanent?')) return;
+  // Fjern kortet umiddelbart (optimistisk) så sletting ikke oppleves som treig,
+  // og vis tom-tilstand hvis det var siste bruker. Ved feil hentes lista på nytt.
+  const el = document.getElementById('adminuser-'+id);
+  if(el) el.remove();
+  const body = document.getElementById('admin-modal-body');
+  if(body && !body.querySelector('.admin-card')){
+    body.innerHTML = '<p style="color:#999;font-size:13px">Ingen registrerte brukere ennå.</p>';
+  }
   try{
     const res = await fetch('/api/users/admin/'+id+'?password='+encodeURIComponent(window._adminPassword), {method:'DELETE'});
-    if(!res.ok){ alert('Kunne ikke slette bruker.'); return; }
-    loadAdminView(window._adminPassword);
-  }catch(e){ alert('Fikk ikke kontakt med serveren.'); }
+    if(!res.ok){ alert('Kunne ikke slette bruker.'); loadAdminView(window._adminPassword); }
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); loadAdminView(window._adminPassword); }
 }
 function closeAdminModal(){
   document.getElementById('admin-modal').style.display = 'none';
@@ -4581,9 +4771,19 @@ async function loadConfigThenStart(){
     document.getElementById('loading-overlay').style.display = 'none';
     checkAuthOnLoad();
     initAdvancedState();
+    // v6.13 (BACKLOG F2): gjenopprett husket understeg-visning før første render.
+    try{ if(localStorage.getItem('pizzaSubsteps')==='1') S.showSubsteps=true; }catch(e){}
+    // v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett før layout/render, så
+    // «Fortsetter»-banneret og alle kontroller reflekterer det du hadde.
+    const restored = restoreSetup();
     let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
     const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
     setLayout(targetLayout);
+    if(restored){
+      // Speil oppsettet inn i piller/glidebrytere/modus — samme sync openBake bruker.
+      if(targetLayout==='mob'){ syncMobControls(); mobSetMode(S.mode); }
+      else { syncDesktopControls(); setMode(S.mode); }
+    }
     // Innstillinger-fanen er allerede markert aktiv i selve HTML-en fra start (statisk klasse),
     // så mobShowTab('settings') kalles aldri automatisk ved første sideinnlasting — uten dette
     // kallet her ville wizarden aldri vist seg før man bytter fane frem og tilbake manuelt.
@@ -4703,7 +4903,7 @@ function mobPillGroup(id,key){
     el.onclick=()=>{
       const changed = S[key] !== v;
       S[key]=v;
-      if(changed && key==='type') clearStepProgress();
+      if(changed && PROGRESS_RESETTING_FIELDS.has(key)) clearStepProgress();
       mobPillGroup(id,key);
       if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
       mobGen();
@@ -5263,9 +5463,9 @@ function substepToggleHTML(where){
   }
   if(where==='mob'){
     const btnStyle = 'width:100%;text-align:left;padding:8px 10px;border:1px solid var(--forno-border,#e0ddd8);border-radius:8px;background:var(--forno-bg-raised,#fff);color:var(--forno-text,#3A3A3C);font-size:11.5px;font-weight:600;cursor:pointer;margin:0 .9rem .6rem;width:calc(100% - 1.8rem)';
-    return `<div style="padding:.6rem .9rem 0"><button onclick="toggleSubsteps()" style="${btnStyle}">${on?L('📋 Understeg PÅ — trykk for gammel visning','📋 Substeps ON — tap for the old view'):L('📋 Prøv understeg (utprøving, kan slås av igjen)','📋 Try substeps (experimental, can be turned off again)')}</button></div>`;
+    return `<div style="padding:.6rem .9rem 0"><button onclick="toggleSubsteps()" style="${btnStyle}">${on?L('📋 Understeg PÅ — trykk for å skjule','📋 Substeps ON — tap to hide'):L('📋 Vis understeg','📋 Show substeps')}</button></div>`;
   }
-  return `<button class="act-btn act-btn-sec" id="substep-toggle" onclick="toggleSubsteps()" title="${L('Utprøvende: nummererte understeg med avhaking i stedet for avsnittstekst','Experimental: numbered substeps with checkboxes instead of paragraph text')}">${on?L('📋 Understeg PÅ','📋 Substeps ON'):L('📋 Prøv understeg','📋 Try substeps')}</button>`;
+  return `<button class="act-btn act-btn-sec" id="substep-toggle" onclick="toggleSubsteps()" title="${L('Nummererte understeg med avhaking i stedet for avsnittstekst','Numbered substeps with checkboxes instead of paragraph text')}">${on?L('📋 Understeg PÅ','📋 Substeps ON'):L('📋 Vis understeg','📋 Show substeps')}</button>`;
 }
 // Tips/Hvorfor-bryteren fantes fra før KUN på PC (toggleHelpFromPlan/
 // actionGroupHTML). Denne gir den samme jobben et sted på mobil også, i den
@@ -5277,17 +5477,23 @@ function tipsToggleHTML(where){
 }
 function toggleSubsteps(){
   S.showSubsteps=!S.showSubsteps;
+  // v6.13 (BACKLOG F2): understeg er en ferdig, fullverdig visningsmodus — husk
+  // valget over reload (som layout/skriftstørrelse). Egen device-preferanse, ikke
+  // knyttet til deigen. showHelp forblir bevisst uendret (nullstilles ved reload).
+  try{ localStorage.setItem('pizzaSubsteps', S.showSubsteps?'1':'0'); }catch(e){}
   const mobEl=document.getElementById('mob-layout');
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
 }
 window._checkedSubsteps = new Set();
-// Kun i minnet så lenge dette er en utprøving bak bryter — ikke lagret til
-// server ennå. Blir den værende, er persistering (som checkedSteps) naturlig
-// neste steg.
+// v6.13 (BACKLOG F1): understeg-avhaking persisteres nå til server per aktiv
+// deig — samme mønster som checkedSteps/checkedIngredients — og lagres/hentes
+// sammen med deigen (saveBake/openBake). Ulagret oppsett lever fortsatt kun i
+// økten (persistCheckedSubsteps no-opper uten _activeDeigId).
 function toggleSubstepDone(stepIdx, subIdx){
   const key = stepIdx+'-'+subIdx;
   if(window._checkedSubsteps.has(key)) window._checkedSubsteps.delete(key);
   else window._checkedSubsteps.add(key);
+  persistCheckedSubsteps();
   const mobEl=document.getElementById('mob-layout');
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
 }
@@ -5325,6 +5531,7 @@ function renderWizStatusBar(){
 function mobGen(){
   const mobEl=document.getElementById('mob-layout');
   if(!mobEl||!mobEl.classList.contains('active'))return;
+  persistSetup();
   renderWizStatusBar();
   try{ renderReturnBar(); }catch(e){}
   if(window._wizStep===3){ try{ wizCheckRender(); }catch(e){} }
@@ -5539,7 +5746,7 @@ async function saveBake(){
       res = await fetch('/api/bakes', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])], savedBy: currentUserName() })
+        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])], checkedSubsteps: [...(window._checkedSubsteps||[])], savedBy: currentUserName() })
       });
     }
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -5739,6 +5946,7 @@ function openBake(id){
   window._activeDeigName = b.name;
   window._checked = new Set(Array.isArray(b.checkedSteps) ? b.checkedSteps : []);
   window._checkedIngredients = new Set(Array.isArray(b.checkedIngredients) ? b.checkedIngredients : []);
+  window._checkedSubsteps = new Set(Array.isArray(b.checkedSubsteps) ? b.checkedSubsteps : []);
   syncSaveBakeLabel();
   document.body.classList.remove('pre-interact');
   Object.assign(S, b.config);

@@ -1,10 +1,15 @@
 # Backlog — Pizzaplanlegger
 
-Sist oppdatert: 27.07.2026 · gjelder index.html rundt v6.01.
+Sist oppdatert: 28.07.2026 · gjelder index.html rundt v6.14.
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
-Rekkefølgen innen hver bolk er omtrent synkende viktighet.
+Rekkefølgen innen hver bolk er omtrent synkende viktighet. Hvert gjenstående punkt
+har en **I klartekst**-linje som forklarer hva det er og hvor stort, i vanlig språk.
+
+Status per v6.14: alle P0 + #3–6 fikset (#5 delvis), F1–F3/F5/F6 + hele «Tips og
+triks» gjort. Gjenstår: #5-rest + #7 (kosmetisk), og funksjonene F4/F7/F8/F9/F10/F11
+pluss F5 nivå 3.
 
 Disiplin: `test_regression.py` + `baseline_results.json` fryser dagens tall for
 oppskrift og tidsplan. Endrer du noe som flytter et tall, kjør testen og
@@ -81,7 +86,26 @@ Regresjon fra v6.01 «gjær-kickstart».
   temperaturen der (og vurder om 40–43 °C er riktig mål, eller om DDT skal styre
   kickstart-vannet).
 
-### 5. Avhaking blir stående ved endring av gjær/ovn/mel/hydrering/temp/kjøl
+### 5. Avhaking blir stående ved endring av gjær/ovn/mel/hydrering/temp/kjøl ✅ DELVIS FIKSET (v6.12)
+> **Fikset for de diskrete bryterne:** `oven` og `gjaer` er lagt til i den nye
+> `PROGRESS_RESETTING_FIELDS`-mengden, som både `pgrp` (PC) og `mobPillGroup`
+> (mobil) nå sjekker i stedet for en hardkodet `key==='type'`. Regresjonstesten
+> `checkbox_progress_clears_on_content_changing_fields_only` vokter kontrakten
+> (oven/gjaer nullstiller; kjøkkenmaskin gjør det bevisst ikke).
+>
+> **Bevisst IKKE fikset:** `mel`/`hydro`/`temp`/`cold` styres av kontinuerlige
+> `oninput`-slidere — å nullstille der ville rive vekk flere dagers avhaking midt
+> i ett enkelt dra. Stale tall på haket innhold er en akseptert begrensning av den
+> indeksbaserte modellen; en ekte fiks krever innholdsbasert nøkling (eget punkt).
+>
+> **I klartekst (det som gjenstår):** Endrer du melmengde, hydrering, temperatur
+> eller kjøletid mens du har haket av steg, kan haken bli stående på et tall som nå
+> er endret (f.eks. en avhaket «500 g mel»-chip når du har dratt til 600 g). Vi lot
+> den ligge med vilje — disse er glidebrytere som beveger seg kontinuerlig, og en
+> nullstilling der ville slette flere dagers avhaking midt i et dra. Den ekte
+> løsningen er å nøkle avhakingen på *innholdet* i steget i stedet for på posisjonen
+> (indeks) — en arkitektur-endring, ikke en liten fiks. Størst jobb i denne bunken.
+
 Samme klasse som v6.01-feilen, men bare halvfikset.
 - `clearStepProgress()` kalles kun ved endring av `type` og `method`
   (`932`, `943`, `4273`, `4319`). Men avhaking er indeksbasert over innhold som
@@ -95,7 +119,15 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
 - **Fiks:** kall `clearStepProgress()` (eller en mildere «reindekser»-variant)
   også ved `oven`/`gjaer`, og vurder om numeriske endringer skal nullstille.
 
-### 6. Hurtigdeig: totaltid drifter fra sin egen «· X timer»-etikett ved ≠22 °C **[baseline]**
+### 6. Hurtigdeig: totaltid drifter fra sin egen «· X timer»-etikett ved ≠22 °C ✅ FIKSET (v6.12) **[baseline]**
+> **Fikset:** `afm` skaleres nå med `tf()` på samme måte som `ba` (`1805`), så begge
+> gjæringsfasene reagerer likt på temperatur. Ved 22 °C (tf=1) er tallene uendret —
+> `baseline_results.json` rørt ikke — så fiksen slår kun inn ved ≠22 °C. Ny test
+> `hurtig_both_ferment_phases_scale_with_temperature` vokter at begge faser skalerer
+> med samme faktor. (`· X timer`-etiketten beholdt som nominelt opsjonsnavn, som i
+> velgeren og Kveldsdeig; den eksisterende «varmt kjøkken — sjekk underveis»-advarselen
+> dekker at reell veggklokke-tid avviker ved høy temp.)
+
 - `ba = Math.round(o.h*0.6*60*tf())` (`1723`) er temperaturskalert, men
   `afm = Math.round((o.h - o.h*0.6 - 0.25)*60)` er det **ikke**. Toppteksten
   skriver `${o.h} timer` (`3511` + mobil).
@@ -110,6 +142,10 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
 ## P2 — Småfeil / kosmetisk
 
 ### 7. Biga overgjæring: avrundet vs. uavrundet romheving **[baseline?]**
+> **I klartekst:** På biga-metoden regner tidsplanen og overgjærings-varselet
+> romhevingen bittelitt ulikt — planen runder av til hele minutter, varselet gjør
+> det ikke. Forskjellen er under ett minutt og synes nesten aldri, men de to tallene
+> er ikke garantert like. Kosmetisk, lite. Flytter et frosset tall (oppdater baseline).
 - Tidsplanen bruker `rtB = Math.round(rt*1.5)` (`1592`), mens
   `fixedFermOverheadHours` bruker `rtM(60)*1.5` uavrundet (`2584`). Sub-minutts
   avvik mellom vist tidsplan og gjæringsvindu-varselet; lite trolig at det vipper
@@ -117,6 +153,9 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
 - **Fiks:** bruk samme avrundede verdi begge steder.
 
 ### 8. «👉 neste»- / «⚠️ ikke avhaket»-markører kan peke feil (følge av 5)
+> **I klartekst:** «Neste»- og «ikke avhaket»-markørene bruker samme indeks-modell
+> som #5. For ovntype/gjær er dette nå løst (v6.12); resten forsvinner automatisk
+> når #5-resten (glidebryterne) løses. Ingen egen jobb.
 - Vente-rader og «neste steg»-markører nøkler på `window._checked`-indekser
   (`1855`, `1929–1930`). Med stale avhaking fra punkt 5 kan markørene peke på feil
   steg til et type-/metodebytte tvinger en nullstilling. Løses av 5.
@@ -129,42 +168,61 @@ Rangert etter hvor godt de treffer produktets retning (changelog v5.49–v6.01):
 å tette dekningshull på tvers av alle 7 metoder, stramme årsak→virkning, og
 redusere friksjon i den tidsstyrte kjøkkenflyten.
 
-### F1. Husk avhaking av understeg (økt → server + inn i lagret deig)
-Understeg-avhaking lever kun i `window._checkedSubsteps` i minnet (`4799–4808`)
-og forsvinner ved reload; den blir heller ikke med når en deig lagres (`saveBake`
-sender bare `checkedSteps`/`checkedIngredients`, `5058`). Forfatteren har allerede
-flagget dette (v5.96: «blir ikke husket når du laster siden på nytt»; kommentar
-`4801` kaller persistering «naturlig neste steg»). Hovedsteg og ingredienser
-persisteres allerede per bruker til server (`1995–2006`) — understeg er den eneste
-som mangler.
+### F1. Husk avhaking av understeg (økt → server + inn i lagret deig) ✅ GJORT (v6.13)
+> `persistCheckedSubsteps()` PATCHer nå `checkedSubsteps` per aktiv deig (samme
+> mønster som `checkedSteps`/`checkedIngredients`), kalt fra `toggleSubstepDone`.
+> `saveBake` sender `checkedSubsteps` i POST, `openBake` hydrerer settet igjen, og
+> `bakes.js` lagrer feltet (POST + PATCH, cap 200 nøkler). Testet i
+> `substep_progress_persists_and_view_is_remembered` (load-veien via openBake).
 
-### F2. Gjør «Understeg» til en fullverdig, husket modus
-Bryteren kaller seg fortsatt forsøk: «📋 Prøv understeg (utprøving, kan slås av
-igjen)» (`4782`), men v5.99 fullførte dekning på alle metoder + selve steketrinnet,
-og v6.00 flyttet den til statuslinjen og fikset mobil. Funksjonen er ferdig;
-rammingen henger etter. Dropp «utprøving»-ordlyden og husk `S.showSubsteps` over
-reload (nullstilles i dag, som `showHelp`).
+### F2. Gjør «Understeg» til en fullverdig, husket modus ✅ GJORT (v6.13)
+> «utprøving»-ordlyden fjernet (knappen heter nå «📋 Vis understeg»), og
+> `S.showSubsteps` huskes over reload via `localStorage['pizzaSubsteps']` —
+> skrevet i `toggleSubsteps`, rehydrert i `loadConfigThenStart`s `finish()` før
+> første render. `showHelp` forblir bevisst uendret (nullstilles ved reload).
+> Samme test vokter localStorage-persisteringen og at etiketten ikke lenger
+> rammer det som en «utprøving».
 
-### F3. Gjenopprett påbegynt oppsett ved reload
-Deig-konfigurasjonen `S` persisteres aldri til localStorage (kun font, layout,
-guide-sett og bruker gjør det — `1072`, `4184`). v6.01-banneret «Fortsetter: X · Y»
-(`4474`) virker bare under SPA-navigasjon i økten; etter en ekte reload er
-oppsettet borte og banneret kan ikke utløses. Persister `S` til localStorage og
-rehydrer ved last — da innfrir «Start ny deig»/«Fortsetter» sitt løfte.
+### F3. Gjenopprett påbegynt oppsett ved reload ✅ GJORT (v6.13)
+> `persistSetup()`/`restoreSetup()` lagrer oppsettet (alle `DEF`-felt unntatt
+> `showHelp`/`showSubsteps`) til `localStorage['pizzaSetup']`. Persisteres fra
+> `gen()`/`mobGen()`, men kun for usagde oppsett (`_activeDeigId` falsy) — en
+> åpnet, lagret deig eier sin egen tilstand via `openBake`. Rehydreres i
+> `loadConfigThenStart`s `finish()` før layout/render, deretter `syncDesktop/
+> MobControls` + `setMode` (samme sync openBake bruker), så «Fortsetter»-banneret
+> og alle kontroller reflekterer oppsettet. `doReset` rydder nøkkelen. Testet i
+> `setup_persists_and_restores_across_reload`.
 
 ### F4. Uavhengig mørk/lys-bryter (frikoblet fra layout)
+> **I klartekst:** I dag finnes mørk modus *bare* hvis du bytter til mobil-layout —
+> hele den mørke paletten er koblet til `body.mob-mode`. En kokk på laptop i et mørkt
+> kjøkken får altså ikke mørkt uten å også få den smale mobil-visningen. F4 frikobler
+> tema fra layout: en ekte lys/mørk-preferanse som huskes og følger systemets
+> innstilling. Fargene finnes allerede — mest jobb er å endre *hvor* de gjelder.
+> Middels stor.
 Hele «Forno» mørk palett er gated bak `body.mob-mode` (`50–152`) — mørk modus er
 altså kun tilgjengelig ved å bytte til mobil-layout. En kokk på laptop/nettbrett i
 et mørkt kjøkken får ikke mørkt uten å også få den smale mobil-layouten. Legg til en
 ekte tema-preferanse (persistert som `pizzaLayout`) + `prefers-color-scheme`-default.
 Forno-tokenene finnes; det meste er å re-scope selektoren.
 
-### F5. Live «neste steg om X» / nåværende-steg-spotlight i appen
-Tidsplanen regner allerede ut `curIdx` og `nextIdx` (`1846–1856`), men ingenting
-teller ned eller løfter fram «hva gjør jeg nå/neste» uten å scrolle hele Tidsplan.
-Siden produktet ER en tidsplan, er en kompakt live-stripe («Neste: Ta ut av
-kjøleskap — om 3 t 20 min», ev. med Notification API) en naturlig utvidelse. I dag
-er eneste tidsnudge ICS-eksport med 10-min-varsler (`5220`).
+### F5. Live «neste steg om X» / nåværende-steg-spotlight i appen ✅ GJORT (v6.14, nivå 1–2)
+> `nextStepStripeHTML()` prependes i `renderSteps` (delt PC+mobil), viser neste
+> fremtidige ikke-avhakede steg + nedtelling («👉 Neste: X · om 3 t 20 min»).
+> `startNextStepTicker()` oppdaterer nedtellingen hvert 30. sek uten å bygge om
+> planen, og trigger én full render når tiden passerer et stegskille. Trykk på
+> stripa scroller til neste steg (`scrollToNextStep`). «Alle steg gjort» når alt
+> er avhaket; «på tide» når du er på etterskudd. Testet i
+> `f5_next_step_stripe_shows_upcoming_step_and_countdown`.
+>
+> **Gjenstår (nivå 3):** push-varsling via Notification API når neste steg nærmer
+> seg (krever tillatelse, ulik oppførsel iOS/Android — bevisst utsatt). I dag er
+> eneste tidsnudge fortsatt ICS-eksport med 10-min-varsler.
+>
+> **I klartekst (nivå 3):** Stripa teller ned *inne i appen*. Nivå 3 er å pinge deg
+> via `Notification API` når neste steg nærmer seg, selv når appen er lukket. Utsatt
+> med vilje fordi det krever tillatelse fra brukeren og oppfører seg ulikt på iOS og
+> Android. Middels, plattform-avhengig.
 
 ### F6. Fullfør den halvbygde PWA-en (offline) ✅ GJORT (commit `91d41ec`)
 > Manifest flyttet til site-roten (var 404), service worker lagt til (nettverk-
@@ -183,6 +241,11 @@ changelog.js) passer den fler-dagers, én-fils naturen. NB: `manifest.json` ligg
 `netlify/functions/`, ikke i site-roten `<link>` peker på — sjekk 404.
 
 ### F7. Tilgjengelig, tastaturstyrt avhaking + live-region på statuslinjen
+> **I klartekst:** Avhaking av steg/understeg er i dag klikkbare `<div>`-er uten
+> «knapp»-semantikk eller tastaturstøtte, og den levende statuslinja har ingen
+> `aria-live` — så en skjermleser-bruker hører aldri «oppstart flyttet 2 t tidligere»-
+> oppdateringene. F7 gjør avhakinger til ekte knapper/avkryssingsbokser og annonserer
+> statusendringer. (En bit av dette kom alt på F5-stripa: tastatur + fokus.) Middels.
 Steg-, ingrediens- og understeg-avhaking er `onclick` på `<div>`/`<li>` uten
 `role`/`button`/`checkbox`-semantikk eller `tabindex` (understeg `4816–4817`).
 `aria-label` finnes bare på modal-lukk og varsel-lukk. Den live-oppdaterende
@@ -191,18 +254,29 @@ skjermleser-brukere hører aldri årsak→virkning-oppdateringene. Gjør avhakin
 ekte knapper/checkbokser og merk statuslinjen `aria-live="polite"`.
 
 ### F8. Søk / sorter / filter i «Deiger»-fanen
+> **I klartekst:** Deiger-lista har bare Aktive vs. Ferdige. Med per-bruker-lagring
+> og terningkast vokser den uendelig. F8 legger til filter på metode/type, sortering
+> på dato og tekstsøk — samme oppdagbarhets-polish som Beta-fanen har fått. Middels.
 Lagret-deig-lista (`renderBakeList`, `5017`) har verken søk, filter eller sortering
 (kun aktiv vs. ferdig). Med per-bruker-lagring (v5.73/5.94) og rating på ferdige
 deiger vokser lista uendelig. Legg til filter på metode/type, sortering på dato og
 tekstsøk — samme oppdagbarhets-polish som Beta-fanen fikk (v5.51, v5.56, v5.86).
 
 ### F9. Synliggjør deig-resultater («Hvordan ble den?») som historikk
+> **I klartekst:** Når du markerer en deig som ferdig, samler appen inn terningkast,
+> bilde og notat — men det vises aldri tilbake til deg som en historikk. F9 lukker
+> sløyfa: «forrige gang: 72 t / 65 % → 4/5», så du kan gjenta suksessene. Dataen
+> finnes allerede; det er visningen som mangler. Middels, passer med F8.
 Fullfør-deig-modalen (`532`, `confirmFinishBake`) samler inn hvordan en deig ble,
 men signalet går ingensteds brukeren ser det igjen. En resultat-historikk per deig
 («forrige gang: 72t / 65 % → 4/5») lukker sløyfa og er distinkt — dataen samles
 allerede inn. Passer med F8.
 
 ### F10. Samlet ingrediens-/handleliste
+> **I klartekst:** «Trenger du»-chipsene viser ingredienser per steg, men det finnes
+> ingen samlet liste å handle etter *før* du starter — spesielt nyttig for fler-dagers
+> metoder (Poolish/Biga/Mania) der ingrediensene er delt over faser. F10 er en
+> kopierbar/eksporterbar totalliste. Liten–middels.
 v5.95 la til «trenger du»-chips per steg (`2038`, `needchip`), men det finnes ingen
 samlet kopierbar/eksporterbar ingrediensliste å handle etter før man starter —
 spesielt nyttig for fler-dagers metoder (Poolish/Biga/Mania) der ingrediensene er
@@ -210,6 +284,10 @@ splittet over faser. Utvider v5.95-retningen og den eksisterende Kopier/Kalender
 (`5105–5107`).
 
 ### F11. Paritets-sjekk av tips/why på tvers av metoder
+> **I klartekst:** Vi tettet gjæringsstegene i v6.10, men en *full* gjennomgang av
+> at alle steg i alle metoder har jevn `tip`/`hvorfor`-dekning — pluss en test som
+> vokter det framover — gjenstår. Direkte fortsettelse av arbeidet vi gjorde, lav
+> risiko. Blant de letteste å ta.
 Forfatteren tetter dekningshull metode-for-metode (why-bokser v5.70, understeg
 v5.98–5.99, PC/mobil 1:1 v5.63). Samme audit er verdt på `step.tip`/`step.why`:
 flere steg definerer `substeps` uten `tip`/`why` (f.eks. passive Poolish/Biga-venter
@@ -225,20 +303,21 @@ Kandidater til «💡 Tips»/«Hvorfor»-tekst på de kalde stegene (kjøleskaps
 benktid). Ikke bare relevant for én bruker — noe mange som kald-gjærer kjenner
 seg igjen i. Kilde: egen diagnose av kald gjæring.
 
-- **Kjøleskapstemperatur er ikke til å stole på.** Kjøleskap kan holde en helt
-  annen temperatur enn antatt, og 1–5-skalaene er ikke universelle mellom merker.
-  Mål selv med et termometer — ikke stol på tallet på hjulet alene.
-- **Ikke stable boksene i høyden.** Stabling kan blokkere luftsirkulasjonen og gi
-  ustabil/ujevn kjøling. Spre boksene utover i stedet.
-- **Tegn å se etter underveis (kald deig):** størrelse (1,5–2×), bobler under
-  overflaten, og risting/«jiggle»-test. Men *ikke* fingertrykk-testen på en kald
-  deig — den er upålitelig når deigen er stiv av kulde.
-- **Kald gjæring tåler mer gjær enn man tror.** Siden kulden bremser hele
-  prosessen, kan man bruke mer ekstra gjær enn ventet før det blir et problem.
+- ✅ **Tegn å se etter underveis (kald deig):** størrelse (1,5–2×), bobler under
+  overflaten. *Ikke* fingertrykk-testen på en kald deig — upålitelig når deigen
+  er stiv av kulde. **Innbygget v6.10** som delt `TIP.coldRise`/`roomRise`/
+  `benchTemper`/`poolishFerment`, med et fast «henger etter / på skjema / for
+  langt fram»-mønster (hva du ser + hva du gjør) på alle gjæringssteg i alle
+  metoder. Løser samtidig størstedelen av F11-hullet på gjæringsstegene.
+- ✅ **Kjøleskapstemperatur er ikke til å stole på.** 1–5-skalaene er ikke
+  universelle mellom merker — sjekk med termometer. **Innbygget v6.11** i
+  `TIP.intoFridge` på «Sett i kjøleskap»-steget.
+- ✅ **Ikke stable boksene i høyden.** Blokkerer luftsirkulasjonen, gir ujevn
+  kjøling. **Innbygget v6.11** i `TIP.intoFridge`.
+- ✅ **Kald gjæring tåler mer gjær enn man tror.** Kulda bremser alt, så deigen er
+  tilgivende. **Innbygget v6.11** — lagt til i `WHY.fk` (kjøleskapsheving).
 
-Naturlig hjem i appen: `WHY.fk` (kjøleskapsheving) og `WHY.tu` (benktid), evt. et
-eget «Tips» på kjøleskaps-steget i `tailSteps`. Jiggle-/tegn-punktet passer godt
-i «Ta ut av kjøleskap»-tipset (som alt sier «hevet litt synlig i boksen»).
+Hele seksjonen er nå tatt inn (v6.10 «les deigen»-tegn + v6.11 praktiske råd).
 
 ---
 

@@ -6,7 +6,7 @@ import { getStore } from '@netlify/blobs';
 // POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO, checkedSteps?, checkedIngredients?, savedBy? }
 // PATCH  /api/bakes/:id      -> merk ferdig + kommentar { note, noteBy? } eller gjenåpne { status:'active' },
 //                                sett/fjern favoritt { favorite: true|false } (kun én favoritt om gangen),
-//                                huske avhaket steg/ingredienser { checkedSteps, checkedIngredients },
+//                                huske avhaket steg/ingredienser/understeg { checkedSteps, checkedIngredients, checkedSubsteps },
 //                                eller sette vurdering/bilde på ferdig deig { rating: 1-5|null, photo: base64-string|null }
 // DELETE /api/bakes/:id      -> slette permanent
 
@@ -61,7 +61,8 @@ export default async (req, context) => {
         rating: null,
         photo: null,
         checkedSteps: Array.isArray(body.checkedSteps) ? body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50) : [],
-        checkedIngredients: Array.isArray(body.checkedIngredients) ? body.checkedIngredients.filter(s => typeof s === 'string').slice(0, 20) : []
+        checkedIngredients: Array.isArray(body.checkedIngredients) ? body.checkedIngredients.filter(s => typeof s === 'string').slice(0, 20) : [],
+        checkedSubsteps: Array.isArray(body.checkedSubsteps) ? body.checkedSubsteps.filter(s => typeof s === 'string').slice(0, 200) : []
       };
       await store.setJSON(id, bake);
       return json(201, bake);
@@ -94,6 +95,7 @@ export default async (req, context) => {
       if (typeof body.anchorISO === 'string') updated.anchorISO = body.anchorISO;
       if (Array.isArray(body.checkedSteps)) updated.checkedSteps = body.checkedSteps.filter(n => Number.isInteger(n)).slice(0, 50);
       if (Array.isArray(body.checkedIngredients)) updated.checkedIngredients = body.checkedIngredients.filter(s => typeof s === 'string').slice(0, 20);
+      if (Array.isArray(body.checkedSubsteps)) updated.checkedSubsteps = body.checkedSubsteps.filter(s => typeof s === 'string').slice(0, 200);
       if (Number.isInteger(body.rating) && body.rating >= 1 && body.rating <= 5) updated.rating = body.rating;
       if (body.rating === null) updated.rating = null;
       if (typeof body.photo === 'string') {

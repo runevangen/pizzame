@@ -3,6 +3,43 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.14',
+    d: 'juli 2026',
+    changes: [
+      'Ny <b>«👉 Neste»-stripe</b> øverst i tidsplanen: den viser hva neste steg er og teller ned til det — «Ta ut av kjøleskap · om 3 t 20 min» — så du slipper å scrolle gjennom hele planen for å se hva som skjer nå. Nedtellingen oppdaterer seg selv, og et trykk på stripa hopper rett til neste steg. Står du midt i en lang heving, peker den på slutten av hevingen; er alt gjort, sier den fra. (Er du på etterskudd og har steg som skulle vært gjort, viser den «på tide».)'
+    ]
+  },
+  {
+    v: '6.13',
+    d: 'juli 2026',
+    changes: [
+      'Understeg er nå en fullverdig, husket visning — ikke lenger merket som «utprøving». To ting huskes: (1) <b>Avhakingen av understeg</b> lagres nå sammen med deigen og synkes mellom enheter, akkurat som hovedsteg og ingredienser. Legger du fra deg telefonen midt i en flerdagers heving, står understegene du har haket av der når du kommer tilbake — også på en annen enhet. (2) <b>Selve understeg-visningen</b> huskes mellom økter: slår du den på, er den på neste gang du åpner appen (som skriftstørrelse og layout). Knappen heter nå «📋 Vis understeg».',
+      'Et påbegynt oppsett overlever nå en full sideoppfriskning. Før husket appen valgene dine bare mens fanen var åpen — lastet du siden på nytt, var pizzatype, metode og finjusteringer tilbake på standard. Nå gjenopprettes hele oppsettet automatisk, og «Fortsetter: … »-linja i planleggeren dukker opp igjen der du slapp. «Start ny deig» nullstiller som før. (Åpner du en lagret deig, styrer den som vanlig — dette gjelder det ulagrede oppsettet du holder på med.)'
+    ]
+  },
+  {
+    v: '6.12',
+    d: 'juli 2026',
+    changes: [
+      'Rettet en feil der avhaking kunne bli stående på utdatert innhold: bytter du <b>ovntype</b> eller <b>gjærtype</b> mens du har haket av steg, nullstilles avhakingen nå — på samme måte som ved bytte av pizzatype eller metode. Før kunne f.eks. «Varm pizzaovnen til 430°C» stå avhaket selv etter at du byttet til vanlig ovn (som sier 250°C), og gjær-chips beholde gammel grammengde. Gjelder både PC og mobil. (Melmengde/hydrering/temperatur/kjøletid nullstiller bevisst <b>ikke</b> — de justeres med glidebrytere som beveger seg kontinuerlig, og en nullstilling der ville rive vekk flere dagers avhaking midt i et dra.)',
+      'Hurtigdeig: rettet at etterhevingen ikke fulgte kjøkkentemperaturen. Bulk-hevingen ble justert etter romtemperatur (varmere = raskere), men etterhevingen sto fast — så ved et varmt kjøkken (26–28°C) reagerte deigens to gjæringsfaser ulikt, og planen ble internt inkonsistent. Nå skaleres begge fasene likt med temperaturen. Ved 22°C er tidsplanen uendret; forskjellen merkes bare ved kjøligere eller varmere kjøkken.'
+    ]
+  },
+  {
+    v: '6.11',
+    d: 'juli 2026',
+    changes: [
+      'Tre praktiske kald-gjæring-råd lagt til: (1) «Sett i kjøleskap»-steget minner nå om å <b>ikke stable boksene tett i høyden</b> — det kan blokkere luftsirkulasjonen og gi ujevn kjøling — og om at kjøleskapstallet på hjulet ikke er til å stole på (1–5-skalaene varierer mellom merker; sjekk med termometer at det ligger rundt 2–5°C). (2) «Hvorfor»-teksten på kjøleskapshevingen nevner at kald gjæring er <b>tilgivende</b>: siden kulda bremser hele prosessen, tåler deigen litt mer gjær enn man skulle tro før det blir et problem. Gjelder alle metoder med kjøleskapsheving.'
+    ]
+  },
+  {
+    v: '6.10',
+    d: 'juli 2026',
+    changes: [
+      'Gjæringsstegene forteller nå ikke bare <b>når</b>, men <b>hva du ser etter</b> — og hva du gjør hvis deigen henger etter eller er kommet for langt. Klokka er fortsatt planen, men tida stemmer sjelden på minuttet: kjøleskap og kjøkken varierer. Under «💡 Tips» får de kalde hevingene, romtemperatur-/bulk-hevingene, benktida og poolish-gjæringen et fast mønster med tegn å kjenne igjen (størrelse, bobler, lukt, fingertrykk) og et konkret «gi den mer tid» / «bak tidligere». Kald deig: fingertrykk-testen holdes bevisst ute — den er upålitelig når deigen er stiv av kulde. Gjelder alle metoder (Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania).'
+    ]
+  },
+  {
     v: '6.09',
     d: 'juli 2026',
     changes: [
