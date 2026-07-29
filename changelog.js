@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.15',
+    d: 'juli 2026',
+    changes: [
+      'Appen finnes nå på <b>engelsk</b>, og du kan vise mål i <b>imperiske enheter</b> (oz og °F). Begge deler er egne, uavhengige brytere under <b>Info → Språk / Enheter</b> — du kan f.eks. ha norsk tekst med imperiske enheter, eller engelsk med metrisk. Hele mobilappen er oversatt: oppskrifter, tidsplan, alle sju metodene, veiviser, varsler, «📋 Kopier»-teksten, bruksanvisningen og Tips &amp; teknikk. Engelsk er <b>maskinoversatt (AI)</b> — et lite varsel minner om å dobbeltsjekke kritiske steg — og selve utregningen er uendret; det er kun visningen som bytter språk/enhet.'
+    ]
+  },
+  {
     v: '6.14',
     d: 'juli 2026',
     changes: [
