@@ -1,16 +1,16 @@
 # Backlog — Pizzaplanlegger
 
-Sist oppdatert: 29.07.2026 · gjelder index.html rundt v6.15.
+Sist oppdatert: 29.07.2026 · gjelder index.html rundt v6.17.
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
 Rekkefølgen innen hver bolk er omtrent synkende viktighet. Hvert gjenstående punkt
 har en **I klartekst**-linje som forklarer hva det er og hvor stort, i vanlig språk.
 
-Status per v6.15: alle P0 + #1–6 fikset (#5 nå FULLT fikset via innholdsbasert
-nøkling), #8 dermed løst. F1–F3/F5/F6 + hele «Tips og triks» gjort, og engelsk
-språk + imperiske enheter lagt til (v6.15). Gjenstår kun: #7 (kosmetisk), og
-funksjonene F4/F7/F8/F9/F10/F11 pluss F5 nivå 3.
+Status per v6.17: alle P0 + #1–6 fikset (#5 fullt via innholdsbasert nøkling),
+#8 dermed løst. F1–F6 gjort (v6.17: F4 lys/mørk-tema), hele «Tips og triks» gjort,
+og engelsk språk + imperiske enheter lagt til (v6.15). Gjenstår kun: #7 (kosmetisk),
+og funksjonene F7/F8/F9/F10/F11 pluss F5 nivå 3.
 
 Disiplin: `test_regression.py` + `baseline_results.json` fryser dagens tall for
 oppskrift og tidsplan. Endrer du noe som flytter et tall, kjør testen og
@@ -205,7 +205,18 @@ redusere friksjon i den tidsstyrte kjøkkenflyten.
 > og alle kontroller reflekterer oppsettet. `doReset` rydder nøkkelen. Testet i
 > `setup_persists_and_restores_across_reload`.
 
-### F4. Uavhengig mørk/lys-bryter (frikoblet fra layout)
+### F4. Uavhengig mørk/lys-bryter (frikoblet fra layout) ✅ GJORT (v6.17)
+
+> ✅ **Gjort i v6.17.** Lys tema lagt til for mobil-layouten via en `.theme-light`-
+> klasse på `body` som redefinerer `--forno-*`-tokenene — hele Forno-UI-et var
+> allerede token-drevet (kun 2 hardkodede farger måtte tokeniseres). Paletten er den
+> varme krem/pergament-tonen fra Runes egen Tons of Rock-app (`body.light`), med
+> samme oransje aksent Forno allerede bruker (`#e8590c`). Bryter under Info →
+> Visning → «Tema»: System / Lys / Mørk. `setTheme`/`initTheme` persisterer valget
+> (`pizzaTheme`), «System» følger `prefers-color-scheme` live. Standard er `dark`,
+> så eksisterende brukere ser ingen endring før de selv velger. i18n på plass
+> (Theme/System/Light/Dark). Native kontroller (dropdown/dato/tid) får `color-scheme:
+> light` i lys modus. Alle 58 tester grønne.
 > **I klartekst:** I dag finnes mørk modus *bare* hvis du bytter til mobil-layout —
 > hele den mørke paletten er koblet til `body.mob-mode`. En kokk på laptop i et mørkt
 > kjøkken får altså ikke mørkt uten å også få den smale mobil-visningen. F4 frikobler
