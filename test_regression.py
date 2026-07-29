@@ -1609,7 +1609,7 @@ def run_behavioral_tests(page):
       };
     }""")
     ok32 = (
-      r32['firstTitle'] == 'Væk gjæren (kickstart)' and r32['chainOk'] and
+      r32['firstTitle'] == 'Vekk gjæren (kickstart)' and r32['chainOk'] and
       r32['kickstartHasNeeds'] and r32['kickstartHasSubsteps'] and
       'semulegryn' in r32['bakeTip'].lower()
     )

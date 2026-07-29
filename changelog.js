@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.20',
+    d: 'juli 2026',
+    changes: [
+      'Språkvask og småfikser etter en grundig gjennomgang. Lange varigheter vises nå som «8 t 24 min» i stedet for rå «504 min», og «1.3 time» er ryddet til «1 t 15 min». Entall håndteres riktig når det bare er én av noe («1 emne», «1 boks» — ikke «1 emner»). Kopi-teksten skriver «Mania-poolish» (ikke «mania») og «Antall … : 1» uten det engelske «pcs». På engelsk er en rekke formuleringer gjort mer naturlige (bl.a. amerikansk «flavor», «warm up» i stedet for «temper» om deig, og «sheet pans»/«pizzas» oversatt i antall-linja). På norsk: «Vekk gjæren» (ikke «Væk»), «veiviseren» konsekvent, og «stjerner» der appen faktisk viser ★ (ikke «terningkast»).'
+    ]
+  },
+  {
     v: '6.19',
     d: 'juli 2026',
     changes: [
