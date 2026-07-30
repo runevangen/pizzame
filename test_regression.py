@@ -930,37 +930,52 @@ def run_behavioral_tests(page):
     )
     results.append(('tab_and_wizard_step_have_clearer_names', ok20, r20))
 
-    # v5.90: "Hei igjen"-mellomskjermen (bruk samme som sist / åpne favoritt)
-    # er fjernet — brøt løftet sitt (glemte tidspunktet) og hoppet forbi hele
-    # wizarden. Tester at wizarden nå går RETT til steg 1 ved første inngang,
-    # at wiz-returning-elementet faktisk er borte, at wizGoto() ikke lenger
-    # kaster på det manglende elementet, og at guarden som hindrer gjentatt
-    # steg-1-hopp ved fanebytte FORTSATT virker (det var den ENESTE gjenværende
-    # jobben til _wizEnteredOnce — verifisert manuelt at fjerningen ikke
-    # samtidig slettet wizHideAllSteps/tnShort, som lå i samme kodeblokk og
-    # nesten forsvant med i sletteoperasjonen).
+    # v6.21: Inngangs-gaffelen (Smart-plan vs. velg selv). Ved friskt oppstart
+    # UTEN gjenopprettet oppsett møter man gaffelen (steg 0), ikke steg 1 direkte.
+    # Dette er IKKE den fjernede v5.90 «Hei igjen»-skjermen: begge dører bevarer
+    # full flyt (Dør B går gjennom HELE wizarden inkl. sjekken), og wiz-returning
+    # finnes fortsatt ikke. Testen vokter: (a) gaffel vises ved friskt oppstart,
+    # (b) «Jeg vet hva jeg vil ha» (entryPickManual) tar deg til steg 1, (c)
+    # fanebytte-guarden hindrer fortsatt tilbakestilling, (d) et gjenopprettet
+    # oppsett HOPPER OVER gaffelen (ikke avbryt påbegynt arbeid), (e) de gamle
+    # sikringene: wiz-returning borte, ingen døde funksjoner, wizGoto kaster ikke.
     r21 = page.evaluate("""() => {
+      // (a) friskt oppstart, ingen gjenopprettet oppsett → gaffel
+      window._restoredSetup = false;
       window._wizEnteredOnce = false;
       mobShowTab('recipe');
       mobShowTab('settings');
-      const initialStep = window._wizStep;
+      const entryStep = window._wizStep;                       // 0 = gaffel
+      const forkVisible = document.getElementById('wiz-entry').style.display !== 'none';
+      // (b) Dør B → steg 1
+      entryPickManual();
+      const stepAfterManual = window._wizStep;                 // 1
+      // (c) fanebytte-guarden holder
       wizGoto(2);
       mobShowTab('recipe');
       mobShowTab('settings');
-      const stepAfterTabSwitch = window._wizStep;
+      const stepAfterTabSwitch = window._wizStep;              // 2
+      // (d) gjenopprettet oppsett hopper over gaffelen
+      window._restoredSetup = true;
+      window._wizEnteredOnce = false;
+      mobShowTab('recipe');
+      mobShowTab('settings');
+      const restoredSkipsFork = window._wizStep === 1;
       let gotoThrew = false;
       try{ wizGoto(1); }catch(e){ gotoThrew = true; }
       return {
-        initialStep, stepAfterTabSwitch, gotoThrew,
+        entryStep, forkVisible, stepAfterManual, stepAfterTabSwitch, restoredSkipsFork, gotoThrew,
         returningElementGone: !document.getElementById('wiz-returning'),
         noStaleFunctions: typeof window.wizDecideStart === 'undefined' && typeof window.wizUseLastConfig === 'undefined'
       };
     }""")
     ok21 = (
-      r21['initialStep'] == 1 and r21['stepAfterTabSwitch'] == 2 and
-      not r21['gotoThrew'] and r21['returningElementGone']
+      r21['entryStep'] == 0 and r21['forkVisible'] and
+      r21['stepAfterManual'] == 1 and r21['stepAfterTabSwitch'] == 2 and
+      r21['restoredSkipsFork'] and not r21['gotoThrew'] and
+      r21['returningElementGone'] and r21['noStaleFunctions']
     )
-    results.append(('hei_igjen_screen_removed_wizard_goes_straight_to_step_1', ok21, r21))
+    results.append(('entry_fork_shows_then_manual_door_to_step_1_guard_holds', ok21, r21))
 
     # v5.91: Rune sitt scenario — han vet han faktisk KAN ordne deigen kl.
     # 14:00 den dagen, men gidder ikke gå inn og redigere pizzatiden for én

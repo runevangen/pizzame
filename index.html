@@ -631,7 +631,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
     <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
-    <div class="menu-row" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Finn oppskrift (Beta)</div>
+    <div class="menu-row" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
   </div>
@@ -815,12 +815,12 @@ function localizeUnits(html){
 }
 // UI-krom-oversettelse (Tier A). Kun et representativt utvalg i PoC-en.
 const TXT = {
-  no:{ tab_settings:'Planlegging',tab_plan:'Tidsplan',tab_recipe:'Oppskrift',tab_notes:'Notater',tab_bakster:'Deiger',tab_tips:'Info',tab_beta:'Beta',
+  no:{ tab_settings:'Planlegging',tab_plan:'Tidsplan',tab_recipe:'Oppskrift',tab_notes:'Notater',tab_bakster:'Deiger',tab_tips:'Info',tab_beta:'Smart-plan',
        li_section:'Språk / Enheter',li_lang:'Språk',li_units:'Enheter',u_metric:'Metrisk (g · °C)',u_imperial:'Imperial (oz · °F)',
        ai_note:'⚠️ Engelsk er maskinoversatt (AI). Sjekk kritiske steg – oppskriftsteksten er ennå ikke fullt gjennomgått.',
        a_copy:'Kopier',a_cal:'Kalender',a_save:'Lagre',tb_juster:'⚙️ Juster',tb_understeg:'📋 Understeg',tb_tips:'💡 Tips',
        r_count:'Antall',r_size:'Emnestørrelse',r_dough:'ferdig deig' },
-  en:{ tab_settings:'Planner',tab_plan:'Schedule',tab_recipe:'Recipe',tab_notes:'Notes',tab_bakster:'Doughs',tab_tips:'Info',tab_beta:'Beta',
+  en:{ tab_settings:'Planner',tab_plan:'Schedule',tab_recipe:'Recipe',tab_notes:'Notes',tab_bakster:'Doughs',tab_tips:'Info',tab_beta:'Smart plan',
        li_section:'Language / Units',li_lang:'Language',li_units:'Units',u_metric:'Metric (g · °C)',u_imperial:'Imperial (oz · °F)',
        ai_note:'⚠️ English is machine-translated (AI). Double-check critical steps — the recipe text is not yet fully reviewed.',
        a_copy:'Copy',a_cal:'Calendar',a_save:'Save',tb_juster:'⚙️ Adjust',tb_understeg:'📋 Substeps',tb_tips:'💡 Tips',
@@ -913,6 +913,14 @@ function syncStaticI18nUI(){
   st('mob-plan-empty','Tilpass innstillingene og se tidsplanen her','Adjust the settings and see the schedule here');
   st('mob-recipe-empty','Generer tidsplan for å se oppskriften','Generate a schedule to see the recipe');
   st('mob-bakster-empty','Laster deiger…','Loading doughs…');
+  // Inngangs-gaffel (v6.21)
+  st('wiz-entry-h','Hva slags bakekveld?','What kind of baking session?');
+  st('wiz-entry-sub','Velg hvordan du vil starte','Choose how you want to start');
+  st('wiz-entry-a-h','Smart-plan','Smart plan');
+  st('wiz-entry-a-sub','Si når du har tid og når du vil spise — så finner appen metoden som passer livet ditt.','Tell it when you have time and when you want to eat — the app finds the method that fits your life.');
+  st('wiz-entry-b-h','Jeg vet hva jeg vil ha','I know what I want');
+  st('wiz-entry-b-sub','Velg pizzatype og metode selv, steg for steg.','Pick pizza type and method yourself, step by step.');
+  st('wiz-entry-guide','Ny til pizzadeig? Slik funker det →','New to pizza dough? Here is how it works →');
   // Wizard header + step 1
   st('wiz-header-hint','Gå fritt frem og tilbake — Tidsplan-fanen viser alltid resultatet av gjeldende valg.','Move freely back and forth — the Schedule tab always shows the result of the current choices.');
   st('wiz-s1-h','Hvilken pizza?','Which pizza?');
@@ -940,7 +948,7 @@ function syncStaticI18nUI(){
   st('wiz-check-h','Holder dette?','Will this work?');
   st('mob-cold-wiz-lbl','Kjøleskapsheving','Cold proof');
   st('wiz-check-finish','Se tidsplanen →','See the schedule →');
-  st('wiz-check-beta','🧭 Finn oppskrift ut fra ledig tid → Beta-fanen','🧭 Find a recipe based on your free time → Beta tab');
+  st('wiz-check-beta','🧭 La Smart-plan finne oppskrift ut fra ledig tid','🧭 Let Smart plan find a recipe based on your free time');
   // Finjuster
   st('wiz-finjuster-title','Finjuster','Fine-tune');
   st('wiz-finjuster-back-to-plan','Se tidsplanen →','See the schedule →');
@@ -979,16 +987,16 @@ function syncStaticI18nUI(){
   st('mob-konto-lbl','Konto','Account');
   st('mob-konto-logout','Logg ut','Log out');
   st('mob-whatsnew','Hva er nytt','What’s new');
-  // Beta tab
-  st('mob-beta-h','🧭 Finn oppskrift','🧭 Find a recipe');
-  st('mob-beta-sub','Oppgi når du er ledig og når du vil spise — få en anbefalt oppskrift tilbake. Søker på tvers av alle metoder.','Enter when you are free and when you want to eat — get a recommended recipe back. Searches across all methods.');
+  // Smart-plan tab (tidl. «Beta»)
+  st('mob-beta-h','🧭 Smart-plan','🧭 Smart plan');
+  st('mob-beta-sub','Si når du har tid og når du vil spise — så finner appen metoden som passer. Søker på tvers av alle metoder.','Tell it when you have time and when you want to eat — the app finds the method that fits. Searches across all methods.');
   st('mob-pizzatid-lbl','Når er du ledig?','When are you free?');
   // help contains HTML, so set innerHTML instead of textContent
   { const el=document.getElementById('mob-pizzatid-help'); if(el) el.innerHTML=L('Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.','Set up the fixed times you are free to make pizza, per weekday. The app uses them in two places: here it <b style="color:var(--forno-text)">suggests</b> recipes that fit your time, and elsewhere in the app it <b style="color:var(--forno-text)">warns</b> you if a step lands at a time you have not set aside.'); }
   st('mob-pizzatid-help2','Trykk «Vis» for å sette opp ukedagene dine.','Tap "Show" to set up your weekdays.');
   st('mob-pizzatid-save','Lagre ledig tid','Save free time');
   st('mob-beta-baketime-lbl','Steketidspunkt','Baking time');
-  st('mob-beta-search-btn','🔍 Finn oppskrift','🔍 Find a recipe');
+  st('mob-beta-search-btn','🔍 Finn oppskriften','🔍 Find the recipe');
   st('mob-beta-popular-lbl','Eller velg et populært tidspunkt','Or pick a popular time');
   st('mob-beta-popular-help','Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.','Tap a preset time, and we fill in the date and time above and run the search right away.');
 }
@@ -3141,7 +3149,7 @@ function renderResultBlock(containerId, label, anchorIso){
     <div style="font-size:12px;color:var(--forno-accent-text);font-weight:600">${escH(top.label)}</div>
     <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${L('🚀 Oppstartstid:','🚀 Start time:')} <b style="color:var(--forno-text)">${escH(startTxt)}</b></div>
     <div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${L('🍕 Planlagt steketid:','🍕 Planned baking time:')} <b style="color:var(--forno-text)">${escH(bakeTxt)}</b></div>
-    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${ok?L('Alt passer','Everything fits'):L(`${top.violations} steg utenfor ledig tid`,`${top.violations} steps outside free time`)} · ~${Math.round(top.totalHrs)}${L('t','h')} ${L('total gjæring','total fermentation')}</div>
+    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${ok?L('Alt passer den ledige tiden din','Everything fits your free time'):L(`Krever litt jobbing utenom din vanlige ledige tid (${top.violations} ${top.violations===1?'steg':'steg'})`,`Needs a little work outside your usual free time (${top.violations} ${top.violations===1?'step':'steps'})`)} · ~${Math.round(top.totalHrs)}${L('t','h')} ${L('total gjæring','total fermentation')}</div>
     <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">${L('Mel som passer:','Flour that fits:')} ${escH(flourTxt)}</div>
     <button onclick="applyBetaResult(${regId},0)" style="width:100%;margin-top:8px;height:34px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">${L('Bruk denne','Use this one')}</button>
     ${altList?`<div style="text-align:center;margin-top:6px"><span onclick="this.parentElement.nextElementSibling.style.display='block';this.style.display='none'" style="font-size:11px;color:var(--forno-accent-text);cursor:pointer;text-decoration:underline">${L('Se flere alternativer','See more options')}</span></div>
@@ -4917,6 +4925,7 @@ async function loadConfigThenStart(){
     // v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett før layout/render, så
     // «Fortsetter»-banneret og alle kontroller reflekterer det du hadde.
     const restored = restoreSetup();
+    window._restoredSetup = restored;  // v6.21: inngangs-gaffelen hopper over hvis et oppsett er i gang
     let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
     const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
     setLayout(targetLayout);
@@ -5410,6 +5419,7 @@ function wizSwipeEnd(e){
   if(window._wizStep==='finjuster'){ wizGoto(3); return; }
   const cur=window._wizStep;
   if(typeof cur!=='number') return;
+  if(cur<1) return; // v6.21: inngangs-gaffelen (steg 0) krever et bevisst dør-trykk, ikke swipe
   const next=dx<0 ? cur+1 : cur-1;
   if(next<1 || next>WIZ_STEPS.length) return;
   wizGoto(next);
@@ -5437,6 +5447,10 @@ function wizEnterSettingsTab(){
   // der du sist var.
   if(window._wizEnteredOnce) return;
   window._wizEnteredOnce = true;
+  // v6.21: ved friskt oppstart uten gjenopprettet oppsett møter man inngangs-
+  // gaffelen (Smart-plan vs. velg selv) i stedet for å slippes rett inn i steg 1.
+  // Har man et påbegynt oppsett, ikke avbryt — gå rett til wizarden der man var.
+  if(!window._restoredSetup){ showEntryFork(); return; }
   wizGoto(1);
 }
 
@@ -5456,9 +5470,37 @@ function wizStepEl(step){
   return s ? s.el : null;
 }
 function wizHideAllSteps(){
-  ['wiz-header','wiz-step-1','wiz-step-2','wiz-step-check','wiz-finjuster'].forEach(id=>{
+  ['wiz-entry','wiz-header','wiz-step-1','wiz-step-2','wiz-step-check','wiz-finjuster'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
+}
+// Inngangs-gaffel (v6.21). Vises kun ved friskt oppstart uten gjenopprettet
+// oppsett (se wizEnterSettingsTab). Nullstiller wizard-tilstanden så «Dør B»
+// starter rent på steg 1, og «Dør A» tar deg til Smart-plan-fanen.
+function showEntryFork(){
+  wizHideAllSteps();
+  const el=document.getElementById('wiz-entry');
+  if(el) el.style.display='block';
+  window._wizStep=0;
+  const scr=document.getElementById('mob-settings');
+  if(scr) scr.scrollTop=0;
+}
+function entryPickManual(){
+  const el=document.getElementById('wiz-entry'); if(el) el.style.display='none';
+  wizGoto(1);
+}
+function entryPickSmart(){
+  const el=document.getElementById('wiz-entry'); if(el) el.style.display='none';
+  mobShowTab('beta');
+  // Første gang: fold ut «Når er du ledig?» så folk faktisk setter tiden sin —
+  // ellers bygger Smart-plan på en generisk default og mister poenget. Huskes
+  // så vi ikke maser hver gang.
+  let seen=null; try{ seen=localStorage.getItem('pizzaSmartTidSeen'); }catch(e){}
+  if(!seen){
+    try{ localStorage.setItem('pizzaSmartTidSeen','1'); }catch(e){}
+    const body=document.getElementById('mob-pizzatid-body');
+    if(body && body.style.display==='none'){ try{ togglePizzatidMinimized(); }catch(e){} }
+  }
 }
 function tnShort(type){
   return (window._lang==='en'
@@ -6278,6 +6320,36 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <!-- TAB: INNSTILLINGER -->
   <div class="mob-screen active" id="mob-settings">
+    <!-- Inngangs-gaffel (v6.21): to likestilte dører. Dør A = Smart-plan (finn
+         oppskrift ut fra ledig tid), Dør B = den vanlige wizarden. Begge bevarer
+         full flyt — dette er IKKE «Hei igjen»-mellomskjermen som ble fjernet i
+         v5.90 (den hoppet forbi wizardens sjekk). Vises kun ved friskt oppstart
+         uten gjenopprettet oppsett; ett trykk og du er i riktig løype. -->
+    <div id="wiz-entry" class="wiz-step" style="display:none;padding:2rem 1.1rem 1.1rem">
+      <div style="text-align:center;margin-bottom:1.4rem">
+        <div style="font-size:34px;line-height:1">🍕</div>
+        <div id="wiz-entry-h" style="font-size:19px;font-weight:700;margin-top:6px;font-family:var(--forno-font-display,inherit);color:var(--forno-text)">Hva slags bakekveld?</div>
+        <div id="wiz-entry-sub" style="font-size:12px;color:var(--forno-text-faint);margin-top:3px">Velg hvordan du vil starte</div>
+      </div>
+      <button onclick="entryPickSmart()" style="display:block;width:100%;text-align:left;padding:16px 16px;margin-bottom:12px;border:1px solid var(--forno-border);border-radius:14px;background:var(--forno-bg-raised);cursor:pointer">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px">🧭</span>
+          <span id="wiz-entry-a-h" style="font-size:15.5px;font-weight:700;color:var(--forno-text)">Smart-plan</span>
+        </div>
+        <div id="wiz-entry-a-sub" style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted);margin-top:7px">Si når du har tid og når du vil spise — så finner appen metoden som passer livet ditt.</div>
+      </button>
+      <button onclick="entryPickManual()" style="display:block;width:100%;text-align:left;padding:16px 16px;margin-bottom:14px;border:1px solid var(--forno-border);border-radius:14px;background:var(--forno-bg-raised);cursor:pointer">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px">🍕</span>
+          <span id="wiz-entry-b-h" style="font-size:15.5px;font-weight:700;color:var(--forno-text)">Jeg vet hva jeg vil ha</span>
+        </div>
+        <div id="wiz-entry-b-sub" style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted);margin-top:7px">Velg pizzatype og metode selv, steg for steg.</div>
+      </button>
+      <div style="text-align:center">
+        <span id="wiz-entry-guide" onclick="openGuideModal()" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">Ny til pizzadeig? Slik funker det →</span>
+      </div>
+    </div>
+
     <div id="wiz-header" class="wiz-step" style="display:none;padding:1.1rem 1rem .8rem">
       <div style="display:flex;align-items:center;gap:8px">
         <span id="wiz-back" onclick="wizBack()" style="font-size:16px;color:var(--forno-text-faint);cursor:pointer;padding:2px 6px;flex-shrink:0">←</span>
@@ -6402,7 +6474,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
 
       <div style="padding:.8rem 1rem .4rem"><button id="wiz-check-finish" onclick="wizFinish()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Se tidsplanen →</button></div>
-      <div style="padding:0 1rem .8rem;text-align:center"><span id="wiz-check-beta" onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 Finn oppskrift ut fra ledig tid → Beta-fanen</span></div>
+      <div style="padding:0 1rem .8rem;text-align:center"><span id="wiz-check-beta" onclick="mobShowTab('beta')" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">🧭 La Smart-plan finne oppskrift ut fra ledig tid</span></div>
     </div>
 
     <div id="wiz-finjuster" class="wiz-step" style="display:none">
@@ -6635,7 +6707,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <span aria-hidden="true">ℹ️</span>Info
     </div>
     <div class="mob-tab" id="mob-tab-beta" onclick="mobShowTab('beta')">
-      <span aria-hidden="true">🧭</span>Beta
+      <span aria-hidden="true">🧭</span>Smart-plan
     </div>
   </div>
 

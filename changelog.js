@@ -3,6 +3,15 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.21',
+    d: 'juli 2026',
+    changes: [
+      'Ny <b>inngang</b>: når du åpner appen på nytt møter du nå to likestilte dører — <b>🧭 Smart-plan</b> («si når du har tid og når du vil spise, så finner appen metoden som passer livet ditt») og <b>🍕 Jeg vet hva jeg vil ha</b> (velg type og metode selv, som før). Ett trykk og du er i riktig løype. Har du et påbegynt oppsett, hopper vi rett inn i det uten å avbryte.',
+      'Funksjonen som før het «<b>Beta</b>» heter nå <b>Smart-plan</b> — samme motor (den søker på tvers av alle metoder etter den som passer din ledige tid best), men uten «uferdig»-stempelet den aldri fortjente. Første gang du åpner den, foldes «Når er du ledig?» automatisk ut, så anbefalingen faktisk bygger på din tid og ikke en generisk standard.',
+      'Mykere språk når en plan ikke passer perfekt: «Krever litt jobbing utenom din vanlige ledige tid» i stedet for «2 avvik».'
+    ]
+  },
+  {
     v: '6.20',
     d: 'juli 2026',
     changes: [
