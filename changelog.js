@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.26',
+    d: 'juli 2026',
+    changes: [
+      'Appen velger nå språk automatisk <b>første gang</b>: har du norsk (bokmål/nynorsk) i nettleseren eller på telefonen, starter den på norsk — ellers på engelsk. Har du valgt språk selv, huskes valget som før og overstyrer alltid gjettingen.'
+    ]
+  },
+  {
     v: '6.25',
     d: 'juli 2026',
     changes: [

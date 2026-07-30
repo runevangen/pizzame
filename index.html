@@ -786,7 +786,17 @@ const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza'
 // VISNINGS-lag: en enhets-post-prosessor på ferdig-rendret tekst + et t()-oppslag
 // for UI-krom + en display-oversettelse av steg-titler. Standard = no/metric, så
 // eksisterende utdata (og baseline) er uendret.
-window._lang  = (()=>{ try{ return localStorage.getItem('pizzaLang')||'no'; }catch(e){ return 'no'; } })();
+// Språkvalg huskes (localStorage). Har du IKKE valgt før, gjettes språket ut fra
+// nettleser/telefon: er norsk (nb/nn/no) blant språkene → norsk, ellers engelsk.
+// `langs` kan sendes inn for testing; ellers leses navigator.
+function detectDefaultLang(langs){
+  try{ const saved=localStorage.getItem('pizzaLang'); if(saved) return saved; }catch(e){}
+  try{
+    const src = langs || ((navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language||'']);
+    return src.some(l=>/^(nb|nn|no)\b/i.test(String(l))) ? 'no' : 'en';
+  }catch(e){ return 'en'; }
+}
+window._lang  = detectDefaultLang();
 window._units = (()=>{ try{ return localStorage.getItem('pizzaUnits')||'metric'; }catch(e){ return 'metric'; } })();
 function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
 function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
