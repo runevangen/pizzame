@@ -848,9 +848,13 @@ def run_behavioral_tests(page):
 
       const shortcuts = Array.from(document.querySelectorAll('#mob-beta-faste button'));
       const firstLabel = shortcuts.length ? shortcuts[0].textContent : null;
+      // Sett sentinel-verdier først, så vi robust ser at KLIKKET skriver til begge
+      // felt — uavhengig av om standarddatoen tilfeldigvis er lik snarveiens dato
+      // (skjer når i dag er torsdag og kl. 19 er passert → begge blir «fredag 19:00»).
+      dEl.value='2000-01-01'; tEl.value='03:00';
       if (shortcuts.length) shortcuts[0].click();
       const resultText = document.getElementById('mob-beta-result').textContent;
-      const fieldsUpdated = dEl.value !== defaultDate || tEl.value !== '19:00';
+      const fieldsUpdated = dEl.value !== '2000-01-01' && tEl.value !== '03:00';
 
       return {
         shortcutCount: shortcuts.length,
@@ -1681,6 +1685,32 @@ def run_behavioral_tests(page):
     )
     results.append(('poolish_kjoleskapspause_shifts_upstream_keeps_bake', ok33, r33))
 
+    # v6.26: første gang (uten lagret valg) gjettes språket fra nettleser/telefon —
+    # norsk (nb/nn/no) → norsk, ellers engelsk. Et lagret valg vinner alltid.
+    r34 = page.evaluate("""() => {
+      let saved=null; try{ saved=localStorage.getItem('pizzaLang'); }catch(e){}
+      try{ localStorage.removeItem('pizzaLang'); }catch(e){}
+      const out = {
+        no_nb: detectDefaultLang(['nb-NO']),
+        no_nn: detectDefaultLang(['nn']),
+        no_plain: detectDefaultLang(['no']),
+        en_us: detectDefaultLang(['en-US']),
+        sv: detectDefaultLang(['sv-SE']),
+        empty: detectDefaultLang(['']),
+        secondaryNo: detectDefaultLang(['en-US','nb-NO'])
+      };
+      try{ localStorage.setItem('pizzaLang','en'); }catch(e){}
+      out.savedWins = detectDefaultLang(['nb-NO']);
+      try{ if(saved) localStorage.setItem('pizzaLang',saved); else localStorage.removeItem('pizzaLang'); }catch(e){}
+      return out;
+    }""")
+    ok34 = (
+      r34['no_nb'] == 'no' and r34['no_nn'] == 'no' and r34['no_plain'] == 'no' and
+      r34['en_us'] == 'en' and r34['sv'] == 'en' and r34['empty'] == 'en' and
+      r34['secondaryNo'] == 'no' and r34['savedWins'] == 'en'
+    )
+    results.append(('first_run_language_detection_norwegian_else_english_saved_wins', ok34, r34))
+
 
 
 
@@ -1749,7 +1779,10 @@ def main():
     failures = []
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        context = browser.new_context(viewport={"width": 390, "height": 844}, timezone_id="Europe/Oslo")
+        # locale="nb-NO": den frosne baseline er norsk output, så testmiljøet må
+        # være en norsk nettleser. Uten dette ville den nye språk-deteksjonen
+        # (v6.26) gjette engelsk i headless Chromium (en-US) og velte baselinen.
+        context = browser.new_context(viewport={"width": 390, "height": 844}, timezone_id="Europe/Oslo", locale="nb-NO")
         page = context.new_page()
         page.add_init_script("localStorage.setItem('pizzaUser', JSON.stringify({id:'test',name:'Test'}));")
         # v5.88: fanger opp JS-feil som oppstår ved selve sideinnlastingen — se
