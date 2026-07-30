@@ -947,6 +947,18 @@ def run_behavioral_tests(page):
       mobShowTab('settings');
       const entryStep = window._wizStep;                       // 0 = gaffel
       const forkVisible = document.getElementById('wiz-entry').style.display !== 'none';
+      // (a2) v6.21-feil: Dør A (Smart-plan) skjuler gaffelen og bytter fane —
+      // retur til Planlegging skal vise gaffelen igjen, IKKE en blank skjerm.
+      entryPickSmart();
+      const forkHiddenAfterSmart = document.getElementById('wiz-entry').style.display === 'none';
+      mobShowTab('recipe');
+      mobShowTab('settings');
+      const forkBackNotBlank = document.getElementById('wiz-entry').style.display !== 'none' && window._wizStep === 0;
+      // (a3) logoen tar deg tilbake til gaffelen fra en hvilken som helst fane
+      mobShowTab('recipe');
+      goToEntryFork();
+      const logoReturnsToFork = document.getElementById('mob-settings').classList.contains('active')
+        && document.getElementById('wiz-entry').style.display !== 'none';
       // (b) Dør B → steg 1
       entryPickManual();
       const stepAfterManual = window._wizStep;                 // 1
@@ -964,18 +976,20 @@ def run_behavioral_tests(page):
       let gotoThrew = false;
       try{ wizGoto(1); }catch(e){ gotoThrew = true; }
       return {
-        entryStep, forkVisible, stepAfterManual, stepAfterTabSwitch, restoredSkipsFork, gotoThrew,
+        entryStep, forkVisible, forkHiddenAfterSmart, forkBackNotBlank, logoReturnsToFork,
+        stepAfterManual, stepAfterTabSwitch, restoredSkipsFork, gotoThrew,
         returningElementGone: !document.getElementById('wiz-returning'),
         noStaleFunctions: typeof window.wizDecideStart === 'undefined' && typeof window.wizUseLastConfig === 'undefined'
       };
     }""")
     ok21 = (
       r21['entryStep'] == 0 and r21['forkVisible'] and
+      r21['forkHiddenAfterSmart'] and r21['forkBackNotBlank'] and r21['logoReturnsToFork'] and
       r21['stepAfterManual'] == 1 and r21['stepAfterTabSwitch'] == 2 and
       r21['restoredSkipsFork'] and not r21['gotoThrew'] and
       r21['returningElementGone'] and r21['noStaleFunctions']
     )
-    results.append(('entry_fork_shows_then_manual_door_to_step_1_guard_holds', ok21, r21))
+    results.append(('entry_fork_smart_return_not_blank_logo_returns_and_manual_to_step_1', ok21, r21))
 
     # v5.91: Rune sitt scenario — han vet han faktisk KAN ordne deigen kl.
     # 14:00 den dagen, men gidder ikke gå inn og redigere pizzatiden for én

@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.22',
+    d: 'juli 2026',
+    changes: [
+      'Fikset en <b>blank skjerm</b>: valgte du «Smart-plan» og trykket deretter «Planlegging», ble skjermen tom. Nå kommer du tilbake til startvalget (de to dørene) i stedet.',
+      'Logoen øverst tar deg nå <b>tilbake til startvalget</b> (Smart-plan / velg selv). Oppsettet ditt beholdes — det er bare en snarvei tilbake til inngangen. (Guiden når du fortsatt fra menyen og Info-fanen.)'
+    ]
+  },
+  {
     v: '6.21',
     d: 'juli 2026',
     changes: [

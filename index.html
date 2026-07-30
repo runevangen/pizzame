@@ -906,7 +906,7 @@ function syncStaticI18nUI(){
   const st=(id,no,en)=>{ const el=document.getElementById(id); if(el) el.textContent=L(no,en); };
   const at=(id,attr,no,en)=>{ const el=document.getElementById(id); if(el) el.setAttribute(attr,L(no,en)); };
   // Topbar
-  at('mob-topbar-title','title','Åpne guiden','Open the guide');
+  at('mob-topbar-title','title','Til startvalget','Back to start choices');
   at('mob-active-deiger-btn','title','Mine deiger','My doughs');
   at('mob-pc-toggle','title','Bytt til PC-visning','Switch to desktop view');
   // Plan / recipe / bakster placeholders
@@ -5445,7 +5445,13 @@ function wizEnterSettingsTab(){
   // denne funksjonen HVER gang du bytter til Planlegging-fanen, og uten den
   // ville du blitt tilbakestilt til steg 1 hver gang, i stedet for å lande
   // der du sist var.
-  if(window._wizEnteredOnce) return;
+  if(window._wizEnteredOnce){
+    // v6.21: står vi i gaffel-tilstand (steg 0 — typisk etter «Dør A → Smart-plan»,
+    // som skjuler gaffelen og bytter fane), vis gaffelen igjen ved retur til
+    // Planlegging i stedet for en blank skjerm. Ellers: behold der man sist var.
+    if(window._wizStep===0) showEntryFork();
+    return;
+  }
   window._wizEnteredOnce = true;
   // v6.21: ved friskt oppstart uten gjenopprettet oppsett møter man inngangs-
   // gaffelen (Smart-plan vs. velg selv) i stedet for å slippes rett inn i steg 1.
@@ -5484,6 +5490,14 @@ function showEntryFork(){
   window._wizStep=0;
   const scr=document.getElementById('mob-settings');
   if(scr) scr.scrollTop=0;
+}
+// v6.21: logoen tar deg tilbake til oppstartsvalget (gaffelen). Rører ikke
+// oppsettet ditt — bare navigasjon; velger du en dør igjen fortsetter du der du
+// var. Kun i mobilvisning (gaffelen finnes ikke på PC).
+function goToEntryFork(){
+  if(!document.body.classList.contains('mob-mode')){ try{ openGuideModal(); }catch(e){} return; }
+  mobShowTab('settings');
+  showEntryFork();
 }
 function entryPickManual(){
   const el=document.getElementById('wiz-entry'); if(el) el.style.display='none';
@@ -6299,7 +6313,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 <div class="mob-layout" id="mob-layout">
 
   <div class="mob-topbar">
-    <div class="mob-topbar-title" id="mob-topbar-title" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden">
+    <div class="mob-topbar-title" id="mob-topbar-title" onclick="goToEntryFork()" style="cursor:pointer" title="Til startvalget">
       <span>🍕 Pizzaplanlegger <b id="mob-name-version" style="font-size:12px;font-weight:600;color:var(--forno-accent)"></b></span>
       <small id="mob-stamp"></small>
     </div>
