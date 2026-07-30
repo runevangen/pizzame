@@ -180,7 +180,10 @@ body.mob-mode .sdesc{color:var(--forno-text-muted)}
 /* ===== MOBILE LAYOUT ===== */
 .mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;background:#FAFAF9}
 body.mob-mode .mob-layout{background:var(--forno-bg);color:var(--forno-text);font-family:var(--forno-font-body)}
-body.mob-mode{--dyn-text:var(--forno-text);--dyn-surface:var(--forno-bg-raised);--dyn-border:var(--forno-border);--dyn-faint:var(--forno-text-faint);--dyn-btn-bg:var(--forno-bg);}
+/* background: uten dette står body med lys #FAFAF9, og der viewport-fit=cover lar
+   safe-area-sonen nederst (home-indicator) stå udekket, lyser hvitt gjennom under
+   fanelinja. Tema-bevisst (mørk brun / krem). */
+body.mob-mode{background:var(--forno-bg);--dyn-text:var(--forno-text);--dyn-surface:var(--forno-bg-raised);--dyn-border:var(--forno-border);--dyn-faint:var(--forno-text-faint);--dyn-btn-bg:var(--forno-bg);}
 /* BACKLOG F4: lys tema for mobil-layouten. Hele Forno-UI-et er token-drevet, så en
    ny palett = å redefinere --forno-*-tokenene. Varm krem/pergament-palett hentet fra
    Runes egen Tons of Rock-app (body.light), med samme brente oransje aksent som Forno

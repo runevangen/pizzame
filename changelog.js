@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.29',
+    d: 'juli 2026',
+    changes: [
+      'Fikset en <b>hvit stripe nederst på skjermen</b> (under fanelinja, ved home-indikatoren på iPhone) i mørk modus — bakgrunnen følger nå temaet helt ut i kantene.'
+    ]
+  },
+  {
     v: '6.28',
     d: 'juli 2026',
     changes: [
