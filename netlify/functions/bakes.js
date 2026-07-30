@@ -30,14 +30,23 @@ export default async (req, context) => {
   try {
     if (req.method === 'GET') {
       const { blobs } = await store.list();
-      const bakes = await Promise.all(
+      const raw = await Promise.all(
         blobs.map(async (b) => {
-          const raw = await store.get(b.key, { type: 'json' });
-          return raw;
+          // Isoler hver post: en enkelt korrupt/uleselig blob skal IKKE velte hele
+          // lista. Uten dette kaster store.get (ugyldig JSON) eller sorteringen på
+          // en null-post, og GET /api/bakes svarer 500 → «Kunne ikke hente deiger».
+          try {
+            return await store.get(b.key, { type: 'json' });
+          } catch (err) {
+            console.error('Kunne ikke lese bakst', b.key, err && err.message);
+            return null;
+          }
         })
       );
-      bakes.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
-      return json(200, { bakes: bakes.filter(Boolean) });
+      // Filtrer bort ugyldige poster FØR sortering (ellers krasjer new Date(null.savedAt)).
+      const bakes = raw.filter((x) => x && typeof x === 'object');
+      bakes.sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
+      return json(200, { bakes });
     }
 
     if (req.method === 'POST' && isCollection) {
