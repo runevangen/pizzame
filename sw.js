@@ -1,4 +1,4 @@
-/* Pizzaplanlegger — minimal service worker.
+/* Pizzame — minimal service worker.
    Formål: gjør appen installerbar (Android) og brukbar offline, uten å endre
    hvordan den oppfører seg online.
 
@@ -9,7 +9,7 @@
    - Statiske ressurser (ikoner, manifest): cache-først, oppdateres i bakgrunnen.
    - API-kall (/api/* og /.netlify/*): røres ALDRI — alltid rett til nett. */
 
-const CACHE = 'pizzaplanlegger-shell-v1';
+const CACHE = 'pizzame-shell-v1'; // bumpet ved navnebytte (v6.23) så cachet manifest/shell hentes på nytt
 const SHELL = [
   './', './index.html', './changelog.js', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',

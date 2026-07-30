@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pizzaplanlegger</title>
+<title>Pizzame</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pizzaplanlegger">
+<meta name="apple-mobile-web-app-title" content="Pizzame">
 <meta name="theme-color" content="#e8590c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -524,7 +524,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
 <div id="auth-overlay" style="position:fixed;inset:0;background:#f5f4f0;z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem">
   <div style="background:#fff;border-radius:14px;padding:1.5rem 1.3rem;max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.15)">
     <div style="text-align:center;font-size:32px;margin-bottom:.3rem">🍕</div>
-    <div style="text-align:center;font-size:16px;font-weight:700;color:var(--dyn-text);margin-bottom:1rem">Pizzaplanlegger</div>
+    <div style="text-align:center;font-size:16px;font-weight:700;color:var(--dyn-text);margin-bottom:1rem">Pizzame</div>
     <div id="auth-body"></div>
     <div style="text-align:center;margin-top:1rem">
       <span onclick="openAdminLogin()" style="font-size:11px;color:#aaa;cursor:pointer;text-decoration:underline">admin</span>
@@ -609,7 +609,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
   <div class="logo" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden"><span>🍕</span>
     <div style="display:flex;flex-direction:column;gap:2px">
-      <span>Pizzaplanlegger</span>
+      <span>Pizzame</span>
       <span id="build-stamp" onclick="event.stopPropagation();openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#1D9E75;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
     </div>
   </div>
@@ -2744,7 +2744,7 @@ function copyP(steps){
   // versjon og når planen ble hentet ut.
   const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
   const _now=new Date();
-  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:',`Check this pizza recipe systematically for errors in ingredients, math and schedule — look especially for deviations from what I specified myself:`),'',L(`Pizzaplanlegger v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`Pizza Planner v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${r.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,`Flour: ${S.mel}g · Hydration: ${S.hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${r.flour}g`,`Flour: ${r.flour}g`),L(`Vann: ${r.water}g`,`Water: ${r.water}g`),L(`Salt: ${r.salt}g`,`Salt: ${r.salt}g`),...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),L(`Gjær: ${currentYeastAmount()}`,`Yeast: ${currentYeastAmount()}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
+  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:',`Check this pizza recipe systematically for errors in ingredients, math and schedule — look especially for deviations from what I specified myself:`),'',L(`Pizzame v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`Pizzame v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${r.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${S.mel}g · Hydrering: ${S.hydro}%`,`Flour: ${S.mel}g · Hydration: ${S.hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${r.flour}g`,`Flour: ${r.flour}g`),L(`Vann: ${r.water}g`,`Water: ${r.water}g`),L(`Salt: ${r.salt}g`,`Salt: ${r.salt}g`),...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),L(`Gjær: ${currentYeastAmount()}`,`Yeast: ${currentYeastAmount()}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
   steps.forEach((s,i)=>{
     const locMap=L({kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'},{kjol:'❄️ Fridge',rom:'🏠 Room temperature',ovn:'🔥 Oven',benk:'🔧 Counter'});
     const loc=locMap[s.loc]||s.loc;
@@ -2782,7 +2782,7 @@ function downloadIcs(steps){
   // Lokaliser fri tekst til valgt enhet (localizeUnits konverterer °C/g i imperial).
   const uLoc=t=>window._units==='imperial'?localizeUnits(String(t==null?'':t)):String(t==null?'':t);
   const locName={kjol:L('Kjøleskap','Fridge'),rom:L('Romtemperatur','Room temperature'),ovn:L('Ovn','Oven'),benk:L('Kjøkkenbenk','Counter')};
-  let lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pizzaplanlegger//NO','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  let lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pizzame//NO','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
   steps.forEach((s,i)=>{
     const start=s.at;
     const end=aM(s.at,Math.max(s.dur||15,15));
@@ -4017,7 +4017,7 @@ function closeManualModal(){
 // siste utvei. labelId (valgfritt) er spanen som skal blinke «✓ Lenke kopiert!».
 function shareApp(labelId){
   const url = location.origin + '/';
-  const data = { title:'Pizzaplanlegger', text:'Pizzaplanlegger — planlegg pizzadeig med oppskrift og tidsplan.', url };
+  const data = { title:'Pizzame', text:'Pizzame — planlegg pizzadeig med oppskrift og tidsplan.', url };
   if(navigator.share){ navigator.share(data).catch(()=>{}); return; } // bruker kan avbryte — ignorer
   const done = () => {
     if(labelId){
@@ -6314,7 +6314,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <div class="mob-topbar">
     <div class="mob-topbar-title" id="mob-topbar-title" onclick="goToEntryFork()" style="cursor:pointer" title="Til startvalget">
-      <span>🍕 Pizzaplanlegger <b id="mob-name-version" style="font-size:12px;font-weight:600;color:var(--forno-accent)"></b></span>
+      <span>🍕 Pizzame <b id="mob-name-version" style="font-size:12px;font-weight:600;color:var(--forno-accent)"></b></span>
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
@@ -6646,7 +6646,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
 
     <div style="text-align:center;padding:1.1rem 1rem .5rem">
-      <span style="font-size:11px;color:var(--forno-text-faint,#aaa)">Pizzaplanlegger <span id="mob-footer-version"></span> · </span>
+      <span style="font-size:11px;color:var(--forno-text-faint,#aaa)">Pizzame <span id="mob-footer-version"></span> · </span>
       <span id="mob-whatsnew" style="font-size:11px;color:var(--forno-accent,#1D9E75);font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
     </div>
 
