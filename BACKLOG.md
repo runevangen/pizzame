@@ -1,16 +1,20 @@
 # Backlog — Pizzaplanlegger
 
-Sist oppdatert: 29.07.2026 · gjelder index.html rundt v6.17.
+Sist oppdatert: 29.07.2026 · gjelder index.html rundt v6.20.
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
 Rekkefølgen innen hver bolk er omtrent synkende viktighet. Hvert gjenstående punkt
 har en **I klartekst**-linje som forklarer hva det er og hvor stort, i vanlig språk.
 
-Status per v6.17: alle P0 + #1–6 fikset (#5 fullt via innholdsbasert nøkling),
-#8 dermed løst. F1–F6 gjort (v6.17: F4 lys/mørk-tema), hele «Tips og triks» gjort,
-og engelsk språk + imperiske enheter lagt til (v6.15). Gjenstår kun: #7 (kosmetisk),
-og funksjonene F7/F8/F9/F10/F11 pluss F5 nivå 3.
+Status per v6.20: alle P0 + #1–6 fikset (#5 fullt via innholdsbasert nøkling),
+#8 dermed løst. F1–F6 gjort, hele «Tips og triks» gjort. Levert siden v6.14:
+engelsk språk + imperiske enheter (v6.15), innholdsbasert avhaking (v6.16),
+lys/mørk-tema for mobil (v6.17, F4), sterkere kalender-eksport (v6.18),
+feedback-fiks (v6.19) og en språkvask fra morsmåls-gjennomgang (v6.20).
+Gjenstår: #7 (kosmetisk), funksjonene F7/F8/F9/F10/F11 + F5 nivå 3, og to nye
+punkter fra denne økta — **F12 (PC-tema)** og **T-i18n (gjenstående i18n-hull)**,
+begge under «Funksjoner / UX».
 
 Disiplin: `test_regression.py` + `baseline_results.json` fryser dagens tall for
 oppskrift og tidsplan. Endrer du noe som flytter et tall, kjør testen og
@@ -306,6 +310,15 @@ spesielt nyttig for fler-dagers metoder (Poolish/Biga/Mania) der ingrediensene e
 splittet over faser. Utvider v5.95-retningen og den eksisterende Kopier/Kalender-raden
 (`5105–5107`).
 
+**Utvidelses-idé (parkert):** koble handlelisten til en «Hvor får jeg tak i dette?»-seksjon
+med kuraterte norske kilder for mel (Tipo 00 / sterkt hvetemel) og utstyr (pizzastål/-stein,
+spade, gjæringsbokser, vekt, deigskraper). Anbefalt løsning er en *statisk kuratert kildeliste*
+i appen (som guiden) — null infrastruktur, ingen sporing, offline. Alternativet «finn butikk nær
+deg» (geolokasjon + kart-API) er bevisst vraket: krever backend, API-nøkkel, kostnad og
+posisjons-personvern for tvilsom nytte. Åpne valg: lenke ut vs. bare navngi; hvilke kilder vi
+faktisk står inne for (bør bestemmes av bruker, ikke oppdiktes); og om EN-visningen skjuler
+seksjonen eller viser samme liste med «norske kilder»-merknad.
+
 ### F11. Paritets-sjekk av tips/why på tvers av metoder
 > **I klartekst:** Vi tettet gjæringsstegene i v6.10, men en *full* gjennomgang av
 > at alle steg i alle metoder har jevn `tip`/`hvorfor`-dekning — pluss en test som
@@ -317,6 +330,25 @@ flere steg definerer `substeps` uten `tip`/`why` (f.eks. passive Poolish/Biga-ve
 `1659–1664`), så «💡 Tips»-bryteren (v6.00) avslører ujevn tetthet. En paritetspass +
 en regresjonstest à la eksisterende `pc_mobil_1to1_*` passer måten forfatteren
 allerede vokter konsistens på.
+
+### F12. Lys/mørk-tema også for PC-visningen
+> **I klartekst:** v6.17 ga mobil-layouten en ekte lys/mørk-bryter (Tons of Rock-
+> kremtema). PC-visningen har fortsatt sin egen, faste lyse styling og får ikke
+> temavalget. F12 er å la `.theme-light`/mørk-tokenene også styre desktop-layouten,
+> så «Tema»-bryteren gjelder begge. Middels — mye av token-arbeidet er gjort; PC
+> bruker `--dyn-*` i stedet for `--forno-*`, så det krever en egen mørk PC-palett
+> og re-scoping, ikke bare gjenbruk.
+
+### T-i18n. Gjenstående oversettelses-hull (engelsk)
+> **I klartekst:** Hele mobilappen er oversatt (v6.15 + v6.20-vask), men noen
+> hjørner er fortsatt kun norske i engelsk modus:
+> - **PC-visningens statiske HTML** (sidebar-slidere, desktop-topnav «Steg for
+>   steg/Oppskrift/Notater», enkelte hint) — utenfor det mobil-fokuserte i18n-passet.
+> - **Admin-verktøyet** (`openAdminLogin`/`loadAdminView`/`openFormlerModal` + prompts)
+>   — internt, ikke sluttbruker-vendt, men fortsatt norsk.
+> - **Endringsloggen** («Hva er nytt») rendres fra `CHANGELOG` som kun er norsk.
+> Lav prioritet (dekkes av «AI-oversatt»-varselet), men verdt å notere så det ikke
+> ser ut som en forglemmelse. Endringsloggen er den mest synlige av de tre.
 
 ---
 
