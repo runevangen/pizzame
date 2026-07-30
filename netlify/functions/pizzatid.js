@@ -7,11 +7,12 @@ import { getStore } from '@netlify/blobs';
 // GET  /api/pizzatid?userId=X   -> { schedule } (default hvis ikke lagret ennå)
 // POST /api/pizzatid            -> lagre { userId, schedule } -> { ok:true }
 //
-// schedule-format: { mon:[[fra,til],[fra,til]], tue:[...], ..., sun:[...] }
-// Klokkeslett som "HH:MM"-strenger. Inntil to perioder per dag; ubrukt periode
-// kan være null.
+// schedule-format: { mon:[[fra,til],[fra,til],...], tue:[...], ..., sun:[...] }
+// Klokkeslett som "HH:MM"-strenger. Flere perioder per dag støttes (opptil
+// MAX_SLOTS_PER_DAY); ugyldige/tomme perioder droppes. Tom dag = aldri ledig.
 
 const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const MAX_SLOTS_PER_DAY = 6;
 const DEFAULT_WEEKDAY = [['16:00','23:30'],['06:30','08:00']];
 const DEFAULT_WEEKEND = [['06:00','23:00'], null];
 const DEFAULT_SCHEDULE = {
@@ -43,9 +44,12 @@ function sanitizeSchedule(input) {
   const out = {};
   for (const day of DAYS) {
     const periods = Array.isArray(input?.[day]) ? input[day] : DEFAULT_SCHEDULE[day];
-    const p1 = sanitizePeriod(periods[0]) ?? null;
-    const p2 = sanitizePeriod(periods[1]) ?? null;
-    out[day] = [p1, p2];
+    // Behold alle gyldige perioder (dropp ugyldige/tomme), opptil taket.
+    // Tom liste = brukeren er aldri ledig den dagen.
+    out[day] = periods
+      .map(sanitizePeriod)
+      .filter(Boolean)
+      .slice(0, MAX_SLOTS_PER_DAY);
   }
   return out;
 }

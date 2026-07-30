@@ -914,7 +914,7 @@ function syncStaticI18nUI(){
   st('mob-recipe-empty','Generer tidsplan for å se oppskriften','Generate a schedule to see the recipe');
   st('mob-bakster-empty','Laster deiger…','Loading doughs…');
   // Inngangs-gaffel (v6.21)
-  st('wiz-entry-h','Hva slags bakekveld?','What kind of baking session?');
+  st('wiz-entry-h','La oss starte!','Let\'s start!');
   st('wiz-entry-sub','Velg hvordan du vil starte','Choose how you want to start');
   st('wiz-entry-a-h','Smart-plan','Smart plan');
   st('wiz-entry-a-sub','Si når du har tid og når du vil spise — så finner appen metoden som passer livet ditt.','Tell it when you have time and when you want to eat — the app finds the method that fits your life.');
@@ -2846,9 +2846,11 @@ function chicagoButterHTML(){
 const PIZZATID_DAY_KEYS=['sun','mon','tue','wed','thu','fri','sat']; // indeksert av Date.getDay()
 window._pizzatidSchedule=null;
 function defaultPizzatidSchedule(){
-  const weekday=[['16:00','23:30'],['06:30','08:00']];
-  const weekend=[['06:00','23:00'],null];
-  return {mon:weekday,tue:weekday,wed:weekday,thu:weekday,fri:weekday,sat:weekend,sun:weekend};
+  // Fabrikker (ikke delte referanser!) — hver dag må få egne array-er, ellers
+  // muterer en endring på én hverdag alle de andre (de pekte før på samme array).
+  const weekday=()=>[['16:00','23:30'],['06:30','08:00']];
+  const weekend=()=>[['06:00','23:00']];
+  return {mon:weekday(),tue:weekday(),wed:weekday(),thu:weekday(),fri:weekday(),sat:weekend(),sun:weekend()};
 }
 async function loadPizzatidSchedule(){
   try{
@@ -3083,35 +3085,63 @@ function togglePizzatidMinimized(){
   body.style.display=nowHidden?'block':'none';
   if(toggle) toggle.textContent=nowHidden?L('Skjul ▴','Hide ▴'):L('Vis ▾','Show ▾');
 }
+const PIZZATID_MAX_SLOTS=6; // rimelig tak per dag (matcher backend-sanitizeSchedule)
 function renderPizzatidDays(){
   const el=document.getElementById('mob-pizzatid-days');
   if(!el) return;
   const sched=window._pizzatidSchedule||defaultPizzatidSchedule();
+  const inp='font-size:11px;padding:4px;border-radius:6px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text)';
+  const lbl='font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--forno-text-faint)';
   el.innerHTML=PIZZATID_DAY_LABELS.map(([key,label])=>{
     label = L(label, PIZZATID_DAY_LABELS_EN[key]||label);
-    const periods=sched[key]||[null,null];
-    const rows=[0,1].map(i=>{
-      const p=periods[i];
-      const from=p?p[0]:'', to=p?p[1]:'';
-      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:3px">
-        <input type="time" value="${from}" onchange="updatePizzatidPeriod('${key}',${i},0,this.value)" style="font-size:11px;padding:4px;border-radius:6px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text)">
-        <input type="time" value="${to}" onchange="updatePizzatidPeriod('${key}',${i},1,this.value)" style="font-size:11px;padding:4px;border-radius:6px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text)">
+    let periods=Array.isArray(sched[key])?sched[key]:[];
+    // Vis alltid minst én rad å fylle i, selv om dagen er tom.
+    const rowsData = periods.length ? periods : [null];
+    // Fra/Til-hode (én gang per dag) — 3. kolonne matcher fjern-knappen under.
+    const header=`<div style="display:grid;grid-template-columns:1fr 1fr 26px;gap:4px;margin-top:5px">
+        <div style="${lbl}">${L('Fra','From')}</div><div style="${lbl}">${L('Til','To')}</div><div></div>
+      </div>`;
+    const rows=rowsData.map((p,i)=>{
+      const from=(p&&p[0])?p[0]:'', to=(p&&p[1])?p[1]:'';
+      return `<div style="display:grid;grid-template-columns:1fr 1fr 26px;gap:4px;margin-top:3px;align-items:center">
+        <input type="time" value="${from}" onchange="updatePizzatidPeriod('${key}',${i},0,this.value)" style="${inp}">
+        <input type="time" value="${to}" onchange="updatePizzatidPeriod('${key}',${i},1,this.value)" style="${inp}">
+        <button onclick="removePizzatidSlot('${key}',${i})" title="${L('Fjern tiden','Remove time')}" aria-label="${L('Fjern tiden','Remove time')}" style="height:26px;border:1px solid var(--forno-border);border-radius:6px;background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;line-height:1;cursor:pointer;padding:0">✕</button>
       </div>`;
     }).join('');
+    const addBtn=`<button onclick="addPizzatidSlot('${key}')" style="margin-top:5px;width:100%;height:26px;border:1px dashed var(--forno-border);border-radius:6px;background:transparent;color:var(--forno-accent-text);font-size:11px;font-weight:700;cursor:pointer">${L('+ Legg til tid','+ Add time')}</button>`;
     return `<div style="margin-bottom:8px;padding:7px 9px;background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:8px">
       <div style="font-size:11px;font-weight:600;color:var(--forno-text)">${label}</div>
-      ${rows}
+      ${header}${rows}${addBtn}
     </div>`;
   }).join('');
 }
 function updatePizzatidPeriod(dayKey,periodIdx,fieldIdx,value){
   if(!window._pizzatidSchedule) window._pizzatidSchedule=defaultPizzatidSchedule();
   const sched=window._pizzatidSchedule;
-  if(!sched[dayKey]) sched[dayKey]=[null,null];
+  if(!Array.isArray(sched[dayKey])) sched[dayKey]=[];
+  while(sched[dayKey].length<=periodIdx) sched[dayKey].push(null);
   if(!sched[dayKey][periodIdx]) sched[dayKey][periodIdx]=['',''];
   sched[dayKey][periodIdx][fieldIdx]=value;
   const p=sched[dayKey][periodIdx];
   if(!p[0]&&!p[1]) sched[dayKey][periodIdx]=null;
+  pizzatidChanged();
+}
+// Legg til en tom tidsslott på en dag (opptil PIZZATID_MAX_SLOTS).
+function addPizzatidSlot(dayKey){
+  if(!window._pizzatidSchedule) window._pizzatidSchedule=defaultPizzatidSchedule();
+  const sched=window._pizzatidSchedule;
+  if(!Array.isArray(sched[dayKey])) sched[dayKey]=[];
+  if(sched[dayKey].length>=PIZZATID_MAX_SLOTS) return;
+  sched[dayKey].push(null);
+  renderPizzatidDays();
+}
+// Fjern en tidsslott. Fjernes siste, står dagen igjen med én tom rad å fylle i.
+function removePizzatidSlot(dayKey,idx){
+  const sched=window._pizzatidSchedule;
+  if(!sched||!Array.isArray(sched[dayKey])) return;
+  sched[dayKey].splice(idx,1);
+  renderPizzatidDays();
   pizzatidChanged();
 }
 function saveBetaPizzatid(){
@@ -6342,7 +6372,7 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div id="wiz-entry" class="wiz-step" style="display:none;padding:2rem 1.1rem 1.1rem">
       <div style="text-align:center;margin-bottom:1.4rem">
         <div style="font-size:34px;line-height:1">🍕</div>
-        <div id="wiz-entry-h" style="font-size:19px;font-weight:700;margin-top:6px;font-family:var(--forno-font-display,inherit);color:var(--forno-text)">Hva slags bakekveld?</div>
+        <div id="wiz-entry-h" style="font-size:19px;font-weight:700;margin-top:6px;font-family:var(--forno-font-display,inherit);color:var(--forno-text)">La oss starte!</div>
         <div id="wiz-entry-sub" style="font-size:12px;color:var(--forno-text-faint);margin-top:3px">Velg hvordan du vil starte</div>
       </div>
       <button onclick="entryPickSmart()" style="display:block;width:100%;text-align:left;padding:16px 16px;margin-bottom:12px;border:1px solid var(--forno-border);border-radius:14px;background:var(--forno-bg-raised);cursor:pointer">
