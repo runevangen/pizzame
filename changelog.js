@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.27',
+    d: 'juli 2026',
+    changes: [
+      'Appen har byttet navn til <b>UltimatePizza</b>. Samme app — oppdatert overalt du ser det: tittel, logo, innlogging, del-tekst, guiden og PWA-ikon. (Er appen installert på hjemskjermen, kan ikonnavnet henge igjen til du installerer på nytt — det styres av telefonen, ikke appen.)'
+    ]
+  },
+  {
     v: '6.26',
     d: 'juli 2026',
     changes: [
