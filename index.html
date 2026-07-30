@@ -96,6 +96,10 @@ body.mob-mode .dropdown-select::after{color:var(--forno-text-faint)}
 input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #E5E5EA;border-radius:6px;font-size:12px;background:#fff;color:var(--dyn-text);outline:none;min-width:0;font-family:inherit}
 body.mob-mode input[type=date],body.mob-mode input[type=time]{background:var(--forno-bg);border-color:var(--forno-border);color-scheme:dark}
 input[type=date]:focus,input[type=time]:focus{border-color:#1D9E75;outline:2px solid #1D9E7530}
+/* Smart-plan: stort «tiden er helten»-felt. Skjul den native picker-ikonen (som
+   skalerer med font-size og ville dominert) — mobil åpner uansett velgeren ved trykk. */
+#mob-beta-et::-webkit-calendar-picker-indicator{display:none}
+#mob-beta-et::-webkit-inner-spin-button{display:none;-webkit-appearance:none}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
 .sr input[type=range]{flex:1;min-width:0;accent-color:#1D9E75}
@@ -995,7 +999,8 @@ function syncStaticI18nUI(){
   { const el=document.getElementById('mob-pizzatid-help'); if(el) el.innerHTML=L('Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.','Set up the fixed times you are free to make pizza, per weekday. The app uses them in two places: here it <b style="color:var(--forno-text)">suggests</b> recipes that fit your time, and elsewhere in the app it <b style="color:var(--forno-text)">warns</b> you if a step lands at a time you have not set aside.'); }
   st('mob-pizzatid-help2','Trykk «Vis» for å sette opp ukedagene dine.','Tap "Show" to set up your weekdays.');
   st('mob-pizzatid-save','Lagre ledig tid','Save free time');
-  st('mob-beta-baketime-lbl','Steketidspunkt','Baking time');
+  st('mob-beta-baketime-lbl','Når skal deigen være klar?','When should the dough be ready?');
+  st('mob-beta-baketime-sub','Ferdig hevet og klar for ovnen.','Proofed and ready for the oven.');
   st('mob-beta-search-btn','🔍 Finn oppskriften','🔍 Find the recipe');
   st('mob-beta-popular-lbl','Eller velg et populært tidspunkt','Or pick a popular time');
   st('mob-beta-popular-help','Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.','Tap a preset time, and we fill in the date and time above and run the search right away.');
@@ -6709,13 +6714,15 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div style="padding:0 1rem .8rem"><button id="mob-pizzatid-save" onclick="saveBetaPizzatid()" style="width:100%;height:36px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text-muted);font-size:12px;font-weight:600;cursor:pointer">Lagre ledig tid</button></div>
       </div>
 
-      <div class="mob-section-lbl" id="mob-beta-baketime-lbl">Steketidspunkt</div>
-      <div style="padding:.3rem 1rem .8rem">
-        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px;margin-bottom:8px">
-          <input type="date" id="mob-beta-ed">
-          <input type="time" id="mob-beta-et" value="19:00">
+      <div id="mob-beta-baketime-lbl" style="padding:.9rem 1rem 0;font-size:15px;font-weight:800;color:var(--forno-accent-text)">Når skal deigen være klar?</div>
+      <div id="mob-beta-baketime-sub" style="padding:2px 1rem 0;font-size:11.5px;color:var(--forno-text-faint)">Ferdig hevet og klar for ovnen.</div>
+      <div style="padding:.55rem 1rem .8rem">
+        <!-- Skisse 2 «Tiden er helten»: stort, trykkbart klokkeslett i fokus, dato sekundær. -->
+        <div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:14px;padding:8px 10px 12px;margin-bottom:8px">
+          <input type="time" id="mob-beta-et" value="19:00" style="border:none;background:transparent;color:var(--forno-text);font-size:42px;font-weight:800;text-align:center;width:100%;padding:2px 0;font-variant-numeric:tabular-nums">
         </div>
-        <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:40px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:600;cursor:pointer">🔍 Finn oppskrift</button>
+        <input type="date" id="mob-beta-ed" style="text-align:center;padding:11px;font-size:15px;font-weight:600;border-radius:10px;margin-bottom:10px">
+        <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
         <div id="mob-beta-result"></div>
       </div>
 
