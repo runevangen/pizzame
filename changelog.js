@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.28',
+    d: 'juli 2026',
+    changes: [
+      'Fikset at <b>logoen/navnet øverst</b> lå for høyt og havnet under statuslinja / Dynamic Island på iPhone. Topplinja tar nå hensyn til det trygge området øverst på skjermen.'
+    ]
+  },
+  {
     v: '6.27',
     d: 'juli 2026',
     changes: [

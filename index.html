@@ -206,7 +206,9 @@ body.mob-mode.theme-light input[type=time]{color-scheme:light}
 .app.pc-active{display:grid}
 
 /* top bar */
-.mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:.4rem 1rem;display:flex;align-items:center;justify-content:space-between;min-height:56px;position:sticky;top:0;z-index:50}
+/* padding-top med safe-area: appen bruker viewport-fit=cover, så uten dette havner
+   logo/navn under statuslinja/Dynamic Island på iPhone. 0px på enheter uten notch. */
+.mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:calc(.4rem + env(safe-area-inset-top,0px)) 1rem .4rem;display:flex;align-items:center;justify-content:space-between;min-height:56px;position:sticky;top:0;z-index:50}
 body.mob-mode .mob-topbar{background:var(--forno-bg-sunken);border-bottom-color:var(--forno-border-soft)}
 .mob-topbar-title{display:flex;flex-direction:column;gap:1px}
 .mob-topbar-title span{font-size:15px;font-weight:600}
