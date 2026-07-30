@@ -38,10 +38,7 @@
   --forno-font-mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-/* html får -webkit-fill-available så .mob-layout sin fyll-høyde løser seg til den
-   ekte skjermhøyden på iOS standalone (der 100dvh kan komme til kort). */
-html{height:-webkit-fill-available}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:var(--dyn-text);font-size:16px;min-height:100vh;min-height:-webkit-fill-available}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FAFAF9;color:var(--dyn-text);font-size:16px}
 .app{display:grid;grid-template-columns:295px 1fr;min-height:100vh}
 .sb{background:#FAFAF9;border-right:1px solid #EDEDED;padding:1rem;display:flex;flex-direction:column;gap:.8rem;overflow-y:auto;position:sticky;top:0;height:100vh}
 .mn{background:#fff;padding:1.5rem;overflow-y:auto}
@@ -181,11 +178,13 @@ body.mob-mode .sdesc{color:var(--forno-text-muted)}
 .daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
 .daylbl.today .ddot{background:#1D9E75}
 /* ===== MOBILE LAYOUT ===== */
-/* height: 100dvh fyller ikke alltid hele skjermen i iOS standalone (PWA på
-   hjemskjerm) — da havner fanelinja over den fysiske bunnen og etterlater et felt
-   nederst. -webkit-fill-available gir iOS den ekte tilgjengelige høyden; rekkefølgen
-   gjør at moderne nettlesere bruker 100dvh, iOS faller til fill-available. */
-.mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;background:#FAFAF9}
+/* App-skallet pinnes til alle fire skjermkanter med position:fixed;inset:0 i stedet
+   for å regne høyde med vh/dvh. iOS standalone (PWA på hjemskjerm) regner 100dvh/
+   fill-available for kort, så fanelinja havner over den fysiske bunnen med et tomt
+   felt under. inset:0 dekker hele det faktiske viewportet (den initielle containing-
+   blokken), uavhengig av vh/dvh-bugs. topbar/tabbar sine safe-area-paddinger holder
+   innholdet klar av statuslinje/Dynamic Island og home-indikator. */
+.mob-layout{display:none;flex-direction:column;position:fixed;inset:0;background:#FAFAF9}
 body.mob-mode .mob-layout{background:var(--forno-bg);color:var(--forno-text);font-family:var(--forno-font-body)}
 /* background: uten dette står body med lys #FAFAF9, og der viewport-fit=cover lar
    safe-area-sonen nederst (home-indicator) stå udekket, lyser hvitt gjennom under

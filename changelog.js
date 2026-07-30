@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.31',
+    d: 'juli 2026',
+    changes: [
+      'Bedre fiks for at appen ikke fylte hele skjermen på iPhone (installert på hjemskjerm): app-skallet festes nå til alle fire skjermkanter i stedet for å regne skjermhøyde — så fanelinja ligger helt i bunn uten tomt felt under.'
+    ]
+  },
+  {
     v: '6.30',
     d: 'juli 2026',
     changes: [
