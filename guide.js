@@ -1,4 +1,4 @@
-// Bruksanvisning for Pizzame — ren data, ingen logikk. Lastes via <script src>
+// Bruksanvisning for UltimatePizza — ren data, ingen logikk. Lastes via <script src>
 // FØR hovedscriptet i index.html og rendres av buildManualHTML() (i index.html).
 //
 // LEVENDE DOKUMENT: denne fila skal alltid stemme med appen. Endrer vi en funksjon,
@@ -11,7 +11,7 @@
 //   {t:'tip',     x:'💡-boks (praktisk tips)'}
 //   {t:'smart',   x:'✨-boks (framhever en smart funksjon)'}
 
-const GUIDE_INTRO = 'Pizzame regner <b>baklengs</b>: du sier når pizzaen skal være ferdig, så viser appen nøyaktig når og hvordan du må jobbe for å treffe. Denne bruksanvisningen går gjennom hele mobilappen — trykk et emne i lista under for å hoppe rett dit.';
+const GUIDE_INTRO = 'UltimatePizza regner <b>baklengs</b>: du sier når pizzaen skal være ferdig, så viser appen nøyaktig når og hvordan du må jobbe for å treffe. Denne bruksanvisningen går gjennom hele mobilappen — trykk et emne i lista under for å hoppe rett dit.';
 
 const GUIDE = [
 
@@ -234,7 +234,7 @@ const GUIDE = [
   {
     icon: '📲', title: 'Legg appen på hjemskjermen',
     body: [
-      {t:'p', x:'Du kan installere Pizzame som en app-ikon på telefonen, og bruke den offline. En liten linje <b>«📲 Legg appen til på hjemskjermen»</b> dukker opp når det er mulig.'},
+      {t:'p', x:'Du kan installere UltimatePizza som en app-ikon på telefonen, og bruke den offline. En liten linje <b>«📲 Legg appen til på hjemskjermen»</b> dukker opp når det er mulig.'},
       {t:'bullets', x:[
         '<b>Android</b> (Chrome): trykk <b>Legg til</b> → den ekte installasjonsdialogen kommer opp.',
         '<b>iPhone</b> (Safari): trykk <b>Legg til</b> → følg veiledningen: Del-ikonet nederst → «Legg til på Hjem-skjerm» → «Legg til».'
@@ -259,7 +259,7 @@ const GUIDE = [
 
 ];
 
-const GUIDE_INTRO_EN = 'Pizzame works <b>backwards</b>: you say when the pizza should be ready, and the app shows exactly when and how you need to work to hit that. This user manual walks through the entire mobile app — tap a topic in the list below to jump straight there.';
+const GUIDE_INTRO_EN = 'UltimatePizza works <b>backwards</b>: you say when the pizza should be ready, and the app shows exactly when and how you need to work to hit that. This user manual walks through the entire mobile app — tap a topic in the list below to jump straight there.';
 
 const GUIDE_EN = [
 
@@ -482,7 +482,7 @@ const GUIDE_EN = [
   {
     icon: '📲', title: 'Add the app to your home screen',
     body: [
-      {t:'p', x:'You can install Pizzame as an app icon on your phone, and use it offline. A little line <b>"📲 Add the app to your home screen"</b> appears when it\'s possible.'},
+      {t:'p', x:'You can install UltimatePizza as an app icon on your phone, and use it offline. A little line <b>"📲 Add the app to your home screen"</b> appears when it\'s possible.'},
       {t:'bullets', x:[
         '<b>Android</b> (Chrome): tap <b>Add</b> → the real installation dialog comes up.',
         '<b>iPhone</b> (Safari): tap <b>Add</b> → follow the guide: the Share icon at the bottom → "Add to Home Screen" → "Add".'

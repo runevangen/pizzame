@@ -1,4 +1,4 @@
-# Backlog — Pizzame
+# Backlog — UltimatePizza
 
 Sist oppdatert: 29.07.2026 · gjelder index.html rundt v6.20.
 
