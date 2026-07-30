@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.23',
+    d: 'juli 2026',
+    changes: [
+      'Appen har byttet navn til <b>Pizzame</b> (tidligere «Pizzaplanlegger»). Samme app, kortere navn — oppdatert overalt du ser det: tittel, logo, innlogging, del-tekst og PWA-ikon. (Er appen installert på hjemskjermen, kan ikonnavnet henge igjen til du installerer på nytt — det styres av telefonen, ikke appen.)'
+    ]
+  },
+  {
     v: '6.22',
     d: 'juli 2026',
     changes: [
