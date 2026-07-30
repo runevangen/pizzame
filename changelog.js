@@ -3,6 +3,15 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.24',
+    d: 'juli 2026',
+    changes: [
+      'Inngangs-skjermen ønsker deg nå velkommen med «<b>La oss starte!</b>».',
+      '«Når er du ledig?» er blitt tydeligere og mer fleksibel: hver tidsrad er nå merket <b>Fra</b> og <b>Til</b>, og du kan legge inn <b>flere tidsrom per dag</b> med en «<b>+ Legg til tid</b>»-knapp (f.eks. ledig både morgen, lunsj og kveld). Hver rad har et ✕ for å fjerne den igjen.',
+      'Rettet en underliggende feil der endring av ledig tid på én hverdag kunne smitte over på de andre hverdagene — nå er hver dag helt uavhengig.'
+    ]
+  },
+  {
     v: '6.23',
     d: 'juli 2026',
     changes: [
