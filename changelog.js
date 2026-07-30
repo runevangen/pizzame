@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.32',
+    d: 'juli 2026',
+    changes: [
+      'Fant og fikset den egentlige årsaken til det tomme feltet nederst på iPhone (installert app): høyden ble regnet fra en skjermhøyde som iOS rapporterer for kort i standalone-modus. Appen bruker nå hele skjermhøyden, så fanelinja ligger helt i bunn.'
+    ]
+  },
+  {
     v: '6.31',
     d: 'juli 2026',
     changes: [

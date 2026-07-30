@@ -178,13 +178,10 @@ body.mob-mode .sdesc{color:var(--forno-text-muted)}
 .daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
 .daylbl.today .ddot{background:#1D9E75}
 /* ===== MOBILE LAYOUT ===== */
-/* App-skallet pinnes til alle fire skjermkanter med position:fixed;inset:0 i stedet
-   for å regne høyde med vh/dvh. iOS standalone (PWA på hjemskjerm) regner 100dvh/
-   fill-available for kort, så fanelinja havner over den fysiske bunnen med et tomt
-   felt under. inset:0 dekker hele det faktiske viewportet (den initielle containing-
-   blokken), uavhengig av vh/dvh-bugs. topbar/tabbar sine safe-area-paddinger holder
-   innholdet klar av statuslinje/Dynamic Island og home-indikator. */
-.mob-layout{display:none;flex-direction:column;position:fixed;inset:0;background:#FAFAF9}
+/* Høyden settes egentlig i JS av syncMobLayoutHeight() (piksler-før-zoom), fordi
+   CSS-høydeenheter regner feil under body sin `zoom`. Disse er bare fallback før
+   JS kjører. */
+.mob-layout{display:none;flex-direction:column;height:100vh;height:100dvh;background:#FAFAF9}
 body.mob-mode .mob-layout{background:var(--forno-bg);color:var(--forno-text);font-family:var(--forno-font-body)}
 /* background: uten dette står body med lys #FAFAF9, og der viewport-fit=cover lar
    safe-area-sonen nederst (home-indicator) stå udekket, lyser hvitt gjennom under
@@ -1483,7 +1480,15 @@ function syncMobLayoutHeight(){
     const layout=document.getElementById('mob-layout');
     if(!layout) return;
     const z=FS_ZOOM[currentFontLevel()]||1.15;
-    const cssPx=Math.floor(window.innerHeight/z);
+    // window.innerHeight er upålitelig (for kort) i iOS standalone (PWA på hjemskjerm),
+    // så fanelinja havnet over den fysiske bunnen med et tomt felt under. I standalone
+    // bruker vi derfor screen.height (stabil, hele skjermen — viewport-fit=cover dekker
+    // safe-area, og topbar/tabbar sine paddinger holder innholdet klar av kantene).
+    // I nettleser beholder vi innerHeight (der skal vi holde oss innenfor verktøylinjene).
+    const standalone = window.navigator.standalone === true
+      || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    const realH = standalone ? Math.max(window.innerHeight, screen.height||0) : window.innerHeight;
+    const cssPx=Math.floor(realH/z);
     layout.style.height=cssPx+'px';
   });
 }
