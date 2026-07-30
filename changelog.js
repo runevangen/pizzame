@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.25',
+    d: 'juli 2026',
+    changes: [
+      'Smart-plan: tidsvelgeren er redesignet. «Steketidspunkt» er byttet til det tydeligere spørsmålet <b>«Når skal deigen være klar?»</b> (med undertittel «Ferdig hevet og klar for ovnen») — det er akkurat tidspunktet planen regner mot. Klokkeslettet vises nå <b>stort og trykkbart</b> i fokus, med datoen under.'
+    ]
+  },
+  {
     v: '6.24',
     d: 'juli 2026',
     changes: [
