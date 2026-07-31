@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.40',
+    d: 'juli 2026',
+    changes: [
+      'Rettet blank skjerm når man byttet fra PC til mobil: den aktive mobil-fanen ble aldri rendret ved bytte (bare ved oppstart), så innholdet uteble. Nå får fanen innhold uansett hvordan du havner i mobilvisning.'
+    ]
+  },
+  {
     v: '6.39',
     d: 'juli 2026',
     changes: [

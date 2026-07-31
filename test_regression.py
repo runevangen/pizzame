@@ -1756,6 +1756,32 @@ def run_behavioral_tests(page):
     )
     results.append(('focus_mode_opens_on_next_step_substeps_checkable_nav_and_close', ok35, r35))
 
+    # v6.40: å bytte fra PC til mobil i farten ga blank skjerm — setLayout('mob')
+    # aktiverte mobil-layouten og en fane, men rendret aldri fanens innhold (særlig
+    # Planlegging/wizarden). Oppstarten gjorde det via wizEnterSettingsTab(); den
+    # løpende byttingen gjorde det ikke. Nå rendrer setLayout den aktive fanen, så
+    # skjermen har innhold uansett hvordan man havner i mobilvisning.
+    r36 = page.evaluate("""() => {
+      resetTestState();
+      // start i PC-modus, som en bruker som har valgt PC
+      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
+      window._wizEnteredOnce=false; window._restoredSetup=false;
+      try{ setLayout('pc'); }catch(e){}
+      // bytt til mobil slik «Til mobil»-knappen gjør
+      try{ setLayout('mob'); }catch(e){ return {err:String(e)}; }
+      const isMob=document.body.classList.contains('mob-mode');
+      const activeScr=document.querySelector('.mob-screen.active');
+      const activeId=activeScr?activeScr.id:null;
+      const txtLen=activeScr?(activeScr.innerText||'').trim().length:-1;
+      // fanen skal ha reelt innhold (ikke blank)
+      const hasContent=txtLen>20;
+      resetTestState();
+      return { isMob, activeId, txtLen, hasContent };
+    }""")
+    ok36 = (r36.get('isMob') is True and r36.get('activeId') is not None
+            and r36.get('hasContent') is True)
+    results.append(('switch_pc_to_mobile_renders_active_tab_not_blank', ok36, r36))
+
 
 
 
