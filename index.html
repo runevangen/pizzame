@@ -606,6 +606,10 @@ body.pc-mode .mb.on{border-color:var(--pc-accent)}
 body.pc-mode .swhy{border-left-color:var(--pc-accent)}
 body.pc-mode .hrow.on .hd{background:var(--pc-accent)}
 body.pc-mode .needchip{background:var(--pc-accent-soft);color:var(--pc-accent-text);border-color:#f2d3bd}
+/* «Til mobil»-veksleren skal være lett å finne igjen (den satt for smått og
+   gjemt oppe i hjørnet) — varm bakgrunn med oransje kant som fanger blikket. */
+body.pc-mode .layout-toggle{background:var(--pc-raised);border-color:var(--pc-accent);color:var(--pc-accent-text)}
+body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 </style>
 </head>
 <body class="pre-interact">
@@ -691,7 +695,7 @@ body.pc-mode .needchip{background:var(--pc-accent-soft);color:var(--pc-accent-te
       <span id="build-stamp" onclick="event.stopPropagation();openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#e8590c;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
+  <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning" style="font-size:12px;padding:7px 12px;font-weight:600">📱 Til mobil</button></div>
 </div>
 
 <div class="menu-wrap">
@@ -706,6 +710,8 @@ body.pc-mode .needchip{background:var(--pc-accent-soft);color:var(--pc-accent-te
     <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none">★ Min favoritt</div>
     <div class="menu-row" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
     <div class="menu-row" onclick="sidenavGo(shareApp)">📤 Del appen</div>
+    <div style="height:1px;background:#F2F2F7"></div>
+    <div class="menu-row" onclick="sidenavGo(()=>setLayout('mob'))">📱 Bytt til mobilvisning</div>
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
     <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
