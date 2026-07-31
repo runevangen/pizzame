@@ -133,6 +133,12 @@ body.mob-mode .session-banner{background:var(--forno-bg-raised);border-color:var
 .step.now{border-color:#e8590c;border-width:2px}
 .step.shifted{border-color:#BA7517;border-style:dashed}
 .step-body{padding:.75rem 1rem}
+/* Tips/teknikk-kortene legger .stit/.sdesc RETT i .step (uten .step-body sin
+   padding), og .step har overflow:hidden for de runde hjørnene — da ble toppen
+   av tittelen og bunnen av teksten klippet. Gi de «bare» kortene egen padding.
+   Treffer kun kort der .stit er direkte barn (tips/teknikk), ikke planens steg
+   der tittelen ligger inne i .step-body. */
+.step:has(> .stit){padding:.7rem .9rem}
 .sh2{display:flex;align-items:flex-start;gap:9px;cursor:pointer}
 .sn{width:24px;height:24px;border-radius:50%;background:#e8590c;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}

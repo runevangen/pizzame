@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.645',
+    d: 'august 2026',
+    changes: [
+      'Rettet «Tips og teknikk»: overskriftene i kortene ble klippet i toppen fordi kortene manglet innermarg. Nå har teksten luft rundt seg og kuttes ikke lenger.'
+    ]
+  },
+  {
     v: '0.644',
     d: 'august 2026',
     changes: [
