@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.36',
+    d: 'juli 2026',
+    changes: [
+      'Fjernet «Kom i gang»-vinduet som poppet opp ved første besøk. Inngangsskjermen og hjelpetekstene underveis (metodekort, «hvorfor», tips, «Holder dette?») dekker det nå — ingen modal i ansiktet lenger. Den fulle <b>Bruksanvisningen</b> finnes fortsatt i Info-fanen (og bak logoen/menyen på PC).'
+    ]
+  },
+  {
     v: '6.35',
     d: 'juli 2026',
     changes: [

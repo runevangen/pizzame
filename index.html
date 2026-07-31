@@ -415,11 +415,6 @@ body.mob-mode .dyn-faint-text{color:var(--forno-text-muted)}
 body.mob-mode .admin-btn{background:var(--forno-bg);border-color:var(--forno-border);color:var(--forno-text-muted)}
 .admin-btn.danger{color:#993C1D;border-color:#e0ddd8}
 body.mob-mode .admin-btn.danger{color:#e07856;border-color:var(--forno-border)}
-.guide-num{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
-body.mob-mode .guide-num{background:var(--forno-accent);color:#1a1512}
-.guide-txt{font-size:13px;color:var(--dyn-text);line-height:1.4}
-body.mob-mode .guide-txt{color:var(--forno-text-muted)}
-body.mob-mode .guide-txt b{color:var(--forno-text)}
 /* Bruksanvisning (manual-modal) — rendret fra guide.js */
 .man-toc-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 1rem;padding-bottom:.9rem;border-bottom:1px solid #EDEDED}
 body.mob-mode .man-toc-wrap{border-bottom-color:var(--forno-border-soft)}
@@ -583,30 +578,9 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
     <div class="modal-body" id="feedback-modal-body"></div>
   </div>
 </div>
-<div id="guide-modal" class="modal-overlay" onclick="if(event.target===this)closeGuideModal()">
-  <div class="modal-box">
-    <div class="modal-head"><b>👋 Slik fungerer appen</b><button class="modal-x" onclick="closeGuideModal()" aria-label="Lukk">✕</button></div>
-    <div class="modal-body" id="guide-modal-body">
-      <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
-        <div class="guide-num">1</div>
-        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Velg pizzatype</b>Napoletansk, New York, Chicago, Langpanne eller Ingen elting.</div>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
-        <div class="guide-num">2</div>
-        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Velg metode (valgfritt)</b>Langtidsdeig fungerer fint til å begynne med — bytt senere når du vil eksperimentere.</div>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:.8rem;align-items:flex-start">
-        <div class="guide-num">3</div>
-        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Sett når du vil spise</b>Appen regner bakover og viser nøyaktig når du må starte.</div>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:.3rem;align-items:flex-start">
-        <div class="guide-num">4</div>
-        <div class="guide-txt"><b style="display:block;font-size:14px;margin-bottom:1px">Følg steg for steg</b>Hak av steg etter hvert. Lagre deigen hvis du vil dele den eller fortsette senere.</div>
-      </div>
-      <div id="guide-modal-footer"></div>
-    </div>
-  </div>
-</div>
+<!-- «Kom i gang»-modalen (guide-modal) fjernet i v6.36: inngangs-gaffelen +
+     inline-hjelp (metodekort, why-bokser, tips, «Holder dette?») dekker det nå.
+     Den fulle Bruksanvisningen (manual-modal, over) består. -->
 <div id="finish-bake-modal" class="modal-overlay" onclick="if(event.target===this)closeFinishBakeModal()">
   <div class="modal-box" style="max-width:380px">
     <div class="modal-head"><b>🍕 Hvordan ble den?</b><button class="modal-x" onclick="closeFinishBakeModal()" aria-label="Lukk">✕</button></div>
@@ -622,7 +596,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
 <div class="app">
 <div class="sb">
   <div style="display:flex;align-items:flex-start;justify-content:space-between">
-  <div class="logo" onclick="openGuideModal()" style="cursor:pointer" title="Åpne guiden"><span>🍕</span>
+  <div class="logo" onclick="openManualModal()" style="cursor:pointer" title="Åpne bruksanvisningen"><span>🍕</span>
     <div style="display:flex;flex-direction:column;gap:2px">
       <span>UltimatePizza</span>
       <span id="build-stamp" onclick="event.stopPropagation();openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#1D9E75;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
@@ -634,7 +608,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
 <div class="menu-wrap">
   <div class="menu-trigger" onclick="toggleSidenavMenu()"><span>☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
   <div class="menu-dropdown" id="sidenav-dropdown" style="display:none">
-    <div class="menu-row" onclick="sidenavGo(openGuideModal)">❓ Guide</div>
+    <div class="menu-row" onclick="sidenavGo(openManualModal)">📖 Bruksanvisning</div>
     <div class="menu-row" onclick="sidenavGo(openTechModal)">💡 Tips</div>
     <div class="menu-row" onclick="sidenavGo(openDeigerModal)">
       <span>🍽️ Deiger</span>
@@ -1007,7 +981,6 @@ function syncStaticI18nUI(){
   st('share-app-label','📤 Del appen','📤 Share app');
   st('mob-hjelp-lbl','Hjelp','Help');
   st('mob-help-manual','📖 Bruksanvisning','📖 User guide');
-  st('mob-help-guide','❓ Kom i gang (kort)','❓ Get started (short)');
   st('mob-help-tech','💡 Tips og teknikk','💡 Tips and technique');
   st('mob-help-feedback','💬 Feedback','💬 Feedback');
   st('mob-admin-lbl','Admin','Admin');
@@ -4616,7 +4589,6 @@ async function authComplete(id, name){
   try{ window.scrollTo(0,0); }catch(e){}
   const settingsScr=document.getElementById('mob-settings');
   if(settingsScr) settingsScr.scrollTop=0;
-  maybeShowGuideOnLoad();
   syncLoggedInAs();
   // Nullstiller slik at wizEnterSettingsTab() starter denne nylig innloggede
   // brukeren på steg 1, ikke der forrige bruker på samme enhet var.
@@ -4640,7 +4612,6 @@ function checkAuthOnLoad(){
   try{ saved = JSON.parse(localStorage.getItem('pizzaUser')); }catch(e){}
   if(saved && saved.id && saved.name){
     document.getElementById('auth-overlay').style.display = 'none';
-    maybeShowGuideOnLoad();
     syncLoggedInAs();
   }else{
     document.getElementById('auth-body').innerHTML = authNameScreenHTML();
@@ -4951,33 +4922,10 @@ function initAdvancedState(){
   }
 }
 
-function openGuideModal(){
-  const isMob = document.body.classList.contains('mob-mode');
-  document.getElementById('guide-modal-footer').innerHTML = isMob
-    ? `<div style="font-size:11px;color:var(--forno-text-faint);margin-top:.9rem;padding-top:.7rem;border-top:1px solid var(--forno-border-soft)">Flere valg (Kjøkkenmaskin, Meltype osv.) finner du bak "⚙️ Finjuster" på siste steg. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "Info"-fanen.</div>
-      <button onclick="wizTryNowFromGuide()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:600;cursor:pointer;margin-top:.8rem">Prøv det nå →</button>
-      <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--forno-bg-raised);color:var(--forno-text);border:1px solid var(--forno-border);font-size:13px;font-weight:600;cursor:pointer;margin-top:8px">Ikke vis igjen</button>`
-    : `<div style="font-size:11px;color:#888;margin-top:.9rem;padding-top:.7rem;border-top:1px solid #e8e5e0">Flere valg (Kjøkkenmaskin, Meltype osv.) ligger bak "⚙️ Avanserte innstillinger" i sidepanelet, hvis du vil finjustere. Tips, dine lagrede deiger, tilbakemelding og mer finner du i "☰ Meny" øverst.</div>
-      <button onclick="dismissGuideForever()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--dyn-btn-bg);color:var(--dyn-text);border:1px solid var(--dyn-border);font-size:13px;font-weight:600;cursor:pointer;margin-top:1rem">Ikke vis igjen</button>`;
-  document.getElementById('guide-modal').style.display = 'flex';
-}
-function wizTryNowFromGuide(){
-  closeGuideModal();
-  mobShowTab('settings');
-  wizGoto(1);
-}
-function closeGuideModal(){
-  document.getElementById('guide-modal').style.display = 'none';
-}
-function dismissGuideForever(){
-  try{ localStorage.setItem('pizzaGuideSeen', '1'); }catch(e){}
-  closeGuideModal();
-}
-function maybeShowGuideOnLoad(){
-  let dismissed = false;
-  try{ dismissed = localStorage.getItem('pizzaGuideSeen')==='1'; }catch(e){}
-  if(!dismissed) openGuideModal();
-}
+// «Kom i gang»-modalen (openGuideModal/closeGuideModal/wizTryNowFromGuide/
+// dismissGuideForever/maybeShowGuideOnLoad) er fjernet i v6.36. Inngangs-gaffelen
+// + inline-hjelp dekker onboarding nå; den fulle Bruksanvisningen (openManualModal)
+// består og nås fra Info-fanen, PC-logoen og sidemenyen.
 
 // ===== KJERNETALL FRA SERVER (salt/olje/gjær/hydrering per pizzatype) =====
 // Venter med å vise noe som helst til disse er hentet, slik at ingen noensinne ser
@@ -5581,7 +5529,7 @@ function showEntryFork(){
 // oppsettet ditt — bare navigasjon; velger du en dør igjen fortsetter du der du
 // var. Kun i mobilvisning (gaffelen finnes ikke på PC).
 function goToEntryFork(){
-  if(!document.body.classList.contains('mob-mode')){ try{ openGuideModal(); }catch(e){} return; }
+  if(!document.body.classList.contains('mob-mode')){ try{ openManualModal(); }catch(e){} return; }
   mobShowTab('settings');
   showEntryFork();
 }
@@ -6739,10 +6687,6 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-section-lbl" id="mob-hjelp-lbl">Hjelp</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openManualModal()">
       <span id="mob-help-manual" style="font-size:13px;color:var(--dyn-text);font-weight:600">📖 Bruksanvisning</span>
-      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
-    </div>
-    <div class="mob-setting-row" style="cursor:pointer" onclick="openGuideModal()">
-      <span id="mob-help-guide" style="font-size:13px;color:var(--dyn-text);font-weight:500">❓ Kom i gang (kort)</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openTechModal()">
