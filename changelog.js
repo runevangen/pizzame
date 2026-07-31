@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.35',
+    d: 'juli 2026',
+    changes: [
+      'Ryddet inngangsskjermen: fjernet «Ny til pizzadeig? Slik funker det»-lenka. Guiden nås fortsatt fra Info-fanen.'
+    ]
+  },
+  {
     v: '6.34',
     d: 'juli 2026',
     changes: [
