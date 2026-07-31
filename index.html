@@ -100,6 +100,14 @@ input[type=date]:focus,input[type=time]:focus{border-color:#e8590c;outline:2px s
    skalerer med font-size og ville dominert) — mobil åpner uansett velgeren ved trykk. */
 #mob-beta-et::-webkit-calendar-picker-indicator{display:none}
 #mob-beta-et::-webkit-inner-spin-button{display:none;-webkit-appearance:none}
+/* Smart-plan: klokke og dato som to LIKE store kort. Hver boks viser en egen,
+   formatert verdi (så vi kan skrive «lør 1. aug» i stedet for OS-formatet), med
+   en gjennomsiktig native-velger oppå som fortsatt åpner iOS-hjulet ved trykk. */
+.beta-field{position:relative;background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:14px;min-height:74px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.beta-field-val{font-size:34px;font-weight:800;color:var(--forno-text);text-align:center;font-variant-numeric:tabular-nums;line-height:1.1;padding:6px 10px;pointer-events:none}
+.beta-field-input{position:absolute;inset:0;width:100%;height:100%;margin:0;border:none;background:transparent;color:transparent;font-size:16px;cursor:pointer;-webkit-appearance:none;appearance:none;opacity:0}
+.beta-field-input::-webkit-calendar-picker-indicator{opacity:0}
+.beta-field-input::-webkit-date-and-time-value{color:transparent}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
 .sr input[type=range]{flex:1;min-width:0;accent-color:#e8590c}
@@ -3147,10 +3155,30 @@ function betaEnsureDate(){
   const dEl=document.getElementById('mob-beta-ed');
   if(dEl && !dEl.value) dEl.value=betaDefaultDate();
 }
+// «lør 1. aug» — ukedag + dag + måned (uten år), språktilpasset. Vises i dato-
+// kortet i stedet for OS-formatet, som en native date-input ikke lar oss endre.
+function betaFmtDate(iso){
+  if(!iso) return '—';
+  const d=new Date(iso+'T00:00');
+  if(isNaN(d.getTime())) return '—';
+  const dNo=['søn','man','tir','ons','tor','fre','lør'], dEn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const mNo=['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+  const mEn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if(window._lang==='en') return `${dEn[d.getDay()]} ${d.getDate()} ${mEn[d.getMonth()]}`;
+  return `${dNo[d.getDay()]} ${d.getDate()}. ${mNo[d.getMonth()]}`;
+}
+// Speiler klokke/dato-verdiene inn i kortenes synlige etiketter.
+function betaSyncFieldLabels(){
+  const tEl=document.getElementById('mob-beta-et'), tDisp=document.getElementById('mob-beta-et-disp');
+  if(tEl && tDisp) tDisp.textContent = tEl.value || '19:00';
+  const dEl=document.getElementById('mob-beta-ed'), dDisp=document.getElementById('mob-beta-ed-disp');
+  if(dEl && dDisp) dDisp.textContent = betaFmtDate(dEl.value);
+}
 async function renderBetaPanel(){
   if(!window._pizzatidSchedule) await loadPizzatidSchedule();
   renderPizzatidDays();
   betaEnsureDate();
+  betaSyncFieldLabels();
   renderBetaFasteTider();
 }
 // Åpner Beta-fanen og folder ut Pizzatid-panelet, slik at "Rediger pizzatiden
@@ -3391,6 +3419,7 @@ function useBetaShortcut(iso){
   const pad=n=>String(n).padStart(2,'0');
   if(dEl) dEl.value=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   if(tEl) tEl.value=pad(d.getHours())+':'+pad(d.getMinutes());
+  betaSyncFieldLabels();
   runBetaSearch();
 }
 function runBetaSearch(){
@@ -7060,11 +7089,16 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-beta-baketime-lbl" style="padding:.9rem 1rem 0;font-size:15px;font-weight:800;color:var(--forno-accent-text)">Når skal deigen være klar?</div>
       <div id="mob-beta-baketime-sub" style="padding:2px 1rem 0;font-size:11.5px;color:var(--forno-text-faint)">Ferdig hevet og klar for ovnen.</div>
       <div style="padding:.55rem 1rem .8rem">
-        <!-- Skisse 2 «Tiden er helten»: stort, trykkbart klokkeslett i fokus, dato sekundær. -->
-        <div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:14px;padding:8px 10px 12px;margin-bottom:8px">
-          <input type="time" id="mob-beta-et" value="19:00" style="border:none;background:transparent;color:var(--forno-text);font-size:42px;font-weight:800;text-align:center;width:100%;padding:2px 0;font-variant-numeric:tabular-nums">
+        <!-- Klokke og dato som to like store kort. Verdien vises via egen etikett
+             (format vi styrer selv); en gjennomsiktig native-velger ligger oppå. -->
+        <div class="beta-field" style="margin-bottom:8px">
+          <span class="beta-field-val" id="mob-beta-et-disp">19:00</span>
+          <input type="time" id="mob-beta-et" class="beta-field-input" value="19:00" onchange="betaSyncFieldLabels()" aria-label="Klokkeslett">
         </div>
-        <input type="date" id="mob-beta-ed" onchange="betaEnsureDate()" style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-align:center;padding:11px;font-size:15px;font-weight:600;border-radius:10px;margin-bottom:10px">
+        <div class="beta-field" style="margin-bottom:10px">
+          <span class="beta-field-val" id="mob-beta-ed-disp">—</span>
+          <input type="date" id="mob-beta-ed" class="beta-field-input" onchange="betaEnsureDate();betaSyncFieldLabels()" aria-label="Dato">
+        </div>
         <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
         <div id="mob-beta-result"></div>
       </div>

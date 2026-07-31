@@ -1864,6 +1864,30 @@ def run_behavioral_tests(page):
             and r39.get('segCount')==4)
     results.append(('xxl_font_level_wired_through_scale_stepper_and_control', ok39, r39))
 
+    # v0.646: Smart-plan-velgeren bygget om — klokke og dato som to LIKE store kort
+    # (.beta-field), hver med en egen formatert etikett (.beta-field-val: «19:00» /
+    # «lør 1. aug») og en gjennomsiktig native-velger (.beta-field-input) oppå.
+    # Sjekk struktur + at etikettene synces fra input-verdiene, inkl. dato-format.
+    r40 = page.evaluate("""() => {
+      const t=document.getElementById('mob-beta-et'), d=document.getElementById('mob-beta-ed');
+      if(!t||!d) return {missing:true};
+      const _lang=window._lang; window._lang='no';
+      t.value='07:30'; d.value='2026-08-03'; betaSyncFieldLabels();  // 2026-08-03 = mandag
+      const out={
+        fields:document.querySelectorAll('.beta-field').length,
+        vals:document.querySelectorAll('.beta-field .beta-field-val').length,
+        inputs:document.querySelectorAll('.beta-field .beta-field-input').length,
+        timeLabel:document.getElementById('mob-beta-et-disp').textContent,
+        dateLabel:document.getElementById('mob-beta-ed-disp').textContent,
+      };
+      // begge kortene deler samme klasse -> lik boks-styling
+      window._lang=_lang;
+      return out;
+    }""")
+    ok40 = (r40.get('fields')==2 and r40.get('vals')==2 and r40.get('inputs')==2
+            and r40.get('timeLabel')=='07:30' and r40.get('dateLabel')=='man 3. aug')
+    results.append(('smartplan_picker_equal_cards_with_formatted_labels', ok40, r40))
+
 
 
 
