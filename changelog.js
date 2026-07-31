@@ -3,6 +3,14 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.642',
+    d: 'juli 2026',
+    changes: [
+      'Deiger er nå <b>private per bruker</b>. Du ser dine egne deiger + de som er delt med alle — ikke lenger alle andres. Hver av dine egne deiger har en «🔒 Privat — del med alle»-bryter; deler du, dukker den opp i «🌐 Delt med alle» for de andre, som kan åpne og kopiere den (men ikke endre den). «Min favoritt» er også per bruker nå.',
+      'Deiger som allerede lå der beholdes som delt (synlige for alle) — ingenting forsvinner. Bare nye deiger er private som standard.'
+    ]
+  },
+  {
     v: '0.641',
     d: 'juli 2026',
     changes: [

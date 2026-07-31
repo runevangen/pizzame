@@ -1,14 +1,29 @@
 import { getStore } from '@netlify/blobs';
 
-// Delt liste over aktive og ferdige bakster.
-// Ingen pålogging — åpen for alle i familie/vennegruppen som har lenken.
-// GET    /api/bakes          -> liste alle
-// POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO, checkedSteps?, checkedIngredients?, savedBy? }
+// Liste over aktive og ferdige bakster.
+// Personvern (v0.642): deiger er PRIVATE per bruker (ownerId) som standard.
+// En bruker ser sine egne + de som er delt med alle (shared:true). Eldre deiger
+// UTEN ownerId regnes som delte/åpne (bakoverkompatibelt — ingenting forsvinner).
+// Admin (?admin=PASSWORD) ser alt.
+// GET    /api/bakes?userId=X            -> egne + delte (+ eldre uten eier)
+// GET    /api/bakes?admin=PASSWORD      -> alle (admin)
+// POST   /api/bakes          -> lagre ny bakst { name, config, anchorMode, anchorISO, ownerId?, shared?, checkedSteps?, checkedIngredients?, savedBy? }
 // PATCH  /api/bakes/:id      -> merk ferdig + kommentar { note, noteBy? } eller gjenåpne { status:'active' },
-//                                sett/fjern favoritt { favorite: true|false } (kun én favoritt om gangen),
+//                                dele/gjøre privat { shared: true|false },
+//                                sett/fjern favoritt { favorite: true|false } (kun én favoritt PER EIER),
 //                                huske avhaket steg/ingredienser/understeg { checkedSteps, checkedIngredients, checkedSubsteps },
 //                                eller sette vurdering/bilde på ferdig deig { rating: 1-5|null, photo: base64-string|null }
 // DELETE /api/bakes/:id      -> slette permanent
+//
+// Admin-passord: sett miljøvariabelen ADMIN_PASSWORD i Netlify. Faller tilbake
+// til standardpassordet under hvis den ikke er satt ennå.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Pizzamester2026';
+
+// Hvem kan se/endre en gitt deig? Eldre deiger uten eier er åpne for alle (som
+// før). En eid deig er kun synlig/redigerbar for eieren — eller for alle når den
+// er delt (synlig) / for eieren (redigerbar). Admin har alltid tilgang.
+function isPublic(bake) { return !bake.ownerId || bake.shared === true; }
+function ownedBy(bake, userId) { return bake.ownerId && userId && bake.ownerId === userId; }
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -29,6 +44,9 @@ export default async (req, context) => {
 
   try {
     if (req.method === 'GET') {
+      const userId = url.searchParams.get('userId') || null;
+      const adminPw = url.searchParams.get('admin');
+      const isAdmin = !!adminPw && adminPw === ADMIN_PASSWORD;
       const { blobs } = await store.list();
       const raw = await Promise.all(
         blobs.map(async (b) => {
@@ -44,7 +62,12 @@ export default async (req, context) => {
         })
       );
       // Filtrer bort ugyldige poster FØR sortering (ellers krasjer new Date(null.savedAt)).
-      const bakes = raw.filter((x) => x && typeof x === 'object');
+      let bakes = raw.filter((x) => x && typeof x === 'object');
+      // Personvern: vanlige brukere ser bare egne + delte (+ eldre uten eier).
+      // Admin ser alt.
+      if (!isAdmin) {
+        bakes = bakes.filter((b) => isPublic(b) || ownedBy(b, userId));
+      }
       bakes.sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
       return json(200, { bakes });
     }
@@ -60,6 +83,11 @@ export default async (req, context) => {
         name: String(body.name).slice(0, 60),
         status: 'active',
         favorite: false,
+        // Personvern: eier + delt-flagg. Ny deig er privat (shared:false) som
+        // standard, eid av den som lagret den. Uten ownerId (gjest/eldre klient)
+        // regnes deigen som åpen/delt, som før.
+        ownerId: typeof body.ownerId === 'string' && body.ownerId.trim() ? body.ownerId.trim().slice(0, 64) : null,
+        shared: body.shared === true,
         config: body.config,
         anchorMode: body.anchorMode === 'end' ? 'end' : 'start',
         anchorISO: body.anchorISO,
@@ -83,7 +111,14 @@ export default async (req, context) => {
       const existing = await store.get(id, { type: 'json' });
       if (!existing) return json(404, { error: 'Fant ikke bakst' });
       const body = await req.json();
+      // Eierskapsvakt: en deig MED eier kan bare endres av eieren (eller admin).
+      // Eldre deiger uten eier er fortsatt åpne for alle i gruppen (som før).
+      const isAdmin = !!body.admin && body.admin === ADMIN_PASSWORD;
+      if (existing.ownerId && !isAdmin && body.userId !== existing.ownerId) {
+        return json(403, { error: 'Bare eieren kan endre denne deigen' });
+      }
       const updated = { ...existing };
+      if (typeof body.shared === 'boolean') updated.shared = body.shared;
       if (body.status === 'finished') {
         updated.status = 'finished';
         updated.finishedAt = new Date().toISOString();
@@ -114,13 +149,17 @@ export default async (req, context) => {
       if (body.photo === null) updated.photo = null;
       if (typeof body.favorite === 'boolean') {
         updated.favorite = body.favorite;
-        // Kun én favoritt om gangen — fjern favoritt-merket fra alle andre bakster.
+        // Kun én favoritt om gangen PER EIER — fjern favoritt-merket fra denne
+        // eierens andre bakster (ikke andre brukeres, nå som deiger er private).
         if (body.favorite === true) {
           const { blobs } = await store.list();
           await Promise.all(blobs.map(async (b) => {
             if (b.key === id) return;
             const other = await store.get(b.key, { type: 'json' });
-            if (other && other.favorite) {
+            // samme eierskap som deigen vi favoriserer (begge eid av samme bruker,
+            // eller begge eldre uten eier)
+            const sameScope = (other && (other.ownerId || null) === (updated.ownerId || null));
+            if (other && other.favorite && sameScope) {
               other.favorite = false;
               await store.setJSON(b.key, other);
             }
@@ -134,6 +173,17 @@ export default async (req, context) => {
     if (req.method === 'DELETE') {
       const id = idFromPath(url.pathname);
       if (!id) return json(400, { error: 'Mangler id' });
+      // Eierskapsvakt (params, siden DELETE-body er upålitelig i noen klienter):
+      // en eid deig kan bare slettes av eieren eller admin. Eldre uten eier: åpen.
+      const existing = await store.get(id, { type: 'json' });
+      if (existing && existing.ownerId) {
+        const adminPw = url.searchParams.get('admin');
+        const isAdmin = !!adminPw && adminPw === ADMIN_PASSWORD;
+        const userId = url.searchParams.get('userId');
+        if (!isAdmin && userId !== existing.ownerId) {
+          return json(403, { error: 'Bare eieren kan slette denne deigen' });
+        }
+      }
       await store.delete(id);
       return json(200, { deleted: id });
     }
