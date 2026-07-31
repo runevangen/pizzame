@@ -948,7 +948,6 @@ function syncStaticI18nUI(){
   st('wiz-entry-a-sub','Si når du har tid og når du vil spise — så finner appen metoden som passer livet ditt.','Tell it when you have time and when you want to eat — the app finds the method that fits your life.');
   st('wiz-entry-b-h','Jeg vet hva jeg vil ha','I know what I want');
   st('wiz-entry-b-sub','Velg pizzatype og metode selv, steg for steg.','Pick pizza type and method yourself, step by step.');
-  st('wiz-entry-guide','Ny til pizzadeig? Slik funker det →','New to pizza dough? Here is how it works →');
   // Wizard header + step 1
   st('wiz-header-hint','Gå fritt frem og tilbake — Tidsplan-fanen viser alltid resultatet av gjeldende valg.','Move freely back and forth — the Schedule tab always shows the result of the current choices.');
   st('wiz-s1-h','Hvilken pizza?','Which pizza?');
@@ -6467,9 +6466,6 @@ document.addEventListener('change', firstInteractionCheck, true);
         </div>
         <div id="wiz-entry-b-sub" style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted);margin-top:7px">Velg pizzatype og metode selv, steg for steg.</div>
       </button>
-      <div style="text-align:center">
-        <span id="wiz-entry-guide" onclick="openGuideModal()" style="font-size:12px;color:var(--forno-accent-text);font-weight:600;cursor:pointer">Ny til pizzadeig? Slik funker det →</span>
-      </div>
     </div>
 
     <div id="wiz-header" class="wiz-step" style="display:none;padding:1.1rem 1rem .8rem">
