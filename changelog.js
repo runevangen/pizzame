@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.641',
+    d: 'juli 2026',
+    changes: [
+      'Rettet datofeltet i Smart-plan som ble stående blankt hvis man brukte «tøm»-knappen på iPhone. Nå fylles en fornuftig standard-dato tilbake automatisk, så feltet aldri står tomt.'
+    ]
+  },
+  {
     v: '0.640',
     d: 'juli 2026',
     changes: [

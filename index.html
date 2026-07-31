@@ -3103,16 +3103,24 @@ function flourMatchesForHours(hrs){
 const PIZZATID_DAY_LABELS=[['mon','Mandag'],['tue','Tirsdag'],['wed','Onsdag'],['thu','Torsdag'],['fri','Fredag'],['sat','Lørdag'],['sun','Søndag']];
 const PIZZATID_DAY_LABELS_EN={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
 window._betaResultRegistry=[];
+// Standard-dato for Smart-plan: i dag kl. 19, eller i morgen hvis 19 alt er passert.
+function betaDefaultDate(){
+  const now=new Date();
+  let cand=new Date(now.getFullYear(),now.getMonth(),now.getDate(),19,0,0,0);
+  if(cand.getTime()<=now.getTime()) cand.setDate(cand.getDate()+1);
+  return fd(cand);
+}
+// iOS' datofelt har en innebygd «tøm»-knapp; tømmer man feltet ble det stående
+// blankt (og søket klaget «Sett en dato først»). Fyll alltid tilbake en fornuftig
+// standard i stedet for å la det stå tomt.
+function betaEnsureDate(){
+  const dEl=document.getElementById('mob-beta-ed');
+  if(dEl && !dEl.value) dEl.value=betaDefaultDate();
+}
 async function renderBetaPanel(){
   if(!window._pizzatidSchedule) await loadPizzatidSchedule();
   renderPizzatidDays();
-  const dEl=document.getElementById('mob-beta-ed');
-  if(dEl && !dEl.value){
-    const now=new Date();
-    let cand=new Date(now.getFullYear(),now.getMonth(),now.getDate(),19,0,0,0);
-    if(cand.getTime()<=now.getTime()) cand.setDate(cand.getDate()+1);
-    dEl.value=fd(cand);
-  }
+  betaEnsureDate();
   renderBetaFasteTider();
 }
 // Åpner Beta-fanen og folder ut Pizzatid-panelet, slik at "Rediger pizzatiden
@@ -6952,7 +6960,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:14px;padding:8px 10px 12px;margin-bottom:8px">
           <input type="time" id="mob-beta-et" value="19:00" style="border:none;background:transparent;color:var(--forno-text);font-size:42px;font-weight:800;text-align:center;width:100%;padding:2px 0;font-variant-numeric:tabular-nums">
         </div>
-        <input type="date" id="mob-beta-ed" style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-align:center;padding:11px;font-size:15px;font-weight:600;border-radius:10px;margin-bottom:10px">
+        <input type="date" id="mob-beta-ed" onchange="betaEnsureDate()" style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-align:center;padding:11px;font-size:15px;font-weight:600;border-radius:10px;margin-bottom:10px">
         <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
         <div id="mob-beta-result"></div>
       </div>

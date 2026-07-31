@@ -1782,6 +1782,23 @@ def run_behavioral_tests(page):
             and r36.get('hasContent') is True)
     results.append(('switch_pc_to_mobile_renders_active_tab_not_blank', ok36, r36))
 
+    # v0.641: iOS' datofelt i Smart-plan har en innebygd «tøm»-knapp. Tømmer man
+    # feltet ble det stående blankt. Nå fyller onchange->betaEnsureDate() alltid
+    # tilbake en fornuftig standard-dato, så feltet aldri står tomt.
+    r37 = page.evaluate("""() => {
+      const d=document.getElementById('mob-beta-ed');
+      if(!d) return {noField:true};
+      d.value='2026-01-02';                       // en kjent verdi
+      // simuler iOS-tømming: tom verdi + change
+      d.value=''; betaEnsureDate();
+      const refilled=d.value;
+      // og at standarden er en gyldig dato
+      const valid=!isNaN(new Date(refilled+'T19:00').getTime());
+      return { refilled, notBlank: refilled!=='', valid };
+    }""")
+    ok37 = (r37.get('notBlank') is True and r37.get('valid') is True)
+    results.append(('smartplan_clearing_date_refills_default_not_blank', ok37, r37))
+
 
 
 
