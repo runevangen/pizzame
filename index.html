@@ -48,7 +48,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pills{display:flex;flex-wrap:wrap;gap:4px}
 .pill{padding:7px 14px;border-radius:20px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:#F2F2F7;color:var(--dyn-text);transition:background .15s;white-space:nowrap;user-select:none;display:inline-flex;align-items:center;height:34px}
 body.mob-mode .pill{background:var(--forno-bg);border:1px solid var(--forno-border)}
-.pill.on{background:#1D9E75;color:#fff;font-weight:600}
+.pill.on{background:#e8590c;color:#fff;font-weight:600}
 body.mob-mode .pill.on{background:var(--forno-accent);color:#1a1512;border-color:var(--forno-accent)}
 .pill:hover:not(.on){background:#EDEDED}
 .segctrl{background:#F2F2F7;border-radius:10px;padding:2px;gap:2px}
@@ -68,7 +68,7 @@ body.mob-mode .dropdown-select::after{color:var(--forno-text-faint)}
 .menu-row:hover{background:#FAFAF9}
 .mcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .mc{border-radius:12px;padding:.6rem .7rem;cursor:pointer;transition:all .15s;background:#F2F2F7}
-.mc.on{background:#1D9E75}
+.mc.on{background:#e8590c}
 .mc.hc{background:#FFF4E5}
 .mc.hc.on{background:#BA7517}
 .mc-t{font-size:12px;font-weight:600;color:var(--dyn-text)}
@@ -81,41 +81,41 @@ body.mob-mode .dropdown-select::after{color:var(--forno-text-faint)}
 .hsub-body{background:#fff;padding:.5rem .65rem;display:flex;flex-direction:column;gap:2px}
 .hrow{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:#3A3A3C;transition:background .1s}
 .hrow:hover{background:#F2F2F7}
-.hrow.on{background:#e8f7f1;color:#085041;font-weight:600}
+.hrow.on{background:#fbe4d4;color:#c2410c;font-weight:600}
 .hd{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
-.hrow.on .hd{background:#1D9E75}
+.hrow.on .hd{background:#e8590c}
 .gcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .divl{height:1px;background:#EDEDED;flex-shrink:0}
 .tbox{background:#fff;border-radius:14px;padding:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 .tbox-t{font-size:12px;font-weight:600;margin-bottom:.55rem;display:flex;align-items:center;gap:5px;color:var(--dyn-text)}
 .mbtns{display:flex;gap:5px;margin-bottom:.6rem}
 .mb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:8px;border:2px solid #E5E5EA;cursor:pointer;background:#fff;color:#6E6E73;transition:all .15s;font-size:11px;text-align:center;line-height:1.3;user-select:none}
-.mb.on{border-color:#1D9E75;background:#e8f7f1;color:#085041;font-weight:600}
+.mb.on{border-color:#e8590c;background:#fbe4d4;color:#c2410c;font-weight:600}
 .mb:hover:not(.on){background:#F2F2F7}
 .dtg{display:grid;grid-template-columns:1fr 110px;gap:5px;margin-bottom:3px}
 input[type=date],input[type=time]{width:100%;padding:6px 8px;border:1px solid #E5E5EA;border-radius:6px;font-size:12px;background:#fff;color:var(--dyn-text);outline:none;min-width:0;font-family:inherit}
 body.mob-mode input[type=date],body.mob-mode input[type=time]{background:var(--forno-bg);border-color:var(--forno-border);color-scheme:dark}
-input[type=date]:focus,input[type=time]:focus{border-color:#1D9E75;outline:2px solid #1D9E7530}
+input[type=date]:focus,input[type=time]:focus{border-color:#e8590c;outline:2px solid #e8590c30}
 /* Smart-plan: stort «tiden er helten»-felt. Skjul den native picker-ikonen (som
    skalerer med font-size og ville dominert) — mobil åpner uansett velgeren ved trykk. */
 #mob-beta-et::-webkit-calendar-picker-indicator{display:none}
 #mob-beta-et::-webkit-inner-spin-button{display:none;-webkit-appearance:none}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
-.sr input[type=range]{flex:1;min-width:0;accent-color:#1D9E75}
-.sv{font-size:12px;font-weight:600;color:#1D9E75;white-space:nowrap;min-width:44px;text-align:right}
+.sr input[type=range]{flex:1;min-width:0;accent-color:#e8590c}
+.sv{font-size:12px;font-weight:600;color:#e8590c;white-space:nowrap;min-width:44px;text-align:right}
 .hb{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:7px;margin-left:3px;vertical-align:middle}
 .brow{display:grid;grid-template-columns:1fr auto;gap:5px;margin-top:auto;padding-top:.5rem}
-.bgo{width:100%;height:38px;background:transparent;color:#1D9E75;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.bgo{width:100%;height:38px;background:transparent;color:#e8590c;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .bgo:hover{background:#F2F2F7}
 .brst{padding:10px 13px;background:#fff;color:#6E6E73;border:1px solid #E5E5EA;border-radius:8px;cursor:pointer;font-size:13px}
 .brst:hover{background:#F2F2F7}
 h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .sub{font-size:12px;color:#6E6E73;margin-bottom:.75rem;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
-.bg{background:#e8f7f1;color:#085041}.ba{background:#fef3e2;color:#633806}.bc{background:#feece8;color:#712B13}.bw{background:#F2F2F7;color:#666}
+.bg{background:#fbe4d4;color:#c2410c}.ba{background:#fef3e2;color:#633806}.bc{background:#feece8;color:#712B13}.bw{background:#F2F2F7;color:#666}
 .crow{display:flex;gap:6px;margin-bottom:1rem}
-.cbtn{flex:1;height:38px;border:none;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px;background:transparent;color:#1D9E75;cursor:pointer}
+.cbtn{flex:1;height:38px;border:none;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px;background:transparent;color:#e8590c;cursor:pointer}
 .cbtn:hover{background:#F2F2F7}
 .pcbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1rem}
 .pcc{background:#FAFAF9;border-radius:8px;padding:.55rem .7rem;text-align:center}
@@ -124,20 +124,20 @@ h2{font-size:18px;font-weight:600;margin-bottom:.25rem}
 .pcc .ps{font-size:10px;color:#8E8E93;margin-top:1px}
 .topnav{display:flex;gap:4px;background:#fff;border-bottom:1px solid #EDEDED;padding:.5rem 1.5rem;position:sticky;top:0;z-index:50;margin:-1.5rem -1.5rem 1.1rem}
 .tab{padding:7px 15px;font-size:13px;cursor:pointer;color:#666;border-radius:8px}
-.tab.on{background:#085041;color:#fff;font-weight:600}
+.tab.on{background:#c2410c;color:#fff;font-weight:600}
 .tab:hover:not(.on){background:#F2F2F7;color:var(--dyn-text)}
 .step{border-radius:14px;overflow:hidden;margin-bottom:.6rem;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 body.mob-mode .step{background:var(--forno-bg-raised);box-shadow:none;border:1px solid var(--forno-border)}
 .session-banner{background:#f4f0ea;border:1px dashed #d0cdc8;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:11px;color:#888;display:flex;align-items:center;gap:6px}
 body.mob-mode .session-banner{background:var(--forno-bg-raised);border-color:var(--forno-border);color:var(--forno-text-faint)}
-.step.now{border-color:#1D9E75;border-width:2px}
+.step.now{border-color:#e8590c;border-width:2px}
 .step.shifted{border-color:#BA7517;border-style:dashed}
 .step-body{padding:.75rem 1rem}
 .sh2{display:flex;align-items:flex-start;gap:9px;cursor:pointer}
-.sn{width:24px;height:24px;border-radius:50%;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sn{width:24px;height:24px;border-radius:50%;background:#e8590c;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
 .stepchk{width:20px;height:20px;border-radius:6px;border:2px solid #d0cdc8;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:#fff}
-.stepchk.on{background:#1D9E75;border-color:#1D9E75}
+.stepchk.on{background:#e8590c;border-color:#e8590c}
 .stit{font-size:13px;font-weight:600;color:var(--dyn-text)}
 .smeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px}
 .stim{font-size:11px;color:#6E6E73}
@@ -146,17 +146,17 @@ body.mob-mode .session-banner{background:var(--forno-bg-raised);border-color:var
 .sloc.k{color:#185FA5}.sloc.r{color:#0F6E56}.sloc.o{color:#993C1D}
 .sdesc{font-size:12px;color:#3A3A3C;margin-top:.45rem;line-height:1.65}
 .sneeds{display:flex;flex-wrap:wrap;gap:5px;margin-top:.5rem}
-.needchip{font-size:11px;font-weight:600;background:#EEF6F2;color:#0a6b52;border:1px solid #cfe8dc;border-radius:6px;padding:3px 8px}
+.needchip{font-size:11px;font-weight:600;background:#fbe4d4;color:#c2410c;border:1px solid #cfe8dc;border-radius:6px;padding:3px 8px}
 .substep-list{list-style:none;margin:.55rem 0 0;padding:0}
 .substep-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:12.5px;line-height:1.55;color:#3A3A3C}
 .substep-num{flex-shrink:0;width:17px;height:17px;border-radius:4px;border:1px solid #cdd0d6;color:#6E6E73;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
-.substep-num-done{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.substep-num-done{background:#e8590c;border-color:#e8590c;color:#fff}
 .substep-done .substep-txt{color:#9a9a9e;text-decoration:line-through}
 body.mob-mode .substep-item{color:var(--forno-text-muted)}
 body.mob-mode .substep-num{border-color:var(--forno-border);color:var(--forno-text-faint)}
 body.mob-mode .substep-done .substep-txt{color:var(--forno-text-faint)}
 body.mob-mode .sdesc{color:var(--forno-text-muted)}
-.swhy{background:#e8f7f1;border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#085041;margin-top:.45rem;line-height:1.5}
+.swhy{background:#fbe4d4;border-left:3px solid #e8590c;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#c2410c;margin-top:.45rem;line-height:1.5}
 .stip{background:#FAFAF9;border-left:3px solid #ccc;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#3A3A3C;margin-top:.4rem;line-height:1.5}
 .snote{background:#fef3e2;border-left:3px solid #BA7517;padding:6px 10px;border-radius:0 5px 5px 0;font-size:11.5px;color:#633806;margin-top:.4rem;line-height:1.5}
 .swait{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;background:#FAFAF9;border-top:1px solid #EDEDED}
@@ -166,17 +166,17 @@ body.mob-mode .sdesc{color:var(--forno-text-muted)}
 .rec{background:#F2F2F7;border-radius:14px;padding:.9rem 1rem;margin-bottom:.9rem}
 .rrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #EDEDED}
 .ing-check{width:18px;height:18px;border-radius:50%;border:2px solid #D1D1D6;flex-shrink:0;display:inline-block}
-.ing-check.on{background:#1D9E75;border-color:#1D9E75;position:relative}
+.ing-check.on{background:#e8590c;border-color:#e8590c;position:relative}
 .ing-check.on::after{content:'✓';position:absolute;inset:0;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .rrow:last-child{border-bottom:none}
-.rval{font-weight:600;color:#1D9E75}
+.rval{font-weight:600;color:#e8590c}
 .wbox{background:#fef3e2;border-left:3px solid #BA7517;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#633806;margin-bottom:.75rem;line-height:1.5}
 .ibox{background:#e8f1fb;border-left:3px solid #185FA5;padding:7px 11px;border-radius:0 5px 5px 0;font-size:12px;color:#0C447C;margin-bottom:.75rem;line-height:1.5}
 .future-dim{opacity:.45}
 .daylbl{font-size:15px;font-weight:700;color:var(--dyn-text);margin:.8rem 0 .3rem;display:flex;align-items:center;gap:6px}
-.daylbl.today{color:#085041}
+.daylbl.today{color:#c2410c}
 .daylbl .ddot{width:7px;height:7px;border-radius:50%;background:#ccc}
-.daylbl.today .ddot{background:#1D9E75}
+.daylbl.today .ddot{background:#e8590c}
 /* ===== MOBILE LAYOUT ===== */
 /* Høyden settes egentlig i JS av syncMobLayoutHeight() (piksler-før-zoom), fordi
    CSS-høydeenheter regner feil under body sin `zoom`. Disse er bare fallback før
@@ -241,7 +241,7 @@ body.mob-mode .mob-tabbar{background:var(--forno-bg-sunken);border-top-color:var
 .mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:13px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
 body.mob-mode .mob-tab{color:var(--forno-text-faint);font-family:var(--forno-font-body)}
 .mob-tab span[aria-hidden]{font-size:22px;line-height:1}
-.mob-tab.on{color:#1D9E75;border-top-color:#1D9E75}
+.mob-tab.on{color:#e8590c;border-top-color:#e8590c}
 body.mob-mode .mob-tab.on{color:var(--forno-accent);border-top-color:var(--forno-accent)}
 
 /* mob screens */
@@ -256,18 +256,18 @@ body.mob-mode .mob-screen{background:var(--forno-bg)}
 /* mob steps — compact */
 .mob-step{border-radius:14px;overflow:hidden;margin-bottom:.5rem;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 body.mob-mode .mob-step{background:var(--forno-bg-raised);border:1px solid var(--forno-border);box-shadow:none}
-.mob-step.now{border-color:#1D9E75;border-width:2px}
+.mob-step.now{border-color:#e8590c;border-width:2px}
 body.mob-mode .mob-step.now{border-color:var(--forno-accent)}
 .mob-step.shifted{border-color:#BA7517;border-style:dashed}
 .mob-step.dim{opacity:.75}
 .mob-step-body{padding:.55rem .75rem}
 .mob-sh{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
-.mob-sn{width:22px;height:22px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.mob-sn{width:22px;height:22px;border-radius:50%;background:#e8590c;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 body.mob-mode .mob-sn{background:var(--forno-border);color:var(--forno-accent-text);font-family:var(--forno-font-mono)}
 body.mob-mode .mob-step.now .mob-sn{background:var(--forno-accent);color:#1a1512}
 .mob-stepchk{width:18px;height:18px;border-radius:6px;border:2px solid #d0cdc8;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;background:#fff}
 body.mob-mode .mob-stepchk{width:24px;height:24px;border-radius:7px;border-color:var(--forno-text-faint);background:transparent;font-size:14px;margin-top:1px}
-.mob-stepchk.on{background:#1D9E75;border-color:#1D9E75}
+.mob-stepchk.on{background:#e8590c;border-color:#e8590c}
 body.mob-mode .mob-stepchk.on{background:var(--forno-accent);border-color:var(--forno-accent);color:#1a1512}
 .mob-sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
 body.mob-mode .mob-sn.d{background:transparent;color:var(--forno-text-faint);border-color:var(--forno-border)}
@@ -289,19 +289,19 @@ body.mob-mode .mob-snote{border-left-color:#6b4a1f;color:var(--forno-text-muted)
 .mob-sdesc{font-size:12px;color:#3A3A3C;margin-top:.4rem;line-height:1.6}
 body.mob-mode .mob-sdesc{color:var(--forno-text-muted)}
 .mob-sneeds{display:flex;flex-wrap:wrap;gap:5px;margin-top:.45rem}
-.mob-needchip{font-size:11px;font-weight:600;background:#EEF6F2;color:#0a6b52;border:1px solid #cfe8dc;border-radius:6px;padding:3px 8px}
+.mob-needchip{font-size:11px;font-weight:600;background:#fbe4d4;color:#c2410c;border:1px solid #cfe8dc;border-radius:6px;padding:3px 8px}
 body.mob-mode .mob-needchip{background:var(--forno-accent-soft);color:var(--forno-accent-text);border-color:var(--forno-border)}
-.mob-swhy{border-left:2px solid #1D9E75;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#0a6b52;margin-top:.35rem;line-height:1.5}
+.mob-swhy{border-left:2px solid #e8590c;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#c2410c;margin-top:.35rem;line-height:1.5}
 body.mob-mode .mob-swhy{border-left-color:var(--forno-border);color:var(--forno-text-muted)}
 .mob-stip{border-left:2px solid #B4B2A9;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#3A3A3C;margin-top:.3rem;line-height:1.5}
 body.mob-mode .mob-stip{border-left-color:var(--forno-border);color:var(--forno-text-muted)}
 .mob-daylbl{font-size:14px;font-weight:700;color:var(--dyn-text);margin:.7rem 0 .25rem;display:flex;align-items:center;gap:5px}
 body.mob-mode .mob-daylbl{color:var(--forno-text);font-family:var(--forno-font-body);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
-.mob-daylbl.today{color:#085041}
+.mob-daylbl.today{color:#c2410c}
 body.mob-mode .mob-daylbl.today{color:var(--forno-accent-text)}
 .mob-daylbl .ddot{width:6px;height:6px;border-radius:50%;background:#ccc;flex-shrink:0}
 body.mob-mode .mob-daylbl .ddot{background:var(--forno-border)}
-.mob-daylbl.today .ddot{background:#1D9E75}
+.mob-daylbl.today .ddot{background:#e8590c}
 body.mob-mode .mob-daylbl.today .ddot{background:var(--forno-accent);box-shadow:0 0 6px var(--forno-accent)}
 
 /* mob settings */
@@ -311,7 +311,7 @@ body.mob-mode .mob-daylbl.today .ddot{background:var(--forno-accent);box-shadow:
 .warn-dismiss-btn:hover{opacity:1;background:rgba(138,90,0,.10)}
 .mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
 .wiz-qhead{display:flex;align-items:center;gap:7px;padding:.65rem 1rem .3rem}
-.wiz-qnum{width:18px;height:18px;border-radius:50%;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wiz-qnum{width:18px;height:18px;border-radius:50%;background:#e8590c;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 body.mob-mode .wiz-qnum{background:var(--forno-accent);color:#1a1512}
 .wiz-qlbl{font-size:12px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:.04em}
 body.mob-mode .wiz-qlbl{color:var(--forno-accent-text)}
@@ -328,7 +328,7 @@ body.mob-mode .mob-slabel{color:var(--forno-text)}
 body.mob-mode .mob-sval{color:var(--forno-text-faint);font-family:var(--forno-font-mono)}
 .mob-slider-wrap{background:#fff;padding:.1rem 1rem .55rem;border-bottom:1px solid #EDEDED}
 body.mob-mode .mob-slider-wrap{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
-.mob-slider-wrap input[type=range]{width:100%;accent-color:#1D9E75}
+.mob-slider-wrap input[type=range]{width:100%;accent-color:#e8590c}
 body.mob-mode .mob-slider-wrap input[type=range]{accent-color:var(--forno-accent)}
 .mob-pill-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem 1rem .65rem;background:#fff;border-bottom:1px solid #EDEDED}
 body.mob-mode .mob-pill-wrap{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft)}
@@ -350,7 +350,7 @@ body.mob-mode .mob-pcc .ps{color:var(--forno-text-faint)}
 .mob-rrow{display:flex;justify-content:space-between;padding:9px 12px;font-size:13px;border-bottom:1px solid #F2F2F7;background:#fff}
 body.mob-mode .mob-rrow{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft);color:var(--forno-text)}
 .mob-rrow:last-child{border-bottom:none}
-.mob-rval{font-weight:600;color:#1D9E75}
+.mob-rval{font-weight:600;color:#e8590c}
 body.mob-mode .mob-rval{color:var(--forno-accent-text);font-family:var(--forno-font-mono)}
 
 /* layout toggle btn */
@@ -371,7 +371,7 @@ body.pc-mode .mob-layout{display:none!important}
 .swrow{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
 .swlbl{font-size:13px;color:var(--dyn-text)}
 .sw{width:36px;height:20px;border-radius:10px;background:#c9c6c0;position:relative;flex-shrink:0;transition:background .15s}
-.sw.on{background:#1D9E75}
+.sw.on{background:#e8590c}
 .sw::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
 .sw.on::after{left:18px}
 body.pre-interact #main-content{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
@@ -379,14 +379,14 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
 @keyframes fadeOutFlash{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .method-flash{animation:fadeOutFlash 2.5s forwards}
 .act-btn{display:flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none}
-.act-btn-pri{background:#1D9E75;color:#fff}
-.act-btn-sec{background:transparent;color:#1D9E75}
+.act-btn-pri{background:#e8590c;color:#fff}
+.act-btn-sec{background:transparent;color:#e8590c}
 .act-btn-sec:hover{background:#F2F2F7}
 .act-group-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
 .sidenav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.9rem}
 .sidenav-item{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11px;font-weight:600;color:#3A3A3C;background:#fff;border:1px solid #E5E5EA;border-radius:20px;cursor:pointer}
-.sidenav-item:hover{border-color:#1D9E75;color:#085041}
-.sidenav-item .cnt{background:#1D9E75;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
+.sidenav-item:hover{border-color:#e8590c;color:#c2410c}
+.sidenav-item .cnt{background:#e8590c;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,.45);z-index:200;align-items:center;justify-content:center;padding:max(1rem,env(safe-area-inset-top,0px)) 1rem max(1rem,env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
 /* Når en modal er åpen låses bakgrunns-scroll, så «vinduet bak» ikke kan scrolle
    mens man blar i modalen (styres av syncModalScrollLock via en MutationObserver). */
@@ -418,7 +418,7 @@ body.mob-mode .admin-btn.danger{color:#e07856;border-color:var(--forno-border)}
 /* Bruksanvisning (manual-modal) — rendret fra guide.js */
 .man-toc-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 1rem;padding-bottom:.9rem;border-bottom:1px solid #EDEDED}
 body.mob-mode .man-toc-wrap{border-bottom-color:var(--forno-border-soft)}
-.man-toc{font-size:12px;font-weight:600;color:#0F6E56;background:#E1F5EE;border-radius:20px;padding:5px 11px;cursor:pointer;white-space:nowrap;border:none}
+.man-toc{font-size:12px;font-weight:600;color:#0F6E56;background:#fbe4d4;border-radius:20px;padding:5px 11px;cursor:pointer;white-space:nowrap;border:none}
 body.mob-mode .man-toc{color:var(--forno-accent-text,#8fe3c8);background:var(--forno-bg-raised,#241c15);border:1px solid var(--forno-border,#3a2e22)}
 .man-sec{margin:0 0 1.5rem;scroll-margin-top:8px}
 .man-lead{font-size:13.5px;line-height:1.55;color:var(--dyn-text);margin:0 0 1.1rem}
@@ -434,7 +434,7 @@ body.mob-mode .man-ol,body.mob-mode .man-ul{color:var(--forno-text-muted)}
 .man-ol li,.man-ul li{margin-bottom:.3rem}
 .man-tip{font-size:12.5px;line-height:1.5;background:#FFF8E8;border:1px solid #F0D9A8;border-radius:9px;padding:.55rem .7rem;margin:0 0 .7rem;color:#6a4e12}
 body.mob-mode .man-tip{background:rgba(239,159,39,.10);border-color:rgba(239,159,39,.35);color:var(--forno-text-muted)}
-.man-smart{font-size:12.5px;line-height:1.5;background:#E1F5EE;border:1px solid #A7DFCC;border-radius:9px;padding:.55rem .7rem;margin:0 0 .7rem;color:#0F5A46}
+.man-smart{font-size:12.5px;line-height:1.5;background:#fbe4d4;border:1px solid #A7DFCC;border-radius:9px;padding:.55rem .7rem;margin:0 0 .7rem;color:#0F5A46}
 body.mob-mode .man-smart{background:rgba(29,158,117,.12);border-color:rgba(29,158,117,.40);color:var(--forno-text-muted)}
 .man-p b,.man-ol b,.man-ul b,.man-tip b,.man-smart b,.man-lead b{color:var(--dyn-text)}
 body.mob-mode .man-p b,body.mob-mode .man-ol b,body.mob-mode .man-ul b,body.mob-mode .man-tip b,body.mob-mode .man-smart b,body.mob-mode .man-lead b{color:var(--forno-text)}
@@ -442,7 +442,7 @@ body.mob-mode .man-p b,body.mob-mode .man-ol b,body.mob-mode .man-ul b,body.mob-
 .snum-btn:hover{transform:scale(1.1)}
 .step-done{opacity:.55}
 .step-done .stit,.step-done .mob-stit{text-decoration:line-through;color:#6E6E73}
-.snum-done{background:#1D9E75!important;color:#fff!important}
+.snum-done{background:#e8590c!important;color:#fff!important}
 .clog-ver{margin-bottom:1.1rem}
 .clog-ver:last-child{margin-bottom:0}
 .clog-ver .vh{display:flex;align-items:baseline;gap:8px;margin-bottom:.4rem}
@@ -456,7 +456,7 @@ body.mob-mode .clog-ver li{color:var(--forno-text-muted)}
 body.mob-mode .fs-seg{background:var(--forno-bg)}
 .fs-seg .o{flex:1;text-align:center;padding:6px 4px;font-size:11px;font-weight:600;color:#666;border-radius:6px;cursor:pointer}
 body.mob-mode .fs-seg .o{color:var(--forno-text-faint)}
-.fs-seg .o.on{background:#fff;color:#085041;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.fs-seg .o.on{background:#fff;color:#c2410c;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 body.mob-mode .fs-seg .o.on{background:var(--forno-accent);color:#1a1512}
 /* Skriftstørrelse-skalaen er forskjøvet ett hakk opp: "Normal" er nå det som
    tidligere het "Stor", "Stor" er det som tidligere het "Ekstra stor", og
@@ -512,15 +512,100 @@ body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
 .next-strip-lbl{font-weight:700;color:#1560b8;font-size:11px;letter-spacing:.03em;white-space:nowrap}
 .next-strip-title{font-weight:600;color:#1a1a1a}
 .next-strip-count{margin-left:auto;font-weight:700;color:#1560b8;font-variant-numeric:tabular-nums;white-space:nowrap}
-.next-strip.done{border-left-color:#1D9E75;background:#e8f7f1;color:#0F6E56;cursor:default;font-weight:600}
+.next-strip.done{border-left-color:#e8590c;background:#fbe4d4;color:#0F6E56;cursor:default;font-weight:600}
 body.mob-mode .next-strip{background:var(--forno-accent-soft);border-color:var(--forno-border);border-left-color:var(--forno-accent);color:var(--forno-text)}
 body.mob-mode .next-strip-lbl,body.mob-mode .next-strip-count{color:var(--forno-accent-text)}
 body.mob-mode .next-strip-title{color:var(--forno-text)}
-body.mob-mode .next-strip.done{border-left-color:#1D9E75}
+body.mob-mode .next-strip.done{border-left-color:#e8590c}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .conflict-flag{display:inline-block;font-size:10px;font-weight:600;color:#8a5a00;background:#FAEEDA;border:1px solid #EF9F27;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
 .adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#F2F2F7;border-radius:8px;font-size:12px;font-weight:600;color:#3A3A3C;cursor:pointer;margin:.6rem 0}
 .adv-toggle:hover{background:#e5e2dc}
+
+/* ===== PC: samme «Forno»-feeling som mobil (v6.38) =====
+   PC-layouten hadde fortsatt den gamle kalde grønn-på-hvitt-looken mens mobilen
+   ble restylet til den varme Forno-paletten. Her gir vi PC samme identitet UTEN
+   å røre struktur/størrelser: varme krem-flater, brent-oransje aksent (#e8590c)
+   i stedet for grønn, og display-fonten (Archivo Black) på overskrifter/logo.
+   Alt er scopet til body.pc-mode og ligger sist, så det vinner over basisreglene.
+   Samme lyse pergament-palett som mobilens «Lys»-tema (Tons of Rock). */
+body.pc-mode{
+  --pc-bg:#f5f0e6; --pc-raised:#fffdf8; --pc-sunken:#efe7d6;
+  --pc-border:#e0d3b5; --pc-border-soft:#ece3d2;
+  --pc-muted:#7c6a4d; --pc-faint:#9c8861;
+  --pc-accent:#e8590c; --pc-accent-text:#c2410c; --pc-accent-soft:#fbe4d4;
+  background:var(--pc-bg);
+  font-family:var(--forno-font-body),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+/* flater */
+body.pc-mode .sb{background:var(--pc-bg);border-right-color:var(--pc-border)}
+body.pc-mode .mn{background:var(--pc-raised)}
+body.pc-mode .tbox,
+body.pc-mode .step,
+body.pc-mode .hsub-body,
+body.pc-mode .menu-dropdown{background:var(--pc-raised);box-shadow:0 1px 3px rgba(63,45,16,.07),0 1px 2px rgba(63,45,16,.05)}
+body.pc-mode .step{border:1px solid var(--pc-border)}
+body.pc-mode .hsub{border-color:var(--pc-border)}
+body.pc-mode .rec,
+body.pc-mode .pcc,
+body.pc-mode .stip,
+body.pc-mode .swait{background:var(--pc-sunken)}
+body.pc-mode .divl,
+body.pc-mode .rrow{border-color:var(--pc-border-soft)}
+body.pc-mode .divl{background:var(--pc-border-soft)}
+body.pc-mode .topnav{background:var(--pc-raised);border-bottom-color:var(--pc-border)}
+/* display-font + varme tekstnyanser */
+body.pc-mode .logo,body.pc-mode h2,body.pc-mode .daylbl{font-family:var(--forno-font-display),sans-serif;letter-spacing:-.01em}
+body.pc-mode .lbl,body.pc-mode .sub,body.pc-mode .stim,body.pc-mode .pcc .pl,body.pc-mode .hint,body.pc-mode .pcc .ps{color:var(--pc-muted)}
+/* nøytrale «fyll»-flater: kald grå → varm pergament */
+body.pc-mode .pill,
+body.pc-mode .segctrl,
+body.pc-mode .dropdown-select select,
+body.pc-mode .menu-trigger,
+body.pc-mode .rec,
+body.pc-mode .adv-toggle{background:var(--pc-sunken);color:var(--forno-text,#3f2d10)}
+body.pc-mode .pill:hover:not(.on),
+body.pc-mode .menu-trigger:hover,
+body.pc-mode .bgo:hover,
+body.pc-mode .cbtn:hover,
+body.pc-mode .brst:hover,
+body.pc-mode .mb:hover:not(.on),
+body.pc-mode .hrow:hover{background:var(--pc-border-soft)}
+body.pc-mode .mc,
+body.pc-mode .segctrl .pill{background:var(--pc-sunken)}
+body.pc-mode .segctrl .pill.on{background:var(--pc-raised)}
+body.pc-mode .mb,
+body.pc-mode .brst,
+body.pc-mode input[type=date],
+body.pc-mode input[type=time]{background:var(--pc-raised);border-color:var(--pc-border)}
+/* grønn merkevare-aksent → brent oransje */
+body.pc-mode .pill.on,
+body.pc-mode .mc.on,
+body.pc-mode .sn,
+body.pc-mode .stepchk.on,
+body.pc-mode .substep-num-done,
+body.pc-mode .ing-check.on{background:var(--pc-accent);border-color:var(--pc-accent);color:#fff}
+body.pc-mode .tab.on{background:var(--pc-accent);color:#fff}
+body.pc-mode .step.now{border-color:var(--pc-accent)}
+body.pc-mode input[type=date]:focus,
+body.pc-mode input[type=time]:focus{border-color:var(--pc-accent);outline-color:var(--pc-accent-soft)}
+body.pc-mode .sr input[type=range]{accent-color:var(--pc-accent)}
+body.pc-mode .sv,
+body.pc-mode .rval,
+body.pc-mode .bgo,
+body.pc-mode .cbtn,
+body.pc-mode .daylbl.today{color:var(--pc-accent-text)}
+body.pc-mode .daylbl.today .ddot{background:var(--pc-accent)}
+/* grønn-tonede «på/hvorfor»-flater → varm oransje-tint */
+body.pc-mode .mb.on,
+body.pc-mode .hrow.on,
+body.pc-mode .swhy,
+body.pc-mode .badge.bg{background:var(--pc-accent-soft);color:var(--pc-accent-text)}
+body.pc-mode .hrow.on{font-weight:600}
+body.pc-mode .mb.on{border-color:var(--pc-accent)}
+body.pc-mode .swhy{border-left-color:var(--pc-accent)}
+body.pc-mode .hrow.on .hd{background:var(--pc-accent)}
+body.pc-mode .needchip{background:var(--pc-accent-soft);color:var(--pc-accent-text);border-color:#f2d3bd}
 </style>
 </head>
 <body class="pre-interact">
@@ -603,7 +688,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
   <div class="logo" onclick="openManualModal()" style="cursor:pointer" title="Åpne bruksanvisningen"><span>🍕</span>
     <div style="display:flex;flex-direction:column;gap:2px">
       <span>UltimatePizza</span>
-      <span id="build-stamp" onclick="event.stopPropagation();openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#1D9E75;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
+      <span id="build-stamp" onclick="event.stopPropagation();openChangelogModal()" title="Se hva som er nytt" style="font-size:10px;color:#e8590c;font-weight:600;letter-spacing:.03em;cursor:pointer;text-decoration:underline"></span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning">📱 Mobil</button></div>
@@ -669,7 +754,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
       <div class="lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
       <div class="dtg"><input type="date" id="ed"><input type="time" id="et" value="18:00"></div>
       <div class="hint">Appen regner bakover og viser når du må starte.</div>
-      <div id="earliest-hint" style="font-size:11px;color:#1D9E75;margin-top:3px"></div>
+      <div id="earliest-hint" style="font-size:11px;color:#e8590c;margin-top:3px"></div>
     </div>
   </div>
 
@@ -681,7 +766,7 @@ body.mob-mode .next-strip.done{border-left-color:#1D9E75}
     <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
       <span style="font-size:11px;color:#888" id="pcount-lbl">eller antall pizzaer:</span>
       <button onclick="stepPizzas(-1)" title="Én pizza mindre" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">−</button>
-      <span id="pcount-disp" style="font-size:14px;font-weight:600;color:#1D9E75;min-width:20px;text-align:center">4</span>
+      <span id="pcount-disp" style="font-size:14px;font-weight:600;color:#e8590c;min-width:20px;text-align:center">4</span>
       <button onclick="stepPizzas(1)" title="Én pizza mer" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">+</button>
     </div>
     <div id="roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:6px 8px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px">
@@ -1334,7 +1419,7 @@ function uHydroUI(){
   let tx,bg,co;
   if(p<r.mn){tx=L('veldig fast','very firm');bg='#E6F1FB';co='#0C447C';}
   else if(p<=HREC[S.type]-3){tx=L('fast','firm');bg='#EAF3DE';co='#27500A';}
-  else if(p<=HREC[S.type]+3){tx=L('anbefalt','recommended');bg='#E1F5EE';co='#085041';}
+  else if(p<=HREC[S.type]+3){tx=L('anbefalt','recommended');bg='#fbe4d4';co='#c2410c';}
   else if(p<=r.mx){tx=L('høy','high');bg='#FAEEDA';co='#633806';}
   else{tx=L('veldig høy','very high');bg='#FAECE7';co='#712B13';}
   b.textContent=tx;b.style.background=bg;b.style.color=co;
@@ -1450,9 +1535,9 @@ function setFontSize(level){
   if(seg)seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===level));
   const btn=document.getElementById('mob-fontsize-btn');
   if(btn){
-    btn.style.background = level==='normal' ? '#fff' : '#E1F5EE';
-    btn.style.borderColor = level==='normal' ? '#e0ddd8' : '#1D9E75';
-    btn.style.color = level==='normal' ? '#555' : '#085041';
+    btn.style.background = level==='normal' ? '#fff' : '#fbe4d4';
+    btn.style.borderColor = level==='normal' ? '#e0ddd8' : '#e8590c';
+    btn.style.color = level==='normal' ? '#555' : '#c2410c';
   }
   syncModalMaxHeight();
   syncMobLayoutHeight();
@@ -3460,12 +3545,12 @@ function meltypeWarningHTML(){
   // så resultatet blir identisk uansett hvor endringen gjøres fra.
   const actions=[];
   if(!fermOk && S.type!=='ingenelting' && S.method!=='mania'){
-    actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?L('Øk hevetiden','Increase rise time'):L('Reduser hevetiden','Reduce rise time')}</button>`);
+    actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?L('Øk hevetiden','Increase rise time'):L('Reduser hevetiden','Reduce rise time')}</button>`);
   }
   if(!hydroOk){
     const tooLow = S.hydro<flour.hydroRange.mn;
     const target = tooLow ? flour.hydroRange.mn : flour.hydroRange.mx;
-    actions.push(`<button onclick="meltypeWarnSetHydro(${target})" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Sett hydrering til ${target}%`,`Set hydration to ${target}%`)}</button>`);
+    actions.push(`<button onclick="meltypeWarnSetHydro(${target})" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Sett hydrering til ${target}%`,`Set hydration to ${target}%`)}</button>`);
   }
   const betterFlour = findBestMatchingFlour(hrs, S.hydro);
   if(betterFlour && betterFlour.v!==S.meltype){
@@ -3574,7 +3659,7 @@ function pastStartWarningHTML(){
     // som fortsatt holder når man faktisk trykker på den.
     const t=new Date(Math.ceil((eb.getTime()+5*60000)/(15*60000))*(15*60000));
     let tTxt=''; try{ tTxt=fDT(t); }catch(e){}
-    if(tTxt) btn=`<div style="margin-top:.6rem"><button onclick="applyAnchorShift('${t.toISOString()}')" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Spis ${escH(tTxt)} i stedet`,`Eat at ${escH(tTxt)} instead`)}</button></div>`;
+    if(tTxt) btn=`<div style="margin-top:.6rem"><button onclick="applyAnchorShift('${t.toISOString()}')" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Spis ${escH(tTxt)} i stedet`,`Eat at ${escH(tTxt)} instead`)}</button></div>`;
   }
   return warningWrapHTML(`paststart|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L('⏰ Oppstarten har allerede passert','⏰ The start time has already passed')}</div>
@@ -3595,7 +3680,7 @@ function activeStepTimeWarningHTML(){
     let dt=''; try{ dt=fDT(at); }catch(e){}
     const isShort=(S.method==='hurtig'||S.method==='kveld');
     const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
-    const btnSolid='padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer';
+    const btnSolid='padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer';
     const btnOutline='padding:6px 12px;border:1px solid #8a5a00;border-radius:8px;background:transparent;color:#8a5a00;font-size:12px;font-weight:600;cursor:pointer';
 
     // Hvilke spaker beveger DETTE steget? Alt annet er villedende å tilby.
@@ -3908,7 +3993,7 @@ function methodTimeWarningHTML(){
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L(`⏱ ${methodName} passer dårlig med god tid til rådighet`,`⏱ ${methodName} is a poor fit when you have plenty of time`)}</div>
     <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`Du har satt av ca. ${leadDays} dager fram til du vil spise, men ${methodName.toLowerCase()} er en rask metode ment for et par timers gjæring rett før steking — resten av tiden går til spille. Med så mye tid til rådighet gir Langtidsdeig eller Kveldsdeig gjerne bedre smak for samme innsats.`,`You have set aside about ${leadDays} days until you want to eat, but ${methodNameLow} is a fast method meant for a couple of hours of fermentation right before baking — the rest of the time is wasted. With this much time available, Long-ferment dough or Evening dough usually gives better flavor for the same effort.`)}</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">
-      <button onclick="methodWarnSwitchToStandard()" style="padding:6px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('Bytt til Langtidsdeig','Switch to Long-ferment dough')}</button>
+      <button onclick="methodWarnSwitchToStandard()" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('Bytt til Langtidsdeig','Switch to Long-ferment dough')}</button>
     </div>
     <div style="margin-top:.5rem"><span onclick="setReturnTo(false);mobShowTab('settings');wizGoto(2)" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">${L('⚙️ Se i Metode','⚙️ See in Method')}</span></div>
   </div>`);
@@ -4103,7 +4188,7 @@ function buildFeedbackFormHTML(){
     </div>
     <textarea id="feedback-msg" placeholder="${L('Skriv her...','Write here...')}" style="width:100%;min-height:90px;padding:.6rem;border:1px solid #d0cdc8;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
     <div style="display:flex;align-items:center;gap:8px;margin-top:.6rem">
-      <button onclick="submitFeedback()" style="padding:8px 14px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('Send','Send')}</button>
+      <button onclick="submitFeedback()" style="padding:8px 14px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('Send','Send')}</button>
       <span id="feedback-status" style="font-size:12px;color:#888"></span>
     </div>
     <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
@@ -4216,16 +4301,16 @@ async function loadFeedbackList(){
       const adminBtns = isAdmin ? `
             <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?L('Merk som ulest','Mark as unread'):L('Merk som løst','Mark as resolved')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
             <button onclick="deleteFeedbackConfirm('${it.id}')" title="${L('Slett','Delete')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
-      return `<div id="fbitem-${it.id}" style="border:1px solid ${isNew?'#1D9E75':'var(--dyn-border)'};box-shadow:${isNew?'0 0 0 2px #E1F5EE':'none'};border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
+      return `<div id="fbitem-${it.id}" style="border:1px solid ${isNew?'#e8590c':'var(--dyn-border)'};box-shadow:${isNew?'0 0 0 2px #fbe4d4':'none'};border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
 
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div style="min-width:0">
-            <span style="font-size:10px;font-weight:700;color:#085041;background:#E1F5EE;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>${isNew?`<span style="font-size:10px;font-weight:700;color:#fff;background:#1D9E75;border-radius:6px;padding:1px 6px;margin-left:4px">${L('✓ nettopp sendt','✓ just sent')}</span>`:''}
+            <span style="font-size:10px;font-weight:700;color:#c2410c;background:#fbe4d4;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>${isNew?`<span style="font-size:10px;font-weight:700;color:#fff;background:#e8590c;border-radius:6px;padding:1px 6px;margin-left:4px">${L('✓ nettopp sendt','✓ just sent')}</span>`:''}
             <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}${it.submittedBy?L(' · av ',' · by ')+escH(it.submittedBy):''}</span>
             <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
-            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?L('Du har allerede stemt','You have already voted'):L('Stem opp','Vote up')}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#1D9E75':'var(--dyn-border)'};border-radius:6px;background:${hasVoted?'#E1F5EE':'var(--dyn-btn-bg)'};color:${hasVoted?'#0F6E56':'var(--dyn-text)'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
+            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?L('Du har allerede stemt','You have already voted'):L('Stem opp','Vote up')}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#e8590c':'var(--dyn-border)'};border-radius:6px;background:${hasVoted?'#fbe4d4':'var(--dyn-btn-bg)'};color:${hasVoted?'#0F6E56':'var(--dyn-text)'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
             ${adminBtns}
           </div>
         </div>
@@ -4291,8 +4376,8 @@ function gen(){
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
-    <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#1D9E75;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${savedDeigSuffix()}${methodFlashHTML()}</h2>
-    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
+    <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#e8590c;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${savedDeigSuffix()}${methodFlashHTML()}</h2>
+    <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${recipeRowsHTML(rr)}</div></div>
@@ -4313,8 +4398,8 @@ function hurtigRes(){
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
-    <h2>Hurtigdeig <span style="color:#1D9E75;font-weight:500">· ${o.h} timer</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
-    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
+    <h2>Hurtigdeig <span style="color:#e8590c;font-weight:500">· ${o.h} timer</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
+    <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${recipeRowsHTML(rr)}</div></div>
@@ -4335,8 +4420,8 @@ function kveldRes(){
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
-    <h2>Kveldsdeig <span style="color:#1D9E75;font-weight:500">· ${S.kveldH} timer kjøl</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
-    <div class="sub"><span class="badge" style="background:#E1F5EE;color:#085041;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
+    <h2>Kveldsdeig <span style="color:#e8590c;font-weight:500">· ${S.kveldH} timer kjøl</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
+    <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${recipeRowsHTML(rr)}</div></div>
@@ -4446,11 +4531,11 @@ async function renderNotesPanel(targetId){
   const statusTxt = b.status==='finished' ? L('Ferdig','Finished') : L('Aktiv','Active');
   const noteByTxt = b.noteBy ? L(` · sist lagret av ${escH(b.noteBy)}`,` · last saved by ${escH(b.noteBy)}`) : '';
   el.innerHTML = `
-    <div style="font-size:12px;color:#888;margin-bottom:.5rem">${L('Notater for:','Notes for:')} <b class="admin-uname" style="font-size:12px">${escH(b.name)}</b> <span style="color:#1D9E75">· ${statusTxt}</span>${noteByTxt}</div>
+    <div style="font-size:12px;color:#888;margin-bottom:.5rem">${L('Notater for:','Notes for:')} <b class="admin-uname" style="font-size:12px">${escH(b.name)}</b> <span style="color:#e8590c">· ${statusTxt}</span>${noteByTxt}</div>
     <textarea id="${inputId}" rows="6" placeholder="${L('Hvordan gikk det? Smak, heving, justeringer til neste gang...','How did it go? Taste, rise, adjustments for next time...')}" style="width:100%;border:1px solid #d0cdc8;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box">${escH(b.note||'')}</textarea>
     <div style="margin-top:.5rem;display:flex;gap:10px;align-items:center">
-      <button onclick="saveDeigNote('${inputId}','${statusId}')" style="padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">${L('💾 Lagre notat','💾 Save note')}</button>
-      <span id="${statusId}" style="font-size:12px;color:#1D9E75"></span>
+      <button onclick="saveDeigNote('${inputId}','${statusId}')" style="padding:8px 14px;background:#e8590c;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">${L('💾 Lagre notat','💾 Save note')}</button>
+      <span id="${statusId}" style="font-size:12px;color:#e8590c"></span>
     </div>
     <div style="font-size:11px;color:#999;margin-top:6px">${L('Lagres sammen med deigen — synlig for alle som åpner den, uansett enhet.','Saved with the dough — visible to everyone who opens it, on any device.')}</div>`;
 }
@@ -4512,7 +4597,7 @@ function authNameScreenHTML(){
   return `
     <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">${L('Hva heter du?','What is your name?')}</div>
     <input id="auth-name" type="text" placeholder="${L('Navnet ditt','Your name')}" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:15px;box-sizing:border-box;text-align:center" onkeydown="if(event.key==='Enter')authSubmitName()">
-    <button onclick="authSubmitName()" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${L('Fortsett','Continue')}</button>
+    <button onclick="authSubmitName()" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${L('Fortsett','Continue')}</button>
     <div id="auth-error" style="text-align:center;font-size:12px;color:#993C1D;margin-top:.5rem"></div>`;
 }
 function authPinScreenHTML(name, isNew){
@@ -4521,7 +4606,7 @@ function authPinScreenHTML(name, isNew){
     <div style="font-size:12px;color:#666;margin-bottom:.7rem;text-align:center">${isNew?L('Lag en 4-sifret PIN-kode','Create a 4-digit PIN'):L('Skriv inn PIN-koden din','Enter your PIN')}</div>
     <input id="auth-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" autocomplete="off" style="width:100%;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')${isNew?'authSubmitNewPin()':'authSubmitPin()'}">
     ${isNew?`<input id="auth-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="${L('Gjenta PIN','Repeat PIN')}" autocomplete="off" style="width:100%;margin-top:.5rem;padding:10px;border:1px solid #d0cdc8;border-radius:8px;font-size:20px;letter-spacing:6px;text-align:center;box-sizing:border-box" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" onkeydown="if(event.key==='Enter')authSubmitNewPin()">`:''}
-    <button onclick="${isNew?'authSubmitNewPin()':'authSubmitPin()'}" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${isNew?L('Registrer','Register'):L('Logg inn','Log in')}</button>
+    <button onclick="${isNew?'authSubmitNewPin()':'authSubmitPin()'}" style="width:100%;margin-top:.7rem;padding:10px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${isNew?L('Registrer','Register'):L('Logg inn','Log in')}</button>
     <div onclick="authShowNameScreen()" style="text-align:center;font-size:11px;color:#888;margin-top:.6rem;cursor:pointer;text-decoration:underline">${L('Feil navn? Start på nytt','Wrong name? Start over')}</div>
     <div id="auth-error" style="text-align:center;font-size:12px;color:#993C1D;margin-top:.5rem"></div>`;
 }
@@ -4729,10 +4814,10 @@ function buildFormlerHTML(values){
     const cells = fields.map(f=>{
       const entry = (values[t] && values[t][f]) || {current:0, previous:null};
       const prevHtml = entry.previous!==null && entry.previous!==undefined
-        ? `<div style="font-size:9px;color:#aaa;margin-top:1px">forrige: ${entry.previous}${isAdmin?` <span onclick="formlerRevert('${t}','${f}')" style="color:#1D9E75;cursor:pointer;text-decoration:underline">↺ angre</span>`:''}</div>`
+        ? `<div style="font-size:9px;color:#aaa;margin-top:1px">forrige: ${entry.previous}${isAdmin?` <span onclick="formlerRevert('${t}','${f}')" style="color:#e8590c;cursor:pointer;text-decoration:underline">↺ angre</span>`:''}</div>`
         : '';
       return `<td style="padding:.4rem .5rem;text-align:center;border-bottom:1px solid #f0ede8">
-        <div style="font-size:13px;font-weight:600;color:var(--dyn-text)">${entry.current}${f==='hydro'||f==='salt'||f==='oil'||f==='yeast'?'%':''}${isAdmin?` <span onclick="formlerEdit('${t}','${f}',${entry.current})" style="cursor:pointer;color:#1D9E75;font-size:11px">✏️</span>`:''}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--dyn-text)">${entry.current}${f==='hydro'||f==='salt'||f==='oil'||f==='yeast'?'%':''}${isAdmin?` <span onclick="formlerEdit('${t}','${f}',${entry.current})" style="cursor:pointer;color:#e8590c;font-size:11px">✏️</span>`:''}</div>
         ${formlerGramEquiv(f, entry.current)}
         ${prevHtml}
       </td>`;
@@ -4745,13 +4830,13 @@ function buildFormlerHTML(values){
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${header}${rows}</table></div>`;
   if(!isAdmin){
     html += `<div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
-      <span onclick="formlerToggleSuggest()" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">💡 Foreslå endring</span>
+      <span onclick="formlerToggleSuggest()" style="font-size:12px;color:#e8590c;font-weight:600;cursor:pointer">💡 Foreslå endring</span>
       <div id="formler-suggest-wrap" style="display:none;margin-top:.7rem"></div>
       <div style="margin-top:.7rem"><span onclick="formlerAdminLoginPrompt()" style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline">🔒 Logg inn som admin</span></div>
     </div>`;
   }else{
     html += `<div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid #e8e5e0">
-      <span onclick="formlerToggleSuggestions()" style="font-size:12px;color:#1D9E75;font-weight:600;cursor:pointer">📋 Se innsendte forslag</span>
+      <span onclick="formlerToggleSuggestions()" style="font-size:12px;color:#e8590c;font-weight:600;cursor:pointer">📋 Se innsendte forslag</span>
       <div id="formler-suggestions-wrap" style="display:none;margin-top:.7rem"></div>
     </div>`;
   }
@@ -4812,7 +4897,7 @@ function formlerToggleSuggest(){
     <input id="formler-sug-value" type="text" placeholder="Foreslått ny verdi" style="width:100%;padding:8px;border:1px solid #d0cdc8;border-radius:6px;font-size:13px;box-sizing:border-box;margin-bottom:.5rem">
     <textarea id="formler-sug-reason" placeholder="Kort begrunnelse (valgfritt)" style="width:100%;min-height:60px;padding:8px;border:1px solid #d0cdc8;border-radius:6px;font-size:13px;box-sizing:border-box;resize:vertical"></textarea>
     <div style="display:flex;align-items:center;gap:8px;margin-top:.5rem">
-      <button onclick="submitConfigSuggestion()" style="padding:7px 12px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Send forslag</button>
+      <button onclick="submitConfigSuggestion()" style="padding:7px 12px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Send forslag</button>
       <span id="formler-sug-status" style="font-size:12px;color:#888"></span>
     </div>`;
   formlerUpdateSuggestCurrent();
@@ -4869,7 +4954,7 @@ async function loadSuggestionsIntoWrap(wrap){
         ${s.reasoning?`<div style="font-size:11px;color:#666;margin-top:3px;white-space:pre-wrap">${escH(s.reasoning)}</div>`:''}
         <div style="font-size:10px;color:#aaa;margin-top:3px">${dt}</div>
         <div style="display:flex;gap:6px;margin-top:6px">
-          <button onclick="formlerHandleSuggestion('${s.id}','applied')" style="padding:4px 9px;border:1px solid #1D9E75;border-radius:6px;background:#1D9E75;color:#fff;font-size:11px;cursor:pointer">Bruk forslag</button>
+          <button onclick="formlerHandleSuggestion('${s.id}','applied')" style="padding:4px 9px;border:1px solid #e8590c;border-radius:6px;background:#e8590c;color:#fff;font-size:11px;cursor:pointer">Bruk forslag</button>
           <button onclick="formlerHandleSuggestion('${s.id}','dismissed')" style="padding:4px 9px;border:1px solid #d0cdc8;border-radius:6px;background:#fff;font-size:11px;cursor:pointer">Avvis</button>
         </div>
       </div>`;
@@ -5373,7 +5458,7 @@ function wizCheckRender(){
   if(!openCount){
     const hasAccepted = parts.some(p=>p.includes('data-accepted'));
     el.innerHTML=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem;margin-bottom:${hasAccepted?'.6rem':'0'}">
-      <div style="font-size:13px;font-weight:700;color:#085041;margin-bottom:.25rem">✓ ${hasAccepted?L('Planen holder — med ett godtatt forbehold','The plan works — with one accepted caveat'):L('Planen holder','The plan works')}</div>
+      <div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:.25rem">✓ ${hasAccepted?L('Planen holder — med ett godtatt forbehold','The plan works — with one accepted caveat'):L('Planen holder','The plan works')}</div>
       <div style="font-size:12px;color:#0F6E56;line-height:1.5">${hasAccepted?L('Alt annet stemmer, og du har selv godtatt resten.','Everything else checks out, and you have accepted the rest yourself.'):L('Alle steg ligger i tiden du har satt av, og melet passer til gjæringstiden.','All steps fall within the time you set aside, and the flour matches the fermentation time.')}</div>
     </div>`+parts.join('');
     return;
@@ -5398,7 +5483,7 @@ function mobHydroUI(){
   let tx,bg,co;
   if(p<r.mn){tx=L('veldig fast','very firm');bg='#E6F1FB';co='#0C447C';}
   else if(p<=HREC[S.type]-3){tx=L('fast','firm');bg='#EAF3DE';co='#27500A';}
-  else if(p<=HREC[S.type]+3){tx=L('anbefalt','recommended');bg='#E1F5EE';co='#085041';}
+  else if(p<=HREC[S.type]+3){tx=L('anbefalt','recommended');bg='#fbe4d4';co='#c2410c';}
   else if(p<=r.mx){tx=L('høy','high');bg='#FAEEDA';co='#633806';}
   else{tx=L('veldig høy','very high');bg='#FAECE7';co='#712B13';}
   if(b){b.textContent=tx;b.style.background=bg;b.style.color=co;}
@@ -5599,19 +5684,19 @@ function wizRenderHeader(step){
     // gjennomsiktig, som signal om at de nå kan klikkes uten å late som
     // de er "ferdig" (fortsatt tall, ikke hake).
     const dotStyle = done
-      ? 'background:var(--forno-accent,#1D9E75);color:#1a1512'
+      ? 'background:var(--forno-accent,#e8590c);color:#1a1512'
       : cur
-      ? 'background:var(--forno-accent,#1D9E75);color:#1a1512;box-shadow:0 0 0 3px var(--forno-accent-soft,#E1F5EE)'
-      : 'background:var(--forno-bg-raised,#F2F2F7);color:var(--forno-text-faint,#8E8E93);border:1.5px solid var(--forno-accent,#1D9E75)';
+      ? 'background:var(--forno-accent,#e8590c);color:#1a1512;box-shadow:0 0 0 3px var(--forno-accent-soft,#fbe4d4)'
+      : 'background:var(--forno-bg-raised,#F2F2F7);color:var(--forno-text-faint,#8E8E93);border:1.5px solid var(--forno-accent,#e8590c)';
     const dot = `<div onclick="wizGoto(${s.id})" style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;cursor:pointer;${dotStyle}">${done?'✓':s.id}</div>`;
-    const line = i < WIZ_STEPS.length-1 ? `<div style="flex:1;height:2px;background:${s.id<idx?'var(--forno-accent-soft,#E1F5EE)':'var(--forno-border,#F2F2F7)'};margin:0 2px"></div>` : '';
+    const line = i < WIZ_STEPS.length-1 ? `<div style="flex:1;height:2px;background:${s.id<idx?'var(--forno-accent-soft,#fbe4d4)':'var(--forno-border,#F2F2F7)'};margin:0 2px"></div>` : '';
     return dot + line;
   }).join('');
   const labelsHtml = WIZ_STEPS.map(s=>{
     const done = s.id < idx;
     const cur = s.id === idx;
     const txt = (s.id===1 && (done||cur)) ? tnShort(S.type) : (s.id===2 && (done||cur)) ? mN(S.method) : L(s.label, s.labelEn);
-    const color = cur ? '#1D9E75' : done ? '#085041' : '#8E8E93';
+    const color = cur ? '#e8590c' : done ? '#c2410c' : '#8E8E93';
     const weight = (done||cur) ? '700' : '400';
     return `<span style="font-size:9px;color:${color};font-weight:${weight};flex:1;text-align:center">${txt}</span>`;
   }).join('');
@@ -6015,7 +6100,7 @@ function bakeCardHTML(b, mob){
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #1D9E75;border-radius:8px;background:#1D9E75;color:#fff;font-size:11px;font-weight:600;cursor:pointer">${L('Åpne','Open')}</button>
+          <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:11px;font-weight:600;cursor:pointer">${L('Åpne','Open')}</button>
           <button onclick="finishBakePrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${L('Ferdig','Finished')}</button>
         </div>
       </div>
@@ -6157,8 +6242,8 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   // beholder Juster inline ved navnet, uendret — den er den dokumenterte
   // universelle veien til Finjuster fra ethvert wizardsteg (v5.81), og skal
   // ikke flytte seg der.
-  const justerBtn = `<button onclick="wizOpenFinjusterFromPlan()" style="flex-shrink:0;padding:4px 10px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-accent-text,#1D9E75);font-size:11px;font-weight:600;cursor:pointer">${t('tb_juster')}</button>`;
-  const justerBtnToolbar = `<button onclick="wizOpenFinjusterFromPlan()" style="flex:1;text-align:center;padding:5px 4px;border:1px solid var(--forno-border,#ddd);border-radius:7px;background:transparent;color:var(--forno-accent-text,#1D9E75);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">${t('tb_juster')}</button>`;
+  const justerBtn = `<button onclick="wizOpenFinjusterFromPlan()" style="flex-shrink:0;padding:4px 10px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-accent-text,#e8590c);font-size:11px;font-weight:600;cursor:pointer">${t('tb_juster')}</button>`;
+  const justerBtnToolbar = `<button onclick="wizOpenFinjusterFromPlan()" style="flex:1;text-align:center;padding:5px 4px;border:1px solid var(--forno-border,#ddd);border-radius:7px;background:transparent;color:var(--forno-accent-text,#e8590c);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">${t('tb_juster')}</button>`;
   const toolbarHTML = showActions ? `<div style="display:flex;gap:6px;margin-top:6px">
       ${justerBtnToolbar}
       ${substepToggleHTML('mob-compact')}
@@ -6186,9 +6271,9 @@ function wizOpenFinjusterFromPlan(){
 }
 function activeDeigIndicatorHTML(){
   if(window._activeDeigId){
-    return '<span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span>'
+    return '<span style="width:8px;height:8px;border-radius:50%;background:#e8590c;flex-shrink:0"></span>'
       +'<span style="color:#5f5e5a">'+L('Du redigerer','You are editing')+'</span>'
-      +'<span style="font-weight:600;color:#085041">'+escH(window._activeDeigName||'')+'</span>'
+      +'<span style="font-weight:600;color:#c2410c">'+escH(window._activeDeigName||'')+'</span>'
       +'<button onclick="closeActiveDeig()" style="margin-left:auto;font-size:11px;color:#993C1D;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">'+L('Lukk','Close')+'</button>';
   }
   return '<span style="width:8px;height:8px;border-radius:50%;background:#d0cdc8;flex-shrink:0"></span>'
@@ -6251,7 +6336,7 @@ function methodFlashHTML(){
   // metodebytter fra brukeren) eier den jobben og tømmer alle tre settene.
   // Å tømme + persistere her slettet den nettopp innlastede avhakingen når
   // openBake() byttet metode — reelt datatap på server, og kun på desktop.
-  return changed ? ` <span class="method-flash" style="margin-left:4px;font-size:10px;font-weight:600;color:#fff;background:#1D9E75;padding:2px 8px;border-radius:6px;vertical-align:2px">${L('endret','changed')}</span>` : '';
+  return changed ? ` <span class="method-flash" style="margin-left:4px;font-size:10px;font-weight:600;color:#fff;background:#e8590c;padding:2px 8px;border-radius:6px;vertical-align:2px">${L('endret','changed')}</span>` : '';
 }
 
 function startHintHTML(){
@@ -6358,7 +6443,7 @@ function buildFinishBakeFormHTML(alreadyFinished){
     <input type="file" accept="image/*" id="finish-photo-input" onchange="handlePhotoUpload(event)" style="display:none">
     <button onclick="document.getElementById('finish-photo-input').click()" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:.8rem">📷 ${photo?L('Bytt bilde','Change photo'):L('Legg til bilde','Add photo')}</button>
     <div style="display:flex;gap:8px">
-      <button onclick="confirmFinishBake(${alreadyFinished})" style="flex:1;height:38px;border:none;border-radius:10px;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${alreadyFinished?L('Lagre','Save'):L('Merk som ferdig','Mark as finished')}</button>
+      <button onclick="confirmFinishBake(${alreadyFinished})" style="flex:1;height:38px;border:none;border-radius:10px;background:#e8590c;color:#fff;font-size:14px;font-weight:600;cursor:pointer">${alreadyFinished?L('Lagre','Save'):L('Merk som ferdig','Mark as finished')}</button>
       ${alreadyFinished?'':`<button onclick="confirmFinishBake(false,true)" style="flex-shrink:0;height:38px;padding:0 14px;border:none;border-radius:10px;background:transparent;color:#6E6E73;font-size:13px;cursor:pointer">${L('Hopp over','Skip')}</button>`}
     </div>
     <div id="finish-status" style="text-align:center;font-size:12px;margin-top:.5rem" class="dyn-faint-text"></div>`;
@@ -6820,7 +6905,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div style="text-align:center;padding:1.1rem 1rem .5rem">
       <span style="font-size:11px;color:var(--forno-text-faint,#aaa)">UltimatePizza <span id="mob-footer-version"></span> · </span>
-      <span id="mob-whatsnew" style="font-size:11px;color:var(--forno-accent,#1D9E75);font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
+      <span id="mob-whatsnew" style="font-size:11px;color:var(--forno-accent,#e8590c);font-weight:600;cursor:pointer" onclick="openChangelogModal()">Hva er nytt</span>
     </div>
 
     <div style="height:80px"></div>
