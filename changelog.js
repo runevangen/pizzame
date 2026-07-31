@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.640',
+    d: 'juli 2026',
+    changes: [
+      'Rettet datofeltet i Smart-plan som lå litt skjevt på iPhone — det stakk ut til høyre forbi klokkeslett-boksen og «Finn oppskriften»-knappen. Nå fyller det raden likt som de andre.'
+    ]
+  },
+  {
     v: '0.639',
     d: 'juli 2026',
     changes: [
