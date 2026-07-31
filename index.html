@@ -164,7 +164,12 @@ body.mob-mode .sdesc{color:var(--forno-text-muted)}
 .swait-txt{font-size:12px;color:#666}
 .swait-val{font-size:12px;font-weight:600;color:var(--dyn-text)}
 .rec{background:#F2F2F7;border-radius:14px;padding:.9rem 1rem;margin-bottom:.9rem}
-.rrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid #EDEDED}
+.rrow{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:13px;border-bottom:1px solid #EDEDED}
+/* Etikett/verdi må aldri kollidere når verdien blir lang (særlig på store
+   skriftstørrelser): kolonnene får krympe, og verdien høyrejusteres + brekker
+   pent innenfor sin egen del i stedet for å klemme seg inntil etiketten. */
+.rrow>span,.mob-rrow>span{min-width:0}
+.rval,.mob-rval{text-align:right}
 .ing-check{width:18px;height:18px;border-radius:50%;border:2px solid #D1D1D6;flex-shrink:0;display:inline-block}
 .ing-check.on{background:#e8590c;border-color:#e8590c;position:relative}
 .ing-check.on::after{content:'✓';position:absolute;inset:0;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -352,7 +357,7 @@ body.mob-mode .mob-pcc .pl{color:var(--forno-text-faint)}
 .mob-pcc .ps{font-size:10px;color:#8E8E93;margin-top:1px}
 body.mob-mode .mob-pcc .ps{color:var(--forno-text-faint)}
 .mob-rec{border-radius:14px;overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
-.mob-rrow{display:flex;justify-content:space-between;padding:9px 12px;font-size:13px;border-bottom:1px solid #F2F2F7;background:#fff}
+.mob-rrow{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;font-size:13px;border-bottom:1px solid #F2F2F7;background:#fff}
 body.mob-mode .mob-rrow{background:var(--forno-bg-raised);border-bottom-color:var(--forno-border-soft);color:var(--forno-text)}
 .mob-rrow:last-child{border-bottom:none}
 .mob-rval{font-weight:600;color:#e8590c}
@@ -470,6 +475,7 @@ body.mob-mode .fs-seg .o.on{background:var(--forno-accent);color:#1a1512}
 body{zoom:1.15}
 body.fs-large{zoom:1.3}
 body.fs-xlarge{zoom:1.45}
+body.fs-xxlarge{zoom:1.6}
 /* Knapper/piller/navigasjon skal ikke vokse med skriftstørrelse-innstillingen —
    kun lesetekst (steg, forklaringer) skal bli større. Motsatt zoom kansellerer
    ut body sin zoom for disse elementene spesifikt. Gjelder nå også standardnivået,
@@ -495,6 +501,13 @@ body.fs-xlarge .adv-toggle,body.fs-xlarge .tab,body.fs-xlarge .layout-toggle,
 body.fs-xlarge .mb,body.fs-xlarge .sw,body.fs-xlarge input[type=range],
 body.fs-xlarge .snum-btn,body.fs-xlarge .mob-icon-btn,
 body.fs-xlarge .mob-tab,body.fs-xlarge .fs-visning-wrap{zoom:0.6897}
+body.fs-xxlarge .pill,body.fs-xxlarge .mc,body.fs-xxlarge .act-btn,body.fs-xxlarge .bgo,
+body.fs-xxlarge .cbtn,body.fs-xxlarge .dropdown-select select,body.fs-xxlarge .menu-trigger,
+body.fs-xxlarge .menu-dropdown,body.fs-xxlarge #fav-btn,
+body.fs-xxlarge .adv-toggle,body.fs-xxlarge .tab,body.fs-xxlarge .layout-toggle,
+body.fs-xxlarge .mb,body.fs-xxlarge .sw,body.fs-xxlarge input[type=range],
+body.fs-xxlarge .snum-btn,body.fs-xxlarge .mob-icon-btn,
+body.fs-xxlarge .mob-tab,body.fs-xxlarge .fs-visning-wrap{zoom:0.625}
 /* Modal-vinduer (Feedback, Hva er nytt, Formler, Guide, osv.) fikk tidligere samme
    motsatte zoom som knapper/faner, for å hindre at "max-height:85dvh" ble regnet feil
    i en zoomet kontekst (kunne gjøre modalen fysisk høyere enn skjermen). Det gjorde
@@ -1077,6 +1090,7 @@ function syncStaticI18nUI(){
   st('mob-fs-normal','Normal','Normal');
   st('mob-fs-large','Stor','Large');
   st('mob-fs-xlarge','Ekstra stor','Extra large');
+  st('mob-fs-xxlarge','XXL','XXL');
   st('mob-del-lbl','Del','Share');
   st('share-app-label','📤 Del appen','📤 Share app');
   st('mob-hjelp-lbl','Hjelp','Help');
@@ -1538,9 +1552,10 @@ function initTheme(){
   }catch(e){}
 }
 function setFontSize(level){
-  document.body.classList.remove('fs-large','fs-xlarge');
+  document.body.classList.remove('fs-large','fs-xlarge','fs-xxlarge');
   if(level==='large')document.body.classList.add('fs-large');
   if(level==='xlarge')document.body.classList.add('fs-xlarge');
+  if(level==='xxlarge')document.body.classList.add('fs-xxlarge');
   try{localStorage.setItem('pizzaFontSize',level);}catch(e){}
   const seg=document.getElementById('mob-fs-seg');
   if(seg)seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===level));
@@ -1586,7 +1601,7 @@ window.addEventListener('resize', syncMobLayoutHeight);
 // "85dvh" ikke lenger stemmer med skjermen, så vi regner selv: 85% av vinduets
 // reelle høyde, omgjort til enheter FØR zoom (siden modal-boksen fortsatt ligger i
 // den zoomede sammenhengen — bare uten sin egen motsatte zoom lenger).
-const FS_ZOOM={normal:1.15,large:1.3,xlarge:1.45};
+const FS_ZOOM={normal:1.15,large:1.3,xlarge:1.45,xxlarge:1.6};
 function syncModalMaxHeight(){
   requestAnimationFrame(()=>{
     const z=FS_ZOOM[currentFontLevel()]||1.15;
@@ -1619,11 +1634,12 @@ function initFontSize(){
   try{ saved=localStorage.getItem('pizzaFontSize')||'large'; }catch(e){}
   setFontSize(saved);
 }
-const FS_LEVELS=['normal','large','xlarge'];
-const FS_LABELS={normal:'Normal',large:'Stor',xlarge:'Ekstra stor'};
-const FS_LABELS_EN={normal:'Normal',large:'Large',xlarge:'Extra large'};
+const FS_LEVELS=['normal','large','xlarge','xxlarge'];
+const FS_LABELS={normal:'Normal',large:'Stor',xlarge:'Ekstra stor',xxlarge:'XXL'};
+const FS_LABELS_EN={normal:'Normal',large:'Large',xlarge:'Extra large',xxlarge:'XXL'};
 function fsLabel(k){ return (window._lang==='en' && FS_LABELS_EN[k]!=null) ? FS_LABELS_EN[k] : FS_LABELS[k]; }
 function currentFontLevel(){
+  if(document.body.classList.contains('fs-xxlarge'))return 'xxlarge';
   if(document.body.classList.contains('fs-xlarge'))return 'xlarge';
   if(document.body.classList.contains('fs-large'))return 'large';
   return 'normal';
@@ -6963,6 +6979,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div class="o on" id="mob-fs-normal" data-v="normal" onclick="setFontSize('normal')">Normal</div>
         <div class="o" id="mob-fs-large" data-v="large" onclick="setFontSize('large')">Stor</div>
         <div class="o" id="mob-fs-xlarge" data-v="xlarge" onclick="setFontSize('xlarge')">Ekstra stor</div>
+        <div class="o" id="mob-fs-xxlarge" data-v="xxlarge" onclick="setFontSize('xxlarge')">XXL</div>
       </div>
     </div>
 

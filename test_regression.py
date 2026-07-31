@@ -1841,6 +1841,29 @@ def run_behavioral_tests(page):
             and r38.get('sharedSection') and r38.get('legacyManageable'))
     results.append(('deiger_private_per_user_with_share_toggle_and_view_only_shared', ok38, r38))
 
+    # v0.644: nytt XXL-skriftnivå øverst i skalaen (zoom 1.6). Sjekk at nivået er
+    # koblet opp hele veien: FS_LEVELS/FS_ZOOM, klasse, currentFontLevel, at
+    # stepperen går xlarge→xxlarge og stopper der, og at segment-kontrollen har
+    # fire valg.
+    r39 = page.evaluate("""() => {
+      const orig=currentFontLevel();
+      const out={ levels:FS_LEVELS.slice(), zoom:FS_ZOOM['xxlarge'],
+                  segCount:document.querySelectorAll('#mob-fs-seg .o').length };
+      setFontSize('xxlarge');
+      out.hasClass=document.body.classList.contains('fs-xxlarge');
+      out.cur=currentFontLevel();
+      // stepper: xlarge → xxlarge, og stopp på xxlarge (ikke forbi)
+      setFontSize('xlarge'); stepFontSize(1); out.steppedTo=currentFontLevel();
+      stepFontSize(1); out.cappedAt=currentFontLevel();
+      setFontSize(orig);
+      return out;
+    }""")
+    ok39 = (r39.get('levels')==['normal','large','xlarge','xxlarge'] and r39.get('zoom')==1.6
+            and r39.get('hasClass') is True and r39.get('cur')=='xxlarge'
+            and r39.get('steppedTo')=='xxlarge' and r39.get('cappedAt')=='xxlarge'
+            and r39.get('segCount')==4)
+    results.append(('xxl_font_level_wired_through_scale_stepper_and_control', ok39, r39))
+
 
 
 
