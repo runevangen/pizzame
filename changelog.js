@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.643',
+    d: 'august 2026',
+    changes: [
+      'Bedre lesbarhet på lyst tema: brødteksten (understeg, «Hvorfor», «Tips») var i en dempet gråbrun som ble litt vanskelig å lese på krembakgrunn. Nå står selve teksten i tydelig mørk blekk, mens sekundær info (steg-tall, tider) er gjort mørkere men holdes dempet. Mørkt tema er uendret.'
+    ]
+  },
+  {
     v: '0.642',
     d: 'juli 2026',
     changes: [
