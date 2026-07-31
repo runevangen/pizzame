@@ -3,119 +3,120 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
-    v: '6.40',
+    v: '0.639',
     d: 'juli 2026',
     changes: [
+      'Nytt versjonsnummer: vi har lagt om til en 0.x-skala på vei mot 1.0, så tallet «hopper» fra 6.40 til 0.639. Hele endringsloggen er nummerert om til samme skala — innholdet i hver oppføring er uendret.',
       'Rettet blank skjerm når man byttet fra PC til mobil: den aktive mobil-fanen ble aldri rendret ved bytte (bare ved oppstart), så innholdet uteble. Nå får fanen innhold uansett hvordan du havner i mobilvisning.'
     ]
   },
   {
-    v: '6.39',
+    v: '0.638',
     d: 'juli 2026',
     changes: [
       'Lettere å gå tilbake til mobilvisning fra PC: «Til mobil»-knappen oppe til høyre er nå større og tydeligere (den satt for smått og gjemt i hjørnet før), og det er lagt til et eget «📱 Bytt til mobilvisning»-valg i ☰ Meny.'
     ]
   },
   {
-    v: '6.38',
+    v: '0.637',
     d: 'juli 2026',
     changes: [
       'PC-versjonen har fått samme varme «Forno»-følelse som mobilen: kremfargede flater i stedet for kald hvit/grå, brent-oransje aksent i stedet for grønn, og overskriftsfonten på tvers. Rent visuelt — alt fungerer som før, det ser bare ut som samme app enten du er på telefon eller skjerm.'
     ]
   },
   {
-    v: '6.37',
+    v: '0.636',
     d: 'juli 2026',
     changes: [
       'Ny <b>Fokus-modus</b> i Tidsplan: trykk «🔎 Fokus» og få det aktive steget i fullskjerm med stor skrift — laget for telefonen på benken mens du baker. Viser ett steg om gangen (tid, hva du gjør og understegene), åpner på steget du er kommet til, og du blar med store «Ferdig»/«Forrige»-knapper. Understeg kan hakes av her og deler fremdrift med Tidsplan. Skjermen holdes våken mens fokus er på, og lys/mørk følger resten av appen.'
     ]
   },
   {
-    v: '6.36',
+    v: '0.635',
     d: 'juli 2026',
     changes: [
       'Fjernet «Kom i gang»-vinduet som poppet opp ved første besøk. Inngangsskjermen og hjelpetekstene underveis (metodekort, «hvorfor», tips, «Holder dette?») dekker det nå — ingen modal i ansiktet lenger. Den fulle <b>Bruksanvisningen</b> finnes fortsatt i Info-fanen (og bak logoen/menyen på PC).'
     ]
   },
   {
-    v: '6.35',
+    v: '0.634',
     d: 'juli 2026',
     changes: [
       'Ryddet inngangsskjermen: fjernet «Ny til pizzadeig? Slik funker det»-lenka. Guiden nås fortsatt fra Info-fanen.'
     ]
   },
   {
-    v: '6.34',
+    v: '0.633',
     d: 'juli 2026',
     changes: [
       'Du kan nå endre <b>meltype</b> og <b>antall</b> direkte under <b>⚙️ Finjuster</b> — ikke bare i veiviser-stegene. (Appen lovet allerede at meltype lå der; nå stemmer det.) Endringer synkes begge veier med stegene.'
     ]
   },
   {
-    v: '6.33',
+    v: '0.632',
     d: 'juli 2026',
     changes: [
       'Ryddet i fanelinja på mobil: fra 7 til <b>5 faner</b>. <b>Oppskrift</b> er nå en veksler øverst i <b>Tidsplan</b> (Tidsplan ↔ Oppskrift), og <b>Notater</b> ligger nå i <b>Deiger</b> (notatfeltet for den aktive deigen vises øverst der). Ingenting er borte — bare samlet der det hører hjemme, så fanelinja blir luftigere.'
     ]
   },
   {
-    v: '6.32',
+    v: '0.631',
     d: 'juli 2026',
     changes: [
       'Fant og fikset den egentlige årsaken til det tomme feltet nederst på iPhone (installert app): høyden ble regnet fra en skjermhøyde som iOS rapporterer for kort i standalone-modus. Appen bruker nå hele skjermhøyden, så fanelinja ligger helt i bunn.'
     ]
   },
   {
-    v: '6.31',
+    v: '0.630',
     d: 'juli 2026',
     changes: [
       'Bedre fiks for at appen ikke fylte hele skjermen på iPhone (installert på hjemskjerm): app-skallet festes nå til alle fire skjermkanter i stedet for å regne skjermhøyde — så fanelinja ligger helt i bunn uten tomt felt under.'
     ]
   },
   {
-    v: '6.30',
+    v: '0.629',
     d: 'juli 2026',
     changes: [
       'Fikset at appen ikke fylte hele skjermen på iPhone (installert på hjemskjerm) — fanelinja lå for høyt med et tomt felt under. Appen strekker seg nå helt ned til bunnen.'
     ]
   },
   {
-    v: '6.29',
+    v: '0.628',
     d: 'juli 2026',
     changes: [
       'Fikset en <b>hvit stripe nederst på skjermen</b> (under fanelinja, ved home-indikatoren på iPhone) i mørk modus — bakgrunnen følger nå temaet helt ut i kantene.'
     ]
   },
   {
-    v: '6.28',
+    v: '0.627',
     d: 'juli 2026',
     changes: [
       'Fikset at <b>logoen/navnet øverst</b> lå for høyt og havnet under statuslinja / Dynamic Island på iPhone. Topplinja tar nå hensyn til det trygge området øverst på skjermen.'
     ]
   },
   {
-    v: '6.27',
+    v: '0.626',
     d: 'juli 2026',
     changes: [
       'Appen har byttet navn til <b>UltimatePizza</b>. Samme app — oppdatert overalt du ser det: tittel, logo, innlogging, del-tekst, guiden og PWA-ikon. (Er appen installert på hjemskjermen, kan ikonnavnet henge igjen til du installerer på nytt — det styres av telefonen, ikke appen.)'
     ]
   },
   {
-    v: '6.26',
+    v: '0.625',
     d: 'juli 2026',
     changes: [
       'Appen velger nå språk automatisk <b>første gang</b>: har du norsk (bokmål/nynorsk) i nettleseren eller på telefonen, starter den på norsk — ellers på engelsk. Har du valgt språk selv, huskes valget som før og overstyrer alltid gjettingen.'
     ]
   },
   {
-    v: '6.25',
+    v: '0.624',
     d: 'juli 2026',
     changes: [
       'Smart-plan: tidsvelgeren er redesignet. «Steketidspunkt» er byttet til det tydeligere spørsmålet <b>«Når skal deigen være klar?»</b> (med undertittel «Ferdig hevet og klar for ovnen») — det er akkurat tidspunktet planen regner mot. Klokkeslettet vises nå <b>stort og trykkbart</b> i fokus, med datoen under.'
     ]
   },
   {
-    v: '6.24',
+    v: '0.623',
     d: 'juli 2026',
     changes: [
       'Inngangs-skjermen ønsker deg nå velkommen med «<b>La oss starte!</b>».',
@@ -124,14 +125,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '6.23',
+    v: '0.622',
     d: 'juli 2026',
     changes: [
       'Appen har byttet navn til <b>Pizzame</b> (tidligere «Pizzaplanlegger»). Samme app, kortere navn — oppdatert overalt du ser det: tittel, logo, innlogging, del-tekst og PWA-ikon. (Er appen installert på hjemskjermen, kan ikonnavnet henge igjen til du installerer på nytt — det styres av telefonen, ikke appen.)'
     ]
   },
   {
-    v: '6.22',
+    v: '0.621',
     d: 'juli 2026',
     changes: [
       'Fikset en <b>blank skjerm</b>: valgte du «Smart-plan» og trykket deretter «Planlegging», ble skjermen tom. Nå kommer du tilbake til startvalget (de to dørene) i stedet.',
@@ -140,7 +141,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '6.21',
+    v: '0.620',
     d: 'juli 2026',
     changes: [
       'Ny <b>inngang</b>: når du åpner appen på nytt møter du nå to likestilte dører — <b>🧭 Smart-plan</b> («si når du har tid og når du vil spise, så finner appen metoden som passer livet ditt») og <b>🍕 Jeg vet hva jeg vil ha</b> (velg type og metode selv, som før). Ett trykk og du er i riktig løype. Har du et påbegynt oppsett, hopper vi rett inn i det uten å avbryte.',
@@ -149,56 +150,56 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '6.20',
+    v: '0.619',
     d: 'juli 2026',
     changes: [
       'Språkvask og småfikser etter en grundig gjennomgang. Lange varigheter vises nå som «8 t 24 min» i stedet for rå «504 min», og «1.3 time» er ryddet til «1 t 15 min». Entall håndteres riktig når det bare er én av noe («1 emne», «1 boks» — ikke «1 emner»). Kopi-teksten skriver «Mania-poolish» (ikke «mania») og «Antall … : 1» uten det engelske «pcs». På engelsk er en rekke formuleringer gjort mer naturlige (bl.a. amerikansk «flavor», «warm up» i stedet for «temper» om deig, og «sheet pans»/«pizzas» oversatt i antall-linja). På norsk: «Vekk gjæren» (ikke «Væk»), «veiviseren» konsekvent, og «stjerner» der appen faktisk viser ★ (ikke «terningkast»).'
     ]
   },
   {
-    v: '6.19',
+    v: '0.618',
     d: 'juli 2026',
     changes: [
       'Fikset at en nettopp sendt <b>tilbakemelding</b> så ut til å forsvinne. To ting: (1) tilbakemeldings-vinduet lukket seg selv etter ett sekund, så du rakk ikke se at meldingen kom inn — nå blir det stående åpent. (2) Lista var sortert etter stemmer, så en fersk melding (0 stemmer) havnet nederst — nå vises den du nettopp sendte <b>øverst</b>, tydelig merket «✓ nettopp sendt», selv om serveren skulle henge et øyeblikk. Meldingene ble alltid lagret; de var bare vanskelige å få øye på.'
     ]
   },
   {
-    v: '6.18',
+    v: '0.617',
     d: 'juli 2026',
     changes: [
       'Bedre <b>kalender-eksport</b> (📅 Påminnelser). Kalenderfila følger nå språk og enheter du har valgt (engelske titler og oz/°F når det er valgt), varsel kommer 10 min før hvert <b>handlingssteg</b> (ikke lenger et pling før hver passive heving), og hvert innslag har fått «trenger»-liste og sted (kjøleskap/benk/ovn). Under panseret er fila gjort robust etter kalender-standarden — den manglet et påkrevd tidsstempel og escaping, som kunne få enkelte kalendere (bl.a. Google) til å avvise eller vise hendelser feil.'
     ]
   },
   {
-    v: '6.17',
+    v: '0.616',
     d: 'juli 2026',
     changes: [
       'Ny <b>lys modus</b> ved siden av den mørke. Under <b>Info → Visning → Tema</b> velger du <b>System</b> (følger telefonens innstilling), <b>Lys</b> eller <b>Mørk</b>. Den lyse paletten er en varm krem/pergament-tone med samme oransje aksent som før. Valget huskes, og standard er fortsatt mørk — så ingenting endrer seg før du selv velger noe annet.'
     ]
   },
   {
-    v: '6.16',
+    v: '0.615',
     d: 'juli 2026',
     changes: [
       'Avhaking av steg følger nå <b>innholdet</b> i steget, ikke bare posisjonen. Justerer du melmengde, hydrering, temperatur eller kjøletid <i>etter</i> at du har haket av noe, faller haken automatisk av de stegene som faktisk endret seg (nye grammengder, temperaturer eller minutter) — mens steg som ikke ble berørt beholder haken. Før kunne en hake bli stående på et tall som var endret (f.eks. en avhaket «500 g mel» etter at du dro til 600 g). Haken rives aldri vekk midt i et glidebryter-dra, og den overlever språk- og enhetsbytte.'
     ]
   },
   {
-    v: '6.15',
+    v: '0.614',
     d: 'juli 2026',
     changes: [
       'Appen finnes nå på <b>engelsk</b>, og du kan vise mål i <b>imperiske enheter</b> (oz og °F). Begge deler er egne, uavhengige brytere under <b>Info → Språk / Enheter</b> — du kan f.eks. ha norsk tekst med imperiske enheter, eller engelsk med metrisk. Hele mobilappen er oversatt: oppskrifter, tidsplan, alle sju metodene, veiviser, varsler, «📋 Kopier»-teksten, bruksanvisningen og Tips &amp; teknikk. Engelsk er <b>maskinoversatt (AI)</b> — et lite varsel minner om å dobbeltsjekke kritiske steg — og selve utregningen er uendret; det er kun visningen som bytter språk/enhet.'
     ]
   },
   {
-    v: '6.14',
+    v: '0.613',
     d: 'juli 2026',
     changes: [
       'Ny <b>«👉 Neste»-stripe</b> øverst i tidsplanen: den viser hva neste steg er og teller ned til det — «Ta ut av kjøleskap · om 3 t 20 min» — så du slipper å scrolle gjennom hele planen for å se hva som skjer nå. Nedtellingen oppdaterer seg selv, og et trykk på stripa hopper rett til neste steg. Står du midt i en lang heving, peker den på slutten av hevingen; er alt gjort, sier den fra. (Er du på etterskudd og har steg som skulle vært gjort, viser den «på tide».)'
     ]
   },
   {
-    v: '6.13',
+    v: '0.612',
     d: 'juli 2026',
     changes: [
       'Understeg er nå en fullverdig, husket visning — ikke lenger merket som «utprøving». To ting huskes: (1) <b>Avhakingen av understeg</b> lagres nå sammen med deigen og synkes mellom enheter, akkurat som hovedsteg og ingredienser. Legger du fra deg telefonen midt i en flerdagers heving, står understegene du har haket av der når du kommer tilbake — også på en annen enhet. (2) <b>Selve understeg-visningen</b> huskes mellom økter: slår du den på, er den på neste gang du åpner appen (som skriftstørrelse og layout). Knappen heter nå «📋 Vis understeg».',
@@ -206,7 +207,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '6.12',
+    v: '0.611',
     d: 'juli 2026',
     changes: [
       'Rettet en feil der avhaking kunne bli stående på utdatert innhold: bytter du <b>ovntype</b> eller <b>gjærtype</b> mens du har haket av steg, nullstilles avhakingen nå — på samme måte som ved bytte av pizzatype eller metode. Før kunne f.eks. «Varm pizzaovnen til 430°C» stå avhaket selv etter at du byttet til vanlig ovn (som sier 250°C), og gjær-chips beholde gammel grammengde. Gjelder både PC og mobil. (Melmengde/hydrering/temperatur/kjøletid nullstiller bevisst <b>ikke</b> — de justeres med glidebrytere som beveger seg kontinuerlig, og en nullstilling der ville rive vekk flere dagers avhaking midt i et dra.)',
@@ -214,70 +215,70 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '6.11',
+    v: '0.610',
     d: 'juli 2026',
     changes: [
       'Tre praktiske kald-gjæring-råd lagt til: (1) «Sett i kjøleskap»-steget minner nå om å <b>ikke stable boksene tett i høyden</b> — det kan blokkere luftsirkulasjonen og gi ujevn kjøling — og om at kjøleskapstallet på hjulet ikke er til å stole på (1–5-skalaene varierer mellom merker; sjekk med termometer at det ligger rundt 2–5°C). (2) «Hvorfor»-teksten på kjøleskapshevingen nevner at kald gjæring er <b>tilgivende</b>: siden kulda bremser hele prosessen, tåler deigen litt mer gjær enn man skulle tro før det blir et problem. Gjelder alle metoder med kjøleskapsheving.'
     ]
   },
   {
-    v: '6.10',
+    v: '0.609',
     d: 'juli 2026',
     changes: [
       'Gjæringsstegene forteller nå ikke bare <b>når</b>, men <b>hva du ser etter</b> — og hva du gjør hvis deigen henger etter eller er kommet for langt. Klokka er fortsatt planen, men tida stemmer sjelden på minuttet: kjøleskap og kjøkken varierer. Under «💡 Tips» får de kalde hevingene, romtemperatur-/bulk-hevingene, benktida og poolish-gjæringen et fast mønster med tegn å kjenne igjen (størrelse, bobler, lukt, fingertrykk) og et konkret «gi den mer tid» / «bak tidligere». Kald deig: fingertrykk-testen holdes bevisst ute — den er upålitelig når deigen er stiv av kulde. Gjelder alle metoder (Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania).'
     ]
   },
   {
-    v: '6.09',
+    v: '0.608',
     d: 'juli 2026',
     changes: [
       'Ny teknikk: «🧊 Poolish kjøleskapspause». Er tidene vanskelige å få til å gå opp, kan du la den ferdige poolishen «vente» kaldt (opptil 18t) mellom «poolish er klar» og «bland ferdig deig». Det skyver resten av planen inn i den ledige tiden din — <b>uten å endre når du spiser</b>. Slå den av/på under Metode → «Poolish kjøleskapspause», eller trykk «🧊 Sett inn kjøleskapspause» rett i tidskonflikt-varselet når den dukker opp. Appen velger den korteste pausen (6/12/18t) som gir færrest steg utenfor tiden din, og viser pausen som et eget steg. Beta-søket «Finn oppskrift» kjenner også teknikken og kan foreslå den.'
     ]
   },
   {
-    v: '6.08',
+    v: '0.607',
     d: 'juli 2026',
     changes: [
       '«Ta ut av kjøleskap»-steget forklarer nå benktida (tempereringen) etter kjøleskapsfermenteringen bedre: den gjør to ting på én gang — glutenet slapper av så deigen blir strekkbar, og gjæren våkner fra kulda og gir en siste, kort heving som gjør skorpa luftig. Hopper du over den, blir deigen både vanskelig å strekke og tettere stekt. Tipset er også utvidet: for kort gir stiv, tett deig; altfor lenge kan overheve. Gjelder alle metoder med kjøleskapsheving (Langtidsdeig, Poolish, Biga).'
     ]
   },
   {
-    v: '6.07',
+    v: '0.606',
     d: 'juli 2026',
     changes: [
       'Rettet tre tidsbeskrivelser som ikke stemte med selve tidsplanen (funnet ved manuell kvalitetssjekk): (1) kjøleskaps-steget skrev «ca. 24 timer» selv om den faktiske urørte kjøletiden er kortere — de siste 4 timene av den kalde fasen er temperering ute (eget steg). Teksten viser nå den reelle kjøletiden (f.eks. ca. 19,8 timer), i tråd med tidslinja på steget. (2) «Total heving» i den kopierte oppskriften viste bare den kalde halen (f.eks. 24t), ikke den reelle totaltiden — nå står «Total tid fra start til steking: ca. X timer» regnet fra første steg til steking (for en poolish med 24t kald hale blir det ca. 40 timer). (3) Fagteksten om poolish sa «har allerede fermentert mesteparten av deigen» — poolishen er halvparten av melet, så det står nå «halvparten av melet og bidrar med mye av smak- og aromautviklingen».'
     ]
   },
   {
-    v: '6.06',
+    v: '0.605',
     d: 'juli 2026',
     changes: [
       '"📋 Kopier" tar nå med en sjekk-instruksjon øverst ("Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:"), pluss appversjon og dato/klokkeslett for kopieringen. Nyttig hvis du vil lime hele oppskriften rett inn i en manuell kvalitetssjekk — og det blir sporbart hvilken versjon planen kom fra.'
     ]
   },
   {
-    v: '6.05',
+    v: '0.604',
     d: 'juli 2026',
     changes: [
       'Beta-fanen er ryddet: "Pizzatid" heter nå "Når er du ledig?", med en forklaringsboks som sier hva den er og hvordan den påvirker appen — den brukes både til å foreslå oppskrifter som passer tiden din, og til å varsle hvis et steg havner på en tid du ikke har satt av. "Eller velg et populært tidspunkt" har fått tydeligere skille fra feltene over og en kort forklaring av hva knappene gjør. Elementene følger nå samme stil som resten av appen.'
     ]
   },
   {
-    v: '6.04',
+    v: '0.603',
     d: 'juli 2026',
     changes: [
       'Ny "📤 Del appen"-knapp (under Info → Del, og i ☰ Meny på PC). På mobil åpner den delingsmenyen så du kan sende appen videre i meldinger, e-post osv.; på PC kopieres lenken til utklippstavla. Løser at det ikke fantes noen adresse å kopiere når appen kjøres installert fra hjemskjermen (da er nettleserens adressefelt skjult). Bruksanvisningen er oppdatert med dette.'
     ]
   },
   {
-    v: '6.03',
+    v: '0.602',
     d: 'juli 2026',
     changes: [
       'Ny "📖 Bruksanvisning" under Info-fanen: en komplett, pedagogisk gjennomgang av hele appen — alle fanene, innstillingene, metodene og de smarte funksjonene (veiviseren og Sjekk, understeg/tips/juster, varsler og pizzatid, lagring og terningkast, kopier/kalender, install på hjemskjerm, og Beta-søket). Den har en innholdsfortegnelse øverst så du kan hoppe rett til det du lurer på. Bruksanvisningen holdes oppdatert i takt med appen.'
     ]
   },
   {
-    v: '6.02',
+    v: '0.601',
     d: 'juli 2026',
     changes: [
       'Tidskonflikt-varselet ("Et steg havner i tid du ikke har satt av til pizza") er tonet ned i Tidsplan: steget som kolliderer får nå bare et lite «⚠ utenfor spisetid»-merke rett på steg-raden, i stedet for hele kortet. Det fulle varselet — med forklaringen og valgene «Rediger pizzatiden» og «Fortsett likevel» — bor nå i wizardens «Sjekk», som er der du blir gjort oppmerksom på det før du starter. På mobil tar et trykk på merket deg rett til å redigere pizzatiden.',
@@ -287,7 +288,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '6.01',
+    v: '0.600',
     d: 'juli 2026',
     changes: [
       'Ny "Start ny deig"-knapp på wizardens første steg. Den vises kun som en liten "Fortsetter: X · Y"-linje når du faktisk ikke er på standardverdier — kommer du tilbake til wizarden og alt er nullstilt fra før, ser du ingenting ekstra.',
@@ -297,7 +298,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '6.00',
+    v: '0.599',
     d: 'juli 2026',
     changes: [
       '"Prøv understeg" er flyttet ned til statuslinjen, rett ved siden av "⚙️ Juster" — og en ny "💡 Tips"-bryter har fått plass der også. Alle tre står nå samlet på én rad i Tidsplan, med pizzatype og metode alene på linjen over. Tips-bryteren fungerte tidligere kun på PC; den virker nå på mobil også.',
@@ -305,28 +306,28 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.99',
+    v: '0.598',
     d: 'juli 2026',
     changes: [
       'Understeg finnes nå på alle steg, i alle metoder — Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania-poolish og Ingen elting. Selve steketrinnet (som var det siste, gjentagende hullet) er også dekket nå, for alle pizzatyper og begge ovnstyper.'
     ]
   },
   {
-    v: '5.98',
+    v: '0.597',
     d: 'juli 2026',
     changes: [
       'Fant hvorfor "Prøv understeg" kunne føles som den ikke gjorde noe: knappen virket helt fint, men Kveldsdeig hadde ennå ikke fått understeg skrevet — bare Langtidsdeig hadde det. Alt falt derfor tilbake til gammel tekst, og ingenting synlig endret seg når du trykket. Kveldsdeig har nå understeg på alle sine steg unntatt selve stekingen.'
     ]
   },
   {
-    v: '5.97',
+    v: '0.596',
     d: 'juli 2026',
     changes: [
       'Fant selv at "📋 Prøv understeg"-knappen fra forrige versjon var plassert for langt ned — den satt etter statuslinjen, som på mange oppskrifter er høy nok til å skyve knappen under skjermkanten uten at du visste den var der. Den bor nå helt øverst på Tidsplan, ved siden av det lille pizzaikonet, synlig med det samme uten å scrolle.'
     ]
   },
   {
-    v: '5.96',
+    v: '0.595',
     d: 'juli 2026',
     changes: [
       'Ny utprøvende knapp på Tidsplan: "📋 Prøv understeg". Slår du den på, deles teksten i hvert steg opp i nummererte understeg du kan hake av én etter én, i stedet for ett sammenhengende avsnitt — så langt bygget for Langtidsdeig. Slår du den av igjen er alt akkurat som før, ingenting er borte. Passive steg (som venting i romtemperatur eller kjøleskap) får understeg uten avhaking, siden det ikke er noe å gjøre der.',
@@ -334,7 +335,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.95',
+    v: '0.594',
     d: 'juli 2026',
     changes: [
       'Hvert steg som bruker målte ingredienser viser nå en liten rad med "trenger du"-chips over selve teksten — f.eks. vann, mel, salt og gjær med mengder — så du kan se hva du trenger uten å lese deg gjennom hele avsnittet først. Selve teksten er uendret, mengdene står fortsatt der også.',
@@ -342,28 +343,28 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.94',
+    v: '0.593',
     d: 'juli 2026',
     changes: [
       'Rettet en feil som gjorde at lagring av bakst kunne feile med meldingen "currentUserName is not defined". En funksjon for a hente navnet ditt til lagringen ble kalt fire steder, men var aldri skrevet noe sted i koden -- den feilet før selve lagringen i det hele tatt rakk å starte. Lagring av bakst og notater skal nå fungere normalt igjen.'
     ]
   },
   {
-    v: '5.93',
+    v: '0.592',
     d: 'juli 2026',
     changes: [
       'Ingen synlig endring i appen denne runden — rendyrket arbeid på test-sikkerhetsnettet bak kulissene. Tre tester feilet når regresjonssuiten kjørte sent på kvelden, fordi de planla bakover fra en dato som ikke lenger ga nok margin mot å havne i fortiden. De søker nå aktivt etter et tidspunkt som faktisk er konfliktfritt, i stedet for å gjette ett fast klokkeslett. Ny delt resetTestState()-hjelper rydder global tilstand mellom tester.'
     ]
   },
   {
-    v: '5.92',
+    v: '0.591',
     d: 'juli 2026',
     changes: [
       'Rettet "Ikke vis igjen"-knappen i velkomstguiden på PC — den var mørk med mørk tekst og vanskelig å lese. Årsaken var en reserveverdi i CSS-en som aldri faktisk ble brukt, så knappen alltid endte opp i den mobile, mørke fargen selv på PC. Retter seg nå etter samme lyse/mørke-mekanisme som resten av knappene i appen.'
     ]
   },
   {
-    v: '5.91',
+    v: '0.590',
     d: 'juli 2026',
     changes: [
       'Varselet om at et steg havner utenfor tiden du har satt av, eller på natten, har fått en tredje knapp: "Dette er greit — fortsett likevel". Noen ganger vet du at du kan ordne deigen på et upassende tidspunkt akkurat denne ene gangen, uten å gå inn og endre pizzatiden din for godt. Trykker du den, blir varselet til en nøytral bekreftelse i stedet for å bare forsvinne — sjekken sier "Planen holder — med ett godtatt forbehold" i stedet for å late som ingenting eller late som noe fortsatt står uløst. Et "Angre"-alternativ tar deg tilbake til varselet.',
@@ -371,35 +372,35 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.90',
+    v: '0.589',
     d: 'juli 2026',
     changes: [
       'Fjernet velkomstskjermen som dukket opp ved ny oppstart med knappene Bruk samme som sist og Åpne favoritten min. Den ga et løfte den ikke helt holdt — den gjenbrukte det meste av forrige oppsett, men ikke tidspunktet du planla for — og hoppet forbi hele wizarden, inkludert sjekken som nå ser over planen din. Favoritten din er fortsatt like lett å finne via Mine deiger. Appen går nå rett til første steg hver gang du starter noe nytt.'
     ]
   },
   {
-    v: '5.89',
+    v: '0.588',
     d: 'juli 2026',
     changes: [
       'To navn byttet ut fordi de var for generiske. Fanen som viser tidsplanen din (oppstart, steketid, alle stegene) het bare Steg, rett ved siden av fanen Planlegging — forvirrende likt. Den heter nå Tidsplan. Wizardens siste steg het Holder? i den lille etiketten øverst, mens de to andre etikettene er substantiv — den heter nå Sjekk.'
     ]
   },
   {
-    v: '5.88',
+    v: '0.587',
     d: 'juli 2026',
     changes: [
       'Rettet en feil som fikk appen til å vise en nesten blank skjerm rett etter forrige oppdatering. En tekstlinje i endringsloggen manglet et avsluttende anførselstegn, noe som stanset all JavaScript fra og med den linjen. Ingen funksjonell endring i appen for øvrig.'
     ]
   },
   {
-    v: '5.87',
+    v: '0.586',
     d: 'juli 2026',
     changes: [
       '"Passer godt"-teksten under metodekortene var ustabil — kunne mangle helt, eller vise et svar som ikke stemte med tiden du faktisk hadde satt av. To årsaker: kortene ble tegnet før datofeltene fikk sin første verdi, så den aller første visningen manglet alltid teksten; og kortene ble aldri tegnet på nytt når du kom inn på Metode-steget, så teksten viste alltid resultatet fra forrige gang et kort ble klikket — ikke det som stemte med datoen du nettopp hadde satt på forrige steg. Metodekortene oppdaterer seg nå hver gang du åpner Metode-steget."'
     ]
   },
   {
-    v: '5.86',
+    v: '0.585',
     d: 'juli 2026',
     changes: [
       '"Steketidspunkt" og "Populære tidspunkt for pizza" i Beta-fanen var to helt uavhengige søk som ikke hadde noe med hverandre å gjøre — et populært tidspunkt skrev til sin egen boks uten å røre feltene over. Nå fyller et klikk på et populært tidspunkt de samme feltene og viser svaret i det samme resultatfeltet som det frie søket bruker. Ett svar om gangen, uansett hvilken vei du kommer inn.',
@@ -407,14 +408,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.85',
+    v: '0.584',
     d: 'juli 2026',
     changes: [
       'Fjernet "Tidligst mulig"-linjen under Når vil du spise-spørsmålet på første wizardsteg. Skulle du be om et tidspunkt som ikke går opp, får du i stedet det tydelige varselet fra v5.84 med en ferdig utregnet knapp — det tar seg av akkurat den situasjonen bedre enn en passiv linje gjorde.'
     ]
   },
   {
-    v: '5.84',
+    v: '0.583',
     d: 'juli 2026',
     changes: [
       'Velger du et steketidspunkt som er for tett på, kunne appen regne seg bakover til en oppstart som allerede hadde passert — og vise den uten å si fra. Nå får du et tydelig varsel både i kvalitetssjekken og på Steg-fanen, med en knapp som flytter steketiden til det tidligste tidspunktet som faktisk går, ferdig utregnet for metoden og innstillingene dine.',
@@ -422,7 +423,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.83',
+    v: '0.582',
     d: 'juli 2026',
     changes: [
       'Spørsmålet om når er nå to ærlige valg: "Planlagt steketid" med dato og klokkeslett, eller "Jeg begynner nå" — der planlegges deigen fra nå, og steketiden regnes ut for deg. Datofeltene på nå-grenen er fjernet: de har en stund vært uten funksjon (appen brukte alltid nå-tidspunktet uansett hva du skrev), så de sto der og så redigerbare ut uten å være det.',
@@ -431,14 +432,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.82',
+    v: '0.581',
     d: 'juli 2026',
     changes: [
       'Spørsmålet om når du vil spise sto med samme overskrift to ganger på første wizardsteg. Den ene er borte.'
     ]
   },
   {
-    v: '5.81',
+    v: '0.580',
     d: 'juli 2026',
     changes: [
       'Finjuster er ikke lenger et eget steg i wizarden. Den nås nå derfra du oppdager at du trenger den: hvert varsel i kvalitetssjekken har fått en "Se i Finjuster"-lenke som tar deg rett til spaken som hører til akkurat det problemet — hydreringen for melvarselet, kjøleskapstiden for lang gjæring, romtemperaturen for varmt kjøkken. ⚙️ Juster øverst i statuslinjen åpner Finjuster som før.',
@@ -447,7 +448,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.80',
+    v: '0.579',
     d: 'juli 2026',
     changes: [
       'Kvalitetssjekken på siste wizardsteg sjekker nå også deigen, ikke bare tidene. Passer ikke melet til gjæringstiden, er hydreringen utenfor det melet tåler, blir gjæringen så lang at deigen kan bryte sammen, eller er kjøkkenet for varmt for hurtigdeigen — så står det der, sammen med tidskonfliktene. Står alt riktig, sier den fortsatt fra om det.',
@@ -456,14 +457,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.79',
+    v: '0.578',
     d: 'juli 2026',
     changes: [
       'Fjernet den lille meldingen som spratt opp øverst på skjermen hver gang du byttet pizzatype. Den var morsom én gang og i veien de neste tjue.'
     ]
   },
   {
-    v: '5.78',
+    v: '0.577',
     d: 'juli 2026',
     changes: [
       'Wizarden er bygget om til fire steg. Antall pizzaer og når du vil spise er flyttet opp til første steg, sammen med pizzatypen — det er tingene du allerede vet når du bestemmer deg for å lage pizza. Viktigere: metodevalget avhenger av hvor mye tid du har, og nå vet appen det før du velger. Metodekortene sier derfor selv om de passer, i stedet for at du får en advarsel etterpå.',
@@ -473,7 +474,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.77',
+    v: '0.576',
     d: 'juli 2026',
     changes: [
       'Knappene i varslene som sender deg et annet sted — "Rediger pizzatiden din", "Juster kjøleskapstid", "Se i Finjuster", "Se i Metode" — var enveisdører. Du landet et sted, endret noe, og fikk aldri vite om problemet du kom for å løse faktisk ble borte. Nå dukker det opp en linje nederst på skjermen du ble sendt til, med en vei tilbake dit du kom fra.',
@@ -481,7 +482,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.76',
+    v: '0.575',
     d: 'juli 2026',
     changes: [
       'Fikset at varselet om opptatt tid ble hengende med gammelt svar når du endret pizzatiden din i Beta-fanen. Redigeringen lagret riktig, men planen ble aldri regnet ut på nytt, så varselet svarte på tilstanden fra før endringen. Nå oppdaterer planen seg med en gang du endrer et tidspunkt.',
@@ -490,7 +491,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.75',
+    v: '0.574',
     d: 'juli 2026',
     changes: [
       'Varselet om at et steg havner på et dårlig tidspunkt tilbyr nå bare knapper som faktisk kan løse akkurat det problemet. Tidligere fikk du "Juster kjøleskapstid" uansett — men steg som "Ta ut av kjøleskap" ligger fast fire timer før steking, så kjøleskapstiden kan ikke flytte dem i det hele tatt når du planlegger bakover fra et måltid. Du kunne justere så mye du ville uten at varselet forsvant.',
@@ -498,7 +499,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.74',
+    v: '0.573',
     d: 'juli 2026',
     changes: [
       'Alle varsler har fått et kryss oppe i høyre hjørne som skjuler varselet for denne gangen. Det gjelder også nattevarselet — unntak finnes, du kan være våken uansett, eller ha lagt opp til det med vilje for smakens skyld.',
@@ -506,7 +507,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.73',
+    v: '0.572',
     d: 'juli 2026',
     changes: [
       'Varselet "Et steg havner i arbeidstiden din" bygger nå på din egen Pizzatid fra Beta-fanen i stedet for en fast antakelse om at alle jobber mandag til fredag 08–16. Setter du opp når du faktisk er ledig, følger varselet det — og varselet har fått en knapp rett inn til redigeringen. Pizzatiden lagres per bruker på serveren, så den følger deg mellom telefon og PC.',
@@ -514,7 +515,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.72',
+    v: '0.571',
     d: 'juli 2026',
     changes: [
       'Fjernet "Da starter du: …"-linjen under Kjøleskapsheving på Når?-steget, og under Poolish- og Biga-varigheten på Metode-steget. Etter at kjøleskapsblokken ble flyttet opp i v5.71 gjentok den bare oppstartstidspunktet statuslinjen viser noen linjer over.',
@@ -522,7 +523,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.71',
+    v: '0.570',
     d: 'juli 2026',
     changes: [
       'Kjøleskapshevingen på wizardens Når?-steg er flyttet opp og ligger nå rett under statuslinjen med oppstart og steketid, i stedet for nederst på siden. Kjøleskapstiden er den enkeltinnstillingen som flytter oppstartstidspunktet mest, og nå står årsak og virkning ved siden av hverandre. Blokken skjules fortsatt automatisk for Hurtigdeig og Kveldsdeig, som ikke har noen kjølefase.',
@@ -530,126 +531,126 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.70',
+    v: '0.569',
     d: 'juli 2026',
     changes: [
       'Ny dynamisk "hvorfor"-boks under metodevalg-kortene på wizardens Metode-steg — viser en kort forklaring av hvorfor du velger den metoden du har trykket på, i stedet for kun den korte strukturbeskrivelsen kortet selv har. Poolish og Biga gjenbruker de allerede eksisterende forklaringstekstene fra Steg-visningen; Langtidsdeig, Hurtigdeig, Kveldsdeig og Mania-poolish har fått nye korte tekster i samme stil.'
     ]
   },
   {
-    v: '5.69',
+    v: '0.568',
     d: 'juli 2026',
     changes: [
       'Lagt til ±-knapper ved siden av alle fire sliderne i Finjuster (Melmengde, Hydrering, Kjøleskapsheving, Romtemperatur) — native slidere er vanskelige å treffe presist på mobil. Slideren selv er uendret og virker som før; knappene gir et nøyaktig ett-steg samtidig.'
     ]
   },
   {
-    v: '5.68',
+    v: '0.567',
     d: 'juli 2026',
     changes: [
       'Fjernet "🌙 Maks smak"-boksen på wizardens steg 3. Den var kun en snarvei til ett bestemt tall — ikke en sikkerhetsmekanisme, siden det uavhengige varselsystemet for gjæringstid uansett fanger opp for lang eller kort kjøletid. ±-steppen for kjøleskapstid er uendret og fortsatt der.'
     ]
   },
   {
-    v: '5.67',
+    v: '0.566',
     d: 'juli 2026',
     changes: [
       'Fjernet den overflødige lenken "⚙️ Finjuster (mel, gjærtype, meltype osv.)" nederst på wizardens steg 3 — den gjorde nøyaktig det samme som "⚙️ Juster"-knappen i statuslinjen øverst på samme skjerm. Forklaringsteksten "mel, gjærtype, meltype osv." er flyttet opp som en liten undertekst under Juster-knappen, kun synlig på steg 3.'
     ]
   },
   {
-    v: '5.66',
+    v: '0.565',
     d: 'juli 2026',
     changes: [
       'Metoden "Standard" heter nå "Langtidsdeig" overalt i appen (PC og mobil) — fullfører et tidsbasert navnesystem sammen med Hurtigdeig og Kveldsdeig. Kun visningsnavnet er endret; ingenting i lagrede bakster eller egen logikk er rørt.'
     ]
   },
   {
-    v: '5.65',
+    v: '0.564',
     d: 'juli 2026',
     changes: [
       'Tre tekstrettelser: stegtittelen "Kjøleskapsheiving" var en skrivefeil for "Kjøleskapsheving" (Standard/Poolish/Biga). "klede tørker ut overflaten" rettet til "kluter" (to steder, Standard og Kveldsdeig). Den kopierte tidsplanens toppfelt viste "Kjøleskapsheving: X timer" for Standard/Poolish/Biga, men det tallet inkluderer også 4 timers fast romtemperering og formingstid — ikke ren kjøletid. Endret til "Total heving: X timer" for å stemme med hva tallet faktisk er. Kveldsdeigs tilsvarende linje var allerede riktig (der er hele tallet ren kjøletid) og er ikke endret.'
     ]
   },
   {
-    v: '5.64',
+    v: '0.563',
     d: 'juli 2026',
     changes: [
       'Stegpunktene øverst i wizarden (Pizzatype → Metode → Når?) kan nå klikkes både fram og tilbake — tidligere var det kun mulig å hoppe tilbake til steg du allerede hadde vært innom. Ikke-besøkte steg vises fortsatt med tall (ikke hake), men får nå en tynn aksentkant som viser at de er klikkbare.'
     ]
   },
   {
-    v: '5.63',
+    v: '0.562',
     d: 'juli 2026',
     changes: [
       'Oppskriftsvisningen for Hurtigdeig og Kveldsdeig på mobil manglet radene for Romtemperatur og Ovntype som PC alltid har hatt — lagt til slik at PC og mobil viser nøyaktig samme informasjon. Kveldsdeig på mobil brukte også en kortere tekst ("Kjøleskap"/"10t") enn PC ("Kjøleskapsheving"/"10 timer") — nå samme ordlyd begge steder. Ny testtype (pc_mobil_1to1_*) sjekker fra nå av at PC og mobil er innholdsmessig identiske for alle tre metodene, ikke bare at hver plattform er intern-konsistent.'
     ]
   },
   {
-    v: '5.62',
+    v: '0.561',
     d: 'juli 2026',
     changes: [
       'Arkitekturtiltak (ingen synlig endring): de 8 stedene i koden som bygde opp ingredienslisten (Mel/Vann/Salt/olje/smør/sukker/Gjær) hver for seg — for både PC og mobil, på tvers av Standard/Hurtigdeig/Kveldsdeig — er samlet i én felles funksjon (baseIngredientRows). De to nesten-identiske rendringsfunksjonene for oppskriftsradene (én for PC, én for mobil) er slått sammen til én. Ny regresjonstest fryser nå også selve HTML-utdataen fra dette laget, som tidligere ikke var testdekket.'
     ]
   },
   {
-    v: '5.61',
+    v: '0.560',
     d: 'juli 2026',
     changes: [
       'Arkitekturtiltak (ingen synlig endring): Endringsloggen (denne listen) er flyttet ut av index.html og inn i en egen fil, changelog.js. Reduserer hovedfilens størrelse med ca. 15% og gjør fremtidige endringer i selve appen billigere å jobbe med.'
     ]
   },
   {
-    v: '5.60',
+    v: '0.559',
     d: 'juli 2026',
     changes: [
       'Rullet ut valg-vs-handling-skillet fra Finjuster-testen (v5.55) til resten av wizarden: Pizzatype-pillene og Metode-kortene bruker nå samme omriss+hake for valgt alternativ, og begge "Neste"-knappene bruker samme dempede farge som de andre "gå videre"-knappene. Metodekortenes egen fargefremheving for Hurtigdeig/Kveldsdeig er fjernet til fordel for ett enhetlig valgspråk overalt.'
     ]
   },
   {
-    v: '5.59',
+    v: '0.558',
     d: 'juli 2026',
     changes: [
       'Fjernet den pulserende prikken over "Steg" i bunnmenyen — den var ment å dytte deg mot Steg-fanen for å se konsekvensen av en endring, men det gjør deig-statuslinjen i wizarden allerede (oppstart/steketid vises der du står, uten å bytte fane). Overflødig nå, ryddet bort sammen med tilhørende kode.'
     ]
   },
   {
-    v: '5.58',
+    v: '0.557',
     d: 'juli 2026',
     changes: [
       'Fjernet den sticky Kopier/Kalender/Lagre-baren (som av og til roter til skjermen) og lagt de tre handlingene inn i deig-statuslinjen i stedet — vanlig plassert, ikke sticky. Alle tre likestilt, ingen fremhevet fremfor de andre. Ryddet samtidig bort en del gammel, skjør JavaScript-logikk som fantes bare for å holde den forrige sticky-baren riktig plassert.'
     ]
   },
   {
-    v: '5.57',
+    v: '0.556',
     d: 'juli 2026',
     changes: [
       'Deiger-fanen (lagrede oppskrifter) fikk samme fargepalette som resten av appen — kortene brukte fortsatt hardkodede lyse farger (hvit bakgrunn, lyse rammer) fra før Forno-restylingen, i stedet for de delte tokenene alt annet bruker. Bakgrunn, rammer og dempet tekst matcher nå riktig i mørk modus.'
     ]
   },
   {
-    v: '5.56',
+    v: '0.555',
     d: 'juli 2026',
     changes: [
       '"Pizzatid" i Beta-fanen starter nå minimert (skjult som standard) — trykk "Vis" for å åpne de syv dagene med ledig tid. Mindre å scrolle forbi hver gang du bare vil sjekke Steketidspunkt eller Populære tidspunkt.'
     ]
   },
   {
-    v: '5.55',
+    v: '0.554',
     d: 'juli 2026',
     changes: [
       'Testrunde av valg-vs-handling-skillet (Skisse A) på Finjuster sine Gjærtype/Kjøkkenmaskin/Ovntype-grupper: valgt alternativ vises nå med tykt omriss + liten hake i stedet for fylt bakgrunn. De to "gå videre"-knappene ("Se steg for steg →" og "Ferdig") bruker nå en dempet, mørkere oransje i stedet for den vanlige aksentfargen, for å skille handling fra valg. Lagt til (klar, men ikke synlig i praksis siden alle felt har standardverdi): en advarselsramme + "Velg én"-tekst rundt en gruppe hvis ingenting er valgt.'
     ]
   },
   {
-    v: '5.54',
+    v: '0.553',
     d: 'juli 2026',
     changes: [
       'Deig-statuslinjen (oppstart + steketid) er nå også synlig i wizardens Metode-steg, Planlegging-steg og Finjuster — ikke bare i Steg-fanen. Oppdateres live idet du justerer noe, slik at du ser konsekvensen med en gang i stedet for å måtte bytte fane.'
     ]
   },
   {
-    v: '5.53',
+    v: '0.552',
     d: 'juli 2026',
     changes: [
       'Ny deig-statuslinje øverst i Steg-fanen: viser pizzatype/metode, 🚀 oppstartstid og 🍕 steketid for oppsettet du jobber med — samme mønster som Beta-fanens kort. Oppdateres live når du endrer noe.',
@@ -658,42 +659,42 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.52',
+    v: '0.551',
     d: 'juli 2026',
     changes: [
       'Fikset at Beta-fanens søk kunne foreslå en oppskrift som krevde oppstart FØR akkurat nå — matematisk "riktig" ut fra reglene, men umulig å faktisk følge. Søket prioriterer nå alltid kombinasjoner du faktisk rekker å starte, og faller kun tilbake til de umulige (med en tydelig advarsel) hvis absolutt ingenting annet finnes.'
     ]
   },
   {
-    v: '5.51',
+    v: '0.550',
     d: 'juli 2026',
     changes: [
       '"Faste tider" i Beta-fanen døpt om til "Populære tidspunkt for pizza", med en tydelig visuell strek mot "Steketidspunkt"-søket over. Hvert resultat viser nå både 🚀 oppstartstid og 🍕 planlagt steketid direkte i kortet, i stedet for at du må trykke "Bruk denne" og hoppe til Steg-fanen for å se det.'
     ]
   },
   {
-    v: '5.50',
+    v: '0.549',
     d: 'juli 2026',
     changes: [
       'Døpt om "Egen tid" til "Steketidspunkt" i Beta-fanen — tydeligere navn, matcher terminologien appen allerede bruker andre steder.'
     ]
   },
   {
-    v: '5.49',
+    v: '0.548',
     d: 'juli 2026',
     changes: [
       'Fant den faktiske årsaken til at "Finn oppskrift" i Beta-fanen så ut til å ikke gjøre noe: resultatet vises ikke lenger nederst under hele "Faste tider"-listen (fem kort du måtte scrolle forbi) — det vises nå rett under selve knappen, og scrolles automatisk inn i synsfeltet.'
     ]
   },
   {
-    v: '5.48',
+    v: '0.547',
     d: 'juli 2026',
     changes: [
       'Beta-fanens "Finn oppskrift"-knapp kunne feile stille (ingenting synlig skjedde) hvis datofeltet var tomt/ugyldig, eller hvis noe uventet gikk galt under selve søket. Viser nå alltid en tydelig tilbakemelding — "Sett en dato først", "Ugyldig dato/klokkeslett", eller en feilmelding hvis søket faktisk krasjer — i stedet for å bare ikke gjøre noe. Samme robusthet lagt til for "Faste tider"-listen.'
     ]
   },
   {
-    v: '5.47',
+    v: '0.546',
     d: 'juli 2026',
     changes: [
       'Ny fane: 🧭 Beta — "omvendt planlegger". I stedet for å velge innstillinger og se når du må starte, oppgir du når du er ledig og når du vil spise, og får en anbefalt oppskrift tilbake. Søker på tvers av ALLE metoder (Standard, Poolish begge varianter, Biga, Mania-poolish, Hurtigdeig, Kveldsdeig) — ikke bare Poolish/Biga.',
@@ -704,63 +705,63 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.46',
+    v: '0.545',
     d: 'juli 2026',
     changes: [
       'Ny metode: Mania-poolish (oppkalt etter Pizzamania, kilden til oppskriften) — et eget metodekort ved siden av Poolish/Biga. Strukturelt annerledes enn de andre: poolish gjæres 12t romtemperatur og kjøles ned FØR den blandes inn i hoveddeigen, hele deigen kjøleskapheves udelt i 10t og deles i emner ETTERPÅ, med en lang 10-timers romtemperaturheving til slutt (i stedet for kort etterheving) — total gjæringstid ca. 37 timer. Egen, korrekt oppskrift (64% hydrering, todelt Poolish/Hoveddeig-ingrediensliste) i Oppskrift-fanen, ikke den generiske beregningen.'
     ]
   },
   {
-    v: '5.45',
+    v: '0.544',
     d: 'juli 2026',
     changes: [
       '"Mine faste tidspunkter" fant tidligere en løsning uten reelle konflikter for lørdag/søndag 19:00 — men romtemperatur-Poolish sitt smale 12-16 timers justeringsrom var noen ganger for trangt til at NOEN verdi unngikk natt-kollisjon ("Lag poolish" kl. 05:40 var "minst ille", ikke en reell løsning). Søket prøver nå automatisk kjøleskaps-varianten (12-48t) også når romtemperatur ikke strekker til, og bruker den hvis den faktisk finner noe bedre — vises som "Alt passer ✓ (krever ❄️ Kjøleskap-poolish)". Fant en reell løsning for lørdag 19:00 som tidligere manglet.'
     ]
   },
   {
-    v: '5.44',
+    v: '0.543',
     d: 'juli 2026',
     changes: [
       'Rettet "Mine faste tidspunkter": helger (lørdag/søndag) er ledige hele dagen bortsett fra natt — en helt annen, enklere regel enn hverdagenes to smale vinduer. Tidligere ble den samme, smale hverdags-regelen brukt for alle dager, som gjorde at "Ta ut av kjøleskap" feilaktig ble markert som et problem midt på lørdags-/søndagsettermiddagen. Alle fire helgemålene viser nå riktig "Alt passer ✓".'
     ]
   },
   {
-    v: '5.43',
+    v: '0.542',
     d: 'juli 2026',
     changes: [
       '"Mine faste tidspunkter" gjort om fra rent oppslagsverk til reell søking: for hvert av de fem målene finner den nå den beste kombinasjonen av hevetid og kjøleskapstid som får flest mulig steg til å havne i dine egne ledige vinduer (16:00–23:30 og 06:30–08:00) — helt uavhengig av dagens dato, som avtalt. Trykk på et mål for å sette opp akkurat den kombinasjonen direkte. Avdekket samtidig en strukturell begrensning: "Ta ut av kjøleskap" ligger alltid fast 4 timer før spisetidspunktet uansett hva som justeres, og havner for alle fem målene midt i hullet mellom vinduene dine (12:00–15:00) — ingen kombinasjon kan fikse akkurat det steget per i dag.'
     ]
   },
   {
-    v: '5.42',
+    v: '0.541',
     d: 'juli 2026',
     changes: [
       'Forenklet "Mine faste tidspunkter" kraftig: fjernet ✅/⚠️-vurderingen og "for kort varsel"-sjekken helt. Den er nå et rent oppslagsverk — viser bare beregnet starttidspunkt for hvert av de fem faste målene med din nåværende metode/hevetid, uten å dømme om det er lurt eller mulig.'
     ]
   },
   {
-    v: '5.41',
+    v: '0.540',
     d: 'juli 2026',
     changes: [
       'Fikset "Mine faste tidspunkter": den sjekket bare om steg havnet innenfor dine ledige vinduer, men aldri om planen faktisk var mulig å starte FRA NÅ — et mål bare timer unna (som fredag når det allerede er torsdag) kunne be deg starte poolishen tidligere på dagen enn klokka faktisk er, altså i fortiden. Vises nå tydelig som "For kort varsel" i stedet for en misvisende status. Rettet samtidig en beslektet risiko: forhåndsvisningen leste ikke "Starter nå/Steketid"-valget riktig for Hurtigdeig/Kveldsdeig, som kunne gitt feil resultat der også.'
     ]
   },
   {
-    v: '5.40',
+    v: '0.539',
     d: 'juli 2026',
     changes: [
       'Ny konsept-test i Planlegging-fanen: "🍕 Mine faste tidspunkter" — en snarvei som viser om nåværende metode/hevetid passer med fem faste mål (fre 19:00, lør 16:00/19:00, søn 16:00/19:00), sjekket mot dine egne, hardkodede ledige tidsvinduer (16:00–23:30 og 06:30–08:00). ✅/⚠️ per mål, trykk for å sette opp akkurat den planen direkte. Helt isolert fra det generelle natt/arbeidstid-varselet — endrer ingenting automatisk, kun en rask oversikt du kan hente frem når du vil.'
     ]
   },
   {
-    v: '5.39',
+    v: '0.538',
     d: 'juli 2026',
     changes: [
       'Fikset at "arbeidstid"-varselet feilaktig fyrte i helgen — det sjekket bare klokkeslettet, ikke ukedagen, i motsetning til "Finn beste kombinasjon" som allerede korrekt utelot lørdag/søndag. De to var ikke enige med hverandre; nå bruker begge samme regel.'
     ]
   },
   {
-    v: '5.38',
+    v: '0.537',
     d: 'juli 2026',
     changes: [
       'Nytt alternativ for Poolish: "❄️ Kjøleskap" ved siden av "🌡️ Romtemperatur" i Metode-steget. Med kjøleskap-varianten blander du poolishen 1,5t i romtemperatur for å sette i gang gjæren, deretter i kjøleskap i en mye bredere og friere periode (12–48t i steg à 6t, i stedet for det smale 12–16t-vinduet) — nøyaktig klokkeslett blir langt mindre kritisk, siden kulda holder poolishen stabil til du er klar for neste steg.',
@@ -770,7 +771,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.37',
+    v: '0.536',
     d: 'juli 2026',
     changes: [
       'Nytt varsel i Steg-fanen hvis et steg som faktisk krever at du gjør noe (blande, forme, ta ut av kjøleskap, steke — ikke bare vente) havner midt på natten (23:00–06:00) eller i arbeidstiden din (08:00–16:00, hardkodet foreløpig), med hurtigknapper for å justere hevetid (Poolish/Biga) eller kjøleskapstid direkte.',
@@ -785,35 +786,35 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.36',
+    v: '0.535',
     d: 'juli 2026',
     changes: [
       'Kjøleskapsheving viste "dager" i stedet for timer når verdien tilfeldigvis traff et helt døgn (f.eks. "1 dag" for 24 timer) — inkonsekvent med resten av det nye time-baserte systemet. Viser nå alltid timer, overalt.'
     ]
   },
   {
-    v: '5.35',
+    v: '0.534',
     d: 'juli 2026',
     changes: [
       'Poolish og Biga sin forspill-varighet er nå justerbar (12–16t for Poolish, 16–24t for Biga, med navngitte alternativer — samme mønster som Hurtigdeig/Kveldsdeig), i stedet for fast 14t/18t. Gjærmengden i forspillet skaleres automatisk med valgt varighet. Standardverdiene (14t/18t) gir nøyaktig samme oppskrift som før — ingen endring for deg som ikke rører denne nye innstillingen. Motivert av at kontroll på nettopp denne fasen (den minst fleksible, siden forspill og ferdig-blanding er rigid låst til hverandre) lar deg justere når disse to øyeblikkene faktisk havner på klokka. Foreløpig kun på mobil — PC-visningen bruker fortsatt de faste standardverdiene.'
     ]
   },
   {
-    v: '5.34',
+    v: '0.533',
     d: 'juli 2026',
     changes: [
       'Kjøleskapsheving for Standard/Poolish/Biga er byttet fra hele dager til timer, med finere 6-timers steg — samme presisjonsnivå som Hurtigdeig/Kveldsdeig allerede hadde. Gjærmengde-tabellen som var koblet til antall dager er bygget om til en jevnt interpolert versjon i timer, basert på nøyaktig de samme, allerede uttestede verdiene som før — ingen ny gjetning, bare finere oppløsning mellom de kjente punktene. "Maks smak" utnytter nå melets faktiske gjæringsgrense mye bedre: f.eks. Caputo Nuvola (maks 48t) fikk tidligere kun 24t foreslått siden systemet rundet ned til hele døgn — nå foreslår den 42t. Fant og rettet samtidig en tredje, uavhengig kopi av gjæringstid-regnestykket i overmodning-varselet som ikke ble fanget opp i forrige versjon.'
     ]
   },
   {
-    v: '5.33',
+    v: '0.532',
     d: 'juli 2026',
     changes: [
       'Gjæringstid-regnestykket (brukt av meltype-varselet og "Maks smak") tok ikke med romtemperaturhevingen FØR kjøleskapet — bare forspill (Poolish/Biga) og kjøleskapsdager ble talt. Lagt til, og samtidig rettet et lite avvik der Biga sitt forspill ble regnet som 20 timer ett sted i koden og 18 timer et annet — alt bruker nå samme, delte regnestykke, så det aldri kan drive fra hverandre igjen.'
     ]
   },
   {
-    v: '5.32',
+    v: '0.531',
     d: 'juli 2026',
     changes: [
       'Gjort det tydeligere at wizardens Metode- og Planlegging-steg begge har to separate valg: hvert valg har nå en liten nummerert markør ("①"/"②") foran en kort overskrift, samme mønster på begge sider.',
@@ -823,42 +824,42 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.31',
+    v: '0.530',
     d: 'juli 2026',
     changes: [
       'Fant den egentlige, underliggende årsaken til flere runder med "må scrolle for å finne resten"-bugs på mobil, som har dukket opp flere steder over tid: CSS zoom (brukt til skriftstørrelse-innstillingen) skalerer alt synlig innhold opp med zoom-faktoren, men "100dvh" — som hele mobilvisningens høyde er satt til — regnes ut fra den ekte, uskalerte skjermhøyden. Resultatet: hele siden ble malt zoom-faktoren ganger for høy (f.eks. 30% for høy ved "Stor" skrift), som gjorde HELE siden — ikke bare enkeltfaner — scrollbar, og en hvilken som helst ting som trigget sidescroll (som et fokusert dato-/tidsfelt) kunne skyve toppen av et wizard-steg ut av syne. Bekreftet med Chrome sin mobil-emulering (samme miljø som avslørte feilen), og fikset ved å regne ut mobilvisningens høyde eksplisitt i ekte skjerm-piksler, uavhengig av zoom-nivå.'
     ]
   },
   {
-    v: '5.30',
+    v: '0.529',
     d: 'juli 2026',
     changes: [
       '"Se i Finjuster"-lenken i meltype-varselet (Steg-fanen) gjorde ingenting synlig — den forberedte Finjuster-innholdet bak kulissene, men byttet aldri selve fanen til Innstillinger, hvor Finjuster faktisk bor. Lenken bytter nå fane først, så du faktisk ser endringen.'
     ]
   },
   {
-    v: '5.29',
+    v: '0.528',
     d: 'juli 2026',
     changes: [
       'Fikset selve feedback-listen (de innsendte tilbakemeldingene, ikke bare kategori-boblene) som var nesten uleselig — kortene rundt hver tilbakemelding hadde fortsatt hvit bakgrunn, mens teksten inni allerede var riktig lysnet, altså lys tekst på hvit bunn. Siden denne listen deles mellom PC og mobil, er den nå fikset med ordentlige delte fargevariabler (samme mønster som resten av appen) i stedet for en snarvei — bekreftet at mobil viser mørkt kort/lys tekst og PC fortsatt viser hvitt kort/mørk tekst, helt uendret.'
     ]
   },
   {
-    v: '5.28',
+    v: '0.527',
     d: 'juli 2026',
     changes: [
       'Fikset meltype-nedtrekksmenyen i wizarden som var hvit på hvit — samme "mangler mørk-modus"-mønster som flere andre steder. Systematisk gjennomgang av alle gjenværende lyse bakgrunner fant tre til: statistikk-boksene ("Antall"/"Emnestørrelse") på Oppskrift-fanen, og en feilskrevet klassenavn som gjorde at Ankarsrum-instruksjonsboksen på samme fane brukte PC sin lyse stil i stedet for mobilens mørke. Alle fire rettet og verifisert med fargemålinger.'
     ]
   },
   {
-    v: '5.27',
+    v: '0.526',
     d: 'juli 2026',
     changes: [
       'Rettet 8 flere steder med samme "mørk tekst på mørk bunn"-mønster som "Hva er nytt" hadde: selve "Hva er nytt"-teksten og datoene, "Lukk"-knappen der, Guide sin "Ikke vis igjen"-knapp (som en tidligere fiks ikke tok skikkelig), introtekstene i Feedback/Formler/Fullfør bakst-modalene, "av [navn]"-linjen på deig-kort, og gjennomstreket tekst på avhakede ingredienser. Funnet ved systematisk gjennomgang av alle hardkodede grå/mørke tekstfarger i mobilvisningen, ikke bare det ene rapporterte stedet.'
     ]
   },
   {
-    v: '5.26',
+    v: '0.525',
     d: 'juli 2026',
     changes: [
       'Meltype-valget er flyttet fra Finjuster inn i wizardens Metode-steg (steg 2), rett under gjærtype/kjøkkenmaskin — synlig når du faktisk tar det valget, i stedet for gjemt bak "Finjuster". Meltype endres fortsatt ikke automatisk når du bytter pizzatype (i motsetning til hydrering), siden det handler om hvilket mel du faktisk har i skapet, ikke en beregnet anbefaling.',
@@ -866,28 +867,28 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.25',
+    v: '0.524',
     d: 'juli 2026',
     changes: [
       'Lysnet den dempede/svake tekstfargen (brukt på etiketter, tidsstempler og sekundær tekst gjennom hele mobilvisningen) — teknisk sett innenfor tilgjengelighetskravene fra før, men for svak til å lese komfortabelt i praksis, spesielt i liten skriftstørrelse. Kontrasten er nå 6,2:1 (opp fra 5,1:1).'
     ]
   },
   {
-    v: '5.24',
+    v: '0.523',
     d: 'juli 2026',
     changes: [
       'Fikset den andre halvparten av v5.23-bugen: forrige fiks gjorde riktignok teksten lys, men flere av radene/boksene den satt på (Info-fanens menyrader, skriftstørrelse-velgeren, valg-boblene for gjærtype/kjøkkenmaskin/ovntype/pizzatype i wizarden, dato-/tidsfeltene) hadde fortsatt hvit bakgrunn — så lys tekst på hvit bunn ble like usynlig, bare omvendt. Alle disse er nå rettet til å bruke mørk bunn på mobil. Fant også separate, litt andre farge-instanser i wizardens JavaScript-genererte valg-bobler som ikke hang sammen med v5.23-fiksen i det hele tatt — samme rettet.'
     ]
   },
   {
-    v: '5.23',
+    v: '0.522',
     d: 'juli 2026',
     changes: [
       'Fant og rettet en systemisk variant av admin-fargefeilen fra forrige versjon: Guide-teksten, Info-sidens menyrader, Formler-tabellen, Feedback-listen, deig-kortene og flere andre steder brukte alle den samme hardkodede mørke tekstfargen fra før restylingen — usynlig mot den nye mørke mobilbakgrunnen. I stedet for å lappe hvert sted for seg, er dette nå rettet med én delt fargevariabel (47 steder samtidig) som automatisk følger lys/mørk-modus riktig — PC-visningen er bekreftet uendret.'
     ]
   },
   {
-    v: '5.22',
+    v: '0.521',
     d: 'juli 2026',
     changes: [
       'Fikset at brukernavnene i Admin-visningen var usynlige på mobil — teksten hadde hardkodet mørk farge fra før restylingen, som forsvant mot den nye mørke modal-bakgrunnen. Admin-listen bruker nå farger som tilpasser seg både lys (PC) og mørk (mobil) visning. Samme feil rettet i Notater-fanens overskrift.',
@@ -895,7 +896,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.21',
+    v: '0.520',
     d: 'juli 2026',
     changes: [
       'Fremtidige steg i "Steg"-fanen er nå tydelig leselige (demping myknet fra 40 % til 75 % synlighet), slik at du kan lese hele oppskriften og få oversikt over alle stegene — dagens steg skiller seg fortsatt ut med den oransje kanten. Valgt som den enkleste av tre skisserte løsninger; en innholdsfortegnelse øverst kan bygges på toppen senere om behovet fortsatt er der.',
@@ -903,7 +904,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.20',
+    v: '0.519',
     d: 'juli 2026',
     changes: [
       'Fant og fikset den egentlige årsaken til at nye brukere feilaktig fikk "Hei igjen! Du har brukt appen før" (v5.19 sin diagnose var ufullstendig og løste ikke problemet): deig-lageret er med vilje DELT for hele gruppen, men wizarden brukte "finnes det en aktiv deig eller favoritt i det delte lageret?" som bevis på at akkurat DU hadde brukt appen før — dermed fikk enhver ny bruker "Hei igjen" så lenge noen som helst i gruppen hadde en deig liggende. Avgjørelsen tas nå kun på det reelle per-bruker-signalet (ditt eget sist brukte oppsett); favoritt-snarveien vises fortsatt, men bare for faktisk tilbakevendende brukere.',
@@ -911,77 +912,77 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.19',
+    v: '0.518',
     d: 'juli 2026',
     changes: [
       'Fikset en variant av wizard-regresjonen fra tidligere: en ny bruker på en nettleser/enhet som tidligere er brukt av en annen konto kunne bli møtt med "Hei igjen!" og feil favoritt-status. Årsaken var beslektet med forrige fiks, men på et annet felt — syncFavoriteButton() kjørte ved sideinnlasting, før innlogging var reell, og window._favoriteId ble aldri hentet på nytt etter at den faktiske brukeren logget inn. Nå henter authComplete() riktig favoritt-status før wizarden avgjør noe.'
     ]
   },
   {
-    v: '5.18',
+    v: '0.517',
     d: 'juli 2026',
     changes: [
       'Dempet "Hvorfor"/"Tips"-boksene i "Steg"-fanen, som følte seg for kraftige og stjal oppmerksomhet fra selve steget. Byttet fra fylt bakgrunnsfarge til en tynn kantstrek uten fyll (ett av tre skisserte alternativer) — beholder nok visuell distinksjon til å skille tilleggsinfo fra hovedteksten, uten å konkurrere med steget selv.'
     ]
   },
   {
-    v: '5.17',
+    v: '0.516',
     d: 'juli 2026',
     changes: [
       'Fikset at fanebytte og wizard-navigering kunne vise en synlig hopp-bevegelse i scroll-posisjonen ("starter litt opp og ned"). Den forrige fiksen rettet selve sluttresultatet, men kunne fortsatt vise et kort, forvirrende hopp underveis. Fanen holdes nå usynlig helt til scroll-posisjonen er bekreftet på plass, i stedet for å vise feil posisjon og så korrigere den — brukeren ser aldri lenger selve hoppet. Samme forbedring gjort for wizard-steg-navigering, med en liten justering slik at "Se i Finjuster"-fremhevingen fortsatt fungerer korrekt sammen med det.'
     ]
   },
   {
-    v: '5.16',
+    v: '0.515',
     d: 'juli 2026',
     changes: [
       'Fikset at en ny bruker på samme nettleser/enhet kunne bli møtt med "Hei igjen!" og en annen brukers siste innstillinger. Årsaken var at "sist brukte oppsett" ble lagret under én delt nøkkel i nettleserens lokale lagring, uten kobling til hvilken bruker som faktisk var innlogget — nå lagres og leses dette per bruker-id, så en fersk registrering på samme enhet aldri lenger arver en annen brukers historikk. Bekreftet med to simulerte brukere på samme nettleser.'
     ]
   },
   {
-    v: '5.15',
+    v: '0.514',
     d: 'juli 2026',
     changes: [
       'Fullført Forno-restylingen av wizarden (Pizzatype → Metode → Planlegging → Finjuster), som brukte fargekoder direkte i HTML-en (ikke CSS-klasser) og derfor ikke arvet tokens automatisk fra forrige runde. Nå Forno-stylet: alle knapper og kort, metode-valg-kortene, pizza-teller, "Starter nå"/"Steketid"-bryteren, dato-/tidsfeltene, Finjuster sine seksjoner, og oppskrift-fanens ingrediensliste. Bekreftet med fargemålinger for alle wizard-steg.'
     ]
   },
   {
-    v: '5.14',
+    v: '0.513',
     d: 'juli 2026',
     changes: [
       'Startet restylingen til "Forno"-retningen (valgt av to skisserte alternativer): kullsvart bunn, ember-oransje aksent, Archivo Black/IBM Plex Mono-typografi. Bygget som en tokens-basert bunnstruktur (CSS-variabler for farger/fonter definert ett sted, arvet automatisk) fremfor å style hver fane for seg. Dekker foreløpig: hele mobil-skallet (toppfelt, bunn-menyfaner, fane-bakgrunn), steg-kortene i "Steg"-fanen (den mest brukte skjermen), dag-overskrifter, innstillings-rader/slidere, og alle modal-vinduer (Feedback/Formler/Hva er nytt/Guide). Bekreftet med fargemålinger i headless nettleser. PC-visningen og enkelte inline-stylede detaljer i wizarden (pizza-teller, metode-kort) er ikke omfattet ennå — naturlig neste steg.'
     ]
   },
   {
-    v: '5.13',
+    v: '0.512',
     d: 'juli 2026',
     changes: [
       'Fjernet "Aa"-knappen (hurtig skriftstørrelse-bytte) fra toppen av mobilvisningen, i forkant av en større restyling av appen. Skriftstørrelse kan fortsatt justeres via segmentert-kontrollen i Info-fanen.'
     ]
   },
   {
-    v: '5.12',
+    v: '0.511',
     d: 'juli 2026',
     changes: [
       'Styrket scroll-nullstillingen ved bytte av wizard-steg og faner ytterligere (dobbel animasjonsramme + en liten etterfølgende sjekk), samt lagt til "overflow-anchor:none" som ekstra sikring mot at nettleseren selv justerer scroll-posisjonen når innhold endrer størrelse rett etter et fanebytte. Gjelder spesielt "Planlegging"-steget i wizarden, som kan bli høyere enn skjermen på ekte telefon (native dato-/tidsfelt rendres ofte høyere på iOS enn i vanlige testverktøy) uten at det alltid lot seg gjenskape i testing her.'
     ]
   },
   {
-    v: '5.11',
+    v: '0.510',
     d: 'juli 2026',
     changes: [
       'Meltype-varselet har nå en "⚙️ Se i Finjuster"-lenke i tillegg til hurtigknappene, for de som heller vil forstå og justere selv i stedet for å bruke en hurtigknapp. Den relevante seksjonen (Hydrering, eller Kjøleskapsheving ved gjæringstid-avvik) markeres kort med en gul fremheving og scrolles til automatisk, så du raskt ser hvor endringen bør gjøres.'
     ]
   },
   {
-    v: '5.10',
+    v: '0.509',
     d: 'juli 2026',
     changes: [
       'Fikset at fanebytte på mobil (spesielt Info-fanen) av og til landet scrollet nedover i stedet for øverst. Rot-årsaken var en kappløps-situasjon: scroll-nullstillingen skjedde synkront rett etter at fanen byttet fra skjult til synlig, og noen ganger rakk ikke nettleseren å oppdatere fanens scroll-område før nullstillingen ble utført, så den ble uten effekt. Nullstillingen skjer nå i neste "frame" i stedet, samme mønster som allerede brukes andre steder i appen for tilsvarende mål-etter-rendring-situasjoner. Samme fiks lagt til i wizardens steg-navigering for konsekvens.'
     ]
   },
   {
-    v: '5.9',
+    v: '0.508',
     d: 'juli 2026',
     changes: [
       'Fikset et ekte tilfelle av toppfeltet på mobil som overlappet innholdet under (f.eks. et meltype-varsel) — toppfeltet hadde fast høyde og rakk ikke plass til både navn/versjon og tidsstempel på to linjer. Toppfeltet vokser nå naturlig ved behov i stedet for å klippe/overlappe. Bekreftet med skjermbilde-mål.',
@@ -991,7 +992,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.8',
+    v: '0.507',
     d: 'juli 2026',
     changes: [
       'Større font og ikon på bunn-menyfanene (mobil) — lettere å lese/treffe uansett skriftstørrelse-innstilling.',
@@ -1004,7 +1005,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.7',
+    v: '0.506',
     d: 'juli 2026',
     changes: [
       'Wizarden på mobil: "antall pizzaer" er flyttet fra Finjuster til Planlegging-steget, rett under "Når vil du spise?" — melmengde i gram ligger fortsatt alene i Finjuster.',
@@ -1018,7 +1019,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.6',
+    v: '0.505',
     d: 'juli 2026',
     changes: [
       '"Pizzaplanlegger"-fanen på mobil heter nå "Planlegging".',
@@ -1034,21 +1035,21 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.5',
+    v: '0.504',
     d: 'juli 2026',
     changes: [
       'Meltype-varselet (gjæringstid/hydrering stemmer ikke) har nå hurtigjustering direkte i varselet — "Sett hydrering til X%" og/eller "Bytt til [meltype]" — i stedet for at du må bytte til Pizzaplanlegger-fanen for å justere. Bruker nøyaktig samme funksjoner som selve fanen, så resultatet blir identisk uansett hvor du justerer fra. Fungerer likt på PC og mobil.'
     ]
   },
   {
-    v: '5.4',
+    v: '0.503',
     d: 'juli 2026',
     changes: [
       'Trykk på logoen ("🍕 Pizzaplanlegger") for å åpne Guiden — både PC og mobil. Versjonsnummeret under logoen åpner fortsatt "Hva er nytt" som før, uavhengig av dette.'
     ]
   },
   {
-    v: '5.3',
+    v: '0.502',
     d: 'juli 2026',
     changes: [
       'Lagt til en tydelig "Lukk"-knapp nederst i "Hva er nytt" — en veldig lang endringslogg kunne gjøre ✕-knappen øverst vanskelig å nå uten å scrolle helt tilbake opp.',
@@ -1059,7 +1060,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.2',
+    v: '0.501',
     d: 'juli 2026',
     changes: [
       'Ny wizard-flyt for innstillinger på mobil — erstatter den lange ettsides listen med tre korte steg (Pizzatype → Metode → Når vil du spise), med brødsmule-sti øverst du kan trykke på for å hoppe rett tilbake til et tidligere valg.',
@@ -1069,7 +1070,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.1',
+    v: '0.500',
     d: 'juli 2026',
     changes: [
       'Mobilens "Steg for steg"-fane er kortet ned til "Steg" — den forrige teksten ble dårlig wrappet i bunnmenyen.',
@@ -1077,7 +1078,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '5.0',
+    v: '0.499',
     d: 'juli 2026',
     changes: [
       '"Tidsplan" heter nå "Steg for steg" — mer tydelig for nye brukere at det er her selve fremgangsmåten vises, ikke bare en kalenderoversikt.',
@@ -1085,7 +1086,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '4.9',
+    v: '0.498',
     d: 'juli 2026',
     changes: [
       'Fikset en reell feil i gjærregnskapet for Poolish og Biga — kun 50% (Poolish) og 10% (Biga) av beregnet gjærmengde ble faktisk brukt i oppskriftene, resten forsvant sporløst. All gjæren legges nå riktig i selve for-deigen (poolishen/bigaen), ingenting tilsettes i sluttblandingen — det er slik det faktisk skal gjøres.',
@@ -1095,14 +1096,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '4.8',
+    v: '0.497',
     d: 'juli 2026',
     changes: [
       'Fikset en oppstartsfeil på mobil der Pizzatype og Metode kunne vises tomme når appen ble åpnet direkte på telefon (ikke via "bytt til mobil" på PC) — mobil-innholdet ligger fysisk etter hovedskriptet i selve filen, og kunne i noen tilfeller forsøke å fylles ut før den delen av siden var ferdig lastet inn. Lagt til et sikkerhetsnett som garantert fyller alt på nytt når absolutt alt er klart.'
     ]
   },
   {
-    v: '4.7',
+    v: '0.496',
     d: 'juli 2026',
     changes: [
       'Rettet en upresis forklaring på romtemperaturheving/bulk-heving — den blandet en generell påstand om gjærbiologi ("gjæren er mest aktiv 25–35°C") med et urelatert 60-minutters referansetall, uavhengig av hvor lang selve hevingen faktisk var. Forklaringen viser nå riktig, faktisk varighet for akkurat det steget.',
@@ -1112,14 +1113,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '4.6',
+    v: '0.495',
     d: 'juli 2026',
     changes: [
       'Fikset et avvik i "Kopier"-funksjonen: gjærmengden i ingredienslisten stemte ikke alltid med det som faktisk sto i selve tidsplan-steget for Hurtigdeig og Kveldsdeig, siden kopieringen brukte en annen (generell) beregning enn de to metodene faktisk bruker.'
     ]
   },
   {
-    v: '4.5',
+    v: '0.494',
     d: 'juli 2026',
     changes: [
       'Hurtigdeig bruker nå en beregnet vanntemperatur i stedet for et fast "lunkent, 35–38°C" — basert på samme "ønsket deigtemperatur"-formel profesjonelle bakere bruker (3 × måltemperatur − romtemperatur × 2 − friksjon fra eltemetoden). Målet er ca. 24°C ferdig deig uansett timevalg, siden det er gjærmengden som skal styre hvor fort deigen går — ikke vanntemperaturen. Tallet endrer seg med romtemperatur og valgt kjøkkenmaskin.',
@@ -1127,14 +1128,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '4.4',
+    v: '0.493',
     d: 'juli 2026',
     changes: [
       'Meltype-varselet sjekker nå også hydrering, ikke bare gjæringstid — velger du f.eks. Dallari pizzamel (55–60%) mens hydreringen står på 65%, får du nå beskjed om det. Viser begge problemene samlet hvis både tid og hydrering ikke stemmer.'
     ]
   },
   {
-    v: '4.3',
+    v: '0.492',
     d: 'juli 2026',
     changes: [
       '"★ Min favoritt" er flyttet fra en egen knapp i sidepanelet til en handling i "☰ Meny". Fikset samtidig en underliggende svakhet — å åpne favoritten kunne feile stille hvis "Deiger" aldri var åpnet i økten ennå.',
@@ -1143,7 +1144,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '4.2',
+    v: '0.491',
     d: 'juli 2026',
     changes: [
       'Fikset en reell feil: etter å ha lagret en deig på PC, viste appen fortsatt "Ulagret oppsett" til du gjorde en annen endring — lagringen fungerte, men visningen oppdaterte seg ikke med en gang.',
@@ -1153,7 +1154,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '4.1',
+    v: '0.490',
     d: 'juli 2026',
     changes: [
       'Kalender-påminnelser ("📅 Påminnelser") tilbake på PC — lastet ned som en .ics-fil med varsel 10 min før hvert steg. Fantes fra før kun på mobil.',
@@ -1164,7 +1165,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '4.0',
+    v: '0.489',
     d: 'juli 2026',
     changes: [
       'Nytt gjennomgående design — kjøligere fargepalett, hvite kort med skygge i stedet for synlige kanter, og et strammere visuelt uttrykk gjennom hele appen.',
@@ -1176,7 +1177,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.9',
+    v: '0.488',
     d: 'juli 2026',
     changes: [
       'Fjernet dupliserte "Vis/skjul forklaringer"-kontroller (fantes både i sidepanelet/mobil-Visning og i handlingsgruppen) — finnes nå kun ett sted.',
@@ -1186,7 +1187,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.8',
+    v: '0.487',
     d: 'juli 2026',
     changes: [
       'Ny "📊 Formler"-side i sidenav — viser salt/olje/gjær/hydrering for alle pizzatyper. Åpen for alle å se, redigerbar for admin.',
@@ -1196,14 +1197,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.7',
+    v: '0.486',
     d: 'juli 2026',
     changes: [
       'Meltype viser nå protein, styrke (W), hydrering og fermenteringsvindu i en alltid-synlig infolinje under pillene — fungerer på mobil, der den gamle hover-teksten aldri var synlig i utgangspunktet siden touch-skjermer ikke har hover.'
     ]
   },
   {
-    v: '3.6',
+    v: '0.485',
     d: 'juli 2026',
     changes: [
       'Neste steg å gjøre får nå en tydelig blå markering ("👉 neste") — det er det første ikke-avhakede steget, og henger sammen med klokka: er du på etterskudd peker den på det du mangler, er du i rute faller den sammen med den vanlige "nå"-fremhevingen (og vises da ikke som en ekstra boks).',
@@ -1211,14 +1212,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.5',
+    v: '0.484',
     d: 'juli 2026',
     changes: [
       'Fikset lukkeknappen på popup-vinduer (Tips, Hva er nytt, Deiger, Feedback, Guide, Admin) på telefoner med hakk/dynamisk øy — vinduet kunne tidligere rendres bak den øverste sikkerhetssonen, slik at ✕ ble vanskelig eller umulig å treffe.'
     ]
   },
   {
-    v: '3.4',
+    v: '0.483',
     d: 'juli 2026',
     changes: [
       'Gjærtype, Kjøkkenmaskin, Meltype og Ovntype er samlet bak "⚙️ Avanserte innstillinger" i sidepanelet, lukket som standard — kjernevalgene (Pizzatype, Metode, Melmengde, Planlegging) er nå det eneste en ny bruker møter først.',
@@ -1227,7 +1228,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.3',
+    v: '0.482',
     d: 'juli 2026',
     changes: [
       'Enkel innlogging med navn + 4-sifret PIN — første gang du skriver navnet ditt, lager du en PIN; neste gang logger du inn med samme navn og PIN. Forblir innlogget til du selv logger ut.',
@@ -1235,7 +1236,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.2',
+    v: '0.481',
     d: 'juli 2026',
     changes: [
       'Favoritt-merking av lagrede deiger (★ på kortet i Mine deiger) — kun én av gangen. En ny "★ Min favoritt"-knapp dukker opp i sidepanelet (og mobiltoppfeltet) og åpner favoritten direkte, uten å lete gjennom listen.',
@@ -1243,7 +1244,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.1',
+    v: '0.480',
     d: 'juli 2026',
     changes: [
       'Hurtigdeig utvidet fra 2–10 til 2–16 timer — de tre nye alternativene (12/14/16t) er kalibrert for et kjøligere kjøkken (18–20°C), etter research som viser at dette er helt vanlig praksis ved lavere romtemperatur.',
@@ -1252,7 +1253,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '3.0',
+    v: '0.479',
     d: 'juli 2026',
     changes: [
       'Caputo Pizzeria og Nuvola sitt gjæringstak økt fra hhv. 36t/40t til 48t, etter kryssjekk mot Maschmanns (norsk Caputo-distributør) — Doppio Zero sitt tak på 24t stemte allerede.',
@@ -1261,7 +1262,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.9',
+    v: '0.478',
     d: 'juli 2026',
     changes: [
       'Nytt valg: Meltype (Dallari, Caputo Doppio Zero/Pizzeria/Nuvola/Couco/Manitoba Oro) — basert på MENY sin meloversikt, med protein, styrke (W) og anbefalt fermenteringsvindu per mel.',
@@ -1269,7 +1270,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.8',
+    v: '0.477',
     d: 'juli 2026',
     changes: [
       'Chicago: lagt til smør som egen ingrediens (12% av melvekten), i tillegg til oljen — etter sammenligning med flere anerkjente oppskrifter som viste at appen brukte 2–3× for lite fett for den karakteristiske flakete Chicago-skorpen.',
@@ -1279,7 +1280,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.7',
+    v: '0.476',
     d: 'juli 2026',
     changes: [
       'Salt for Napoletansk økt fra 2,5% til 2,8% (12,5g → 14g ved 500g mel) etter tilbakemelding om bedre smak ved høy steketemperatur.',
@@ -1287,7 +1288,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.6',
+    v: '0.475',
     d: 'juli 2026',
     changes: [
       'Kveldsdeig: gjærmengden er redusert ca. 25% etter tilbakemelding om at den lå i overkant — mindre margin for overgjæring, spesielt i varmere kjøleskap.',
@@ -1295,7 +1296,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.5',
+    v: '0.474',
     d: 'juli 2026',
     changes: [
       'Ny metode: Kveldsdeig — 5–15 timer i kjøleskapet, mellom Hurtigdeig (samme dag, romtemperatur) og Standard (flere dagers planlegging). Bland om kvelden, stek neste dag.',
@@ -1304,14 +1305,14 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.4',
+    v: '0.473',
     d: 'juli 2026',
     changes: [
       'Ny "rund opp"-knapp for Langpanne/IngenElting — dukker kun opp når melmengden din gir en ujevnt fylt langpanne, og foreslår nøyaktig hvor mye ekstra mel som trengs for å fylle den helt. Endrer aldri noe automatisk — du må selv trykke.'
     ]
   },
   {
-    v: '2.3',
+    v: '0.472',
     d: 'juli 2026',
     changes: [
       'Varsel ved fare for overfermentering — dukker opp i Teknikk ved lang gjæringstid, og regner med forgjæringen i poolish/biga (ikke bare kjøleskapsdager alene).',
@@ -1326,7 +1327,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.2',
+    v: '0.471',
     d: 'juli 2026',
     changes: [
       'Nytt valg: Kjøkkenmaskin (Ankarsrum / Manuell elting / Annen maskin) — instruksjonene i tidsplanen og Teknikk-fanen tilpasser seg faktisk til valget, ikke bare tekst/etiketter.',
@@ -1336,7 +1337,7 @@ const CHANGELOG = [
     ]
   },
   {
-    v: '2.1',
+    v: '0.470',
     d: 'juli 2026',
     changes: [
       'Deiger kan lagres delt (Netlify Blobs) — lagre, åpne og fullfør samme deig fra flere enheter, sammen med familie/venner.',
