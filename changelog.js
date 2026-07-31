@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.34',
+    d: 'juli 2026',
+    changes: [
+      'Du kan nå endre <b>meltype</b> og <b>antall</b> direkte under <b>⚙️ Finjuster</b> — ikke bare i veiviser-stegene. (Appen lovet allerede at meltype lå der; nå stemmer det.) Endringer synkes begge veier med stegene.'
+    ]
+  },
+  {
     v: '6.33',
     d: 'juli 2026',
     changes: [

@@ -991,6 +991,8 @@ function syncStaticI18nUI(){
   st('mob-gkm-hint','Velg én','Choose one');
   st('mob-govn-lbl','Ovntype','Oven type');
   st('mob-govn-hint','Velg én','Choose one');
+  st('mob-antall-lbl-fj','Antall','Quantity');
+  st('mob-meltype-lbl-fj','Meltype','Flour type');
   st('wiz-finjuster-done','✓ Ferdig — se steg for steg','✓ Done — see step by step');
   // Info/settings tab
   st('mob-visning-lbl','Visning','Display');
@@ -1196,7 +1198,7 @@ function updateMeltypeInfo(){
   if(!flour) return;
   const estBadge = flour.estimated ? ` <span style="color:#EFAB27;font-weight:700">(anslått)</span>` : '';
   const txt = `<b>${escH(flour.t)}</b> · ${flour.protein} protein${flour.w!=='–'?` · W${flour.w}`:''} · ${flour.hydro} hydrering · ${flour.ferm.mn}–${flour.ferm.mx}t fermentering${estBadge}`;
-  ['gmel-info','mob-gmel-info'].forEach(id=>{
+  ['gmel-info','mob-gmel-info','mob-gmel-fj-info'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML = txt;
   });
@@ -1210,11 +1212,19 @@ function syncMeltypeSelect(){
   updateMeltypeInfo();
 }
 function syncMobMeltypeSelect(){
-  const el = document.getElementById('mob-gmel');
-  if(el){
+  // v6.34: meltype kan nå velges to steder — steg 2 (mob-gmel) OG Finjuster
+  // (mob-gmel-fj). Begge holdes i synk, og en endring i én oppdaterer den andre.
+  const ids=['mob-gmel','mob-gmel-fj'];
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
     el.value = S.meltype;
-    el.onchange = () => { S.meltype = el.value; updateMeltypeInfo(); mobGen(); };
-  }
+    el.onchange = () => {
+      S.meltype = el.value;
+      ids.forEach(o=>{ if(o!==id){ const e=document.getElementById(o); if(e) e.value=S.meltype; } });
+      updateMeltypeInfo(); mobGen();
+    };
+  });
   updateMeltypeInfo();
 }
 function tf(){
@@ -4380,7 +4390,7 @@ function stepPizzas(d){
 }
 function updatePcountDisp(){
   const c=pc().count;
-  ['pcount-disp','mob-pcount-disp'].forEach(id=>{
+  ['pcount-disp','mob-pcount-disp','mob-pcount-disp-fj'].forEach(id=>{
     const e=document.getElementById(id);if(e)e.textContent=c;
   });
   const lblTxt=L('eller antall '+pcUnitLabel(true)+':','or number of '+pcUnitLabel(true)+':');
@@ -5062,6 +5072,7 @@ function syncMobControls(){
   mobPillGroup('mob-ggj','gjaer');
   mobPillGroup('mob-gkm','kjokkenmaskin');
   syncMobMeltypeSelect();
+  updatePcountDisp(); // v6.34: init også Finjuster-antallet
   mobPillGroup('mob-govn','oven');
   const now=new Date();
   const later=new Date(now.getTime()+S.cold*3600000+14400000);
@@ -6596,12 +6607,37 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
       <div id="wiz-status-finjuster"></div>
       <div id="wiz-finjuster-next" style="padding:.6rem 1rem .2rem"><button id="wiz-finjuster-back-btn" onclick="wizGoto(3)" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">← Tilbake til sjekken</button></div>
+    <!-- v6.34: Antall pizzaer også i Finjuster (justerer melmengden under). -->
+    <div class="mob-section-lbl" id="mob-antall-lbl-fj">Antall</div>
+    <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .55rem">
+      <button onclick="stepPizzas(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
+      <span id="mob-pcount-disp-fj" style="font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:22px;text-align:center;font-family:var(--forno-font-mono)">4</span>
+      <button onclick="stepPizzas(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
+    </div>
+
     <div class="mob-section-lbl"><span id="mob-mel-lbl">Melmengde</span> — <span id="mob-mdisp">500g</span></div>
     <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
       <button onclick="stepMobSlider('mob-msl',-100,mobUMel)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
       <input type="range" id="mob-msl" min="300" max="1500" step="100" value="500" oninput="mobUMel(this.value)" style="flex:1;min-width:0">
       <button onclick="stepMobSlider('mob-msl',100,mobUMel)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">+</button>
     </div>
+
+    <!-- v6.34: Meltype også i Finjuster (synket med steg 2). -->
+    <div class="mob-section-lbl" id="mob-meltype-lbl-fj">Meltype</div>
+    <div class="dropdown-select" style="margin:0 1rem .3rem">
+      <select id="mob-gmel-fj">
+        <option value="dallari">Dallari pizzamel</option>
+        <option value="doppio_zero">Caputo Doppio Zero</option>
+        <option value="regal_pizzamel">Regal Pizzamel</option>
+        <option value="vanlig_hvetemel">Vanlig hvetemel</option>
+        <option value="pizzeria">Caputo Pizzeria</option>
+        <option value="nuvola">Caputo Nuvola</option>
+        <option value="regal_tipo00">Regal Tipo 00</option>
+        <option value="couco">Caputo Couco</option>
+        <option value="manitoba">Caputo Manitoba Oro</option>
+      </select>
+    </div>
+    <div id="mob-gmel-fj-info" style="font-size:10.5px;color:var(--forno-text-faint);padding:0 1rem .5rem;line-height:1.4"></div>
 
     <div id="finjuster-hydro-section">
     <div class="mob-section-lbl"><span id="mob-hydro-lbl">Hydrering</span> — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>
