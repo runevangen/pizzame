@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.39',
+    d: 'juli 2026',
+    changes: [
+      'Lettere å gå tilbake til mobilvisning fra PC: «Til mobil»-knappen oppe til høyre er nå større og tydeligere (den satt for smått og gjemt i hjørnet før), og det er lagt til et eget «📱 Bytt til mobilvisning»-valg i ☰ Meny.'
+    ]
+  },
+  {
     v: '6.38',
     d: 'juli 2026',
     changes: [
