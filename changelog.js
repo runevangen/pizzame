@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.644',
+    d: 'august 2026',
+    changes: [
+      'Nytt <b>XXL</b>-nivå øverst i skriftstørrelse-valget, for de som vil ha ekstra stor tekst på hele planen. Velges under Visning (eller med +/− ved skriftstørrelse). Passet samtidig på at oppskrift-radene ikke lenger klemmer etikett og verdi sammen på de største skriftene.'
+    ]
+  },
+  {
     v: '0.643',
     d: 'august 2026',
     changes: [
