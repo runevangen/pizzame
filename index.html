@@ -2693,7 +2693,7 @@ async function persistCheckedSteps(){
     await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({checkedSteps: [...window._checked]})
+      body: JSON.stringify({checkedSteps: [...window._checked], ...bakeAuthFields()})
     });
   }catch(e){ /* stille — avhaking er ikke kritisk nok til alert */ }
 }
@@ -2704,7 +2704,7 @@ async function persistCheckedIngredients(){
     await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({checkedIngredients: [...window._checkedIngredients]})
+      body: JSON.stringify({checkedIngredients: [...window._checkedIngredients], ...bakeAuthFields()})
     });
   }catch(e){ /* stille */ }
 }
@@ -2715,7 +2715,7 @@ async function persistCheckedSubsteps(){
     await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({checkedSubsteps: [...window._checkedSubsteps]})
+      body: JSON.stringify({checkedSubsteps: [...window._checkedSubsteps], ...bakeAuthFields()})
     });
   }catch(e){ /* stille */ }
 }
@@ -4266,6 +4266,30 @@ function currentUserName(){
     return (u && u.name) ? u.name : '';
   }catch(e){ return ''; }
 }
+// Stabil bruker-id — brukes til å eie deiger (privat per bruker). Kan være tom
+// for gjester/uinnlogget; da regnes lagrede deiger som åpne/delte (som før).
+function currentUserId(){
+  try{
+    const u=JSON.parse(localStorage.getItem('pizzaUser'));
+    return (u && u.id) ? u.id : '';
+  }catch(e){ return ''; }
+}
+// Legger ved eier-id (og admin-passord når innlogget) på deig-kall, slik at
+// backend slipper gjennom endring/sletting av EGNE deiger og admin ser alt.
+function bakeAuthFields(){
+  const o={}; const uid=currentUserId();
+  if(uid) o.userId=uid;
+  if(window._adminPassword) o.admin=window._adminPassword;
+  return o;
+}
+function bakeAuthQuery(){
+  const p=[]; const uid=currentUserId();
+  if(uid) p.push('userId='+encodeURIComponent(uid));
+  if(window._adminPassword) p.push('admin='+encodeURIComponent(window._adminPassword));
+  return p.length ? ('?'+p.join('&')) : '';
+}
+// Er denne deigen min å styre? (egen deig, eller eldre deig uten eier = åpen)
+function bakeIsMine(b){ return !!b && (!b.ownerId || b.ownerId===currentUserId()); }
 function feedbackVoterId(){
   try{
     const u = JSON.parse(localStorage.getItem('pizzaUser'));
@@ -4573,7 +4597,7 @@ async function saveDeigNote(inputId, statusId){
     const res = await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({note: val, noteBy: currentUserName()})
+      body: JSON.stringify({note: val, noteBy: currentUserName(), ...bakeAuthFields()})
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     if(window._bakesCache){ const b=window._bakesCache.find(x=>x.id===id); if(b){ b.note=val; b.noteBy=currentUserName(); } }
@@ -6052,7 +6076,7 @@ window._bakesCache = [];
 
 async function fetchBakes(){
   try{
-    const res = await fetch('/api/bakes');
+    const res = await fetch('/api/bakes'+bakeAuthQuery());
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     return data.bakes || [];
@@ -6067,7 +6091,7 @@ async function toggleFavorite(id, currentlyFavorite){
     const res = await fetch('/api/bakes/'+id, {
       method: 'PATCH',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({favorite: !currentlyFavorite})
+      body: JSON.stringify({favorite: !currentlyFavorite, ...bakeAuthFields()})
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
   }catch(e){
@@ -6079,7 +6103,8 @@ async function toggleFavorite(id, currentlyFavorite){
 
 async function syncFavoriteButton(){
   const bakes = await fetchBakes();
-  const fav = bakes ? bakes.find(b=>b.favorite) : null;
+  // Favoritt er «min go-to» — bare mine egne deiger teller (ikke andres delte).
+  const fav = bakes ? bakes.find(b=>b.favorite && bakeIsMine(b)) : null;
   ['fav-menu-row'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display = fav ? 'flex' : 'none';
@@ -6106,35 +6131,53 @@ function bakeMetaLine(b){
   return `${tn} · ${mn} · ${lbl}: ${dtStr}`;
 }
 
+// Liten «Delt»/«Delt av X»-merkelapp ved navnet.
+function bakeBadgeHTML(b){
+  const owned = b.ownerId && b.ownerId===currentUserId();
+  if(owned && b.shared) return `<span style="display:inline-block;margin-left:6px;font-size:9px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:6px;background:var(--forno-accent-soft,#fbe4d4);color:var(--forno-accent-text,#c2410c);vertical-align:middle">🌐 ${L('DELT','SHARED')}</span>`;
+  if(b.ownerId && !owned) return `<span style="display:inline-block;margin-left:6px;font-size:9px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:6px;background:var(--dyn-border);color:var(--dyn-text);vertical-align:middle">🌐 ${L('DELT','SHARED')}</span>`;
+  return '';
+}
+// «Del med alle»/«Gjør privat»-bryter — kun for dine egne (eide) deiger.
+function bakeShareToggleHTML(b){
+  if(!(b.ownerId && b.ownerId===currentUserId())) return '';
+  const on=b.shared===true;
+  return `<button onclick="event.stopPropagation();toggleShareBake('${b.id}',${on})" title="${on?L('Delt med alle — trykk for å gjøre privat igjen','Shared with everyone — tap to make private again'):L('Bare du ser denne — trykk for å dele med alle','Only you can see this — tap to share with everyone')}" style="margin-top:8px;width:100%;padding:7px;border:1px solid ${on?'var(--forno-accent,#e8590c)':'var(--dyn-border)'};border-radius:8px;background:${on?'var(--forno-accent-soft,#fbe4d4)':'transparent'};color:${on?'var(--forno-accent-text,#c2410c)':'var(--dyn-faint)'};font-size:11px;font-weight:600;cursor:pointer">${on?L('🌐 Delt med alle — gjør privat','🌐 Shared — make private'):L('🔒 Privat — del med alle','🔒 Private — share with everyone')}</button>`;
+}
 function bakeCardHTML(b, mob){
   const pad = mob ? '.6rem .7rem' : '.7rem .9rem';
-  const starBtn = `<span onclick="event.stopPropagation();toggleFavorite('${b.id}',${!!b.favorite})" title="${b.favorite?L('Fjern som favoritt','Remove as favorite'):L('Sett som favoritt','Set as favorite')}" style="cursor:pointer;font-size:16px;color:${b.favorite?'#EFAB27':'var(--dyn-border)'};flex-shrink:0;line-height:1">${b.favorite?'★':'☆'}</span>`;
+  // Full kontroll: egen deig, eldre deig uten eier, eller innlogget admin.
+  const mine = bakeIsMine(b) || !!window._adminPassword;
+  const badge = bakeBadgeHTML(b);
+  const shareToggle = bakeShareToggleHTML(b);
+  const starBtn = mine ? `<span onclick="event.stopPropagation();toggleFavorite('${b.id}',${!!b.favorite})" title="${b.favorite?L('Fjern som favoritt','Remove as favorite'):L('Sett som favoritt','Set as favorite')}" style="cursor:pointer;font-size:16px;color:${b.favorite?'#EFAB27':'var(--dyn-border)'};flex-shrink:0;line-height:1">${b.favorite?'★':'☆'}</span>` : '';
   if(b.status==='active'){
-    return `<div style="border:1px solid ${b.favorite?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
+    return `<div style="border:1px solid ${b.favorite&&mine?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <div style="min-width:0;display:flex;gap:6px;align-items:flex-start">
           ${starBtn}
           <div>
-            <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}</div>
+            <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}${badge}</div>
             <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''}</div>
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:11px;font-weight:600;cursor:pointer">${L('Åpne','Open')}</button>
-          <button onclick="finishBakePrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${L('Ferdig','Finished')}</button>
+          <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:11px;font-weight:600;cursor:pointer">${mine?L('Åpne','Open'):L('Åpne som ny','Open as new')}</button>
+          ${mine?`<button onclick="finishBakePrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${L('Ferdig','Finished')}</button>`:''}
         </div>
       </div>
+      ${shareToggle}
     </div>`;
   }
   const finDt = b.finishedAt ? (()=>{try{return fDT(new Date(b.finishedAt));}catch(e){return '';}})() : '';
   const ratingHtml = b.rating ? `<div style="margin-top:4px;font-size:13px;color:#EFAB27">${'★'.repeat(b.rating)}${'☆'.repeat(5-b.rating)}</div>` : '';
   const photoHtml = b.photo ? `<img src="${b.photo}" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:6px">` : '';
-  return `<div style="border:1px solid ${b.favorite?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
+  return `<div style="border:1px solid ${b.favorite&&mine?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
       <div style="min-width:0;display:flex;gap:6px;align-items:flex-start;flex:1">
         ${starBtn}
         <div style="flex:1;min-width:0">
-          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}</div>
+          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}${badge}</div>
           <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''} · ${L('Ferdig:','Finished:')} ${finDt}</div>
           ${ratingHtml}
           ${photoHtml}
@@ -6142,12 +6185,27 @@ function bakeCardHTML(b, mob){
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer" title="${b.rating||b.photo?L('Rediger vurdering','Edit rating'):L('Gi vurdering','Give a rating')}">✏️</button>
-        <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${L('Se','View')}</button>
-        <button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:#993C1D;font-size:11px;cursor:pointer">${L('Slett','Delete')}</button>
+        ${mine?`<button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer" title="${b.rating||b.photo?L('Rediger vurdering','Edit rating'):L('Gi vurdering','Give a rating')}">✏️</button>`:''}
+        <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${mine?L('Se','View'):L('Se / kopier','View / copy')}</button>
+        ${mine?`<button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:#993C1D;font-size:11px;cursor:pointer">${L('Slett','Delete')}</button>`:''}
       </div>
     </div>
+    ${shareToggle}
   </div>`;
+}
+async function toggleShareBake(id, currentlyShared){
+  try{
+    const res = await fetch('/api/bakes/'+id, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({shared: !currentlyShared, ...bakeAuthFields()})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(window._bakesCache){ const b=window._bakesCache.find(x=>x.id===id); if(b) b.shared=!currentlyShared; }
+  }catch(e){
+    alert(L('Kunne ikke endre deling. Prøv igjen.','Could not change sharing. Try again.'));
+  }
+  refreshBaksterPanels();
 }
 
 async function renderBaksterPanel(targetId){
@@ -6160,12 +6218,21 @@ async function renderBaksterPanel(targetId){
     return;
   }
   window._bakesCache = bakes;
-  const active = bakes.filter(b=>b.status==='active');
-  const finished = bakes.filter(b=>b.status==='finished');
+  // Del i «mine» (egne + eldre uten eier) og «delt med alle» (andres delte).
+  const mineB = bakes.filter(b=>bakeIsMine(b));
+  const sharedByOthers = bakes.filter(b=>!bakeIsMine(b));
+  const active = mineB.filter(b=>b.status==='active');
+  const finished = mineB.filter(b=>b.status==='finished');
   let html = `<div class="lbl" style="margin-bottom:.4rem">${L('Aktive','Active')}</div>`;
   html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${L('Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".','No active doughs. Set up a recipe and tap "Save dough".')}</p>`;
   html += `<div class="lbl" style="margin:.8rem 0 .4rem">${L('Ferdige','Finished')}</div>`;
   html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">${L('Ingen ferdige deiger ennå.','No finished doughs yet.')}</p>`;
+  // Delt med alle — andres deiger som er delt. Vises som se/kopier (ikke redigerbare).
+  if(sharedByOthers.length){
+    html += `<div class="lbl" style="margin:1.1rem 0 .4rem">${L('🌐 Delt med alle','🌐 Shared with everyone')}</div>`;
+    html += `<p style="color:var(--dyn-faint);font-size:11px;padding:0 0 .5rem;line-height:1.4">${L('Deiger andre har delt. Du kan åpne og kopiere dem, men ikke endre andres deiger.','Doughs others have shared. You can open and copy them, but not edit doughs owned by others.')}</p>`;
+    html += sharedByOthers.map(b=>bakeCardHTML(b,mob)).join('');
+  }
   el.innerHTML = html;
 }
 
@@ -6198,13 +6265,14 @@ async function saveBake(){
       res = await fetch('/api/bakes/'+activeId, {
         method: 'PATCH',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ config: {...S}, anchorMode: S.mode, anchorISO })
+        body: JSON.stringify({ config: {...S}, anchorMode: S.mode, anchorISO, ...bakeAuthFields() })
       });
     }else{
       res = await fetch('/api/bakes', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])], checkedSubsteps: [...(window._checkedSubsteps||[])], savedBy: currentUserName() })
+        // Ny deig er privat som standard (shared:false), eid av den som lagrer.
+        body: JSON.stringify({ name, config: {...S}, anchorMode: S.mode, anchorISO, checkedSteps: [...(window._checked||[])], checkedIngredients: [...(window._checkedIngredients||[])], checkedSubsteps: [...(window._checkedSubsteps||[])], savedBy: currentUserName(), ownerId: currentUserId(), shared: false })
       });
     }
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -6326,7 +6394,8 @@ async function refreshDeigerBanner(){
     if(mobBtn)mobBtn.style.display='none';
     return;
   }
-  const active=bakes.filter(b=>b.status==='active');
+  // Banneret nudger om DINE egne pågående deiger — ikke andres delte.
+  const active=bakes.filter(b=>b.status==='active' && bakeIsMine(b));
   if(sideCount){
     if(active.length>0){ sideCount.style.display='inline-block'; sideCount.textContent=String(active.length); }
     else sideCount.style.display='none';
@@ -6401,8 +6470,12 @@ function syncDesktopControls(){
 function openBake(id){
   const b = (window._bakesCache||[]).find(x=>x.id===id);
   if(!b) return;
-  window._activeDeigId = id;
-  window._activeDeigName = b.name;
+  // Andres delte deig åpnes som en KOPI: last inn oppsettet, men ikke bind til
+  // deres id (så «Lagre deig» lager en ny, privat deig i stedet for å overskrive
+  // en du ikke eier). Egne/eldre deiger redigeres som før.
+  const mine = bakeIsMine(b);
+  window._activeDeigId = mine ? id : null;
+  window._activeDeigName = mine ? b.name : null;
   window._checked = new Set(Array.isArray(b.checkedSteps) ? b.checkedSteps : []);
   window._checkedIngredients = new Set(Array.isArray(b.checkedIngredients) ? b.checkedIngredients : []);
   window._checkedSubsteps = new Set(Array.isArray(b.checkedSubsteps) ? b.checkedSubsteps : []);
@@ -6498,7 +6571,7 @@ async function confirmFinishBake(alreadyFinished, skip){
   if(!id) return;
   const statusEl = document.getElementById('finish-status');
   if(statusEl) statusEl.textContent = L('Lagrer...','Saving...');
-  const body = {};
+  const body = {...bakeAuthFields()};
   if(!alreadyFinished) body.status = 'finished';
   if(!skip){
     body.rating = window._pendingRating || null;
@@ -6531,7 +6604,7 @@ function closeFinishBakeModal(){
 async function deleteBakeConfirm(id){
   if(!confirm(L('Slette denne deigen permanent? Dette kan ikke angres.','Delete this dough permanently? This cannot be undone.'))) return;
   try{
-    const res = await fetch('/api/bakes/'+id, { method: 'DELETE' });
+    const res = await fetch('/api/bakes/'+id+bakeAuthQuery(), { method: 'DELETE' });
     if(!res.ok) throw new Error('HTTP '+res.status);
     if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; syncSaveBakeLabel(); }
     refreshBaksterPanels();

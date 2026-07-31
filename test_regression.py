@@ -1799,6 +1799,48 @@ def run_behavioral_tests(page):
     ok37 = (r37.get('notBlank') is True and r37.get('valid') is True)
     results.append(('smartplan_clearing_date_refills_default_not_blank', ok37, r37))
 
+    # v0.642: deiger er private per bruker. Man ser egne + delte (+ eldre uten
+    # eier). Egne har «del med alle»-bryter; andres delte er kun se/kopier (ingen
+    # slett/favoritt/bryter), og åpnes som KOPI. Admin/eier-vaktene ligger i
+    # backend; her sjekkes at UI-en gjenspeiler eierskap riktig.
+    r38 = page.evaluate("""() => {
+      const _origFetch=window.fetchBakes;
+      let _origUser=null; try{ _origUser=localStorage.getItem('pizzaUser'); }catch(e){}
+      localStorage.setItem('pizzaUser', JSON.stringify({id:'user-A',name:'Rune'}));
+      const cfg={type:'napoletana',method:'standard',mel:500,hydro:65,cold:24,temp:22,gjaer:'torr'};
+      const mk=(id,ownerId,shared,status)=>({id,name:id,status:status||'active',favorite:false,ownerId,shared,config:cfg,anchorMode:'start',anchorISO:new Date(2026,6,31,19).toISOString(),savedBy:'X',checkedSteps:[],checkedIngredients:[],checkedSubsteps:[]});
+      const list=[ mk('mine-priv','user-A',false,'active'), mk('mine-shared','user-A',true,'active'),
+                   mk('other-priv','user-B',false,'active'), mk('other-shared','user-B',true,'active'),
+                   mk('legacy',null,false,'finished') ];
+      window.fetchBakes=async()=>list;
+      const q=bakeAuthQuery();
+      const d=document.createElement('div'); d.id='t-priv-deiger'; document.body.appendChild(d);
+      return renderBaksterPanel('t-priv-deiger').then(()=>{
+        const html=d.innerHTML;
+        const out={
+          q,
+          myShareToggle: html.includes('Privat — del med alle'),
+          myStar: /toggleFavorite\\('mine-priv'/.test(html),
+          mySharedMakePrivate: html.includes('gjør privat'),
+          otherPrivHidden: !html.includes('other-priv'),         // andres PRIVATE vises ikke i UI (stub gir alle, men bakeIsMine styrer seksjon; other-priv havner i delt-seksjon likevel? nei — den er ikke min og ikke delt)
+          otherSharedShown: html.includes('other-shared'),
+          otherNoDelete: !/deleteBakeConfirm\\('other-shared'\\)/.test(html),
+          otherNoShareToggle: !/toggleShareBake\\('other-shared'/.test(html),
+          sharedSection: html.includes('Delt med alle'),
+          legacyManageable: /deleteBakeConfirm\\('legacy'\\)/.test(html),
+        };
+        d.remove();
+        window.fetchBakes=_origFetch;
+        try{ if(_origUser===null) localStorage.removeItem('pizzaUser'); else localStorage.setItem('pizzaUser',_origUser); }catch(e){}
+        return out;
+      });
+    }""")
+    ok38 = (r38.get('q')=='?userId=user-A' and r38.get('myShareToggle') and r38.get('myStar')
+            and r38.get('mySharedMakePrivate') and r38.get('otherSharedShown')
+            and r38.get('otherNoDelete') and r38.get('otherNoShareToggle')
+            and r38.get('sharedSection') and r38.get('legacyManageable'))
+    results.append(('deiger_private_per_user_with_share_toggle_and_view_only_shared', ok38, r38))
+
 
 
 
