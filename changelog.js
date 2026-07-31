@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.37',
+    d: 'juli 2026',
+    changes: [
+      'Ny <b>Fokus-modus</b> i Tidsplan: trykk «🔎 Fokus» og få det aktive steget i fullskjerm med stor skrift — laget for telefonen på benken mens du baker. Viser ett steg om gangen (tid, hva du gjør og understegene), åpner på steget du er kommet til, og du blar med store «Ferdig»/«Forrige»-knapper. Understeg kan hakes av her og deler fremdrift med Tidsplan. Skjermen holdes våken mens fokus er på, og lys/mørk følger resten av appen.'
+    ]
+  },
+  {
     v: '6.36',
     d: 'juli 2026',
     changes: [
