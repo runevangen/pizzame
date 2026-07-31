@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.646',
+    d: 'august 2026',
+    changes: [
+      'Fjernet overflødig luft på topp og bunn i mobilvisning. Klaringen for Dynamic Island/home-indicator ble ganget opp med skriftstørrelsen (og vokste dermed på store skrifter/XXL). Nå får topp og bunn nøyaktig den plassen de trenger, uansett skriftstørrelse.'
+    ]
+  },
+  {
     v: '0.645',
     d: 'august 2026',
     changes: [

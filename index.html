@@ -230,7 +230,7 @@ body.mob-mode.theme-light input[type=time]{color-scheme:light}
 /* top bar */
 /* padding-top med safe-area: appen bruker viewport-fit=cover, så uten dette havner
    logo/navn under statuslinja/Dynamic Island på iPhone. 0px på enheter uten notch. */
-.mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:calc(.4rem + env(safe-area-inset-top,0px)) 1rem .4rem;display:flex;align-items:center;justify-content:space-between;min-height:56px;position:sticky;top:0;z-index:50}
+.mob-topbar{background:#fff;border-bottom:1px solid #EDEDED;padding:calc(.4rem + env(safe-area-inset-top,0px)/var(--z,1)) 1rem .4rem;display:flex;align-items:center;justify-content:space-between;min-height:56px;position:sticky;top:0;z-index:50}
 body.mob-mode .mob-topbar{background:var(--forno-bg-sunken);border-bottom-color:var(--forno-border-soft)}
 .mob-topbar-title{display:flex;flex-direction:column;gap:1px}
 .mob-topbar-title span{font-size:15px;font-weight:600}
@@ -249,7 +249,7 @@ body.mob-mode .mob-return-bar{background:var(--forno-bg-raised);border-top-color
 .mob-return-bar.on{display:block}
 .mob-return-status{font-size:11px;line-height:1.4;margin-bottom:.4rem}
 .mob-return-btn{padding:6px 12px;border:1px solid var(--forno-border,#d8d5d0);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:12px;font-weight:600;cursor:pointer}
-.mob-tabbar{background:#fff;border-top:1px solid #EDEDED;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mob-tabbar{background:#fff;border-top:1px solid #EDEDED;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:calc(env(safe-area-inset-bottom,0px)/var(--z,1))}
 body.mob-mode .mob-tabbar{background:var(--forno-bg-sunken);border-top-color:var(--forno-border-soft)}
 /* Tidsplan/Oppskrift-veksler (v6.33) */
 .mob-plan-seg{flex:1;text-align:center;padding:9px 6px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--forno-border,#e0ddd8);background:var(--forno-bg,#fff);color:var(--forno-text-faint,#8E8E93)}
@@ -478,10 +478,13 @@ body.mob-mode .fs-seg .o.on{background:var(--forno-accent);color:#1a1512}
    tidligere het "Stor", "Stor" er det som tidligere het "Ekstra stor", og
    "Ekstra stor" er et helt nytt, enda større nivå. Standarden for nye brukere
    er nå "Stor" (midterste nivå) — se initFontSize(). */
-body{zoom:1.15}
-body.fs-large{zoom:1.3}
-body.fs-xlarge{zoom:1.45}
-body.fs-xxlarge{zoom:1.6}
+/* --z speiler zoom-faktoren, så safe-area-klaring (Dynamic Island / home-
+   indicator) kan deles på den og få EKSAKT fysisk størrelse uansett skrift —
+   ellers ganges den opp med zoomen og gir voksende «luft» på topp/bunn. */
+body{zoom:1.15;--z:1.15}
+body.fs-large{zoom:1.3;--z:1.3}
+body.fs-xlarge{zoom:1.45;--z:1.45}
+body.fs-xxlarge{zoom:1.6;--z:1.6}
 /* Knapper/piller/navigasjon skal ikke vokse med skriftstørrelse-innstillingen —
    kun lesetekst (steg, forklaringer) skal bli større. Motsatt zoom kansellerer
    ut body sin zoom for disse elementene spesifikt. Gjelder nå også standardnivået,
