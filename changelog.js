@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.38',
+    d: 'juli 2026',
+    changes: [
+      'PC-versjonen har fått samme varme «Forno»-følelse som mobilen: kremfargede flater i stedet for kald hvit/grå, brent-oransje aksent i stedet for grønn, og overskriftsfonten på tvers. Rent visuelt — alt fungerer som før, det ser bare ut som samme app enten du er på telefon eller skjerm.'
+    ]
+  },
+  {
     v: '6.37',
     d: 'juli 2026',
     changes: [
