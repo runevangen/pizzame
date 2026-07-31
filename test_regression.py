@@ -1692,6 +1692,70 @@ def run_behavioral_tests(page):
     )
     results.append(('first_run_language_detection_norwegian_else_english_saved_wins', ok34, r34))
 
+    # v6.37: Fokus-modus — det aktive steget i fullskjerm med stor skrift, for
+    # telefonen på benken. Åpner på FØRSTE ikke-avhakede steg (ikke toppen),
+    # viser understeg (avhakbare, delt fremdrift med tidsplanen), «Ferdig» haker
+    # av + hopper til neste ikke-avhakede, «Forrige» blar tilbake, og lukk skjuler
+    # overlegget. Vi speiler tidsplanen: har steget understeg viser vi dem i
+    # stedet for desc (ingen dobbeltekst).
+    r35 = page.evaluate("""() => {
+      resetTestState();
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65; S.cold=24;
+      S.mode='end'; S.temp=22; S.gjaer='torr';
+      window._checked = new Set(); window._checkedSubsteps = new Set();
+      mobShowTab('plan'); mobGen();
+      const total = (window._steps||[]).length;
+
+      // hak av steg 0 -> Fokus skal åpne på steg 1 (første ikke-avhakede).
+      if(window._checked.add) window._checked.add(stepSig(window._steps[0]));
+      openFocus();
+      const ov = document.getElementById('focus-overlay');
+      const openedIdx = window._focusIdx;
+      const shown = ov ? ov.style.display : 'none';
+      const bodyTxt = (document.getElementById('focus-body').textContent)||'';
+      const hasStepCounter = /STEG\\s+\\d+\\s+AV\\s+\\d+/.test(bodyTxt);
+
+      // understeg vises og er avhakbare i fokus (delt _checkedSubsteps).
+      const curStep = window._steps[window._focusIdx];
+      const hasSubs = !!(curStep.substeps && curStep.substeps.length);
+      const subsBefore = window._checkedSubsteps.size;
+      if(hasSubs) focusToggleSubstep(0);
+      const subsAfter = window._checkedSubsteps.size;
+
+      // desc vises IKKE i tillegg når understeg finnes (ingen dobbeltekst).
+      const focusBodyHtml = document.getElementById('focus-body').innerHTML;
+      const descDup = hasSubs && focusBodyHtml.includes('font-size:19px;line-height:1.45');
+
+      // «Ferdig» haker av dette steget og hopper til neste ikke-avhakede.
+      const beforeDone = window._focusIdx;
+      focusMarkDone();
+      const markedDone = !!(window._checked.has(stepSig(window._steps[beforeDone])) || window._checked.has(beforeDone));
+      const advanced = window._focusIdx > beforeDone;
+
+      // «Forrige» blar tilbake.
+      const beforePrev = window._focusIdx;
+      focusPrev();
+      const wentBack = window._focusIdx === beforePrev - 1;
+
+      closeFocus();
+      const closed = document.getElementById('focus-overlay').style.display === 'none';
+
+      // Fokus-knappen finnes i statuslinja.
+      const hasFocusBtn = /onclick="openFocus\\(\\)"/.test(document.getElementById('mob-plan-content').innerHTML);
+
+      resetTestState();
+      return { total, openedIdx, shown, hasStepCounter, hasSubs, subsBefore, subsAfter,
+               descDup, markedDone, advanced, wentBack, closed, hasFocusBtn };
+    }""")
+    ok35 = (
+      r35['total'] > 2 and r35['openedIdx'] == 1 and r35['shown'] == 'flex' and
+      r35['hasStepCounter'] and r35['hasSubs'] and
+      r35['subsAfter'] == r35['subsBefore'] + 1 and r35['descDup'] is False and
+      r35['markedDone'] and r35['advanced'] and r35['wentBack'] and
+      r35['closed'] and r35['hasFocusBtn']
+    )
+    results.append(('focus_mode_opens_on_next_step_substeps_checkable_nav_and_close', ok35, r35))
+
 
 
 
