@@ -4592,6 +4592,12 @@ function setLayout(mode){
   try{localStorage.setItem('pizzaLayout',mode);}catch(e){}
   if(isMob){
     syncMobControls();mobGen();try{syncI18nUI();}catch(e){}
+    // Bytter man fra PC til mobil i farten, er en mobil-fane markert aktiv, men
+    // innholdet er aldri rendret (særlig Planlegging/wizarden) — resultatet var en
+    // blank skjerm. Render den aktive fanen på nytt, slik oppstarten gjør.
+    const onTab=document.querySelector('.mob-tab.on');
+    const tabId=onTab?onTab.id.replace('mob-tab-',''):'settings';
+    try{ mobShowTab(tabId); }catch(e){ try{ wizEnterSettingsTab(); }catch(_){} }
   }
   else{gen();}
 }
