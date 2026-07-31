@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.647',
+    d: 'august 2026',
+    changes: [
+      'Pusset opp klokke/dato-velgeren i Smart-plan: klokka og datoen er nå to like store kort. Klokka er tonet litt ned, og datoen vises som «lør 1. aug» (ukedag + dag + måned) i stedet for det rå OS-formatet. Trykk hvor som helst på et kort for å åpne velgeren, som før.'
+    ]
+  },
+  {
     v: '0.646',
     d: 'august 2026',
     changes: [
