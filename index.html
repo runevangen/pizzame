@@ -198,8 +198,13 @@ body.mob-mode.theme-light{
   --forno-border:#e0d3b5;
   --forno-border-soft:#ece3d2;
   --forno-text:#3f2d10;
-  --forno-text-muted:#7c6a4d;
-  --forno-text-faint:#9c8861;
+  /* v0.643: lesbarhet på lyst tema. «muted» farger all brødtekst (understeg,
+     .sdesc, «Hvorfor»/«Tips»), «faint» all sekundær-meta (steg-tall, tider,
+     hint). Blanding av skisse 1+2: løft brødteksten nær full blekk (~12:1) og
+     gjør meta-tonene mørkere men fortsatt dempet (~6,5:1). Var #7c6a4d/#9c8861
+     — borderline/under AA på krem. */
+  --forno-text-muted:#40301a;
+  --forno-text-faint:#6d5a3a;
   --forno-accent:#e8590c;
   --forno-accent-soft:#fbe4d4;
   --forno-accent-text:#c2410c;
