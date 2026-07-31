@@ -134,10 +134,19 @@ def run_behavioral_tests(page):
     # Bug: kryss-metode-søket (Beta-fanen) må foretrekke Kveldsdeig for et
     # stramt fredag-mål, siden ingen Poolish/Biga-kombinasjon rekker det uten
     # konflikt. Fant dette manuelt tidligere — fryser det som en ekte test nå.
+    # Pinner "nå" så testen er tidsuavhengig (var flaky: resultatet avhang av
+    # hvor langt unna neste fredag lå fra ekte klokke). Nå = torsdag 30. juli 2026
+    # kl. 20:00; mål = fredag 31. juli 19:00 (~23t unna). Da rekker ingen fler-dagers
+    # metode (Standard/Poolish/Biga trenger ≥24t → filtreres bort som ugjennomførbare),
+    # og blant de som rekker vinner Kveldsdeig på lengst gjæring / null konflikt.
     r = page.evaluate("""(() => {
-      const anchor = nextWeekdayAt(5,19,0);
-      const results = searchAllMethods(anchor);
-      return { topLabel: results[0].label, topViolations: results[0].violations };
+      const realNow = Date.now;
+      Date.now = () => new Date(2026, 6, 30, 20, 0, 0).getTime();
+      try {
+        const anchor = new Date(2026, 6, 31, 19, 0, 0);
+        const results = searchAllMethods(anchor);
+        return { topLabel: results[0].label, topViolations: results[0].violations };
+      } finally { Date.now = realNow; }
     })()""")
     ok = (r['topLabel'] == 'Kveldsdeig' and r['topViolations'] == 0)
     results.append(('search_prefers_kveld_for_tight_friday', ok, r))
@@ -947,7 +956,7 @@ def run_behavioral_tests(page):
       // (a) friskt oppstart, ingen gjenopprettet oppsett → gaffel
       window._restoredSetup = false;
       window._wizEnteredOnce = false;
-      mobShowTab('recipe');
+      mobShowTab('bakster');
       mobShowTab('settings');
       const entryStep = window._wizStep;                       // 0 = gaffel
       const forkVisible = document.getElementById('wiz-entry').style.display !== 'none';
@@ -955,11 +964,11 @@ def run_behavioral_tests(page):
       // retur til Planlegging skal vise gaffelen igjen, IKKE en blank skjerm.
       entryPickSmart();
       const forkHiddenAfterSmart = document.getElementById('wiz-entry').style.display === 'none';
-      mobShowTab('recipe');
+      mobShowTab('bakster');
       mobShowTab('settings');
       const forkBackNotBlank = document.getElementById('wiz-entry').style.display !== 'none' && window._wizStep === 0;
       // (a3) logoen tar deg tilbake til gaffelen fra en hvilken som helst fane
-      mobShowTab('recipe');
+      mobShowTab('bakster');
       goToEntryFork();
       const logoReturnsToFork = document.getElementById('mob-settings').classList.contains('active')
         && document.getElementById('wiz-entry').style.display !== 'none';
@@ -968,13 +977,13 @@ def run_behavioral_tests(page):
       const stepAfterManual = window._wizStep;                 // 1
       // (c) fanebytte-guarden holder
       wizGoto(2);
-      mobShowTab('recipe');
+      mobShowTab('bakster');
       mobShowTab('settings');
       const stepAfterTabSwitch = window._wizStep;              // 2
       // (d) gjenopprettet oppsett hopper over gaffelen
       window._restoredSetup = true;
       window._wizEnteredOnce = false;
-      mobShowTab('recipe');
+      mobShowTab('bakster');
       mobShowTab('settings');
       const restoredSkipsFork = window._wizStep === 1;
       let gotoThrew = false;

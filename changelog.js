@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '6.33',
+    d: 'juli 2026',
+    changes: [
+      'Ryddet i fanelinja på mobil: fra 7 til <b>5 faner</b>. <b>Oppskrift</b> er nå en veksler øverst i <b>Tidsplan</b> (Tidsplan ↔ Oppskrift), og <b>Notater</b> ligger nå i <b>Deiger</b> (notatfeltet for den aktive deigen vises øverst der). Ingenting er borte — bare samlet der det hører hjemme, så fanelinja blir luftigere.'
+    ]
+  },
+  {
     v: '6.32',
     d: 'juli 2026',
     changes: [

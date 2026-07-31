@@ -235,6 +235,9 @@ body.mob-mode .mob-return-bar{background:var(--forno-bg-raised);border-top-color
 .mob-return-btn{padding:6px 12px;border:1px solid var(--forno-border,#d8d5d0);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:12px;font-weight:600;cursor:pointer}
 .mob-tabbar{background:#fff;border-top:1px solid #EDEDED;display:flex;position:sticky;bottom:0;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
 body.mob-mode .mob-tabbar{background:var(--forno-bg-sunken);border-top-color:var(--forno-border-soft)}
+/* Tidsplan/Oppskrift-veksler (v6.33) */
+.mob-plan-seg{flex:1;text-align:center;padding:9px 6px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--forno-border,#e0ddd8);background:var(--forno-bg,#fff);color:var(--forno-text-faint,#8E8E93)}
+.mob-plan-seg.on{border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text)}
 .mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:13px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
 body.mob-mode .mob-tab{color:var(--forno-text-faint);font-family:var(--forno-font-body)}
 .mob-tab span[aria-hidden]{font-size:22px;line-height:1}
@@ -904,7 +907,7 @@ function dispTitle(t){
   if((m=t.match(/^Kjøleskapsheving \((.+)t\)$/))) return `Cold proof (${m[1]}h)`;
   return t;
 }
-const TAB_EMOJI = {settings:'⚙️',plan:'📅',recipe:'🍕',notes:'📝',bakster:'🍽️',tips:'ℹ️',beta:'🧭'};
+const TAB_EMOJI = {settings:'⚙️',plan:'📅',bakster:'🍽️',tips:'ℹ️',beta:'🧭'};
 function syncI18nUI(){
   Object.keys(TAB_EMOJI).forEach(id=>{ const el=document.getElementById('mob-tab-'+id); if(el) el.innerHTML=`<span aria-hidden="true">${TAB_EMOJI[id]}</span>${t('tab_'+id)}`; });
   const seg=(id,active)=>{ const el=document.getElementById(id); if(el) el.style.cssText=`flex:1;padding:8px;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;${active?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)'}`; };
@@ -931,6 +934,9 @@ function syncStaticI18nUI(){
   at('mob-topbar-title','title','Til startvalget','Back to start choices');
   at('mob-active-deiger-btn','title','Mine deiger','My doughs');
   at('mob-pc-toggle','title','Bytt til PC-visning','Switch to desktop view');
+  // Tidsplan/Oppskrift-veksler (v6.33)
+  st('mob-plan-seg-schedule-lbl','Tidsplan','Schedule');
+  st('mob-plan-seg-recipe-lbl','Oppskrift','Recipe');
   // Plan / recipe / bakster placeholders
   st('mob-plan-empty','Tilpass innstillingene og se tidsplanen her','Adjust the settings and see the schedule here');
   st('mob-recipe-empty','Generer tidsplan for å se oppskriften','Generate a schedule to see the recipe');
@@ -3052,7 +3058,7 @@ function openPizzatidFromWarning(){
 // Samme grep som warningWrapHTML i v5.74 — én implementasjon, alle hoppene
 // arver den.
 let _returnTo = null; // {tab, wizStep, stepTitle}
-const MOB_TABS = ['plan','settings','recipe','tips','notes','bakster','beta'];
+const MOB_TABS = ['plan','settings','tips','bakster','beta'];
 function currentMobTab(){
   return MOB_TABS.find(id=>{
     const el=document.getElementById('mob-'+id);
@@ -4463,6 +4469,15 @@ async function renderNotesPanel(targetId){
     <div style="font-size:11px;color:#999;margin-top:6px">${L('Lagres sammen med deigen — synlig for alle som åpner den, uansett enhet.','Saved with the dough — visible to everyone who opens it, on any device.')}</div>`;
 }
 
+// v6.33: Notater bor nå i Deiger-fanen (øverst), for den aktive deigen. Vises
+// kun når en deig faktisk er aktiv; ellers holdes feltet tomt (lista står alene).
+function renderBaksterNotes(){
+  const host=document.getElementById('mob-bakster-notes');
+  if(!host) return;
+  if(!window._activeDeigId){ host.innerHTML=''; host.style.padding='0'; return; }
+  host.style.padding='.7rem 1rem .2rem';
+  renderNotesPanel('mob-bakster-notes');
+}
 async function saveDeigNote(inputId, statusId){
   const id = window._activeDeigId;
   if(!id) return;
@@ -4486,8 +4501,8 @@ async function saveDeigNote(inputId, statusId){
 function refreshNotesPanels(){
   const pc = document.getElementById('notes-panel');
   if(pc) renderNotesPanel('notes-panel');
-  const mob = document.getElementById('mob-notes-content');
-  if(mob) renderNotesPanel('mob-notes-content');
+  // v6.33: mobil-notatene bor nå i Deiger-fanen (mob-bakster-notes).
+  if(document.getElementById('mob-bakster-notes')) renderBaksterNotes();
 }
 
 // ===== LAYOUT SWITCHING =====
@@ -5653,8 +5668,22 @@ function wizFinish(){
   mobShowTab('plan');
 }
 
+// v6.33: Oppskrift er nå en underfane av Tidsplan. Veksler mellom stegene
+// (mob-plan-content) og ingredienslista (mob-recipe-content) i samme fane.
+function showPlanSub(which){
+  const recipe = which==='recipe';
+  const sch=document.getElementById('mob-plan-content');
+  const rec=document.getElementById('mob-recipe-content');
+  const segS=document.getElementById('mob-plan-seg-schedule');
+  const segR=document.getElementById('mob-plan-seg-recipe');
+  if(sch) sch.style.display = recipe?'none':'block';
+  if(rec) rec.style.display = recipe?'block':'none';
+  if(segS) segS.classList.toggle('on', !recipe);
+  if(segR) segR.classList.toggle('on', recipe);
+  window._planSub = which;
+}
 function mobShowTab(t){
-  ['plan','settings','recipe','tips','notes','bakster','beta'].forEach(id=>{
+  ['plan','settings','tips','bakster','beta'].forEach(id=>{
     const scr=document.getElementById('mob-'+id);
     if(scr)scr.classList.toggle('active',id===t);
     const tab=document.getElementById('mob-tab-'+id);
@@ -5664,8 +5693,8 @@ function mobShowTab(t){
   // en endring gjort i en annen fane (typisk pizzatiden i Beta) etterlate et
   // varsel som svarte på gammel tilstand.
   if(t==='plan'){ try{ mobGen(); }catch(e){} }
-  if(t==='bakster')renderBaksterPanel('mob-bakster-content');
-  if(t==='notes')renderNotesPanel('mob-notes-content');
+  // v6.33: Deiger rommer nå også Notater for aktiv deig (øverst).
+  if(t==='bakster'){ renderBaksterPanel('mob-bakster-content'); renderBaksterNotes(); }
   if(t==='settings') wizEnterSettingsTab();
   if(t==='beta') renderBetaPanel();
   // Bytter du fane på egen hånd til noe annet enn dit du ble sendt, er hoppet
@@ -6384,12 +6413,19 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
   </div>
 
-  <!-- TAB: TIDSPLAN -->
+  <!-- TAB: TIDSPLAN (rommer også Oppskrift via veksleren, v6.33) -->
   <div class="mob-screen" id="mob-plan">
+    <div id="mob-plan-subnav" style="display:flex;gap:6px;padding:.55rem 1rem .35rem">
+      <div id="mob-plan-seg-schedule" class="mob-plan-seg on" onclick="showPlanSub('schedule')">📅 <span id="mob-plan-seg-schedule-lbl">Tidsplan</span></div>
+      <div id="mob-plan-seg-recipe" class="mob-plan-seg" onclick="showPlanSub('recipe')">🍕 <span id="mob-plan-seg-recipe-lbl">Oppskrift</span></div>
+    </div>
     <div id="mob-plan-content">
       <div class="mob-content" style="padding-top:.75rem;text-align:center;color:#aaa;font-size:13px">
         <p id="mob-plan-empty">Tilpass innstillingene og se tidsplanen her</p>
       </div>
+    </div>
+    <div class="mob-content" id="mob-recipe-content" style="display:none">
+      <p id="mob-recipe-empty" style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se oppskriften</p>
     </div>
   </div>
 
@@ -6620,14 +6656,9 @@ document.addEventListener('change', firstInteractionCheck, true);
   </div>
 
   <!-- TAB: OPPSKRIFT -->
-  <div class="mob-screen" id="mob-recipe">
-    <div class="mob-content" id="mob-recipe-content">
-      <p id="mob-recipe-empty" style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se oppskriften</p>
-    </div>
-  </div>
-
-  <!-- TAB: DEIGER -->
+  <!-- TAB: DEIGER (rommer også Notater for aktiv deig, v6.33) -->
   <div class="mob-screen" id="mob-bakster">
+    <div id="mob-bakster-notes"></div>
     <div class="mob-content" id="mob-bakster-content">
       <p id="mob-bakster-empty" style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p>
     </div>
@@ -6715,10 +6746,6 @@ document.addEventListener('change', firstInteractionCheck, true);
   </div>
 
   <!-- TAB: NOTATER -->
-  <div class="mob-screen" id="mob-notes">
-    <div class="mob-content" id="mob-notes-content"></div>
-  </div>
-
   <!-- TAB: BETA (omvendt planlegger) -->
   <div class="mob-screen" id="mob-beta">
     <div class="mob-content">
@@ -6770,12 +6797,6 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')">
       <span aria-hidden="true">📅</span>Tidsplan
-    </div>
-    <div class="mob-tab" id="mob-tab-recipe" onclick="mobShowTab('recipe')">
-      <span aria-hidden="true">🍕</span>Oppskrift
-    </div>
-    <div class="mob-tab" id="mob-tab-notes" onclick="mobShowTab('notes')">
-      <span aria-hidden="true">📝</span>Notater
     </div>
     <div class="mob-tab" id="mob-tab-bakster" onclick="mobShowTab('bakster')">
       <span aria-hidden="true">🍽️</span>Deiger
