@@ -1928,6 +1928,27 @@ def run_behavioral_tests(page):
             and r42['no']['pcOvn']==['Pizzaovn (430–450°C)','Vanlig ovn (maks 250°C)'])
     results.append(('yeast_machine_oven_pills_localized_pc_oven_keeps_temp', ok42, r42))
 
+    # v0.650: guidet flyt i Smart-plan-velgeren. «Neste» felt lyser opp (is-active),
+    # tatt felt får is-done, og «Finn oppskriften» går fra dempet (--forno-border)
+    # til aksent (--forno-accent) når begge er tatt: klokke → dato → knapp.
+    r43 = page.evaluate("""() => {
+      const tf=document.getElementById('mob-beta-et-field'), df=document.getElementById('mob-beta-ed-field'), btn=document.getElementById('mob-beta-search-btn');
+      if(!tf||!df||!btn) return {missing:true};
+      window._betaTouched={time:false,date:false}; betaUpdateGuide();
+      const st=()=>({tA:tf.classList.contains('is-active'),tD:tf.classList.contains('is-done'),
+                     dA:df.classList.contains('is-active'),dD:df.classList.contains('is-done'),
+                     bg:btn.style.background});
+      const s0=st();
+      betaTouch('time'); const s1=st();
+      betaTouch('date'); const s2=st();
+      window._betaTouched={time:false,date:false}; betaUpdateGuide();
+      return {s0,s1,s2};
+    }""")
+    ok43 = (r43.get('s0',{}).get('tA') is True and r43['s0']['dA'] is False and 'border' in r43['s0']['bg']
+            and r43['s1']['tD'] is True and r43['s1']['dA'] is True and r43['s1']['tA'] is False
+            and r43['s2']['tD'] is True and r43['s2']['dD'] is True and 'accent' in r43['s2']['bg'])
+    results.append(('smartplan_guided_flow_highlights_next_step_then_lights_button', ok43, r43))
+
 
 
 

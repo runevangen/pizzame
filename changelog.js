@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.650',
+    d: 'august 2026',
+    changes: [
+      'Smart-plan-velgeren leder deg nå gjennom flyten: klokke-kortet lyser opp med «👆 Trykk her», får en ✓ når du har satt det, og uthevingen flytter seg til dato-kortet. «Finn oppskriften» lyser opp når begge er satt. (Du kan fortsatt trykke rett på knappen — standardene virker.)'
+    ]
+  },
+  {
     v: '0.649',
     d: 'august 2026',
     changes: [
