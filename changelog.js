@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.655',
+    d: 'august 2026',
+    changes: [
+      'Tidsplan er nå «tom» når du åpner appen uten å ha gjort et valg — i stedet for å vise en default-plan du aldri valgte. Det tomme feltet forklarer og guider deg til de to inngangene: Smart-plan og Planlegg selv. Planen fylles så snart du fullfører Planlegging, bruker Smart-plan eller åpner en lagret deig.'
+    ]
+  },
+  {
     v: '0.654',
     d: 'august 2026',
     changes: [

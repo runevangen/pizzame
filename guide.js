@@ -26,7 +26,7 @@ const GUIDE = [
         '<b>🧭 Smart-plan</b> — «Finn oppskrift»: oppgi ledig tid, få en anbefalt metode tilbake.',
         '<b>☰ Mer</b> — dine lagrede <b>🍽️ Deiger</b> (øverst, med notater), pluss visning, hjelp, denne bruksanvisningen og «Hva er nytt».'
       ]},
-      {t:'smart', x:'Du kan gå fritt fram og tilbake i planleggingen — <b>📅 Tidsplan</b> viser alltid resultatet av gjeldende valg. Ingenting «låses» før du vil.'}
+      {t:'smart', x:'Du kan gå fritt fram og tilbake i planleggingen — <b>📅 Tidsplan</b> viser alltid resultatet av gjeldende valg. Har du ikke valgt noe ennå, står den <b>tom</b> og peker deg til Smart-plan eller Planlegg selv. Ingenting «låses» før du vil.'}
     ]
   },
 
@@ -271,7 +271,7 @@ const GUIDE_EN = [
         '<b>🧭 Smart plan</b> — "Find recipe": enter your available time, get a recommended method back.',
         '<b>☰ More</b> — your saved <b>🍽️ Doughs</b> (at the top, with their notes), plus display, help, this user manual and "What\'s new".'
       ]},
-      {t:'smart', x:'You can move freely back and forth in the planning — <b>📅 Schedule</b> always shows the result of your current choices. Nothing is "locked" until you want it to be.'}
+      {t:'smart', x:'You can move freely back and forth in the planning — <b>📅 Schedule</b> always shows the result of your current choices. If you have not chosen anything yet, it stays <b>empty</b> and points you to Smart plan or Plan it yourself. Nothing is "locked" until you want it to be.'}
     ]
   },
 

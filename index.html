@@ -1066,8 +1066,8 @@ function syncStaticI18nUI(){
   st('mob-plan-seg-schedule-lbl','Tidsplan','Schedule');
   st('mob-plan-seg-recipe-lbl','Oppskrift','Recipe');
   // Plan / recipe / bakster placeholders
-  st('mob-plan-empty','Tilpass innstillingene og se tidsplanen her','Adjust the settings and see the schedule here');
-  st('mob-recipe-empty','Generer tidsplan for å se oppskriften','Generate a schedule to see the recipe');
+  st('mob-plan-empty','Ingen tidsplan ennå','No schedule yet');
+  st('mob-recipe-empty','Lag en tidsplan for å se oppskriften','Make a schedule to see the recipe');
   st('mob-bakster-empty','Laster deiger…','Loading doughs…');
   st('mob-mer-deiger-lbl','🍽️ Deiger','🍽️ Doughs');
   // Inngangs-gaffel (v6.21)
@@ -3431,6 +3431,7 @@ function applyBetaResult(regId,altIdx){
   const pad=n=>String(n).padStart(2,'0');
   const dateStr=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const timeStr=pad(d.getHours())+':'+pad(d.getMinutes());
+  window._planChosen = true;  // v0.655: brukt Smart-plan teller som valg
   mobShowTab('settings');
   wizGoto(2, ()=>{
     mobMethodCards();
@@ -5200,6 +5201,7 @@ async function loadConfigThenStart(){
     // «Fortsetter»-banneret og alle kontroller reflekterer det du hadde.
     const restored = restoreSetup();
     window._restoredSetup = restored;  // v6.21: inngangs-gaffelen hopper over hvis et oppsett er i gang
+    if(restored) window._planChosen = true;  // v0.655: gjenopprettet oppsett = et reelt valg, vis planen (ikke tomt-state)
     let savedLayout=null; try{ savedLayout=localStorage.getItem('pizzaLayout'); }catch(e){}
     const targetLayout = savedLayout || (window.innerWidth<768?'mob':'pc');
     setLayout(targetLayout);
@@ -5866,6 +5868,7 @@ function wizBack(){
   if(window._wizStep > 1) wizGoto(window._wizStep-1);
 }
 function wizFinish(){
+  window._planChosen = true;  // v0.655: fullført Planlegging teller som valg
   mobShowTab('plan');
 }
 
@@ -6120,6 +6123,44 @@ function renderWizStatusBar(){
     if(el) el.innerHTML=html;
   });
 }
+// v0.655: Tomt Tidsplan-state med to tydelige innganger. Vises til brukeren
+// har gjort et reelt valg (window._planChosen). Speiler inngangs-gaffelen:
+// Smart-plan (finn metode ut fra ledig tid) + Planlegg selv (wizarden).
+function renderPlanEmptyState(){
+  window._steps=null;
+  const host=document.getElementById('mob-plan-content');
+  if(host){
+    host.innerHTML=`<div class="mob-content" style="padding-top:1.6rem">
+      <div style="text-align:center;max-width:340px;margin:0 auto">
+        <div style="font-size:40px;line-height:1">🍕</div>
+        <div id="mob-plan-empty" style="font-size:17px;font-weight:700;margin-top:10px;color:var(--forno-text,#3f2d10);font-family:var(--forno-font-display,inherit)">${L('Ingen tidsplan ennå','No schedule yet')}</div>
+        <div style="font-size:13px;color:var(--forno-text-faint,#6d5a3a);margin-top:5px;line-height:1.45">${L('Gjør et valg, så regner vi ut planen din — time for time.','Make a choice and we’ll work out your schedule — hour by hour.')}</div>
+      </div>
+      <div style="max-width:340px;margin:1.4rem auto 0">
+        <button onclick="mobShowTab('beta')" style="display:block;width:100%;text-align:left;padding:15px 16px;margin-bottom:11px;border:1px solid var(--forno-border);border-radius:14px;background:var(--forno-bg-raised);cursor:pointer">
+          <div style="display:flex;align-items:center;gap:11px">
+            <span style="font-size:23px">🧭</span>
+            <span>
+              <span style="display:block;font-size:15px;font-weight:700;color:var(--forno-text)">${L('Smart-plan','Smart plan')}</span>
+              <span style="display:block;font-size:12px;color:var(--forno-text-faint,#6d5a3a);margin-top:1px">${L('Finn en metode som passer tida di','Find a method that fits your free time')}</span>
+            </span>
+          </div>
+        </button>
+        <button onclick="mobShowTab('settings')" style="display:block;width:100%;text-align:left;padding:15px 16px;border:1px solid var(--forno-border);border-radius:14px;background:var(--forno-bg-raised);cursor:pointer">
+          <div style="display:flex;align-items:center;gap:11px">
+            <span style="font-size:23px">📅</span>
+            <span>
+              <span style="display:block;font-size:15px;font-weight:700;color:var(--forno-text)">${L('Planlegg selv','Plan it yourself')}</span>
+              <span style="display:block;font-size:12px;color:var(--forno-text-faint,#6d5a3a);margin-top:1px">${L('Velg metode og når du vil spise','Pick a method and when you want to eat')}</span>
+            </span>
+          </div>
+        </button>
+      </div>
+    </div>`;
+  }
+  const rec=document.getElementById('mob-recipe-content');
+  if(rec) rec.innerHTML=`<p id="mob-recipe-empty" style="color:var(--forno-text-faint,#6d5a3a);font-size:13px;text-align:center;padding-top:1.2rem">${L('Lag en tidsplan for å se oppskriften','Make a schedule to see the recipe')}</p>`;
+}
 function mobGen(){
   const mobEl=document.getElementById('mob-layout');
   if(!mobEl||!mobEl.classList.contains('active'))return;
@@ -6127,6 +6168,11 @@ function mobGen(){
   renderWizStatusBar();
   try{ renderReturnBar(); }catch(e){}
   if(window._wizStep===3){ try{ wizCheckRender(); }catch(e){} }
+  // v0.655: Tidsplan er «tom» helt til brukeren har gjort et reelt valg —
+  // fullført Planlegging, brukt Smart-plan, eller åpnet en lagret deig. Uten
+  // dette tegnet appen en default-plan (Napoletansk) man aldri hadde valgt, som
+  // så ut som «din plan». Nå guider vi i stedet til de to inngangene.
+  if(!window._planChosen){ renderPlanEmptyState(); return; }
   const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
 
   if(S.type!=='ingenelting' && S.method==='hurtig'){
@@ -6594,6 +6640,7 @@ function openBake(id){
   // deres id (så «Lagre deig» lager en ny, privat deig i stedet for å overskrive
   // en du ikke eier). Egne/eldre deiger redigeres som før.
   const mine = bakeIsMine(b);
+  window._planChosen = true;  // v0.655: åpnet en lagret deig = et reelt valg
   window._activeDeigId = mine ? id : null;
   window._activeDeigName = mine ? b.name : null;
   window._checked = new Set(Array.isArray(b.checkedSteps) ? b.checkedSteps : []);
@@ -6780,11 +6827,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-plan-seg-schedule" class="mob-plan-seg on" onclick="showPlanSub('schedule')">📅 <span id="mob-plan-seg-schedule-lbl">Tidsplan</span></div>
       <div id="mob-plan-seg-recipe" class="mob-plan-seg" onclick="showPlanSub('recipe')">🍕 <span id="mob-plan-seg-recipe-lbl">Oppskrift</span></div>
     </div>
-    <div id="mob-plan-content">
-      <div class="mob-content" style="padding-top:.75rem;text-align:center;color:#aaa;font-size:13px">
-        <p id="mob-plan-empty">Tilpass innstillingene og se tidsplanen her</p>
-      </div>
-    </div>
+    <div id="mob-plan-content"></div>
     <div class="mob-content" id="mob-recipe-content" style="display:none">
       <p id="mob-recipe-empty" style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se oppskriften</p>
     </div>
