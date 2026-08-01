@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.662",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Alle varsler har nå en tydelig «Ignorer»-knapp i stedet for en diskré liten ✕ — samme handling (skjul varselet), men mye lettere å se. Smart-plan-varslene, som manglet den helt, har fått den også. Skillet består: du kan skjule et varsel om en fysisk grense (mel, overfermentering), men det får ikke en «det går bra likevel»-godkjenning som ville tilslørt et ekte kvalitetsproblem."
+    ],
+    "changes_en": [
+      "Every warning now has a clear \"Ignore\" button instead of a discreet little ✕ — same action (hide the warning), but much easier to spot. The Smart plan warnings, which had none at all, got it too. The distinction stands: you can hide a warning about a physical limit (flour, over-fermentation), but it does not get an \"it's fine anyway\" acceptance that would mask a real quality problem."
+    ]
+  },
+  {
     "v": "0.661",
     "d": "august 2026",
     "d_en": "August 2026",

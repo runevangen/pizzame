@@ -346,9 +346,11 @@ body.mob-mode .mob-daylbl.today .ddot{background:var(--forno-accent);box-shadow:
 
 /* mob settings */
 .warn-dismiss-wrap{position:relative}
-.warn-dismiss-wrap > div > div:first-child{padding-right:26px}
-.warn-dismiss-btn{position:absolute;top:5px;right:6px;width:26px;height:26px;line-height:26px;text-align:center;padding:0;border:none;border-radius:6px;background:transparent;color:#8a5a00;font-size:15px;font-weight:700;cursor:pointer;opacity:.65}
-.warn-dismiss-btn:hover{opacity:1;background:rgba(138,90,0,.10)}
+.warn-dismiss-wrap > div > div:first-child{padding-right:74px}
+/* v0.662: tydelig «Ignorer»-knapp i stedet for en diskré ✕ — samme handling
+   (skjul varselet), men leselig som en faktisk knapp. */
+.warn-dismiss-btn{position:absolute;top:6px;right:7px;padding:3px 10px;border:1px solid rgba(138,90,0,.32);border-radius:999px;background:rgba(255,255,255,.55);color:#8a5a00;font-size:11px;font-weight:700;cursor:pointer;line-height:1.5;font-family:inherit;white-space:nowrap}
+.warn-dismiss-btn:hover{background:#fff;border-color:rgba(138,90,0,.5)}
 .mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
 .wiz-qhead{display:flex;align-items:center;gap:7px;padding:.65rem 1rem .3rem}
 .wiz-qnum{width:18px;height:18px;border-radius:50%;background:#e8590c;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -3440,8 +3442,11 @@ function renderResultBlock(containerId, label, anchorIso){
   let startTxt='', bakeTxt='';
   try{ startTxt=fDT(new Date(top.startIso)); }catch(e){}
   try{ bakeTxt=fDT(new Date(top.bakeIso)); }catch(e){}
+  // v0.662: Smart-plan-varselet får sin egen «Ignorer» (fyller hullet fra
+  // varsel-debatten). Det bor i beta-panelet, ikke i tidsplanen, og re-rendres
+  // kun ved et nytt søk — så en enkel «skjul denne» holder; ingen persistering.
   const tooLateWarning = !top.feasible
-    ? `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:7px 9px;margin-bottom:6px;font-size:11px;color:#633806">${L('⏱️ Ingen kombinasjon rekker fra akkurat nå — denne krever oppstart som allerede er passert. Vurder et senere spisetidspunkt.','⏱️ No combination fits starting right now — this one requires a start time that has already passed. Consider a later eating time.')}</div>`
+    ? `<div data-smartwarn style="position:relative;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:7px 74px 7px 9px;margin-bottom:6px;font-size:11px;color:#633806">${L('⏱️ Ingen kombinasjon rekker fra akkurat nå — denne krever oppstart som allerede er passert. Vurder et senere spisetidspunkt.','⏱️ No combination fits starting right now — this one requires a start time that has already passed. Consider a later eating time.')}<button onclick="this.closest('[data-smartwarn]').style.display='none'" title="${L('Ignorer dette varselet','Ignore this warning')}" aria-label="${L('Ignorer dette varselet','Ignore this warning')}" style="position:absolute;top:6px;right:7px;padding:3px 10px;border:1px solid rgba(138,90,0,.32);border-radius:999px;background:rgba(255,255,255,.55);color:#8a5a00;font-size:11px;font-weight:700;cursor:pointer;line-height:1.5;font-family:inherit;white-space:nowrap">${L('Ignorer','Ignore')}</button></div>`
     : '';
   el.innerHTML=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:10px;margin-top:6px">
     ${tooLateWarning}
@@ -3687,7 +3692,7 @@ function warningWrapHTML(keySource, innerHTML){
   if(_warnShowAll) return innerHTML;
   const k=warnKey(keySource);
   if(_dismissedWarnings.has(k)) return '';
-  return `<div class="warn-dismiss-wrap">${innerHTML}<button class="warn-dismiss-btn" onclick="dismissWarning('${k}')" title="${L('Skjul dette varselet','Hide this warning')}" aria-label="${L('Skjul dette varselet','Hide this warning')}">✕</button></div>`;
+  return `<div class="warn-dismiss-wrap">${innerHTML}<button class="warn-dismiss-btn" onclick="dismissWarning('${k}')" title="${L('Ignorer dette varselet','Ignore this warning')}" aria-label="${L('Ignorer dette varselet','Ignore this warning')}">${L('Ignorer','Ignore')}</button></div>`;
 }
 function meltypeWarningHTML(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
