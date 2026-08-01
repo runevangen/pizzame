@@ -1998,6 +1998,47 @@ def run_behavioral_tests(page):
     ok45 = (r45.get('noTop')=='Kveldsdeig' and r45.get('enTop')=='Evening dough')
     results.append(('smartplan_method_suggestion_labels_localized', ok45, r45))
 
+    # v0.655: Tidsplan er «tom» til brukeren har gjort et reelt valg. Uten et valg
+    # (window._planChosen falsy) tegner mobGen et guide-tomt-state med to innganger
+    # (Smart-plan → beta, Planlegg selv → settings) i stedet for en default-plan.
+    # Fullført valg (f.eks. wizFinish) fyller planen med faktiske steg.
+    r46 = page.evaluate("""() => {
+      const _lang=window._lang, _chosen=window._planChosen, _step=window._steps;
+      try{
+        // (a) ikke valgt → tomt state, ingen default-plan, _steps nullstilt
+        window._planChosen=false;
+        window._lang='no';
+        mobShowTab('plan');
+        const html=document.getElementById('mob-plan-content').innerHTML;
+        const emptyShown = !!document.getElementById('mob-plan-empty');
+        const linksToBeta = html.includes("mobShowTab('beta')");
+        const linksToSettings = html.includes("mobShowTab('settings')");
+        const stepsCleared = window._steps===null;
+        const gateInGen = mobGen.toString().includes('_planChosen');
+        // (b) språktilpasset tomt state
+        window._lang='en'; mobGen();
+        const enEmpty = (document.getElementById('mob-plan-empty')||{}).textContent||'';
+        // (c) fullført valg → faktisk plan, tomt-state borte
+        window._lang='no';
+        window._planChosen=true;
+        mobGen();
+        const planFilled = !document.getElementById('mob-plan-empty')
+          && document.getElementById('mob-plan-content').innerHTML.length > 200
+          && Array.isArray(window._steps) && window._steps.length>0;
+        // (d) wizFinish setter flagget
+        window._planChosen=false;
+        wizFinish();
+        const finishSetsChosen = window._planChosen===true;
+        return {emptyShown, linksToBeta, linksToSettings, stepsCleared, gateInGen, enEmpty, planFilled, finishSetsChosen};
+      } finally {
+        window._lang=_lang; window._planChosen=_chosen; window._steps=_step;
+      }
+    }""")
+    ok46 = (r46.get('emptyShown') and r46.get('linksToBeta') and r46.get('linksToSettings')
+            and r46.get('stepsCleared') and r46.get('gateInGen')
+            and 'No schedule yet' in r46.get('enEmpty','')
+            and r46.get('planFilled') and r46.get('finishSetsChosen'))
+    results.append(('tidsplan_empty_until_choice_then_guides_to_two_entries', ok46, r46))
 
 
 
@@ -2080,6 +2121,11 @@ def main():
         page.goto(f"http://localhost:{port}/{os.path.basename(index_path)}")
         page.wait_for_timeout(1200)
         page.evaluate("document.getElementById('guide-modal') && (document.getElementById('guide-modal').style.display='none')")
+        # v0.655: atferds- og render-testene representerer en bruker som HAR gjort
+        # et valg (plan er generert). Uten et valg viser Tidsplan nå et tomt guide-
+        # state i stedet for en default-plan. Det tomme staten testes eksplisitt i
+        # r46 (som selv veksler flagget), så her setter vi «valgt» globalt.
+        page.evaluate("window._planChosen=true")
 
         # v5.88: REELL BUG — en unterminert JS-streng i changelog.js (manglet
         # avsluttende ') brakk parsingen av HELE filen. Siden changelog.js
