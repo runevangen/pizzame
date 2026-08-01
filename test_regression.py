@@ -2109,6 +2109,32 @@ def run_behavioral_tests(page):
             and r49.get('shown') and r49.get('hasLatest') and r49.get('closes'))
     results.append(('version_number_clickable_opens_changelog', ok49, r49))
 
+    # v0.659: kjøleskaps-spaken gikk til 144t, men det sterkeste melet (Manitoba
+    # Oro) er ratet for maks 78t — ingen mel tåler mer. Spaken er kappet ved 78t
+    # (COLD_MAX), som matcher det sterkeste melets ferm.mx. Eldre oppsett med en
+    # høyere verdi klampes ned ved restore, og steg-knappen stopper på 78.
+    r50 = page.evaluate("""() => {
+      const _cold=S.cold, _saved=null;
+      try{
+        const pcMax=document.getElementById('csl').getAttribute('max');
+        const mobMax=document.getElementById('mob-csl').getAttribute('max');
+        const strongestFerm=Math.max(...MELTYPER.map(m=>m.ferm.mx));
+        const capMatchesStrongest = (COLD_MAX===strongestFerm) && pcMax==='78' && mobMax==='78';
+        // steg-knappen klamper ved COLD_MAX
+        S.cold=78; stepColdWiz(1); const stepClamped=S.cold;
+        // restore klamper ned et eldre, for høyt oppsett
+        const orig=localStorage.getItem('pizzaSetup');
+        localStorage.setItem('pizzaSetup', JSON.stringify({cold:144}));
+        restoreSetup(); const restoreClamped=S.cold;
+        if(orig===null) localStorage.removeItem('pizzaSetup'); else localStorage.setItem('pizzaSetup',orig);
+        return {pcMax, mobMax, strongestFerm, COLD_MAX, capMatchesStrongest, stepClamped, restoreClamped};
+      } finally { S.cold=_cold; }
+    }""")
+    ok50 = (r50.get('capMatchesStrongest') and r50.get('COLD_MAX')==78
+            and r50.get('strongestFerm')==78 and r50.get('stepClamped')==78
+            and r50.get('restoreClamped')==78)
+    results.append(('cold_ferment_slider_capped_at_strongest_flour_78h', ok50, r50))
+
     return results
 
 

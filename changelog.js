@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.659',
+    d: 'august 2026',
+    changes: [
+      'Kappet kjøleskaps-spaken ved 78 timer (var 144t). Det sterkeste melet i appen, Caputo Manitoba Oro, er ratet for 24–78t — ingen mel tåler mer, så spaken lovet før noe ingen deig kunne innfri. Eldre oppsett med lengre heving justeres automatisk ned til 78t.'
+    ]
+  },
+  {
     v: '0.658',
     d: 'august 2026',
     changes: [
