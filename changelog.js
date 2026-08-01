@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.658',
+    d: 'august 2026',
+    changes: [
+      'Versjonsnummeret øverst er nå klikkbart — trykk det for å åpne «Hva er nytt» og se endringsloggen. (Fungerte fra før via PC-stempelet og «Hva er nytt» nederst i Mer.)'
+    ]
+  },
+  {
     v: '0.657',
     d: 'august 2026',
     changes: [

@@ -2085,6 +2085,30 @@ def run_behavioral_tests(page):
             and r48.get('jumpStillExists') and r48.get('badgeWorks') and r48.get('badgeHides'))
     results.append(('mobile_deiger_topbar_icon_removed_mer_badge_is_single_entry', ok48, r48))
 
+    # v0.658: versjonsnummeret i topplinja (mob-name-version) er klikkbart og
+    # åpner «Hva er nytt»-endringsloggen. Klikket må stoppe propagering så det
+    # ikke også utløser topplinje-tittelens goToEntryFork. Modalen skal fylles
+    # med CHANGELOG-innhold og vises.
+    r49 = page.evaluate("""() => {
+      const ver=document.getElementById('mob-name-version');
+      const wiredToChangelog = !!ver && (ver.getAttribute('onclick')||'').includes('openChangelogModal');
+      const stopsProp = !!ver && (ver.getAttribute('onclick')||'').includes('stopPropagation');
+      const isButton = !!ver && ver.getAttribute('role')==='button' && ver.getAttribute('tabindex')==='0';
+      // åpne modalen og sjekk at den fylles + vises
+      closeChangelogModal();
+      openChangelogModal();
+      const modal=document.getElementById('changelog-modal');
+      const body=document.getElementById('changelog-modal-body');
+      const shown = !!modal && modal.style.display==='flex';
+      const hasLatest = !!body && body.innerHTML.includes('v'+CHANGELOG[0].v);
+      closeChangelogModal();
+      const closes = !!modal && modal.style.display==='none';
+      return {wiredToChangelog, stopsProp, isButton, shown, hasLatest, closes};
+    }""")
+    ok49 = (r49.get('wiredToChangelog') and r49.get('stopsProp') and r49.get('isButton')
+            and r49.get('shown') and r49.get('hasLatest') and r49.get('closes'))
+    results.append(('version_number_clickable_opens_changelog', ok49, r49))
+
     return results
 
 
