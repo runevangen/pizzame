@@ -3113,6 +3113,9 @@ function searchAllMethods(anchor){
   S.mode='end';
   S.poolishPauseH=0;
   const candidates=[];
+  // Sterkeste melets tak (Manitoba Oro = 78t). Over dette finnes ingen deig noe
+  // mel tåler — det var kilden til «~145t / No registered flour covers this».
+  const flourMax=Math.max(...MELTYPER.map(m=>m.ferm.mx));
   function timesOf(steps){
     const firstActive=steps.find(s=>!s.passive)||steps[0];
     const last=steps[steps.length-1];
@@ -3121,8 +3124,14 @@ function searchAllMethods(anchor){
     return {startIso:startAt.toISOString(), bakeIso:bakeAt.toISOString()};
   }
   function evalCombo(label, snapshot){
+    // v0.661: kapp bare den LANGE enden — over det sterkeste melets tak (78t)
+    // finnes ingen deig noe mel tåler (kilden til ~145t-forslaget). Korte deiger
+    // (under melenes anbefalte minimum) er greie: der er «mel som passer» en
+    // smaks-anbefaling, ikke en fysisk grense, så dem beholder vi.
+    const total=totalFermentHours();
+    if(total>flourMax) return;
     const steps=rawSteps(anchor);
-    candidates.push({label, violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{...snapshot}, ...timesOf(steps)});
+    candidates.push({label, violations:scorePizzatidWindows(steps), totalHrs:total, snapshot:{...snapshot}, ...timesOf(steps)});
   }
   // Langtidsdeig (tidligere "Standard")
   S.method='standard';
@@ -3159,9 +3168,20 @@ function searchAllMethods(anchor){
   // annet finnes (så resultatet i det minste er ærlig, ikke tomt).
   const now=Date.now();
   const feasible=candidates.filter(c=>new Date(c.startIso).getTime()>=now);
+  const usingFallback=!feasible.length;
   const pool=feasible.length ? feasible : candidates;
   pool.forEach(c=>{ c.feasible=new Date(c.startIso).getTime()>=now; });
-  pool.sort((a,b)=> a.violations!==b.violations ? a.violations-b.violations : b.totalHrs-a.totalHrs);
+  // Normalt: færrest tidskonflikter, deretter lengst gjæring (best smak).
+  // v0.661: MEN når ingenting kan starte nå (alle umulige), er «lengst gjæring»
+  // helt feil tiebreak — den løftet en flere-døgns deig som skulle startet for
+  // lenge siden helt til topps. Ranger heller de umulige etter hvilken som
+  // starter NÆRMEST nå (senest starttid), altså den mest gjennomførbare — typisk
+  // en kort deig — så forslaget er ærlig og nyttig, ikke en fortidsdeig.
+  pool.sort((a,b)=>{
+    if(a.violations!==b.violations) return a.violations-b.violations;
+    if(usingFallback) return new Date(b.startIso).getTime()-new Date(a.startIso).getTime();
+    return b.totalHrs-a.totalHrs;
+  });
   return pool;
 }
 // Mel varieres ikke i søket — i stedet: hvilke registrerte meltyper tolererer
@@ -3400,7 +3420,16 @@ function renderResultBlock(containerId, label, anchorIso){
   const top=results[0];
   const ok=top.violations===0;
   const flours=flourMatchesForHours(top.totalHrs);
-  const flourTxt=flours.length ? flours.slice(0,3).join(', ')+(flours.length>3?L(' m.fl.',' & more'):'') : L('Ingen registrert meltype dekker dette','No registered flour type covers this');
+  // v0.661: tom liste kan bety to ting. Under melenes minimum (kort deig) tåler
+  // ALLE mel den fint — det er bare en rask deig. Over taket (skal ikke skje nå
+  // som søket kapper ved 78t) finnes intet mel. Ikke skrem med «ingen mel» for
+  // en helt grei hurtigdeig.
+  const flourMin=Math.min(...MELTYPER.map(m=>m.ferm.mn));
+  const flourTxt=flours.length
+    ? flours.slice(0,3).join(', ')+(flours.length>3?L(' m.fl.',' & more'):'')
+    : (top.totalHrs<flourMin
+        ? L('Alle mel passer (rask deig)','Any flour works (quick dough)')
+        : L('Ingen registrert meltype dekker dette','No registered flour type covers this'));
   const altList=results.slice(1,3).map((c,i)=>`
       <div onclick="applyBetaResult(${regId},${i+1})" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;background:var(--forno-bg);margin-top:4px;cursor:pointer">
         <span style="font-size:11.5px;color:var(--forno-text)">${escH(c.label)}</span>

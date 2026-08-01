@@ -2159,6 +2159,38 @@ def run_behavioral_tests(page):
             and r51.get('enShowsEnglish') and r51.get('noShowsNorwegian') and r51.get('langAware'))
     results.append(('changelog_is_bilingual_and_language_aware', ok51, r51))
 
+    # v0.661: Smart-plan foreslo umulige deiger. Scenario: kl. 18:18, bake kl.
+    # 19:00 samme dag (~1t fram) → ingen deig kan startes nå. Før: en ~145t
+    # poolish som skulle startet 6 dager siden havnet øverst med grønn ✅, og
+    # «No registered flour covers this». Nå: (a) ingen kandidat overstiger det
+    # sterkeste melet (alle har et dekkende mel), og (b) når alt er umulig, står
+    # den som starter NÆRMEST nå øverst — ikke den lengste fortidsdeigen.
+    r52 = page.evaluate("""() => {
+      const _lang=window._lang, realNow=Date.now;
+      Date.now=()=>new Date(2026,7,1,18,18,0).getTime();
+      try{
+        if(!window._pizzatidSchedule) window._pizzatidSchedule=defaultPizzatidSchedule();
+        const anchor=new Date(2026,7,1,19,0,0);
+        const pool=searchAllMethods(anchor);
+        const top=pool[0];
+        const flourMax=Math.max(...MELTYPER.map(m=>m.ferm.mx));
+        // fix (a): ingen kandidat overstiger sterkeste mel (78t) — dreper 145t-bugen
+        const noneExceedFlourMax=pool.every(c=>c.totalHrs<=flourMax);
+        // fix (b): blant kandidatene med færrest konflikter starter toppen nærmest nå
+        const minViol=top.violations;
+        const sameViol=pool.filter(c=>c.violations===minViol);
+        const topStart=new Date(top.startIso).getTime();
+        const topStartsClosest=sameViol.every(c=>new Date(c.startIso).getTime()<=topStart);
+        const guardWired=searchAllMethods.toString().includes('flourMax') && searchAllMethods.toString().includes('usingFallback');
+        // kort deig får «alle mel passer», ikke skremmende «ingen mel dekker»
+        const shortMsgFixed=renderResultBlock.toString().includes('Any flour works');
+        return {count:pool.length, noneExceedFlourMax, topStartsClosest, guardWired, shortMsgFixed, topHrs:Math.round(top.totalHrs)};
+      } finally { Date.now=realNow; window._lang=_lang; }
+    }""")
+    ok52 = (r52.get('noneExceedFlourMax') and r52.get('topStartsClosest')
+            and r52.get('guardWired') and r52.get('shortMsgFixed'))
+    results.append(('smartplan_never_suggests_flourless_or_past_start_combos', ok52, r52))
+
     return results
 
 
