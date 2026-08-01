@@ -1038,6 +1038,9 @@ function syncStaticI18nUI(){
   at('mob-topbar-title','title','Til startvalget','Back to start choices');
   at('mob-active-deiger-btn','title','Mine deiger','My doughs');
   at('mob-pc-toggle','title','Bytt til PC-visning','Switch to desktop view');
+  // Pizzatype-piller på PC: oversett etiketten per data-v (mobilen gjør det i
+  // mobPillGroup). «Ingen elting» → «No-knead», «Langpanne» → «Sheet pan» osv.
+  document.querySelectorAll('#gtype .pill').forEach(p=>{ const v=p.dataset.v; if(v) p.textContent=tnShort(v); });
   // Tidsplan/Oppskrift-veksler (v6.33)
   st('mob-plan-seg-schedule-lbl','Tidsplan','Schedule');
   st('mob-plan-seg-recipe-lbl','Oppskrift','Recipe');
@@ -5264,7 +5267,9 @@ function mobPillGroup(id,key){
     const el=document.createElement('span');
     const on=S[key]===v;
     el.className='pill'+(on?' on':'');
-    el.textContent=t;
+    // Pizzatype har språktilpassede navn (tnShort) — «Ingen elting» → «No-knead»,
+    // «Langpanne» → «Sheet pan» osv. Øvrige grupper viser sin faste etikett.
+    el.textContent = key==='type' ? tnShort(v) : t;
     if(isSeg){
       el.style.cssText='position:relative;flex:1;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:'+(on?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(on?'var(--forno-bg-raised,#fff)':'transparent')+';color:'+(on?'var(--forno-accent-text,#e8590c)':'var(--dyn-text)')+';border:'+(on?'2px solid var(--forno-accent)':'1px solid transparent');
     }else{

@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.648',
+    d: 'august 2026',
+    changes: [
+      'Pizzatype-knappene var på norsk også i engelsk modus. Nå oversettes de: «Ingen elting» → «No-knead», «Langpanne» → «Sheet pan», «Napoletansk» → «Neapolitan» (både mobil og PC).'
+    ]
+  },
+  {
     v: '0.647',
     d: 'august 2026',
     changes: [
