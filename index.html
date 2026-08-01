@@ -1038,9 +1038,13 @@ function syncStaticI18nUI(){
   at('mob-topbar-title','title','Til startvalget','Back to start choices');
   at('mob-active-deiger-btn','title','Mine deiger','My doughs');
   at('mob-pc-toggle','title','Bytt til PC-visning','Switch to desktop view');
-  // Pizzatype-piller på PC: oversett etiketten per data-v (mobilen gjør det i
-  // mobPillGroup). «Ingen elting» → «No-knead», «Langpanne» → «Sheet pan» osv.
+  // Velger-piller på PC: oversett etiketten per data-v (mobilen gjør det i
+  // mobPillGroup). Pizzatype via tnShort; øvrige grupper med egne engelske navn.
   document.querySelectorAll('#gtype .pill').forEach(p=>{ const v=p.dataset.v; if(v) p.textContent=tnShort(v); });
+  const setPCPills=(sel,map)=>document.querySelectorAll(sel).forEach(p=>{ const m=map[p.dataset.v]; if(m) p.textContent=L(m[0],m[1]); });
+  setPCPills('#ggj .pill',{torr:['Tørrgjær','Dry yeast'],fersk:['Fersk gjær','Fresh yeast']});
+  setPCPills('#gkm .pill',{ankarsrum:['Ankarsrum','Ankarsrum'],manuell:['Manuell elting','Manual kneading'],annen:['Annen maskin','Other machine']});
+  setPCPills('#govn .pill',{pizza:['Pizzaovn (430–450°C)','Pizza oven (430–450°C)'],vanlig:['Vanlig ovn (maks 250°C)','Regular oven (max 250°C)']});
   // Tidsplan/Oppskrift-veksler (v6.33)
   st('mob-plan-seg-schedule-lbl','Tidsplan','Schedule');
   st('mob-plan-seg-recipe-lbl','Oppskrift','Recipe');
@@ -5244,9 +5248,9 @@ function mobPillGroup(id,key){
   wrap.innerHTML='';
   const vals={
     type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'},{v:'ingenelting',t:'Ingen elting'}],
-    gjaer:[{v:'torr',t:'Tørrgjær'},{v:'fersk',t:'Fersk gjær'}],
-    kjokkenmaskin:[{v:'ankarsrum',t:'Ankarsrum'},{v:'manuell',t:'Manuell elting'},{v:'annen',t:'Annen maskin'}],
-    oven:[{v:'pizza',t:'Pizzaovn'},{v:'vanlig',t:'Vanlig ovn'}]
+    gjaer:[{v:'torr',t:'Tørrgjær',e:'Dry yeast'},{v:'fersk',t:'Fersk gjær',e:'Fresh yeast'}],
+    kjokkenmaskin:[{v:'ankarsrum',t:'Ankarsrum',e:'Ankarsrum'},{v:'manuell',t:'Manuell elting',e:'Manual kneading'},{v:'annen',t:'Annen maskin',e:'Other machine'}],
+    oven:[{v:'pizza',t:'Pizzaovn',e:'Pizza oven'},{v:'vanlig',t:'Vanlig ovn',e:'Regular oven'}]
   }[key]||[];
   const isSeg = key==='gjaer' || key==='kjokkenmaskin' || key==='oven';
   wrap.classList.toggle('mob-segctrl', isSeg);
@@ -5263,13 +5267,13 @@ function mobPillGroup(id,key){
   }
   const hintEl=document.getElementById(id+'-hint');
   if(hintEl) hintEl.style.display=nothingChosen?'block':'none';
-  vals.forEach(({v,t})=>{
+  vals.forEach(({v,t,e})=>{
     const el=document.createElement('span');
     const on=S[key]===v;
     el.className='pill'+(on?' on':'');
-    // Pizzatype har språktilpassede navn (tnShort) — «Ingen elting» → «No-knead»,
-    // «Langpanne» → «Sheet pan» osv. Øvrige grupper viser sin faste etikett.
-    el.textContent = key==='type' ? tnShort(v) : t;
+    // Pizzatype bruker tnShort; øvrige grupper har egne engelske etiketter (e).
+    // «Ingen elting»→«No-knead», «Tørrgjær»→«Dry yeast», «Pizzaovn»→«Pizza oven» …
+    el.textContent = key==='type' ? tnShort(v) : ((window._lang==='en' && e) ? e : t);
     if(isSeg){
       el.style.cssText='position:relative;flex:1;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:'+(on?'600':'500')+';cursor:pointer;white-space:nowrap;user-select:none;background:'+(on?'var(--forno-bg-raised,#fff)':'transparent')+';color:'+(on?'var(--forno-accent-text,#e8590c)':'var(--dyn-text)')+';border:'+(on?'2px solid var(--forno-accent)':'1px solid transparent');
     }else{

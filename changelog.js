@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.649',
+    d: 'august 2026',
+    changes: [
+      'Oversatte de resterende velger-knappene i engelsk modus: gjærtype (Dry yeast / Fresh yeast), kjøkkenmaskin (Manual kneading / Other machine) og ovntype (Pizza oven / Regular oven). Gjelder både mobil og PC.'
+    ]
+  },
+  {
     v: '0.648',
     d: 'august 2026',
     changes: [

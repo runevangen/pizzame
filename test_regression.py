@@ -1908,6 +1908,26 @@ def run_behavioral_tests(page):
             and 'Ingen elting' in r41['no']['mob'] and 'Ingen elting' in r41['no']['pc'])
     results.append(('pizza_type_pills_localized_in_english_and_norwegian', ok41, r41))
 
+    # v0.649: også gjærtype/kjøkkenmaskin/ovntype-pillene språktilpasses. PC-ovn
+    # beholder temperaturen i etiketten («Pizza oven (430–450°C)»).
+    r42 = page.evaluate("""() => {
+      const _lang=window._lang;
+      const g=sel=>[...document.querySelectorAll(sel)].map(e=>e.textContent.replace('✓','').trim());
+      const snap=()=>{ ['gjaer','kjokkenmaskin','oven'].forEach(k=>{const id=k==='gjaer'?'mob-ggj':k==='kjokkenmaskin'?'mob-gkm':'mob-govn'; try{mobPillGroup(id,k)}catch(e){}}); try{syncStaticI18nUI()}catch(e){};
+        return {mobGj:g('#mob-ggj .pill'),mobOvn:g('#mob-govn .pill'),pcKm:g('#gkm .pill'),pcOvn:g('#govn .pill')}; };
+      window._lang='en'; const en=snap();
+      window._lang='no'; const no=snap();
+      window._lang=_lang; snap();
+      return {en,no};
+    }""")
+    ok42 = (r42['en']['mobGj']==['Dry yeast','Fresh yeast']
+            and r42['en']['mobOvn']==['Pizza oven','Regular oven']
+            and 'Manual kneading' in r42['en']['pcKm']
+            and r42['en']['pcOvn']==['Pizza oven (430–450°C)','Regular oven (max 250°C)']
+            and r42['no']['mobGj']==['Tørrgjær','Fersk gjær']
+            and r42['no']['pcOvn']==['Pizzaovn (430–450°C)','Vanlig ovn (maks 250°C)'])
+    results.append(('yeast_machine_oven_pills_localized_pc_oven_keeps_temp', ok42, r42))
+
 
 
 
