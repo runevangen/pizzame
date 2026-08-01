@@ -2191,6 +2191,32 @@ def run_behavioral_tests(page):
             and r52.get('guardWired') and r52.get('shortMsgFixed'))
     results.append(('smartplan_never_suggests_flourless_or_past_start_combos', ok52, r52))
 
+    # v0.662: alle varsler skal ha en tydelig «Ignorer»-knapp (ikke en diskré ✕).
+    # Tidsplan-varslene bruker warningWrapHTML (skjuler + huskes i økta); Smart-
+    # plan-varselet får sin egen selvskjulende «Ignorer». Ingen fysisk-grense-
+    # advarsel gjøres om til «godta likevel» — kun skjuling.
+    r53 = page.evaluate("""() => {
+      const _lang=window._lang;
+      try{
+        window._lang='no';
+        const html=warningWrapHTML('unittest-key-abc','<div><div>Test</div></div>');
+        const hasIgnorer = html.includes('>Ignorer</button>') && html.includes('warn-dismiss-btn');
+        const noBareX = !html.includes('>✕<');
+        const wired = html.includes('dismissWarning(');
+        dismissWarning(warnKey('unittest-key-abc'));
+        const afterDismiss = warningWrapHTML('unittest-key-abc','<div><div>Test</div></div>')==='';
+        window._lang='en';
+        const enLabel = warningWrapHTML('unittest-key-en','<div><div>Test</div></div>').includes('>Ignore</button>');
+        // Smart-plan-varselet har sin egen «Ignorer» som skjuler seg selv
+        const src=renderResultBlock.toString();
+        const smartHasIgnore = src.includes('data-smartwarn') && src.includes(\"style.display='none'\");
+        return {hasIgnorer, noBareX, wired, afterDismiss, enLabel, smartHasIgnore};
+      } finally { window._lang=_lang; }
+    }""")
+    ok53 = (r53.get('hasIgnorer') and r53.get('noBareX') and r53.get('wired')
+            and r53.get('afterDismiss') and r53.get('enLabel') and r53.get('smartHasIgnore'))
+    results.append(('all_warnings_have_clear_ignore_button', ok53, r53))
+
     return results
 
 
