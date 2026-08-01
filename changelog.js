@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.661",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan foreslår ikke lenger umulige deiger. Søket kappes ved det sterkeste melets tak (78t), så du aldri får forslag på ~145t «ingen mel dekker dette». Og når ingenting kan startes akkurat nå (f.eks. pizza om én time), foreslås den deigen som starter nærmest nå — typisk en hurtigdeig — i stedet for en flere-døgns deig som skulle startet for lenge siden. Korte deiger viser nå «alle mel passer» i stedet for en skremmende «ingen mel»-melding."
+    ],
+    "changes_en": [
+      "Smart plan no longer suggests impossible doughs. The search is capped at the strongest flour's limit (78h), so you never get ~145h \"no flour covers this\" suggestions. And when nothing can start right now (e.g. pizza in an hour), it suggests the dough that starts closest to now — usually a quick dough — instead of a multi-day dough that should have started long ago. Short doughs now show \"any flour works\" instead of a scary \"no flour\" message."
+    ]
+  },
+  {
     "v": "0.660",
     "d": "august 2026",
     "d_en": "August 2026",
