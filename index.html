@@ -1158,6 +1158,7 @@ function syncStaticI18nUI(){
   st('mob-beta-search-btn','🔍 Finn oppskriften','🔍 Find the recipe');
   st('mob-beta-popular-lbl','Eller velg et populært tidspunkt','Or pick a popular time');
   st('mob-beta-popular-help','Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.','Tap a preset time, and we fill in the date and time above and run the search right away.');
+  syncPizzatidToggleLabel();  // v0.656: «Vis/Skjul»-etiketten var statisk norsk til første trykk
 }
 // v6.01: kun feltene som faktisk definerer HVILKEN deig dette er — bevisst
 // IKKE showHelp/showSubsteps (visningspreferanser) eller mode (bare start/
@@ -3305,13 +3306,21 @@ function renderReturnBar(){
   if(!show){ bar.innerHTML=''; return; }
   bar.innerHTML=`${returnBarStatusHTML()}<button class="mob-return-btn" onclick="goBackFromJump()">${L(`← Tilbake til ${escH(_returnTo.tab==='settings'?'planleggingen':'tidsplanen')}`,`← Back to ${escH(_returnTo.tab==='settings'?'the planner':'the schedule')}`)}</button>`;
 }
-function togglePizzatidMinimized(){
+// v0.656: setter «Vis/Skjul»-etiketten ut fra om panelet er åpent, i riktig
+// språk. Kalles både ved toggling og fra i18n-synken — uten den siste sto den
+// statiske «Vis ▾» igjen på engelsk til første trykk (viste «VIS» → «Show»).
+function syncPizzatidToggleLabel(){
   const body=document.getElementById('mob-pizzatid-body');
   const toggle=document.getElementById('mob-pizzatid-toggle');
+  if(!body||!toggle) return;
+  const open=body.style.display!=='none';
+  toggle.textContent=open?L('Skjul ▴','Hide ▴'):L('Vis ▾','Show ▾');
+}
+function togglePizzatidMinimized(){
+  const body=document.getElementById('mob-pizzatid-body');
   if(!body) return;
-  const nowHidden=body.style.display==='none';
-  body.style.display=nowHidden?'block':'none';
-  if(toggle) toggle.textContent=nowHidden?L('Skjul ▴','Hide ▴'):L('Vis ▾','Show ▾');
+  body.style.display=(body.style.display==='none')?'block':'none';
+  syncPizzatidToggleLabel();
 }
 const PIZZATID_MAX_SLOTS=6; // rimelig tak per dag (matcher backend-sanitizeSchedule)
 function renderPizzatidDays(){

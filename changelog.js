@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.656',
+    d: 'august 2026',
+    changes: [
+      'Rettet at «Vis»-knappen i Smart-plan («Når er du ledig?») viste norsk tekst i engelsk modus helt til første trykk. Etiketten språktilpasses nå med det samme (Show/Hide).'
+    ]
+  },
+  {
     v: '0.655',
     d: 'august 2026',
     changes: [
