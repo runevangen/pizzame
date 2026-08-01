@@ -112,10 +112,14 @@ input[type=date]:focus,input[type=time]:focus{border-color:#e8590c;outline:2px s
    ramme; et ferdig-tatt kort får ✓ og roer seg. «Finn oppskriften» lyser opp
    først når begge er tatt. Se betaUpdateGuide(). */
 .beta-done{position:absolute;top:9px;right:11px;width:20px;height:20px;border-radius:50%;background:var(--forno-accent);color:#fff;font-size:12px;font-weight:800;display:none;align-items:center;justify-content:center;pointer-events:none}
-.beta-field.is-active{border-color:var(--forno-accent);border-width:2px;animation:betaPulse 1.7s ease-in-out infinite}
-@keyframes betaPulse{0%,100%{box-shadow:0 0 0 0 rgba(232,89,12,.32)}50%{box-shadow:0 0 0 7px rgba(232,89,12,0)}}
-/* Respekter «redusert bevegelse»: fall tilbake til en rolig, statisk ring. */
-@media (prefers-reduced-motion:reduce){.beta-field.is-active{animation:none;box-shadow:0 0 0 4px var(--forno-accent-soft)}}
+.beta-field.is-active{border-color:var(--forno-accent);border-width:2px;animation:betaGlow 2.4s ease-in-out infinite}
+/* Myk glød: et varmt halo som puster rolig inn og ut (ikke en skarp ring). */
+@keyframes betaGlow{
+  0%,100%{box-shadow:0 0 0 2px rgba(232,89,12,.10),0 0 8px 1px rgba(232,89,12,.14)}
+  50%{box-shadow:0 0 0 3px rgba(232,89,12,.20),0 0 16px 3px rgba(232,89,12,.30)}
+}
+/* Respekter «redusert bevegelse»: fall tilbake til en rolig, statisk glød. */
+@media (prefers-reduced-motion:reduce){.beta-field.is-active{animation:none;box-shadow:0 0 0 3px rgba(232,89,12,.16),0 0 12px 2px rgba(232,89,12,.20)}}
 .beta-field.is-done .beta-done{display:flex}
 .beta-field.is-done .beta-field-val{color:var(--forno-text-muted)}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
