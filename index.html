@@ -1053,6 +1053,7 @@ function syncStaticI18nUI(){
   const at=(id,attr,no,en)=>{ const el=document.getElementById(id); if(el) el.setAttribute(attr,L(no,en)); };
   // Topbar
   at('mob-topbar-title','title','Til startvalget','Back to start choices');
+  at('mob-name-version','title','Se hva som er nytt','See what’s new');
   at('mob-pc-toggle','title','Bytt til PC-visning','Switch to desktop view');
   // Velger-piller på PC: oversett etiketten per data-v (mobilen gjør det i
   // mobPillGroup). Pizzatype via tnShort; øvrige grupper med egne engelske navn.
@@ -6815,7 +6816,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <div class="mob-topbar">
     <div class="mob-topbar-title" id="mob-topbar-title" onclick="goToEntryFork()" style="cursor:pointer" title="Til startvalget">
-      <span>🍕 UltimatePizza <b id="mob-name-version" style="font-size:12px;font-weight:600;color:var(--forno-accent)"></b></span>
+      <span>🍕 UltimatePizza <b id="mob-name-version" role="button" tabindex="0" title="Se hva som er nytt" onclick="event.stopPropagation();openChangelogModal()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openChangelogModal();}" style="font-size:12px;font-weight:600;color:var(--forno-accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px"></b></span>
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
