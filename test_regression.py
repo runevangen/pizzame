@@ -1978,6 +1978,26 @@ def run_behavioral_tests(page):
             and r44.get('badge3') and r44.get('badge0hidden'))
     results.append(('deiger_moved_into_mer_tab_with_active_count_badge', ok44, r44))
 
+    # v0.654: Smart-plan-søket viste hardkodede norske metodenavn («Langtidsdeig»
+    # osv.) også i engelsk modus. Nå er kandidat-etikettene språktilpasset. Parvis
+    # sjekk: samme scenario — norsk viser et norsk-only metodenavn, engelsk gjør IKKE.
+    r45 = page.evaluate("""() => {
+      const _lang=window._lang;
+      const realNow=Date.now;
+      // Samme pinnede stramme-fredag-scenario som Kveldsdeig-testen, så et
+      // OVERSETTBART metodenavn vinner (ikke Poolish/Biga som er like i begge språk).
+      Date.now=()=>new Date(2026,6,30,20,0,0).getTime();
+      try{
+        try{ if(!window._pizzatidSchedule) window._pizzatidSchedule=defaultPizzatidSchedule(); }catch(e){}
+        const anchor=new Date(2026,6,31,19,0,0);
+        window._lang='no'; const noTop=searchAllMethods(anchor)[0].label;
+        window._lang='en'; const enTop=searchAllMethods(anchor)[0].label;
+        return {noTop, enTop};
+      } finally { Date.now=realNow; window._lang=_lang; }
+    }""")
+    ok45 = (r45.get('noTop')=='Kveldsdeig' and r45.get('enTop')=='Evening dough')
+    results.append(('smartplan_method_suggestion_labels_localized', ok45, r45))
+
 
 
 

@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.654',
+    d: 'august 2026',
+    changes: [
+      'Rettet at Smart-plan viste norske metodenavn (som «Langtidsdeig») også i engelsk modus. Metodeforslagene i søket oversettes nå riktig (Long-ferment dough, Quick dough, Evening dough osv.).'
+    ]
+  },
+  {
     v: '0.653',
     d: 'august 2026',
     changes: [

@@ -3118,29 +3118,29 @@ function searchAllMethods(anchor){
   }
   // Langtidsdeig (tidligere "Standard")
   S.method='standard';
-  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo('Langtidsdeig', {method:'standard',cold}); }
+  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo(L('Langtidsdeig','Long-ferment dough'), {method:'standard',cold}); }
   // Poolish, romtemperatur
   S.method='poolish'; S.poolishCold=false;
-  for(const pref of [12,13,14,15,16]) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo('Poolish (romtemperatur)', {method:'poolish',poolishCold:false,poolishH:pref,cold}); }
+  for(const pref of [12,13,14,15,16]) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo(L('Poolish (romtemperatur)','Poolish (room temperature)'), {method:'poolish',poolishCold:false,poolishH:pref,cold}); }
   // Poolish, kjøleskap
   S.poolishCold=true;
-  for(const pref of range(12,48,6)) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo('Poolish (kjøleskap)', {method:'poolish',poolishCold:true,poolishH:pref,cold}); }
+  for(const pref of range(12,48,6)) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo(L('Poolish (kjøleskap)','Poolish (fridge)'), {method:'poolish',poolishCold:true,poolishH:pref,cold}); }
   // Poolish med kjøleskapspause — skyver planen inn i ledig tid uten å endre middagen
   S.poolishCold=false;
-  for(const pause of [6,12,18]) for(const pref of [13,14,15]) for(const cold of range(24,72,12)){ S.poolishH=pref; S.cold=cold; S.poolishPauseH=pause; evalCombo(`Poolish (romtemp + ${pause}t kjøleskapspause)`, {method:'poolish',poolishCold:false,poolishH:pref,cold,poolishPauseH:pause}); }
+  for(const pause of [6,12,18]) for(const pref of [13,14,15]) for(const cold of range(24,72,12)){ S.poolishH=pref; S.cold=cold; S.poolishPauseH=pause; evalCombo(L(`Poolish (romtemp + ${pause}t kjøleskapspause)`,`Poolish (room temp + ${pause}h fridge pause)`), {method:'poolish',poolishCold:false,poolishH:pref,cold,poolishPauseH:pause}); }
   S.poolishPauseH=0;
   // Biga
   S.method='biga';
   for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
   // Hurtigdeig — bruker HOPTS sine faste alternativer
   S.method='hurtig';
-  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:'Hurtigdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
+  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:L('Hurtigdeig','Quick dough'), violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
   // Kveldsdeig — bruker KOPTS sine faste alternativer
   S.method='kveld';
-  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:'Kveldsdeig', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
+  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:L('Kveldsdeig','Evening dough'), violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
   // Mania-poolish — fast struktur, ingenting å søke i, bare mål den ene planen
   S.method='mania';
-  { const steps=rawSteps(anchor); candidates.push({label:'Mania-poolish', violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
+  { const steps=rawSteps(anchor); candidates.push({label:L('Mania-poolish','Mania poolish'), violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
 
   S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
   S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold; S.poolishPauseH=origPoolishPauseH;
