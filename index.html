@@ -1053,7 +1053,6 @@ function syncStaticI18nUI(){
   const at=(id,attr,no,en)=>{ const el=document.getElementById(id); if(el) el.setAttribute(attr,L(no,en)); };
   // Topbar
   at('mob-topbar-title','title','Til startvalget','Back to start choices');
-  at('mob-active-deiger-btn','title','Mine deiger','My doughs');
   at('mob-pc-toggle','title','Bytt til PC-visning','Switch to desktop view');
   // Velger-piller på PC: oversett etiketten per data-v (mobilen gjør det i
   // mobPillGroup). Pizzatype via tnShort; øvrige grupper med egne engelske navn.
@@ -6560,24 +6559,19 @@ function updateMerTabBadge(){
 async function refreshDeigerBanner(){
   const bakes = await fetchBakes();
   const sideCount=document.getElementById('active-deiger-count');
-  const mobBtn=document.getElementById('mob-active-deiger-btn');
-  const mobCount=document.getElementById('mob-active-deiger-count');
   if(bakes===null){
     if(sideCount)sideCount.style.display='none';
-    if(mobBtn)mobBtn.style.display='none';
     window._activeDeigCount=0; updateMerTabBadge();
     return;
   }
   // Banneret nudger om DINE egne pågående deiger — ikke andres delte.
   const active=bakes.filter(b=>b.status==='active' && bakeIsMine(b));
+  // v0.657: aktive deiger vises på mobil via Mer-fanens teller-badge
+  // (updateMerTabBadge) — det tidligere 🍽️-topplinjeikonet er fjernet.
   window._activeDeigCount=active.length; updateMerTabBadge();
   if(sideCount){
     if(active.length>0){ sideCount.style.display='inline-block'; sideCount.textContent=String(active.length); }
     else sideCount.style.display='none';
-  }
-  if(mobBtn){
-    if(active.length>0){ mobBtn.style.display='inline-flex'; if(mobCount)mobCount.textContent=String(active.length); }
-    else mobBtn.style.display='none';
   }
 }
 
@@ -6825,7 +6819,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <small id="mob-stamp"></small>
     </div>
     <div class="mob-topbar-actions">
-      <button class="mob-icon-btn" id="mob-active-deiger-btn" onclick="jumpToDeiger()" title="Mine deiger" style="display:none;position:relative">🍽️<span id="mob-active-deiger-count" style="position:absolute;top:-4px;right:-4px;background:var(--forno-accent);color:#1a1512;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;line-height:14px;min-width:14px;text-align:center">0</span></button>
+      <!-- v0.657: 🍽️-Deiger-ikonet fjernet — Mer-fanens teller-badge dekker det samme etter v0.653. -->
       <button class="layout-toggle mob-style" id="mob-pc-toggle" onclick="setLayout('pc')" title="Bytt til PC-visning">🖥 PC</button>
     </div>
   </div>
