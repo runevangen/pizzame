@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.657',
+    d: 'august 2026',
+    changes: [
+      'Fjernet det doble Deiger-inngangspunktet på mobil: 🍽️-ikonet i topplinja er borte. Aktive deiger vises fortsatt via teller-badgen på «Mer»-fanen (der Deiger flyttet inn i v0.653), så det trengs bare ett sted.'
+    ]
+  },
+  {
     v: '0.656',
     d: 'august 2026',
     changes: [

@@ -2062,6 +2062,29 @@ def run_behavioral_tests(page):
             and r47.get('syncInStatic'))
     results.append(('smartplan_free_time_toggle_localized_from_first_render', ok47, r47))
 
+    # v0.657: det doble Deiger-inngangspunktet på mobil er fjernet. 🍽️-ikonet i
+    # topplinja (mob-active-deiger-btn) er borte; aktive deiger vises kun via
+    # Mer-fanens teller-badge. refreshDeigerBanner må fortsatt oppdatere badgen
+    # uten å røre det fjernede ikonet, og jumpToDeiger (brukt fra plan-knappen)
+    # skal fortsatt finnes.
+    r48 = page.evaluate("""() => {
+      const noTopbarIcon = !document.getElementById('mob-active-deiger-btn')
+        && !document.getElementById('mob-active-deiger-count');
+      const bannerNoIconRef = !refreshDeigerBanner.toString().includes('mob-active-deiger-btn');
+      const merBadgeStillDriven = refreshDeigerBanner.toString().includes('updateMerTabBadge');
+      const jumpStillExists = typeof window.jumpToDeiger==='function';
+      // Mer-badgen fungerer fortsatt som eneste teller
+      window._activeDeigCount=2; updateMerTabBadge();
+      const badge=document.getElementById('mob-tab-mer-badge');
+      const badgeWorks = !!badge && badge.textContent==='2' && badge.style.display==='block';
+      window._activeDeigCount=0; updateMerTabBadge();
+      const badgeHides = !!badge && badge.style.display==='none';
+      return {noTopbarIcon, bannerNoIconRef, merBadgeStillDriven, jumpStillExists, badgeWorks, badgeHides};
+    }""")
+    ok48 = (r48.get('noTopbarIcon') and r48.get('bannerNoIconRef') and r48.get('merBadgeStillDriven')
+            and r48.get('jumpStillExists') and r48.get('badgeWorks') and r48.get('badgeHides'))
+    results.append(('mobile_deiger_topbar_icon_removed_mer_badge_is_single_entry', ok48, r48))
+
     return results
 
 
