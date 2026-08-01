@@ -2040,7 +2040,27 @@ def run_behavioral_tests(page):
             and r46.get('planFilled') and r46.get('finishSetsChosen'))
     results.append(('tidsplan_empty_until_choice_then_guides_to_two_entries', ok46, r46))
 
-
+    # v0.656: «Vis/Skjul»-veksleren i Smart-plan («Når er du ledig?») hadde en
+    # statisk norsk «Vis ▾» i HTML som bare ble språktilpasset ved første trykk —
+    # så engelske brukere så «VIS» → «Show». Nå setter i18n-synken den med det
+    # samme. Sjekk: etter setLang('en') står lukket panel med «Show», ikke «Vis».
+    r47 = page.evaluate("""() => {
+      const _lang=window._lang;
+      try{
+        const body=document.getElementById('mob-pizzatid-body');
+        if(body) body.style.display='none';           // lukket utgangstilstand
+        setLang('en'); const enClosed=document.getElementById('mob-pizzatid-toggle').textContent;
+        togglePizzatidMinimized(); const enOpen=document.getElementById('mob-pizzatid-toggle').textContent;
+        togglePizzatidMinimized(); const enClosedAgain=document.getElementById('mob-pizzatid-toggle').textContent;
+        setLang('no'); const noClosed=document.getElementById('mob-pizzatid-toggle').textContent;
+        const syncInStatic = syncStaticI18nUI.toString().includes('syncPizzatidToggleLabel');
+        return {enClosed, enOpen, enClosedAgain, noClosed, syncInStatic};
+      } finally { setLang(_lang); }
+    }""")
+    ok47 = (r47.get('enClosed','').startswith('Show') and r47.get('enOpen','').startswith('Hide')
+            and r47.get('enClosedAgain','').startswith('Show') and r47.get('noClosed','').startswith('Vis')
+            and r47.get('syncInStatic'))
+    results.append(('smartplan_free_time_toggle_localized_from_first_render', ok47, r47))
 
     return results
 
