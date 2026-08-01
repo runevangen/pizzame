@@ -2042,7 +2042,6 @@ def run_behavioral_tests(page):
 
 
 
-
     return results
 
 
