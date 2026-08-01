@@ -1888,6 +1888,26 @@ def run_behavioral_tests(page):
             and r40.get('timeLabel')=='07:30' and r40.get('dateLabel')=='man 3. aug')
     results.append(('smartplan_picker_equal_cards_with_formatted_labels', ok40, r40))
 
+    # v0.648: pizzatype-pillene var hardkodet norsk («Ingen elting») også i engelsk
+    # modus. Nå språktilpasses de via tnShort på både mobil (mobPillGroup) og PC
+    # (#gtype i syncStaticI18nUI): «Ingen elting»→«No-knead», «Langpanne»→«Sheet pan».
+    r41 = page.evaluate("""() => {
+      const _lang=window._lang;
+      const read=()=>({
+        mob:[...document.querySelectorAll('#mob-gtype .pill')].map(e=>e.textContent.replace('✓','').trim()),
+        pc:[...document.querySelectorAll('#gtype .pill')].map(e=>e.textContent.trim())
+      });
+      window._lang='en'; try{mobPillGroup('mob-gtype','type')}catch(e){}; try{syncStaticI18nUI()}catch(e){}; const en=read();
+      window._lang='no'; try{mobPillGroup('mob-gtype','type')}catch(e){}; try{syncStaticI18nUI()}catch(e){}; const no=read();
+      window._lang=_lang; try{mobPillGroup('mob-gtype','type')}catch(e){}; try{syncStaticI18nUI()}catch(e){}
+      return {en, no};
+    }""")
+    ok41 = ('No-knead' in r41['en']['mob'] and 'No-knead' in r41['en']['pc']
+            and 'Sheet pan' in r41['en']['mob'] and 'Neapolitan' in r41['en']['pc']
+            and 'Ingen elting' not in r41['en']['mob'] and 'Ingen elting' not in r41['en']['pc']
+            and 'Ingen elting' in r41['no']['mob'] and 'Ingen elting' in r41['no']['pc'])
+    results.append(('pizza_type_pills_localized_in_english_and_norwegian', ok41, r41))
+
 
 
 
