@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.653',
+    d: 'august 2026',
+    changes: [
+      'Ryddet i fanene: «Info» heter nå «☰ Mer», og «Deiger» er flyttet inn øverst i Mer. Da er det fire faner igjen — Planlegging, Tidsplan, Smart-plan og Mer. Du ser fortsatt aktive deiger via 🍽️-telleren i toppen, og «Mer»-fanen får en liten teller når du har deiger på gang.'
+    ]
+  },
+  {
     v: '0.652',
     d: 'august 2026',
     changes: [

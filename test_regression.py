@@ -956,7 +956,7 @@ def run_behavioral_tests(page):
       // (a) friskt oppstart, ingen gjenopprettet oppsett → gaffel
       window._restoredSetup = false;
       window._wizEnteredOnce = false;
-      mobShowTab('bakster');
+      mobShowTab('tips');
       mobShowTab('settings');
       const entryStep = window._wizStep;                       // 0 = gaffel
       const forkVisible = document.getElementById('wiz-entry').style.display !== 'none';
@@ -964,11 +964,11 @@ def run_behavioral_tests(page):
       // retur til Planlegging skal vise gaffelen igjen, IKKE en blank skjerm.
       entryPickSmart();
       const forkHiddenAfterSmart = document.getElementById('wiz-entry').style.display === 'none';
-      mobShowTab('bakster');
+      mobShowTab('tips');
       mobShowTab('settings');
       const forkBackNotBlank = document.getElementById('wiz-entry').style.display !== 'none' && window._wizStep === 0;
       // (a3) logoen tar deg tilbake til gaffelen fra en hvilken som helst fane
-      mobShowTab('bakster');
+      mobShowTab('tips');
       goToEntryFork();
       const logoReturnsToFork = document.getElementById('mob-settings').classList.contains('active')
         && document.getElementById('wiz-entry').style.display !== 'none';
@@ -977,13 +977,13 @@ def run_behavioral_tests(page):
       const stepAfterManual = window._wizStep;                 // 1
       // (c) fanebytte-guarden holder
       wizGoto(2);
-      mobShowTab('bakster');
+      mobShowTab('tips');
       mobShowTab('settings');
       const stepAfterTabSwitch = window._wizStep;              // 2
       // (d) gjenopprettet oppsett hopper over gaffelen
       window._restoredSetup = true;
       window._wizEnteredOnce = false;
-      mobShowTab('bakster');
+      mobShowTab('tips');
       mobShowTab('settings');
       const restoredSkipsFork = window._wizStep === 1;
       let gotoThrew = false;
@@ -1948,6 +1948,35 @@ def run_behavioral_tests(page):
             and r43['s1']['tD'] is True and r43['s1']['dA'] is True and r43['s1']['tA'] is False
             and r43['s2']['tD'] is True and r43['s2']['dD'] is True and 'accent' in r43['s2']['bg'])
     results.append(('smartplan_guided_flow_highlights_next_step_then_lights_button', ok43, r43))
+
+    # v0.653: Deiger flyttet inn i «Mer» (tidligere «Info»). Fire faner igjen,
+    # Deiger-innholdet bor øverst i Mer-fanen (#mob-tips), og Mer-fanen får en
+    # teller-badge når du har aktive deiger.
+    r44 = page.evaluate("""() => {
+      try{ syncI18nUI(); }catch(e){}
+      const _lang=window._lang;
+      const out={
+        baksterInTabs: MOB_TABS.includes('bakster'),
+        noBaksterTab: !document.getElementById('mob-tab-bakster'),
+        noBaksterScreen: !document.getElementById('mob-bakster'),
+        merTab: !!document.getElementById('mob-tab-tips'),
+        deigerInMer: !!document.querySelector('#mob-tips #mob-bakster-content'),
+      };
+      window._lang='no'; out.labelNo=t('tab_tips');
+      window._lang='en'; out.labelEn=t('tab_tips');
+      window._lang=_lang;
+      window._activeDeigCount=3; updateMerTabBadge();
+      const badge=document.getElementById('mob-tab-mer-badge');
+      out.badge3 = !!badge && badge.textContent==='3' && badge.style.display==='block';
+      window._activeDeigCount=0; updateMerTabBadge();
+      out.badge0hidden = !!badge && badge.style.display==='none';
+      return out;
+    }""")
+    ok44 = (r44.get('baksterInTabs') is False and r44.get('noBaksterTab') and r44.get('noBaksterScreen')
+            and r44.get('merTab') and r44.get('deigerInMer')
+            and r44.get('labelNo')=='Mer' and r44.get('labelEn')=='More'
+            and r44.get('badge3') and r44.get('badge0hidden'))
+    results.append(('deiger_moved_into_mer_tab_with_active_count_badge', ok44, r44))
 
 
 
