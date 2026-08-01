@@ -19,15 +19,12 @@ const GUIDE = [
     icon: '👋', title: 'Velkommen',
     body: [
       {t:'p', x:'Appen er bygd rundt én idé: <b>du bestemmer spisetiden, appen regner ut resten</b> — når deigen skal blandes, heve, stå i kjøleskap og stekes. Du trenger ikke kunne noe om baker-matematikk; velg pizza, metode og tidspunkt, så får du en ferdig tidsplan å følge steg for steg.'},
-      {t:'sub', x:'De sju fanene nederst'},
+      {t:'sub', x:'De fire fanene nederst'},
       {t:'bullets', x:[
         '<b>⚙️ Planlegging</b> — veiviseren der du setter opp deigen (pizza, metode, tidspunkt).',
-        '<b>📅 Tidsplan</b> — den ferdige, tidsstyrte planen du følger steg for steg.',
-        '<b>🍕 Oppskrift</b> — ingredienslista med mengder.',
-        '<b>📝 Notater</b> — dine notater til en lagret deig.',
-        '<b>🍽️ Deiger</b> — lagrede deiger du (og andre) kan hente fram igjen.',
-        '<b>ℹ️ Info</b> — visning, hjelp, denne bruksanvisningen og «Hva er nytt».',
-        '<b>🧭 Beta</b> — «Finn oppskrift»: oppgi ledig tid, få en anbefalt metode tilbake.'
+        '<b>📅 Tidsplan</b> — den ferdige, tidsstyrte planen du følger steg for steg (med veksler til <b>🍕 Oppskrift</b>).',
+        '<b>🧭 Smart-plan</b> — «Finn oppskrift»: oppgi ledig tid, få en anbefalt metode tilbake.',
+        '<b>☰ Mer</b> — dine lagrede <b>🍽️ Deiger</b> (øverst, med notater), pluss visning, hjelp, denne bruksanvisningen og «Hva er nytt».'
       ]},
       {t:'smart', x:'Du kan gå fritt fram og tilbake i planleggingen — <b>📅 Tidsplan</b> viser alltid resultatet av gjeldende valg. Ingenting «låses» før du vil.'}
     ]
@@ -189,7 +186,7 @@ const GUIDE = [
     body: [
       {t:'p', x:'Trykk <b>💾 Lagre</b> i Tidsplan for å ta vare på en deig. Den lagres <b>delt</b>, så du (og andre) kan hente den fram igjen — også på en annen enhet. Redigerer du en lagret deig, blir knappen <b>Oppdater</b>.'},
       {t:'bullets', x:[
-        '<b>🍽️ Deiger</b>-fanen er delt i <b>Aktive</b> og <b>Ferdige</b>.',
+        '<b>🍽️ Deiger</b> (under Mer) er delt i <b>Aktive</b> og <b>Ferdige</b>.',
         '<b>Åpne</b> laster deigen inn igjen og hopper til Tidsplan. <b>Ferdig</b> åpner stjernevurderingen.',
         '<b>★</b>-stjerna gjør en deig til favoritt (nås også fra ☰ Meny → «★ Min favoritt»).',
         'Lagret sammen med deigen: hele oppsettet, tidspunkt, avhakede steg, understeg og ingredienser, og hvem som lagret.'
@@ -247,10 +244,10 @@ const GUIDE = [
     icon: '🔧', title: 'Visning & mer',
     body: [
       {t:'bullets', x:[
-        '<b>📤 Del appen</b> (Info → Del): del appen med andre. På mobil åpnes delingsmenyen (meldinger, e-post osv.); på PC kopieres lenken til utklippstavla. Praktisk når appen kjører installert og adressefeltet er skjult.',
-        '<b>Skriftstørrelse</b> (Info → Visning): Normal / Stor / Ekstra stor.',
-        '<b>Hva er nytt</b> (nederst i Info): endringsloggen med alt som er lagt til, versjon for versjon.',
-        '<b>💬 Feedback</b> (Info): send inn ønsker og feil — det du sender knyttes til navnet ditt.',
+        '<b>📤 Del appen</b> (Mer → Del): del appen med andre. På mobil åpnes delingsmenyen (meldinger, e-post osv.); på PC kopieres lenken til utklippstavla. Praktisk når appen kjører installert og adressefeltet er skjult.',
+        '<b>Skriftstørrelse</b> (Mer → Visning): Normal / Stor / Ekstra stor.',
+        '<b>Hva er nytt</b> (nederst i Mer): endringsloggen med alt som er lagt til, versjon for versjon.',
+        '<b>💬 Feedback</b> (Mer): send inn ønsker og feil — det du sender knyttes til navnet ditt.',
         '<b>🖥 PC</b>-knappen øverst bytter til desktop-visning.'
       ]},
       {t:'tip', x:'Denne bruksanvisningen holdes oppdatert i takt med appen — kommer det nye funksjoner, oppdateres teksten her også.'}
@@ -267,15 +264,12 @@ const GUIDE_EN = [
     icon: '👋', title: 'Welcome',
     body: [
       {t:'p', x:'The app is built around one idea: <b>you decide the meal time, the app works out the rest</b> — when the dough should be mixed, rise, sit in the fridge and bake. You don\'t need to know anything about baker\'s math; choose pizza, method and time, and you get a finished schedule to follow step by step.'},
-      {t:'sub', x:'The seven tabs at the bottom'},
+      {t:'sub', x:'The four tabs at the bottom'},
       {t:'bullets', x:[
         '<b>⚙️ Planner</b> — the wizard where you set up the dough (pizza, method, time).',
-        '<b>📅 Schedule</b> — the finished, time-driven plan you follow step by step.',
-        '<b>🍕 Recipe</b> — the ingredient list with amounts.',
-        '<b>📝 Notes</b> — your notes for a saved dough.',
-        '<b>🍽️ Doughs</b> — saved doughs you (and others) can pull up again.',
-        '<b>ℹ️ Info</b> — display, help, this user manual and "What\'s new".',
-        '<b>🧭 Beta</b> — "Find recipe": enter your available time, get a recommended method back.'
+        '<b>📅 Schedule</b> — the finished, time-driven plan you follow step by step (with a toggle to <b>🍕 Recipe</b>).',
+        '<b>🧭 Smart plan</b> — "Find recipe": enter your available time, get a recommended method back.',
+        '<b>☰ More</b> — your saved <b>🍽️ Doughs</b> (at the top, with their notes), plus display, help, this user manual and "What\'s new".'
       ]},
       {t:'smart', x:'You can move freely back and forth in the planning — <b>📅 Schedule</b> always shows the result of your current choices. Nothing is "locked" until you want it to be.'}
     ]
@@ -437,7 +431,7 @@ const GUIDE_EN = [
     body: [
       {t:'p', x:'Tap <b>💾 Save</b> in Schedule to keep a dough. It\'s saved to the shared list, so you (and others) can pull it up again — on another device too. If you edit a saved dough, the button becomes <b>Update</b>.'},
       {t:'bullets', x:[
-        'The <b>🍽️ Doughs</b> tab is split into <b>Active</b> and <b>Finished</b>.',
+        'The <b>🍽️ Doughs</b> (under More) is split into <b>Active</b> and <b>Finished</b>.',
         '<b>Open</b> loads the dough back in and jumps to Schedule. <b>Done</b> opens the star rating.',
         'The <b>★</b> star makes a dough a favorite (also reachable from ☰ Menu → "★ My favorite").',
         'Saved together with the dough: the whole setup, the time, checked-off steps and ingredients, and who saved it.'
@@ -495,10 +489,10 @@ const GUIDE_EN = [
     icon: '🔧', title: 'Display & more',
     body: [
       {t:'bullets', x:[
-        '<b>📤 Share app</b> (Info → Share): share the app with others. On mobile the share menu opens (messages, email, etc.); on PC the link is copied to the clipboard. Handy when the app runs installed and the address bar is hidden.',
-        '<b>Font size</b> (Info → Display): Normal / Large / Extra large.',
-        '<b>What\'s new</b> (at the bottom of Info): the changelog with everything that\'s been added, version by version.',
-        '<b>💬 Feedback</b> (Info): submit requests and bugs — what you send is tied to your name.',
+        '<b>📤 Share app</b> (More → Share): share the app with others. On mobile the share menu opens (messages, email, etc.); on PC the link is copied to the clipboard. Handy when the app runs installed and the address bar is hidden.',
+        '<b>Font size</b> (More → Display): Normal / Large / Extra large.',
+        '<b>What\'s new</b> (at the bottom of More): the changelog with everything that\'s been added, version by version.',
+        '<b>💬 Feedback</b> (Mer): submit requests and bugs — what you send is tied to your name.',
         '<b>🖥 PC</b> button at the top switches to desktop view.'
       ]},
       {t:'tip', x:'This user manual is kept updated in step with the app — when new features arrive, the text here is updated too.'}

@@ -276,7 +276,9 @@ body.mob-mode .mob-tabbar{background:var(--forno-bg-sunken);border-top-color:var
 /* Tidsplan/Oppskrift-veksler (v6.33) */
 .mob-plan-seg{flex:1;text-align:center;padding:9px 6px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--forno-border,#e0ddd8);background:var(--forno-bg,#fff);color:var(--forno-text-faint,#8E8E93)}
 .mob-plan-seg.on{border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text)}
-.mob-tab{flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:13px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
+.mob-tab{position:relative;flex:1;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;padding:8px 4px;font-size:13px;color:#6E6E73;cursor:pointer;gap:2px;border-top:2px solid transparent}
+/* Liten teller på «Mer»-fanen når du har aktive deiger. */
+.mob-tab-badge{display:none;position:absolute;top:3px;left:50%;transform:translateX(4px);min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--forno-accent,#e8590c);color:#1a1512;font-size:9px;font-weight:700;line-height:15px;text-align:center;box-sizing:border-box}
 body.mob-mode .mob-tab{color:var(--forno-text-faint);font-family:var(--forno-font-body)}
 .mob-tab span[aria-hidden]{font-size:22px;line-height:1}
 .mob-tab.on{color:#e8590c;border-top-color:#e8590c}
@@ -958,12 +960,12 @@ function localizeUnits(html){
 }
 // UI-krom-oversettelse (Tier A). Kun et representativt utvalg i PoC-en.
 const TXT = {
-  no:{ tab_settings:'Planlegging',tab_plan:'Tidsplan',tab_recipe:'Oppskrift',tab_notes:'Notater',tab_bakster:'Deiger',tab_tips:'Info',tab_beta:'Smart-plan',
+  no:{ tab_settings:'Planlegging',tab_plan:'Tidsplan',tab_recipe:'Oppskrift',tab_notes:'Notater',tab_bakster:'Deiger',tab_tips:'Mer',tab_beta:'Smart-plan',
        li_section:'Språk / Enheter',li_lang:'Språk',li_units:'Enheter',u_metric:'Metrisk (g · °C)',u_imperial:'Imperial (oz · °F)',
        ai_note:'⚠️ Engelsk er maskinoversatt (AI). Sjekk kritiske steg – oppskriftsteksten er ennå ikke fullt gjennomgått.',
        a_copy:'Kopier',a_cal:'Kalender',a_save:'Lagre',tb_juster:'⚙️ Juster',tb_understeg:'📋 Understeg',tb_tips:'💡 Tips',
        r_count:'Antall',r_size:'Emnestørrelse',r_dough:'ferdig deig' },
-  en:{ tab_settings:'Planner',tab_plan:'Schedule',tab_recipe:'Recipe',tab_notes:'Notes',tab_bakster:'Doughs',tab_tips:'Info',tab_beta:'Smart plan',
+  en:{ tab_settings:'Planner',tab_plan:'Schedule',tab_recipe:'Recipe',tab_notes:'Notes',tab_bakster:'Doughs',tab_tips:'More',tab_beta:'Smart plan',
        li_section:'Language / Units',li_lang:'Language',li_units:'Units',u_metric:'Metric (g · °C)',u_imperial:'Imperial (oz · °F)',
        ai_note:'⚠️ English is machine-translated (AI). Double-check critical steps — the recipe text is not yet fully reviewed.',
        a_copy:'Copy',a_cal:'Calendar',a_save:'Save',tb_juster:'⚙️ Adjust',tb_understeg:'📋 Substeps',tb_tips:'💡 Tips',
@@ -1025,9 +1027,10 @@ function dispTitle(t){
   if((m=t.match(/^Kjøleskapsheving \((.+)t\)$/))) return `Cold proof (${m[1]}h)`;
   return t;
 }
-const TAB_EMOJI = {settings:'⚙️',plan:'📅',bakster:'🍽️',tips:'ℹ️',beta:'🧭'};
+const TAB_EMOJI = {settings:'⚙️',plan:'📅',tips:'☰',beta:'🧭'};
 function syncI18nUI(){
-  Object.keys(TAB_EMOJI).forEach(id=>{ const el=document.getElementById('mob-tab-'+id); if(el) el.innerHTML=`<span aria-hidden="true">${TAB_EMOJI[id]}</span>${t('tab_'+id)}`; });
+  Object.keys(TAB_EMOJI).forEach(id=>{ const el=document.getElementById('mob-tab-'+id); if(el) el.innerHTML=`<span aria-hidden="true">${TAB_EMOJI[id]}</span>${t('tab_'+id)}${id==='tips'?'<span class="mob-tab-badge" id="mob-tab-mer-badge"></span>':''}`; });
+  try{ updateMerTabBadge(); }catch(e){}
   const seg=(id,active)=>{ const el=document.getElementById(id); if(el) el.style.cssText=`flex:1;padding:8px;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;${active?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)'}`; };
   const s=document.getElementById('mob-i18n-section'); if(s) s.textContent=t('li_section');
   const ll=document.getElementById('mob-i18n-lang-lbl'); if(ll) ll.textContent=t('li_lang');
@@ -1066,6 +1069,7 @@ function syncStaticI18nUI(){
   st('mob-plan-empty','Tilpass innstillingene og se tidsplanen her','Adjust the settings and see the schedule here');
   st('mob-recipe-empty','Generer tidsplan for å se oppskriften','Generate a schedule to see the recipe');
   st('mob-bakster-empty','Laster deiger…','Loading doughs…');
+  st('mob-mer-deiger-lbl','🍽️ Deiger','🍽️ Doughs');
   // Inngangs-gaffel (v6.21)
   st('wiz-entry-h','La oss starte!','Let\'s start!');
   st('wiz-entry-sub','Velg hvordan du vil starte','Choose how you want to start');
@@ -3245,7 +3249,7 @@ function openPizzatidFromWarning(){
 // Samme grep som warningWrapHTML i v5.74 — én implementasjon, alle hoppene
 // arver den.
 let _returnTo = null; // {tab, wizStep, stepTitle}
-const MOB_TABS = ['plan','settings','tips','bakster','beta'];
+const MOB_TABS = ['plan','settings','tips','beta'];
 function currentMobTab(){
   return MOB_TABS.find(id=>{
     const el=document.getElementById('mob-'+id);
@@ -5880,7 +5884,7 @@ function showPlanSub(which){
   window._planSub = which;
 }
 function mobShowTab(t){
-  ['plan','settings','tips','bakster','beta'].forEach(id=>{
+  ['plan','settings','tips','beta'].forEach(id=>{
     const scr=document.getElementById('mob-'+id);
     if(scr)scr.classList.toggle('active',id===t);
     const tab=document.getElementById('mob-tab-'+id);
@@ -5890,8 +5894,8 @@ function mobShowTab(t){
   // en endring gjort i en annen fane (typisk pizzatiden i Beta) etterlate et
   // varsel som svarte på gammel tilstand.
   if(t==='plan'){ try{ mobGen(); }catch(e){} }
-  // v6.33: Deiger rommer nå også Notater for aktiv deig (øverst).
-  if(t==='bakster'){ renderBaksterPanel('mob-bakster-content'); renderBaksterNotes(); }
+  // v0.653: Deiger bor nå øverst i «Mer»-fanen (rommer også Notater for aktiv deig).
+  if(t==='tips'){ renderBaksterPanel('mob-bakster-content'); renderBaksterNotes(); }
   if(t==='settings') wizEnterSettingsTab();
   if(t==='beta') renderBetaPanel();
   // Bytter du fane på egen hånd til noe annet enn dit du ble sendt, er hoppet
@@ -6486,8 +6490,16 @@ function closeActiveDeig(){
 function jumpToDeiger(){
   const mobEl=document.getElementById('mob-layout');
   const isMob=!!(mobEl && mobEl.classList.contains('active'));
-  if(isMob){ mobShowTab('bakster'); }
+  if(isMob){ mobShowTab('tips'); } // Deiger bor øverst i «Mer»-fanen
   else{ openDeigerModal(); }
+}
+// Liten teller på «Mer»-fanen når du har aktive deiger (i tillegg til 🍽️ i toppbaren).
+function updateMerTabBadge(){
+  const b=document.getElementById('mob-tab-mer-badge');
+  if(!b) return;
+  const n=window._activeDeigCount||0;
+  b.textContent=String(n);
+  b.style.display = n>0 ? 'block' : 'none';
 }
 
 async function refreshDeigerBanner(){
@@ -6498,10 +6510,12 @@ async function refreshDeigerBanner(){
   if(bakes===null){
     if(sideCount)sideCount.style.display='none';
     if(mobBtn)mobBtn.style.display='none';
+    window._activeDeigCount=0; updateMerTabBadge();
     return;
   }
   // Banneret nudger om DINE egne pågående deiger — ikke andres delte.
   const active=bakes.filter(b=>b.status==='active' && bakeIsMine(b));
+  window._activeDeigCount=active.length; updateMerTabBadge();
   if(sideCount){
     if(active.length>0){ sideCount.style.display='inline-block'; sideCount.textContent=String(active.length); }
     else sideCount.style.display='none';
@@ -7026,15 +7040,15 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <!-- TAB: OPPSKRIFT -->
   <!-- TAB: DEIGER (rommer også Notater for aktiv deig, v6.33) -->
-  <div class="mob-screen" id="mob-bakster">
+  <!-- TAB: MER — Deiger øverst, deretter innstillinger/hjelp -->
+  <div class="mob-screen" id="mob-tips">
+
+    <div class="mob-section-lbl" id="mob-mer-deiger-lbl">🍽️ Deiger</div>
     <div id="mob-bakster-notes"></div>
     <div class="mob-content" id="mob-bakster-content">
       <p id="mob-bakster-empty" style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p>
     </div>
-  </div>
-
-  <!-- TAB: TEKNIKK -->
-  <div class="mob-screen" id="mob-tips">
+    <div style="height:1px;background:var(--forno-border);margin:1.2rem 1rem .2rem"></div>
 
     <div class="mob-section-lbl" id="mob-i18n-section">Språk / Enheter</div>
     <div style="padding:.3rem 1rem 0;font-size:10px;color:var(--forno-text-faint)" id="mob-i18n-lang-lbl">Språk</div>
@@ -7171,11 +7185,8 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')">
       <span aria-hidden="true">📅</span>Tidsplan
     </div>
-    <div class="mob-tab" id="mob-tab-bakster" onclick="mobShowTab('bakster')">
-      <span aria-hidden="true">🍽️</span>Deiger
-    </div>
     <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
-      <span aria-hidden="true">ℹ️</span>Info
+      <span aria-hidden="true">☰</span>Mer
     </div>
     <div class="mob-tab" id="mob-tab-beta" onclick="mobShowTab('beta')">
       <span aria-hidden="true">🧭</span>Smart-plan
