@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.652',
+    d: 'august 2026',
+    changes: [
+      'Byttet pulsen på det aktive Smart-plan-feltet til en mykere «glød» — et varmt halo som puster rolig inn og ut i stedet for en skarp ring. Følger fortsatt «redusert bevegelse».'
+    ]
+  },
+  {
     v: '0.651',
     d: 'august 2026',
     changes: [
