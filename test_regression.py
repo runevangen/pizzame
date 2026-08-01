@@ -2135,6 +2135,30 @@ def run_behavioral_tests(page):
             and r50.get('restoreClamped')==78)
     results.append(('cold_ferment_slider_capped_at_strongest_flour_78h', ok50, r50))
 
+    # v0.660: endringsloggen er tospråklig. Hver entry har d_en + changes_en med
+    # like mange punkter som den norske, og buildChangelogHTML velger språk etter
+    # window._lang (norsk fallback). Sjekk at engelsk modus faktisk viser engelsk.
+    r51 = page.evaluate("""() => {
+      const _lang=window._lang;
+      try{
+        const allBilingual = CHANGELOG.every(e =>
+          typeof e.d_en==='string' && e.d_en.length>0 &&
+          Array.isArray(e.changes_en) && e.changes_en.length===e.changes.length &&
+          e.changes_en.every(c=>typeof c==='string' && c.length>0));
+        const count = CHANGELOG.length;
+        window._lang='en'; const enHtml=buildChangelogHTML();
+        window._lang='no'; const noHtml=buildChangelogHTML();
+        const top=CHANGELOG[0];
+        const enShowsEnglish = enHtml.includes(top.changes_en[0]) && !enHtml.includes(top.changes[0]);
+        const noShowsNorwegian = noHtml.includes(top.changes[0]);
+        const langAware = buildChangelogHTML.toString().includes('changes_en');
+        return {allBilingual, count, enShowsEnglish, noShowsNorwegian, langAware};
+      } finally { window._lang=_lang; }
+    }""")
+    ok51 = (r51.get('allBilingual') and r51.get('count')>=190
+            and r51.get('enShowsEnglish') and r51.get('noShowsNorwegian') and r51.get('langAware'))
+    results.append(('changelog_is_bilingual_and_language_aware', ok51, r51))
+
     return results
 
 

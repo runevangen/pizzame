@@ -4232,10 +4232,13 @@ function closeDeigerModal(){
 // ===== VERSJON OG ENDRINGSLOGG =====
 
 function buildChangelogHTML(){
+  // v0.660: språkbevisst — engelsk (d_en/changes_en) når appen står på engelsk,
+  // ellers norsk. Faller tilbake til norsk der en engelsk oversettelse mangler.
+  const en = window._lang==='en';
   return CHANGELOG.map(entry => `
     <div class="clog-ver">
-      <div class="vh"><b>v${entry.v}</b><span>${entry.d}</span></div>
-      <ul>${entry.changes.map(c => `<li>${c}</li>`).join('')}</ul>
+      <div class="vh"><b>v${entry.v}</b><span>${(en && entry.d_en) ? entry.d_en : entry.d}</span></div>
+      <ul>${((en && entry.changes_en) ? entry.changes_en : entry.changes).map(c => `<li>${c}</li>`).join('')}</ul>
     </div>`).join('') + `<button onclick="closeChangelogModal()" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:14px;font-weight:600;cursor:pointer;margin-top:1rem">${L('Lukk','Close')}</button>`;
 }
 function openChangelogModal(){
