@@ -108,6 +108,15 @@ input[type=date]:focus,input[type=time]:focus{border-color:#e8590c;outline:2px s
 .beta-field-input{position:absolute;inset:0;width:100%;height:100%;margin:0;border:none;background:transparent;color:transparent;font-size:16px;cursor:pointer;-webkit-appearance:none;appearance:none;opacity:0}
 .beta-field-input::-webkit-calendar-picker-indicator{opacity:0}
 .beta-field-input::-webkit-date-and-time-value{color:transparent}
+/* Guidet flyt: kortet du skal ta neste gang lyser opp (oransje ramme + «Trykk
+   her»); et ferdig-tatt kort får ✓ og roer seg. «Finn oppskriften» lyser opp
+   først når begge er tatt. Se betaUpdateGuide(). */
+.beta-done{position:absolute;top:9px;right:11px;width:20px;height:20px;border-radius:50%;background:var(--forno-accent);color:#fff;font-size:12px;font-weight:800;display:none;align-items:center;justify-content:center;pointer-events:none}
+.beta-tap-hint{position:absolute;right:10px;bottom:8px;display:none;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--forno-accent-text);background:var(--forno-accent-soft);border-radius:999px;padding:3px 9px;pointer-events:none}
+.beta-field.is-active{border-color:var(--forno-accent);border-width:2px;box-shadow:0 0 0 4px var(--forno-accent-soft)}
+.beta-field.is-active .beta-tap-hint{display:inline-flex}
+.beta-field.is-done .beta-done{display:flex}
+.beta-field.is-done .beta-field-val{color:var(--forno-text-muted)}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
 .sr input[type=range]{flex:1;min-width:0;accent-color:#e8590c}
@@ -3181,11 +3190,37 @@ function betaSyncFieldLabels(){
   const dEl=document.getElementById('mob-beta-ed'), dDisp=document.getElementById('mob-beta-ed-disp');
   if(dEl && dDisp) dDisp.textContent = betaFmtDate(dEl.value);
 }
+// Guidet flyt: hvilket felt skal tas neste gang? Vi husker hva brukeren har
+// vært innom (åpnet/endret), og lyser opp «neste» steg: klokke → dato → knapp.
+window._betaTouched={time:false,date:false};
+function betaTouch(which){ if(window._betaTouched){ window._betaTouched[which]=true; betaUpdateGuide(); } }
+function betaUpdateGuide(){
+  const tf=document.getElementById('mob-beta-et-field');
+  const df=document.getElementById('mob-beta-ed-field');
+  const btn=document.getElementById('mob-beta-search-btn');
+  const T=window._betaTouched||{};
+  const step = !T.time ? 'time' : (!T.date ? 'date' : 'ready');
+  // språktilpasset «Trykk her»-hint
+  document.querySelectorAll('#mob-beta-et-field .beta-tap-hint,#mob-beta-ed-field .beta-tap-hint')
+    .forEach(h=>h.textContent=L('👆 Trykk her','👆 Tap here'));
+  if(tf){ tf.classList.toggle('is-active', step==='time'); tf.classList.toggle('is-done', !!T.time); }
+  if(df){ df.classList.toggle('is-active', step==='date'); df.classList.toggle('is-done', !!T.date); }
+  if(btn){
+    const ready = step==='ready';
+    // Knappen er alltid trykkbar (feltene har fornuftige standarder) — dempingen
+    // er bare et hint om at du ikke har vært gjennom stegene ennå.
+    btn.style.background = ready ? 'var(--forno-accent)' : 'var(--forno-border)';
+    btn.style.color = ready ? '#1a1512' : 'var(--forno-text-faint)';
+    btn.style.boxShadow = ready ? '0 4px 14px rgba(232,89,12,.30)' : 'none';
+  }
+}
 async function renderBetaPanel(){
   if(!window._pizzatidSchedule) await loadPizzatidSchedule();
   renderPizzatidDays();
   betaEnsureDate();
   betaSyncFieldLabels();
+  window._betaTouched={time:false,date:false}; // frisk guide hver gang fanen åpnes
+  betaUpdateGuide();
   renderBetaFasteTider();
 }
 // Åpner Beta-fanen og folder ut Pizzatid-panelet, slik at "Rediger pizzatiden
@@ -3427,6 +3462,7 @@ function useBetaShortcut(iso){
   if(dEl) dEl.value=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   if(tEl) tEl.value=pad(d.getHours())+':'+pad(d.getMinutes());
   betaSyncFieldLabels();
+  window._betaTouched={time:true,date:true}; betaUpdateGuide(); // snarvei fyller begge
   runBetaSearch();
 }
 function runBetaSearch(){
@@ -7100,13 +7136,17 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div style="padding:.55rem 1rem .8rem">
         <!-- Klokke og dato som to like store kort. Verdien vises via egen etikett
              (format vi styrer selv); en gjennomsiktig native-velger ligger oppå. -->
-        <div class="beta-field" style="margin-bottom:8px">
+        <div class="beta-field" id="mob-beta-et-field" style="margin-bottom:8px">
           <span class="beta-field-val" id="mob-beta-et-disp">19:00</span>
-          <input type="time" id="mob-beta-et" class="beta-field-input" value="19:00" onchange="betaSyncFieldLabels()" aria-label="Klokkeslett">
+          <span class="beta-done" aria-hidden="true">✓</span>
+          <span class="beta-tap-hint">👆 Trykk her</span>
+          <input type="time" id="mob-beta-et" class="beta-field-input" value="19:00" onchange="betaSyncFieldLabels();betaTouch('time')" onblur="betaTouch('time')" aria-label="Klokkeslett">
         </div>
-        <div class="beta-field" style="margin-bottom:10px">
+        <div class="beta-field" id="mob-beta-ed-field" style="margin-bottom:10px">
           <span class="beta-field-val" id="mob-beta-ed-disp">—</span>
-          <input type="date" id="mob-beta-ed" class="beta-field-input" onchange="betaEnsureDate();betaSyncFieldLabels()" aria-label="Dato">
+          <span class="beta-done" aria-hidden="true">✓</span>
+          <span class="beta-tap-hint">👆 Trykk her</span>
+          <input type="date" id="mob-beta-ed" class="beta-field-input" onchange="betaEnsureDate();betaSyncFieldLabels();betaTouch('date')" onblur="betaTouch('date')" aria-label="Dato">
         </div>
         <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
         <div id="mob-beta-result"></div>
