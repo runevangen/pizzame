@@ -3,6 +3,13 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    v: '0.651',
+    d: 'august 2026',
+    changes: [
+      'Byttet «👆 Trykk her»-teksten i Smart-plan-velgeren med en rolig pulserende ramme rundt det aktive feltet — samme guiding, mindre tekst. Følger «redusert bevegelse»-innstillingen (da står ringen stille).'
+    ]
+  },
+  {
     v: '0.650',
     d: 'august 2026',
     changes: [
