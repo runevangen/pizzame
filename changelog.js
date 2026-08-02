@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.676",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Langtidsdeig får nå merkede tidsvalg rett under metodevalget i wizarden, akkurat som hurtigdeig og kveldsdeig: 24t «Rett fram», 48t «Mer smak», 72t «Full smak». Før lå kald-hevingen bare som en naken tall-slider gjemt i Finjuster. Slideren er der fortsatt for presis justering — begge setter samme verdi, så det er ett sannhetsgrunnlag."
+    ],
+    "changes_en": [
+      "Long-ferment dough now gets labelled time options right under the method choice in the wizard, just like quick dough and evening dough: 24h \"Straightforward\", 48h \"More flavor\", 72h \"Full flavor\". Before, the cold proof was only a bare numeric slider tucked away in Fine-tune. The slider is still there for precise adjustment — both set the same value, so there is a single source of truth."
+    ]
+  },
+  {
     "v": "0.675",
     "d": "august 2026",
     "d_en": "August 2026",

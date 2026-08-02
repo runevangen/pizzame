@@ -2533,6 +2533,44 @@ def run_behavioral_tests(page):
     ok66 = all(r66.get(k) for k in ['enShort','enNoPizzaSuffix','noShort','noEllipsisTruncation'])
     results.append(('status_bar_title_short_type_and_wraps_not_truncates', ok66, r66))
 
+    # v0.676: langtidsdeig får merkede kald-tid-valg rett under metodevalget (som
+    # hurtig/kveld), i tillegg til slideren i Finjuster. Chip og slider setter
+    # samme S.cold (ett sannhetsgrunnlag), og radene skjules for hurtigdeig.
+    r67 = page.evaluate("""() => {
+      const orig={mode:S.mode,method:S.method,cold:S.cold,type:S.type,lang:window._lang,chosen:window._planChosen};
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('settings');
+        try{ wizGoto(2); }catch(e){}
+        S.type='napoletana';
+        const pick=txt=>{const c=[...document.querySelectorAll('#mob-gmet > div')].find(x=>x.textContent.includes(txt)); if(c) c.click(); return !!c;};
+        pick('Langtidsdeig');
+        const rows=[...document.querySelectorAll('#mob-srows > div')].map(d=>d.textContent.trim());
+        const ssubShown = document.getElementById('mob-ssub').style.display!=='none';
+        // Klikk «72 timer» -> S.cold=72
+        const r72=[...document.querySelectorAll('#mob-srows > div')].find(d=>d.textContent.includes('72'));
+        if(r72) r72.click();
+        const coldAfterChip=S.cold;
+        // Slider (mobUCold) -> chip re-highlightes = ett sannhetsgrunnlag
+        mobUCold(48);
+        const chip48=[...document.querySelectorAll('#mob-srows > div')].find(d=>d.textContent.includes('48'));
+        const chip48On = !!(chip48 && chip48.getAttribute('style').includes('600'));
+        // Skjules for hurtigdeig
+        pick('Hurtigdeig');
+        const hiddenForHurtig = document.getElementById('mob-ssub').style.display==='none';
+        // Engelske etiketter (kall byggeren direkte med en=språk)
+        window._lang='en'; mobBuildSrows();
+        const enRows=[...document.querySelectorAll('#mob-srows > div')].map(d=>d.textContent.trim());
+        return {
+          hasThreeLabelled: rows.length===3 && rows[0].includes('24 timer') && rows[0].includes('Rett fram') && rows[2].includes('72 timer') && rows[2].includes('Full smak'),
+          ssubShown, coldAfterChip, chip48On, hiddenForHurtig,
+          enLabelled: enRows.length===3 && enRows[0].includes('24 hours') && enRows[0].includes('Straightforward') && enRows[2].includes('Full flavor')
+        };
+      } finally { S.mode=orig.mode;S.method=orig.method;S.cold=orig.cold;S.type=orig.type;window._lang=orig.lang;window._planChosen=orig.chosen; }
+    }""")
+    ok67 = (r67.get('hasThreeLabelled') and r67.get('ssubShown') and r67.get('coldAfterChip')==72
+            and r67.get('chip48On') and r67.get('hiddenForHurtig') and r67.get('enLabelled'))
+    results.append(('longferment_gets_labelled_cold_time_picks_like_quick_dough', ok67, r67))
+
     return results
 
 
