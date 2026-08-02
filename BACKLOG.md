@@ -365,7 +365,14 @@ flere steg definerer `substeps` uten `tip`/`why` (f.eks. passive Poolish/Biga-ve
 en regresjonstest à la eksisterende `pc_mobil_1to1_*` passer måten forfatteren
 allerede vokter konsistens på.
 
-### F12. Lys/mørk-tema også for PC-visningen
+### F12. Lys/mørk-tema også for PC-visningen ⏸️ UTSATT (bevisst, aug 2026)
+> ⏸️ **Utsatt etter avklaring.** Å koble PC på det delte tema-systemet (dark =
+> ingen `.theme-light`-klasse, som er standard) ville gjort PC **mørkt som
+> standard** — en synlig endring for dagens PC-brukere. Rune valgte å beholde PC
+> lyst for nå. Kan tas opp igjen senere; da må default-oppførselen (mørkt som
+> mobil vs. behold lyst med egen `.theme-dark`) bestemmes først. Forno-
+> mørkpaletten finnes ferdig å gjenbruke.
+>
 > **I klartekst:** v6.17 ga mobil-layouten en ekte lys/mørk-bryter (Tons of Rock-
 > kremtema). PC-visningen har fortsatt sin egen, faste lyse styling og får ikke
 > temavalget. F12 er å la `.theme-light`/mørk-tokenene også styre desktop-layouten,
