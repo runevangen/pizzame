@@ -2983,34 +2983,6 @@ function copyP(steps){
   }).catch(()=>alert(L('Kopi feilet — prøv manuelt.','Copy failed — try manually.')));
 }
 
-// v0.665 (backlog F10): samlet, kopierbar handleliste. Fler-dagers metoder
-// (Poolish/Biga/Mania) deler ingrediensene over faser i tidsplanen — dette gir
-// deg TOTALEN å handle etter, i ett kort tekstblokk. Bruker samme R()-totaler
-// som «Kopier tidsplan» sin ingrediensdel.
-function shoppingListText(){
-  const r=R(), p=pc();
-  const lines=[
-    L('🛒 Handleliste — UltimatePizza','🛒 Shopping list — UltimatePizza'),
-    L(`${r.name} · ${p.count} ${pcUnitLabel(true)} (${p.perPizza}g/emne)`,`${r.name} · ${p.count} ${pcUnitLabel(true)} (${p.perPizza}g/ball)`),
-    '',
-    L(`Mel: ${r.flour}g`,`Flour: ${r.flour}g`),
-    L(`Vann: ${r.water}g`,`Water: ${r.water}g`),
-    L(`Salt: ${r.salt}g`,`Salt: ${r.salt}g`),
-    ...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),
-    ...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),
-    ...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),
-    L(`Gjær: ${currentYeastAmount()}`,`Yeast: ${currentYeastAmount()}`)
-  ];
-  return lines.join('\n');
-}
-function copyShoppingList(btn){
-  const text=shoppingListText();
-  const done=()=>{ if(btn){ const o=btn.getAttribute('data-lbl')||btn.textContent; btn.textContent=L('✓ Kopiert!','✓ Copied!'); setTimeout(()=>{ btn.textContent=o; },2000); } };
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(done).catch(()=>window.prompt(L('Kopier handlelisten:','Copy the shopping list:'), text));
-  } else { window.prompt(L('Kopier handlelisten:','Copy the shopping list:'), text); }
-}
-
 function icsStamp(d){
   return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
 }
@@ -6414,7 +6386,7 @@ function bakeMetaLine(b){
   // v0.666 (backlog F9): vis nøkkelparametrene (kjøletid + hydrering) i meta-linja,
   // så en ferdig deigs vurdering er knyttet til konkrete tall («72t · 65% → ★★★★»).
   const c = b.config||{};
-  const coldStr = (c.cold && ['standard','poolish','biga'].includes(c.method)) ? ` · ${c.cold}t${L(' kjøl',' fridge')}` : '';
+  const coldStr = (c.cold && ['standard','poolish','biga'].includes(c.method)) ? L(` · ${c.cold}t kjøl`, ` · ${c.cold}h fridge`) : '';
   const hydStr = c.hydro ? ` · ${c.hydro}%` : '';
   return `${tn} · ${mn}${coldStr}${hydStr} · ${lbl}: ${dtStr}`;
 }
@@ -6652,7 +6624,6 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   const deltaHTML = showDelta ? startDeltaChipHTML(startMs) : '';
   const actionsHTML = showActions ? `<div style="display:flex;gap:6px;margin-top:8px">
       <button onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan','Copy schedule')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📋</span>${t('a_copy')}</button>
-      <button onclick="copyShoppingList(this)" title="${L('Kopier samlet handleliste','Copy consolidated shopping list')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>🛒</span>${L('Handleliste','Shop list')}</button>
       <button onclick="downloadIcs(window._steps||[])" title="${L('Last ned til kalender','Download to calendar')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📅</span>${t('a_cal')}</button>
       <button id="mob-savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen','Save this dough')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>💾</span>${t('a_save')}</button>
     </div>` : '';
@@ -6778,7 +6749,6 @@ function actionGroupHTML(){
       <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen slik at du eller andre kan hente den frem igjen senere','Save this dough so you or others can bring it back later')}">${saveBakeLabel()}</button>
       <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="${L('Se alle lagrede deiger','See all saved doughs')}">${L('🍽️ Mine deiger','🍽️ My doughs')}</button>
       <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan som tekst','Copy schedule as text')}">${L('📋 Kopier','📋 Copy')}</button>
-      <button class="act-btn act-btn-sec" onclick="copyShoppingList(this)" title="${L('Kopier en samlet handleliste med totale ingrediensmengder','Copy a consolidated shopping list with total ingredient amounts')}">${L('🛒 Handleliste','🛒 Shopping list')}</button>
       <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert handlingssteg','Download the schedule as a calendar file, with a reminder 10 min before each action step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
       <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="${L('Vis eller skjul forklaringer og tips','Show or hide explanations and tips')}">${S.showHelp?L('💡 Skjul forklaringer','💡 Hide explanations'):L('💡 Vis forklaringer','💡 Show explanations')}</button>
       ${substepToggleHTML('pc')}

@@ -3,6 +3,28 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.672",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fjernet «🛒 Handleliste»-knappen igjen — ingrediens-totalene finnes allerede i oppskrift-fanen og i «Kopier tidsplan», så en egen handleliste var overflødig."
+    ],
+    "changes_en": [
+      "Removed the \"🛒 Shopping list\" button again — the ingredient totals are already in the recipe tab and in \"Copy schedule\", so a separate shopping list was redundant."
+    ]
+  },
+  {
+    "v": "0.671",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet at kjøletiden på deig-kortene (i «Mer» → Deiger) viste den norske forkortelsen «t» i engelsk modus («48t fridge»). Den viser nå «48h fridge»."
+    ],
+    "changes_en": [
+      "Fixed the fridge time on the dough cards (in \"More\" → Doughs) showing the Norwegian abbreviation \"t\" in English mode (\"48t fridge\"). It now shows \"48h fridge\"."
+    ]
+  },
+  {
     "v": "0.670",
     "d": "august 2026",
     "d_en": "August 2026",

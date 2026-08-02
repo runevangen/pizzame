@@ -2308,27 +2308,7 @@ def run_behavioral_tests(page):
     ok57 = (r57.get('match') and r57.get('rounded'))
     results.append(('biga_bulk_rise_rounded_consistently_in_overhead', ok57, r57))
 
-    # F10 (v0.665): samlet, kopierbar handleliste. shoppingListText() gir totalene
-    # (mel/vann/salt/gjær + evt. olje/smør/sukker) i ett kort tekstblokk, språktilpasset.
-    r58 = page.evaluate("""() => {
-      const orig={method:S.method,type:S.type,lang:window._lang};
-      try{
-        S.type='napoletana'; S.method='standard';
-        window._lang='no'; const no=shoppingListText();
-        window._lang='en'; const en=shoppingListText();
-        return {
-          noHeader: no.includes('Handleliste'),
-          noFlour: /Mel: \\d+g/.test(no),
-          noWater: /Vann: \\d+g/.test(no),
-          noYeast: /Gjær:/.test(no),
-          enHeader: en.includes('Shopping list'),
-          enFlour: /Flour: \\d+g/.test(en),
-          enYeast: /Yeast:/.test(en)
-        };
-      } finally { S.method=orig.method;S.type=orig.type;window._lang=orig.lang; }
-    }""")
-    ok58 = all(r58.get(k) for k in ['noHeader','noFlour','noWater','noYeast','enHeader','enFlour','enYeast'])
-    results.append(('shopping_list_totals_copyable_and_localized', ok58, r58))
+    # (v0.672: F10 «Handleliste» fjernet etter brukertilbakemelding — testen borte.)
 
     # F8 (v0.666): søk/filter/sortering i Deiger-lista (applyDeigFilter). F9: meta-
     # linja viser nå kjøletid + hydrering, så en ferdig deigs vurdering er knyttet
@@ -2349,13 +2329,19 @@ def run_behavioral_tests(page):
         const newest=applyDeigFilter(list).map(b=>b.name);
         window._deigFilter={q:'',method:'',sort:'rating'};
         const byRating=applyDeigFilter(list).map(b=>b.rating);
-        const meta=bakeMetaLine(list[0]);
-        return {search, methodF, newestFirst:newest[0], byRating, metaHasCold:meta.includes('48t'), metaHasHyd:meta.includes('65%')};
+        const _lang=window._lang;
+        window._lang='no'; const metaNo=bakeMetaLine(list[0]);
+        window._lang='en'; const metaEn=bakeMetaLine(list[0]);
+        window._lang=_lang;
+        // v0.671: kjøletid-enheten må følge språk — «48t kjøl» (no) / «48h fridge» (en)
+        return {search, methodF, newestFirst:newest[0], byRating,
+                metaHasCold:metaNo.includes('48t'), metaHasHyd:metaNo.includes('65%'),
+                enColdUnit:metaEn.includes('48h fridge') && !metaEn.includes('48t')};
       } finally { window._deigFilter=_f; }
     }""")
     ok59 = (r59.get('search')==['Biga-test'] and r59.get('methodF')==['poolish']
             and r59.get('newestFirst')=='Hurtig hverdag' and r59.get('byRating')==[5,3,2]
-            and r59.get('metaHasCold') and r59.get('metaHasHyd'))
+            and r59.get('metaHasCold') and r59.get('metaHasHyd') and r59.get('enColdUnit'))
     results.append(('doughs_search_filter_sort_and_config_in_meta', ok59, r59))
 
     # F7 (v0.667): tilgjengelighet. Avhaking (steg/ingrediens/understeg) er nå ekte
