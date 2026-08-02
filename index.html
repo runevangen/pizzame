@@ -6660,8 +6660,12 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   const methodNames = window._lang==='en'
     ? {standard:'Long-ferment dough',poolish:(S.poolishCold?'Poolish (fridge)':'Poolish'),biga:'Biga',mania:'Mania poolish',hurtig:'Quick dough',kveld:'Evening dough'}
     : {standard:'Langtidsdeig',poolish:(S.poolishCold?'Poolish (kjøleskap)':'Poolish'),biga:'Biga',mania:'Mania-poolish',hurtig:'Hurtigdeig',kveld:'Kveldsdeig'};
+  // Kort, språkriktig typenavn («Napoletansk»/«Neapolitan») uten det overflødige
+  // «pizza»-halet — statuslinja er trang, og full «… pizza · Langtidsdeig» ble
+  // kuttet midt i ordet til «… · Lon…». tnShort + linjebryting under gjør at
+  // navnet aldri avkortes.
   let typeName='';
-  try{ typeName=S.method==='mania'?'Napoletansk pizza':R().name; }catch(e){}
+  try{ typeName=tnShort(S.type); }catch(e){}
   const firstActive=(steps||[]).find(s=>!s.passive)||(steps||[])[0];
   const last=(steps||[])[(steps||[]).length-1];
   let startTxt='—', bakeTxt='—';
@@ -6689,7 +6693,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
     </div>` : '';
   return `<div aria-live="polite" style="padding:.55rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0)">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <div style="font-size:12px;font-weight:700;color:var(--forno-text,#222);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(typeName)} · ${escH(methodNames[S.method]||S.method)}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--forno-text,#222);min-width:0;line-height:1.25;overflow-wrap:anywhere">${escH(typeName)} · ${escH(methodNames[S.method]||S.method)}</div>
       ${showActions ? '' : justerBtn}
     </div>
     ${toolbarHTML}

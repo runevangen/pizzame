@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.675",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet at tittelen i planleggings-statuslinja ble kuttet midt i ordet («Neapolitan pizza · Lon…»). Den viser nå det korte typenavnet uten det overflødige «pizza»-halet, og brytes til to linjer i stedet for å avkortes — så hele metoden alltid er lesbar."
+    ],
+    "changes_en": [
+      "Fixed the planner status-bar title being cut off mid-word (\"Neapolitan pizza · Lon…\"). It now shows the short type name without the redundant \"pizza\" suffix, and wraps to two lines instead of truncating — so the full method is always readable."
+    ]
+  },
+  {
     "v": "0.674",
     "d": "august 2026",
     "d_en": "August 2026",
