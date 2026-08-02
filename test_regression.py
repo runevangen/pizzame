@@ -2349,13 +2349,19 @@ def run_behavioral_tests(page):
         const newest=applyDeigFilter(list).map(b=>b.name);
         window._deigFilter={q:'',method:'',sort:'rating'};
         const byRating=applyDeigFilter(list).map(b=>b.rating);
-        const meta=bakeMetaLine(list[0]);
-        return {search, methodF, newestFirst:newest[0], byRating, metaHasCold:meta.includes('48t'), metaHasHyd:meta.includes('65%')};
+        const _lang=window._lang;
+        window._lang='no'; const metaNo=bakeMetaLine(list[0]);
+        window._lang='en'; const metaEn=bakeMetaLine(list[0]);
+        window._lang=_lang;
+        // v0.671: kjøletid-enheten må følge språk — «48t kjøl» (no) / «48h fridge» (en)
+        return {search, methodF, newestFirst:newest[0], byRating,
+                metaHasCold:metaNo.includes('48t'), metaHasHyd:metaNo.includes('65%'),
+                enColdUnit:metaEn.includes('48h fridge') && !metaEn.includes('48t')};
       } finally { window._deigFilter=_f; }
     }""")
     ok59 = (r59.get('search')==['Biga-test'] and r59.get('methodF')==['poolish']
             and r59.get('newestFirst')=='Hurtig hverdag' and r59.get('byRating')==[5,3,2]
-            and r59.get('metaHasCold') and r59.get('metaHasHyd'))
+            and r59.get('metaHasCold') and r59.get('metaHasHyd') and r59.get('enColdUnit'))
     results.append(('doughs_search_filter_sort_and_config_in_meta', ok59, r59))
 
     # F7 (v0.667): tilgjengelighet. Avhaking (steg/ingrediens/understeg) er nå ekte

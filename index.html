@@ -6414,7 +6414,7 @@ function bakeMetaLine(b){
   // v0.666 (backlog F9): vis nøkkelparametrene (kjøletid + hydrering) i meta-linja,
   // så en ferdig deigs vurdering er knyttet til konkrete tall («72t · 65% → ★★★★»).
   const c = b.config||{};
-  const coldStr = (c.cold && ['standard','poolish','biga'].includes(c.method)) ? ` · ${c.cold}t${L(' kjøl',' fridge')}` : '';
+  const coldStr = (c.cold && ['standard','poolish','biga'].includes(c.method)) ? L(` · ${c.cold}t kjøl`, ` · ${c.cold}h fridge`) : '';
   const hydStr = c.hydro ? ` · ${c.hydro}%` : '';
   return `${tn} · ${mn}${coldStr}${hydStr} · ${lbl}: ${dtStr}`;
 }
