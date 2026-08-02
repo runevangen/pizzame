@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.664",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Mer»-fanen ligger nå lengst til høyre i menylinja (byttet plass med Smart-plan) — der en «mer»-meny vanligvis hører hjemme. Ny rekkefølge: Planlegging · Tidsplan · Smart-plan · Mer.",
+      "Fylte inn manglende «hvorfor»-forklaringer på flere steg i hurtigdeig og Mania-poolish, så hvert steg i alle metoder nå forklarer hvorfor det er der."
+    ],
+    "changes_en": [
+      "The \"More\" tab now sits furthest right in the menu bar (swapped with Smart plan) — where a \"more\" menu usually belongs. New order: Planner · Schedule · Smart plan · More.",
+      "Filled in missing \"why\" explanations on several steps in the quick dough and Mania poolish, so every step in every method now explains why it is there."
+    ]
+  },
+  {
     "v": "0.663",
     "d": "august 2026",
     "d_en": "August 2026",

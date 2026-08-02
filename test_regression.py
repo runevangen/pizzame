@@ -2243,6 +2243,55 @@ def run_behavioral_tests(page):
             and r54.get('c')==r54.get('cExp') and r54.get('timeDefault')=='18:00')
     results.append(('smartplan_default_today_only_with_margin_else_tomorrow_1800', ok54, r54))
 
+    # F13 (v0.664): «☰ Mer» flyttet lengst til høyre i tabbaren, byttet med
+    # «🧭 Smart-plan». Ny visuell rekkefølge: Planlegging · Tidsplan · Smart-plan · Mer.
+    r55 = page.evaluate("""() => {
+      const order=[...document.querySelectorAll('.mob-tabbar .mob-tab')].map(el=>el.id.replace('mob-tab-',''));
+      const merLast = order[order.length-1]==='tips';
+      const betaBeforeMer = order.indexOf('beta') < order.indexOf('tips');
+      // badgen skal fortsatt havne på Mer-fanen etter ombyttingen
+      window._activeDeigCount=2; try{ updateMerTabBadge(); }catch(e){}
+      const badge=document.getElementById('mob-tab-mer-badge');
+      const badgeOnMer = !!badge && badge.closest('.mob-tab') && badge.closest('.mob-tab').id==='mob-tab-tips';
+      window._activeDeigCount=0; try{ updateMerTabBadge(); }catch(e){}
+      return {order, merLast, betaBeforeMer, badgeOnMer};
+    }""")
+    ok55 = (r55.get('order')==['settings','plan','beta','tips']
+            and r55.get('merLast') and r55.get('betaBeforeMer') and r55.get('badgeOnMer'))
+    results.append(('mer_tab_moved_rightmost_swapped_with_smartplan', ok55, r55))
+
+    # F11 (v0.664): tips/why-paritet. Kontrakt: HVERT steg som har understeg må ha
+    # en `why` (den pedagogiske «hvorfor dette steget»-teksten). Vokter alle
+    # metode×type-kombinasjoner mot at et understeg-steg mangler why fremover.
+    r56 = page.evaluate("""() => {
+      const anchor=new Date(2026,7,10,18,0,0);
+      const orig={type:S.type,method:S.method,poolishPauseH:S.poolishPauseH,poolishCold:S.poolishCold};
+      const gaps=[];
+      try{
+        const types=['napoletana','newyork','langpanne','chicago','ingenelting'];
+        const methods=['standard','hurtig','kveld','mania','poolish','biga'];
+        for(const type of types){
+          for(const method of methods){
+            if(type==='ingenelting' && method!=='standard') continue;
+            S.type=type; S.method=method; S.poolishPauseH=0;
+            let steps;
+            try{
+              if(type!=='ingenelting' && method==='hurtig') steps=hurtigSteps(anchor).steps;
+              else if(type!=='ingenelting' && method==='kveld') steps=kveldSteps(anchor).steps;
+              else steps=rawSteps(anchor);
+            }catch(e){ gaps.push(type+'/'+method+' ERROR '+e); continue; }
+            steps.forEach((s,i)=>{
+              const hasSub=Array.isArray(s.substeps)&&s.substeps.length>0;
+              if(hasSub && (!s.why || !String(s.why).trim())) gaps.push(type+'/'+method+' #'+i+' '+(s.title||''));
+            });
+          }
+        }
+      } finally { S.type=orig.type;S.method=orig.method;S.poolishPauseH=orig.poolishPauseH;S.poolishCold=orig.poolishCold; }
+      return {gapCount:gaps.length, gaps:gaps.slice(0,12)};
+    }""")
+    ok56 = (r56.get('gapCount')==0)
+    results.append(('every_substep_bearing_step_has_a_why_all_methods', ok56, r56))
+
     return results
 
 

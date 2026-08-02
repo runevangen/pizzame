@@ -2308,8 +2308,9 @@ function rawSteps(a){
       {title:'Poolish kjøles ned',loc:'kjol',at:chillAt,dur:0,
         desc:L('Sett poolishen i kjøleskapet for nedkjøling.',`Put the poolish in the fridge to cool down.`),
         substeps:[L('Sett poolishen i kjøleskapet',`Put the poolish in the fridge`)],
+        why:L('Nedkjølingen bremser poolishen så den ikke overmodner, og gjør den lettere å blande inn i den kalde hoveddeigen.','Cooling slows the poolish so it does not over-mature, and makes it easier to mix into the cold main dough.'),
         tip:L('Minimum 1 time er nok, men det gjør ikke noe om den står 3–4 timer om du ikke rekker neste steg med det samme — dette steget er fleksibelt.',`A minimum of 1 hour is enough, but it doesn't matter if it stands 3–4 hours if you don't get to the next step right away — this step is flexible.`)},
-      {title:'Nedkjøling',loc:'kjol',at:chillAt,dur:CHILL,passive:true,desc:L('La stå kaldt i minst 2 timer.',`Let sit cold for at least 2 hours.`),substeps:[L('La stå kaldt i minst 2 timer',`Let sit cold for at least 2 hours`)]},
+      {title:'Nedkjøling',loc:'kjol',at:chillAt,dur:CHILL,passive:true,desc:L('La stå kaldt i minst 2 timer.',`Let sit cold for at least 2 hours.`),substeps:[L('La stå kaldt i minst 2 timer',`Let sit cold for at least 2 hours`)],why:L('De to timene i kulde setter fermenteringen på lav fart, så poolishen ikke overmodner før hoveddeigen blandes.','The two cold hours slow the fermentation right down, so the poolish does not over-mature before the main dough is mixed.')},
       {title:'Bland hoveddeig',loc:'benk',at:mixAt,dur:MIX_DUR,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(MIX_DUR+RISE1+15)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(MIX_DUR+RISE1+15)} of uninterrupted time — the next three steps are done in one go.`),
         desc:L(`Hell avkjølt poolish i bollen. Ha i ${rm.hovedMel}g mel, ${rm.hovedYd}g tørrgjær og ${rm.vann1}g kaldt vann (4–6°C) direkte i bollen — ingen forblanding av gjæren nødvendig. Kjør på lav hastighet til blandet. Tilsett resten av vannet (${rm.vann2}g) i dråper, vent til absorbert mellom hver — hold igjen 1/3 til slutt sammen med saltet. Etter ca. 15 min: tilsett ${rm.salt}g salt og resten av vannet. Kjør videre 5 min til smidig deig.`,`Pour the cooled poolish into the bowl. Add ${rm.hovedMel}g flour, ${rm.hovedYd}g dry yeast and ${rm.vann1}g cold water (4–6°C) directly into the bowl — no pre-mixing of the yeast needed. Run on low speed until combined. Add the rest of the water (${rm.vann2}g) in drops, waiting until absorbed between each — hold back 1/3 for the end along with the salt. After about 15 min: add ${rm.salt}g salt and the rest of the water. Keep running 5 min until a supple dough.`),
@@ -2324,7 +2325,8 @@ function rawSteps(a){
         tip:L('Deigtemp bør ligge 20–24°C — gå ikke over 26°C, aldri over 28°C. Da blir gjæringen ukontrollert og deigen kan bli ødelagt.',`Dough temp should be 20–24°C — don't go above 26°C, never above 28°C. Then the fermentation becomes uncontrolled and the dough can be ruined.`)},
       {title:'Hvile i ro',loc:'benk',at:aM(mixAt,MIX_DUR),dur:RISE1,passive:true,
         desc:L('Smør et tynt lag olivenolje på kjøkkenbenken og over deigen. Dekk til (brødpose eller plastfolie) og la ligge urørt.',`Spread a thin layer of olive oil on the counter and over the dough. Cover (bread bag or plastic wrap) and let it lie undisturbed.`),
-        substeps:[L('Smør et tynt lag olivenolje på benken og over deigen',`Spread a thin layer of olive oil on the counter and over the dough`),L('Dekk til og la ligge urørt',`Cover and let it lie undisturbed`)]},
+        substeps:[L('Smør et tynt lag olivenolje på benken og over deigen',`Spread a thin layer of olive oil on the counter and over the dough`),L('Dekk til og la ligge urørt',`Cover and let it lie undisturbed`)],
+        why:L('En rolig benkhvile lar gluten slappe av etter eltingen og gir deigen en første, jevn heving før forming.','A calm rest on the counter lets the gluten relax after kneading and gives the dough a first, even rise before shaping.')},
       {title:'Form til bolle → romtemperatur',loc:'rom',at:shapeAt,dur:ROOMTEMP1,passive:false,
         desc:L('Brett deigen noen ganger og lag en stram, rund bolle. Legg i bakebolle eller lignende, dekk med lokk eller plastfolie.',`Fold the dough a few times and make a tight, round ball. Place in a baking bowl or similar, cover with a lid or plastic wrap.`),
         substeps:[
@@ -2347,15 +2349,17 @@ function rawSteps(a){
           L('Form stramme baller',`Shape tight balls`),
           L('Legg i hver sin oljede boks eller dype skål, dekk til',`Place each in its own oiled container or deep bowl, cover`)
         ],
+        why:L('Deigen deles først etter den lange, samlede kjølehevingen — da bærer hvert emne med seg modningen hele deigen har bygget opp.','The dough is divided only after the long, undivided cold proof — so each ball carries the maturation the whole dough has built up.'),
         tip:L('Baller som er formet stramt holder seg bedre gjennom neste, lange romtemperaturheving.',`Balls shaped tightly hold up better through the next, long room-temperature rise.`)},
       {title:'Romtemperaturheving (delt)',loc:'rom',at:aM(divideAt,15),dur:FINAL_PROOF-15,passive:true,
         desc:L(`La emnene heve i romtemperatur ved ${S.temp}°C.`,`Let the balls rise at room temperature at ${S.temp}°C.`),
         substeps:[L(`La emnene heve i romtemperatur ved ${S.temp}°C`,`Let the balls rise at room temperature at ${S.temp}°C`)],
+        why:L('Emnene tar til seg romvarme og hever ferdig, så de blir luftige og strekkbare når du skal steke.',`The balls take on room warmth and finish rising, so they become airy and stretchable by the time you bake.`),
         tip:L('Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.',`After this they can also stand up to 4 hours extra at room temperature as a buffer, if you're not ready right then.`)},
       {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
         desc:oN()+'.',
         substeps:bakeSubsteps(S.type),
-        tip:L('Pizzastein/-stål MÅ varmes minst 45 min.',`Pizza stone/steel MUST be heated at least 45 min.`)}
+        why:WHY.st,tip:L('Pizzastein/-stål MÅ varmes minst 45 min.',`Pizza stone/steel MUST be heated at least 45 min.`)}
     ];
   }
   return[];
@@ -2419,10 +2423,10 @@ function hurtigSteps(anchor){
         ?L('Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.','The windowpane test is extra important here since you don\'t have a long rise to compensate for under-kneading.')
         :L('Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.','Knead a bit longer than you would with a longer rise — quick dough has less time for gluten to develop on its own.')},
     {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}.`,`Cover tightly. Rise at ${S.temp}°C for about ${fmtHM(ba)}.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}`,`Rise at ${S.temp}°C for about ${fmtHM(ba)}`)],why:rtW(ba),tip:TIP.roomRise},
-    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}. Round well.`),needs:[L(`📦 ${p.count} emne${p.count>1?'r':''}`,`📦 ${p.count} ball${p.count>1?'s':''}`)],substeps:[L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
+    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}. Round well.`),needs:[L(`📦 ${p.count} emne${p.count>1?'r':''}`,`📦 ${p.count} ball${p.count>1?'s':''}`)],substeps:[L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],why:L('Runde, stramme emner holder formen gjennom den korte etterhevingen som følger, og gir jevn heving.','Round, tight balls hold their shape through the short final proof that follows, and rise evenly.'),tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
     {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${fmtHM(afm)}. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${fmtHM(afm)}. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${fmtHM(afm)}, tildekket`,`Final proof ${fmtHM(afm)}, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
-      tip:(oT(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
+      why:WHY.st,tip:(oT(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
   ]};
 }
 
@@ -3285,7 +3289,10 @@ function openPizzatidFromWarning(){
 // Samme grep som warningWrapHTML i v5.74 — én implementasjon, alle hoppene
 // arver den.
 let _returnTo = null; // {tab, wizStep, stepTitle}
-const MOB_TABS = ['plan','settings','tips','beta'];
+// v0.664: visuell rekkefølge i tabbaren — Planlegging · Tidsplan · Smart-plan · Mer
+// («Mer» flyttet lengst til høyre, overløps-meny-konvensjon). Rekkefølgen her er
+// kun for lesbarhet; all logikk finner fanen på id, ikke posisjon.
+const MOB_TABS = ['settings','plan','beta','tips'];
 function currentMobTab(){
   return MOB_TABS.find(id=>{
     const el=document.getElementById('mob-'+id);
@@ -7282,11 +7289,11 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')">
       <span aria-hidden="true">📅</span>Tidsplan
     </div>
-    <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
-      <span aria-hidden="true">☰</span>Mer
-    </div>
     <div class="mob-tab" id="mob-tab-beta" onclick="mobShowTab('beta')">
       <span aria-hidden="true">🧭</span>Smart-plan
+    </div>
+    <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
+      <span aria-hidden="true">☰</span>Mer
     </div>
   </div>
 
