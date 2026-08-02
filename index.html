@@ -898,6 +898,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
         <option value="regal_tipo00">Regal Tipo 00</option>
         <option value="couco">Caputo Couco</option>
         <option value="manitoba">Caputo Manitoba Oro</option>
+        <option value="annet" id="gmel-opt-annet">Annet mel / ikke i listen</option>
       </select>
     </div>
     <div id="gmel-info" style="margin-top:5px;font-size:11px;color:#6E6E73;background:#F2F2F7;border-radius:6px;padding:5px 8px;line-height:1.4"></div>
@@ -1155,6 +1156,9 @@ function syncStaticI18nUI(){
   st('mob-govn-hint','Velg én','Choose one');
   st('mob-antall-lbl-fj','Antall','Quantity');
   st('mob-meltype-lbl-fj','Meltype','Flour type');
+  st('gmel-opt-annet','Annet mel / ikke i listen','Other / not listed');
+  st('mob-gmel-opt-annet','Annet mel / ikke i listen','Other / not listed');
+  st('mob-gmel-fj-opt-annet','Annet mel / ikke i listen','Other / not listed');
   st('wiz-finjuster-done','✓ Ferdig — se steg for steg','✓ Done — see step by step');
   // Info/settings tab
   st('mob-visning-lbl','Visning','Display');
@@ -1366,15 +1370,28 @@ const MELTYPER=[
   {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48}},
   {v:'regal_tipo00',t:'Regal Tipo 00',protein:'13%',w:'–',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48},estimated:true},
   {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:16,mx:54}},
-  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:78}}
+  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:78}},
+  // «Annet mel / ikke i listen»: for et mel appen ikke kjenner. generic:true slår
+  // av det mel-spesifikke gjærings-/hydreringsvarselet (appen kan ikke dømme et
+  // spenn den ikke vet). Den tomme ferm-range-en {mn:999,mx:0} matcher aldri, så
+  // melet påvirker verken kald-taket, Smart-plan-lista eller «bytt til»-forslag —
+  // uten å måtte endre de aggregatene. Ingen hydroRange ⇒ hydrering dømmes ikke.
+  {v:'annet',t:'Annet mel',tEn:'Other flour',generic:true,protein:'–',w:'–',hydro:'–',ferm:{mn:999,mx:0}}
 ];
 // Piller viser bare navn — egenskapene (protein/styrke/vann/gjæring) må vises et sted som
 // fungerer på touch-skjerm, siden hover-tekst (title=) er usynlig på mobil.
+// Språk-bevisst melnavn. Kun «annet» har tEn (merkevarenavnene er språknøytrale),
+// så alle andre mel er upåvirket.
+function mtName(f){ return (f && window._lang==='en' && f.tEn) ? f.tEn : (f ? f.t : '—'); }
 function updateMeltypeInfo(){
   const flour = MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return;
-  const estBadge = flour.estimated ? ` <span style="color:#EFAB27;font-weight:700">(anslått)</span>` : '';
-  const txt = `<b>${escH(flour.t)}</b> · ${flour.protein} protein${flour.w!=='–'?` · W${flour.w}`:''} · ${flour.hydro} hydrering · ${flour.ferm.mn}–${flour.ferm.mx}t fermentering${estBadge}`;
+  // «Annet mel»: appen kjenner ikke tallene, så den viser en ærlig nøytral linje
+  // i stedet for «– protein · – hydrering» og dømmer verken gjæring eller vann.
+  const txt = flour.generic
+    ? `<b>${escH(mtName(flour))}</b> · ${L('appen vurderer ikke gjæringstid eller hydrering for dette','the app does not judge fermentation time or hydration for this')}`
+    : (()=>{ const estBadge = flour.estimated ? ` <span style="color:#EFAB27;font-weight:700">${L('(anslått)','(estimated)')}</span>` : '';
+        return `<b>${escH(mtName(flour))}</b> · ${flour.protein} protein${flour.w!=='–'?` · W${flour.w}`:''} · ${flour.hydro} ${L('hydrering','hydration')} · ${flour.ferm.mn}–${flour.ferm.mx}t ${L('fermentering','fermentation')}${estBadge}`; })();
   ['gmel-info','mob-gmel-info','mob-gmel-fj-info'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML = txt;
@@ -3725,6 +3742,9 @@ function dismissWarning(k){
   _dismissedWarnings.add(k);
   if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
   else { try{ schedNow(); }catch(e){} }
+  // Ignorerer du fra wizardens sjekk-panel («Verdt å vite» i nå-modus), må selve
+  // panelet tegnes på nytt — mobGen tegner bare Tidsplan-fanen. No-op ellers.
+  try{ wizCheckRender(); }catch(e){}
 }
 let _warnShowAll = false;
 // v5.91: kun for TIDSpreferanser (opptatt tid / natt) — ikke for deigens
@@ -3752,6 +3772,10 @@ function warningWrapHTML(keySource, innerHTML){
 function meltypeWarningHTML(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
   if(!flour) return '';
+  // «Annet mel / ikke i listen»: appen kjenner ikke melets gjærings-/hydrerings-
+  // spenn, så den skal ikke mase om et spenn den umulig kan vite. Det var hele
+  // poenget med valget — brukerens mel finnes ikke i lista.
+  if(flour.generic) return '';
   const hrs=totalFermentHours();
   const fermOk = hrs>=flour.ferm.mn && hrs<=flour.ferm.mx;
   const hydroOk = !flour.hydroRange || (S.hydro>=flour.hydroRange.mn && S.hydro<=flour.hydroRange.mx);
@@ -5725,8 +5749,13 @@ function wizCheckRender(){
   // god. Tidskonflikt og metodepassform svarer på det første, mel, gjæringstid
   // og romtemperatur på det andre. Alle fem finnes fra før — her samles de på
   // ett sted, der det er billigst å gjøre noe med dem: ett steg unna spaken.
+  // I «Planlagt steketid» (frist) er dette en sjekk-port: vis HELE lista, også
+  // det som er ignorert andre steder (_warnShowAll=true). I «Jeg begynner nå» er
+  // det myke «Verdt å vite»-hint uten frist — da skal de kunne vinkes vekk som
+  // overalt ellers, så vi lar warningWrapHTML beholde «Ignorer»-knappen og
+  // respektere tidligere ignoreringer.
   const prev=_warnShowAll;
-  _warnShowAll=true;
+  _warnShowAll = (S.mode!=='start');
   const parts=[]; let openCount=0;
   try{
     [pastStartWarningHTML, activeStepTimeWarningHTML, methodTimeWarningHTML,
@@ -6719,7 +6748,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
     ${toolbarHTML}
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:3px">${L('🚀 Oppstart:','🚀 Start:')} <b style="color:var(--forno-text,#222)">${escH(startTxt)}</b>${deltaHTML}</div>
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🍕 Steketid:','🍕 Baking time:')} <b style="color:var(--forno-text,#222)">${escH(bakeTxt)}</b></div>
-    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🌾 Mel:','🌾 Flour:')} <b style="color:var(--forno-text,#222)">${escH((MELTYPER.find(m=>m.v===S.meltype)||{}).t||'—')}</b></div>
+    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🌾 Mel:','🌾 Flour:')} <b style="color:var(--forno-text,#222)">${escH(mtName(MELTYPER.find(m=>m.v===S.meltype)))}</b></div>
     ${actionsHTML}
     ${showActions ? `<button onclick="openFocus()" title="${L('Vis det aktive steget stort i fullskjerm — for telefonen på benken','Show the active step large in full screen — for the phone on the counter')}" style="width:100%;margin-top:8px;padding:11px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(232,89,12,.28)">🔎 ${L('Fokus','Focus')} — ${L('ett steg om gangen','one step at a time')}</button>` : ''}
   </div>`;
@@ -7183,6 +7212,7 @@ document.addEventListener('change', firstInteractionCheck, true);
           <option value="regal_tipo00">Regal Tipo 00</option>
           <option value="couco">Caputo Couco</option>
           <option value="manitoba">Caputo Manitoba Oro</option>
+          <option value="annet" id="mob-gmel-opt-annet">Annet mel / ikke i listen</option>
         </select>
       </div>
       <div id="mob-gmel-info" style="margin:2px 1rem 8px;font-size:12px;color:var(--forno-text-faint);background:var(--forno-bg-raised);border-radius:6px;padding:6px 9px;line-height:1.4"></div>
@@ -7243,6 +7273,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <option value="regal_tipo00">Regal Tipo 00</option>
         <option value="couco">Caputo Couco</option>
         <option value="manitoba">Caputo Manitoba Oro</option>
+        <option value="annet" id="mob-gmel-fj-opt-annet">Annet mel / ikke i listen</option>
       </select>
     </div>
     <div id="mob-gmel-fj-info" style="font-size:10.5px;color:var(--forno-text-faint);padding:0 1rem .5rem;line-height:1.4"></div>
