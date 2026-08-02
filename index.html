@@ -5480,9 +5480,13 @@ function mobMethodCards(){
     el.onclick=()=>{
       if(S.method!==v) clearStepProgress();
       S.method=v;
-      // Lange metoder planlegges alltid bakover fra spisetidspunktet, slik de
-      // alltid har gjort — før ble dette tvunget når man landet på steg 3.
-      if(v!=='hurtig' && v!=='kveld' && S.mode!=='end') mobSetMode('end');
+      // Respekter valgt modus. Velger man en lang metode mens «Jeg begynner nå»
+      // er aktivt, skal deigen planlegges FRAMOVER fra nå — ikke tvinges bakover
+      // fra en standard-steketid som kan ligge i fortiden (det ga den rare
+      // «lag pizza nå setter tiden bakover»-oppførselen). Er man i «Planlagt
+      // steketid»-modus, sørger ensureFeasibleBakeTime() for at standardtiden
+      // ligger langt nok fram til at oppstarten faktisk er mulig.
+      ensureFeasibleBakeTime();
       mobMethodCards();
       document.getElementById('mob-hsub').style.display=v==='hurtig'?'block':'none';
       document.getElementById('mob-ksub').style.display=v==='kveld'?'block':'none';
@@ -5678,7 +5682,10 @@ function wizStep1Refresh(){
 }
 function wizCheckRefresh(){
   const isShort = (S.method==='hurtig' || S.method==='kveld');
-  if(!isShort && S.mode!=='end') mobSetMode('end');
+  // Ikke tving «Planlagt steketid» her lenger: en lang metode i «Jeg begynner
+  // nå»-modus skal få planlegge framover fra nå. Og vi auto-fikser IKKE
+  // steketiden på dette steget — har du selv satt en for-tidlig steketid, skal
+  // kvalitetssjekken flagge det (med «Spis … i stedet»-knappen), ikke skjule det.
   const coldWrap=document.getElementById('mob-cold-wiz-wrap');
   if(coldWrap) coldWrap.style.display = isShort ? 'none' : 'block';
   if(!isShort){
@@ -5744,8 +5751,28 @@ function mobHydroUI(){
   if(b){b.textContent=tx;b.style.background=bg;b.style.color=co;}
 }
 
+// Når planen legges bakover fra en steketid (end-modus), skal standard-
+// steketiden aldri peke så tidlig at oppstarten havner i fortiden. Vi flytter
+// datoen framover ett døgn av gangen til den tidligste mulige steketiden for
+// metoden (earliestBakeAt, regnet fra nå) ligger innenfor. Kalles kun ved
+// metodevalg og modusbytte — IKKE når brukeren selv skriver inn en dato, slik
+// at et bevisst for-tidlig valg fortsatt gir varsel via pastStartWarningHTML().
+function ensureFeasibleBakeTime(){
+  if(S.mode!=='end') return;
+  if(S.method==='hurtig'||S.method==='kveld') return; // korte metoder trenger ikke framflytting
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  if(!dEl||!dEl.value||!tEl) return;
+  const eb=earliestBakeAt();
+  if(!eb) return;
+  let bake=new Date(dEl.value+'T'+((tEl.value)||'18:00'));
+  if(isNaN(bake.getTime())) return;
+  let guard=0;
+  while(bake.getTime() < eb.getTime() && guard++ < 21){ bake.setDate(bake.getDate()+1); }
+  dEl.value=fd(bake);
+}
 function mobSetMode(m){
   S.mode=m;
+  if(m==='end') ensureFeasibleBakeTime();
   const ms=document.getElementById('mob-ms'),me=document.getElementById('mob-me');
   if(ms&&me){
     ms.style.border=m==='start'?'2px solid var(--forno-accent)':'1px solid var(--forno-border)';

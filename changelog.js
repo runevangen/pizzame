@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.673",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet at «lag pizza nå» kunne sette oppstarten bakover i tid: valgte du en lang metode mens «Jeg begynner nå» var på, tvang appen deg likevel over til en planlagt steketid — som med standardtiden kunne havne for tidlig. Nå respekteres «Jeg begynner nå», og deigen planlegges framover fra nå.",
+      "I «Planlagt steketid»-modus flyttes standard-steketiden nå automatisk langt nok fram til at oppstarten faktisk er mulig, i stedet for å foreslå et tidspunkt som allerede har passert."
+    ],
+    "changes_en": [
+      "Fixed \"make pizza now\" sometimes pushing the start time into the past: picking a long method while \"I start now\" was on still forced you over to a planned baking time — which, with the default time, could land too early. \"I start now\" is now respected, and the dough is planned forward from now.",
+      "In \"Planned baking time\" mode the default baking time now moves forward automatically until the start is actually feasible, instead of suggesting a time that has already passed."
+    ]
+  },
+  {
     "v": "0.672",
     "d": "august 2026",
     "d_en": "August 2026",

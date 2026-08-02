@@ -2427,6 +2427,53 @@ def run_behavioral_tests(page):
     ok63 = (r63.get('noHasFlour') and r63.get('enHasFlour'))
     results.append(('status_bar_shows_selected_flour_type', ok63, r63))
 
+    # v0.673: «lag pizza nå» satte tiden bakover. Å velge en lang metode mens
+    # «Jeg begynner nå» var på, tvang appen over i steketid-modus med en standard-
+    # steketid som kunne ligge i fortiden. Nå (1) respekteres start-modus (planen
+    # legges framover fra nå, ingen fortids-oppstart), og (2) i steketid-modus
+    # flytter ensureFeasibleBakeTime() standardtiden framover til oppstarten er mulig.
+    r64 = page.evaluate("""() => {
+      const orig={mode:S.mode,method:S.method,cold:S.cold,type:S.type,temp:S.temp,mt:S.meltype,lang:window._lang,chosen:window._planChosen};
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('settings');
+        const p2=n=>String(n).padStart(2,'0');
+
+        // (1) Lang metode i «Jeg begynner nå» skal IKKE tvinges til steketid-modus.
+        S.type='napoletana'; S.cold=48; S.temp=22; S.meltype='doppio_zero';
+        mobSetMode('start');
+        const card=Array.from(document.querySelectorAll('#mob-gmet > div')).find(c=>c.textContent.includes('Langtidsdeig'));
+        if(card) card.click();
+        const stayedStart = (S.mode==='start' && S.method==='standard');
+
+        // Framoverplan fra nå: første aktive steg ligger ikke i fortiden.
+        const steps=computeCurrentSteps();
+        const first=steps.find(s=>!s.passive)||steps[0];
+        let fat=first?first.at:null; if(fat && !(fat instanceof Date)) fat=new Date(fat);
+        const startNotInPast = !!fat && fat.getTime() >= Date.now()-2*60000;
+
+        // (2) ensureFeasibleBakeTime flytter en for-tidlig standard-steketid framover.
+        mobSetMode('end');
+        const soon=new Date(Date.now()+2*3600000); // 2t fram — håpløst for en ~52t metode
+        document.getElementById('mob-ed').value = soon.getFullYear()+'-'+p2(soon.getMonth()+1)+'-'+p2(soon.getDate());
+        document.getElementById('mob-et').value = p2(soon.getHours())+':'+p2(soon.getMinutes());
+        ensureFeasibleBakeTime();
+        const eb=earliestBakeAt();
+        const dv=document.getElementById('mob-ed').value, tv=document.getElementById('mob-et').value;
+        const feasibleAfterFix = !!eb && new Date(dv+'T'+tv).getTime() >= eb.getTime();
+
+        return {
+          stayedStart, startNotInPast, feasibleAfterFix,
+          noForceInMethodPick: !mobMethodCards.toString().includes(\"mobSetMode('end')\"),
+          modeSwitchEnsuresFeasible: mobSetMode.toString().includes('ensureFeasibleBakeTime'),
+          // Steg 3 skal verken tvinge steketid-modus eller auto-fikse tiden —
+          // en bevisst for-tidlig steketid skal fortsatt flagges der.
+          wizCheckNoForceNoAutofix: !wizCheckRefresh.toString().includes(\"mobSetMode('end')\") && !wizCheckRefresh.toString().includes('ensureFeasibleBakeTime')
+        };
+      } finally { S.mode=orig.mode;S.method=orig.method;S.cold=orig.cold;S.type=orig.type;S.temp=orig.temp;S.meltype=orig.mt;window._lang=orig.lang;window._planChosen=orig.chosen; }
+    }""")
+    ok64 = all(r64.get(k) for k in ['stayedStart','startNotInPast','feasibleAfterFix','noForceInMethodPick','modeSwitchEnsuresFeasible','wizCheckNoForceNoAutofix'])
+    results.append(('make_now_respects_start_mode_and_feasible_bake_time', ok64, r64))
+
     return results
 
 
