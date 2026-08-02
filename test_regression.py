@@ -2425,6 +2425,22 @@ def run_behavioral_tests(page):
     ok62 = (r62.get('methodCardsZoomCancelled') and r62.get('titleAt14') and r62.get('subAt12'))
     results.append(('wizard_typography_harmonized_method_cards_zoom_cancelled', ok62, r62))
 
+    # v0.670: statuslinja viser nå valgt meltype (mel) sammen med oppstart og
+    # steketid, så du med ett blikk ser hvilket mel planen forutsetter.
+    r63 = page.evaluate("""() => {
+      const _lang=window._lang, _mt=S.meltype;
+      try{
+        S.meltype='doppio_zero';
+        const mk=()=>deigStatusBarHTML([{title:'x',at:new Date(2026,7,3,18,0,0),passive:false}], false, false);
+        window._lang='no'; const no=mk();
+        window._lang='en'; const en=mk();
+        return { noHasFlour: no.includes('🌾 Mel:') && no.includes('Caputo Doppio Zero'),
+                 enHasFlour: en.includes('🌾 Flour:') && en.includes('Caputo Doppio Zero') };
+      } finally { window._lang=_lang; S.meltype=_mt; }
+    }""")
+    ok63 = (r63.get('noHasFlour') and r63.get('enHasFlour'))
+    results.append(('status_bar_shows_selected_flour_type', ok63, r63))
+
     return results
 
 
