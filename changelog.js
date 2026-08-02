@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.665",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny «🛒 Handleliste»-knapp: kopier en samlet liste med totale ingrediensmengder å handle etter — spesielt nyttig for fler-dagers metoder der ingrediensene ellers er delt over flere steg.",
+      "Rettet en bitteliten avrundingsforskjell i biga: overgjærings-varselet og tidsplanen regner nå romhevingen helt likt."
+    ],
+    "changes_en": [
+      "New \"🛒 Shopping list\" button: copy a consolidated list of total ingredient amounts to shop from — especially handy for multi-day methods where the ingredients are otherwise split across several steps.",
+      "Fixed a tiny rounding difference in biga: the over-fermentation warning and the schedule now compute the room rise identically."
+    ]
+  },
+  {
     "v": "0.664",
     "d": "august 2026",
     "d_en": "August 2026",

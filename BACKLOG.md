@@ -157,7 +157,10 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
 
 ## P2 — Småfeil / kosmetisk
 
-### 7. Biga overgjæring: avrundet vs. uavrundet romheving **[baseline?]**
+### 7. Biga overgjæring: avrundet vs. uavrundet romheving **[baseline?]** ✅ BYGGET (v0.665, gren)
+> ✅ **Bygget (venter prod).** `fixedFermOverheadHours` runder nå biga-romhevingen
+> `Math.round(rtM(60)*1.5)` — likt tidsplanens `rtB`. Ingen frosne tall rørt. Test:
+> `biga_bulk_rise_rounded_consistently_in_overhead`.
 > **I klartekst:** På biga-metoden regner tidsplanen og overgjærings-varselet
 > romhevingen bittelitt ulikt — planen runder av til hele minutter, varselet gjør
 > det ikke. Forskjellen er under ett minutt og synes nesten aldri, men de to tallene
@@ -299,7 +302,13 @@ men signalet går ingensteds brukeren ser det igjen. En resultat-historikk per d
 («forrige gang: 72t / 65 % → 4/5») lukker sløyfa og er distinkt — dataen samles
 allerede inn. Passer med F8.
 
-### F10. Samlet ingrediens-/handleliste
+### F10. Samlet ingrediens-/handleliste ✅ BYGGET (v0.665, gren)
+> ✅ **Bygget (venter prod).** Ny «🛒 Handleliste»-knapp i handlings-radene (PC +
+> mobil) kopierer en samlet totalliste (`shoppingListText()`) med mel/vann/salt/
+> gjær + evt. olje/smør/sukker — samme R()-totaler som «Kopier tidsplan». Test:
+> `shopping_list_totals_copyable_and_localized`. (Handleliste ↔ kilder-utvidelsen
+> under er fortsatt parkert.)
+>
 > **I klartekst:** «Trenger du»-chipsene viser ingredienser per steg, men det finnes
 > ingen samlet liste å handle etter *før* du starter — spesielt nyttig for fler-dagers
 > metoder (Poolish/Biga/Mania) der ingrediensene er delt over faser. F10 er en
@@ -319,7 +328,13 @@ posisjons-personvern for tvilsom nytte. Åpne valg: lenke ut vs. bare navngi; hv
 faktisk står inne for (bør bestemmes av bruker, ikke oppdiktes); og om EN-visningen skjuler
 seksjonen eller viser samme liste med «norske kilder»-merknad.
 
-### F11. Paritets-sjekk av tips/why på tvers av metoder
+### F11. Paritets-sjekk av tips/why på tvers av metoder ✅ BYGGET (v0.664, gren)
+> ✅ **Bygget (venter prod).** Audit av alle metode×type-kombinasjoner fant 8 steg
+> med understeg men uten `why` (2 i hurtigdeig, 6 i Mania). Fylt hver med en kort
+> tospråklig `why`. Kontrakt: hvert steg med understeg må ha en `why` (tip forblir
+> valgfritt på passive vente-steg). Vokter-test:
+> `every_substep_bearing_step_has_a_why_all_methods`.
+>
 > **I klartekst:** Vi tettet gjæringsstegene i v6.10, men en *full* gjennomgang av
 > at alle steg i alle metoder har jevn `tip`/`hvorfor`-dekning — pluss en test som
 > vokter det framover — gjenstår. Direkte fortsettelse av arbeidet vi gjorde, lav
@@ -353,7 +368,11 @@ allerede vokter konsistens på.
 > **Delvis løst (v0.660):** Endringsloggen er nå tospråklig (`d_en`/`changes_en`
 > per entry, `buildChangelogHTML` språkbevisst). PC-statisk HTML og admin gjenstår.
 
-### F13. Bytt plass på «☰ Mer» og «🧭 Smart-plan» i mobil-tabbaren
+### F13. Bytt plass på «☰ Mer» og «🧭 Smart-plan» i mobil-tabbaren ✅ BYGGET (v0.664, gren)
+> ✅ **Bygget (venter prod).** Fanene byttet i tabbar-HTML-en, `MOB_TABS` reordnet
+> til å speile ny rekkefølge (Planlegging · Tidsplan · Smart-plan · Mer). Mer-
+> badgen lander fortsatt på Mer. Test: `mer_tab_moved_rightmost_swapped_with_smartplan`.
+>
 > **I klartekst:** «Mer»-fanen bør ligge lengst til høyre — det er der en «mer/
 > flere»-fane konvensjonelt hører hjemme (som en overløps-meny). I dag er
 > rekkefølgen Planlegging · Tidsplan · Mer · Smart-plan, så «Mer» ligger nest

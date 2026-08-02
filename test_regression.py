@@ -2292,6 +2292,44 @@ def run_behavioral_tests(page):
     ok56 = (r56.get('gapCount')==0)
     results.append(('every_substep_bearing_step_has_a_why_all_methods', ok56, r56))
 
+    # #7 (v0.665): biga-romhevingen i fixedFermOverheadHours rundes nå likt som
+    # tidsplanen (rtB=Math.round(rt*1.5)) — så overgjærings-varselet og planen
+    # regner samme tall, ikke et sub-minutt fra hverandre.
+    r57 = page.evaluate("""() => {
+      const orig={method:S.method,temp:S.temp,bigaH:S.bigaH};
+      try{
+        S.method='biga'; S.temp=23; S.bigaH=18;  // temp der rtM(60)*1.5 blir ikke-heltall
+        const got=fixedFermOverheadHours('biga');
+        const exp=S.bigaH + Math.round(rtM(60)*1.5)/60;
+        const rounded=fixedFermOverheadHours.toString().includes('Math.round(rtM(60)*1.5)');
+        return {got, exp, match:Math.abs(got-exp)<1e-9, rounded};
+      } finally { S.method=orig.method;S.temp=orig.temp;S.bigaH=orig.bigaH; }
+    }""")
+    ok57 = (r57.get('match') and r57.get('rounded'))
+    results.append(('biga_bulk_rise_rounded_consistently_in_overhead', ok57, r57))
+
+    # F10 (v0.665): samlet, kopierbar handleliste. shoppingListText() gir totalene
+    # (mel/vann/salt/gjær + evt. olje/smør/sukker) i ett kort tekstblokk, språktilpasset.
+    r58 = page.evaluate("""() => {
+      const orig={method:S.method,type:S.type,lang:window._lang};
+      try{
+        S.type='napoletana'; S.method='standard';
+        window._lang='no'; const no=shoppingListText();
+        window._lang='en'; const en=shoppingListText();
+        return {
+          noHeader: no.includes('Handleliste'),
+          noFlour: /Mel: \\d+g/.test(no),
+          noWater: /Vann: \\d+g/.test(no),
+          noYeast: /Gjær:/.test(no),
+          enHeader: en.includes('Shopping list'),
+          enFlour: /Flour: \\d+g/.test(en),
+          enYeast: /Yeast:/.test(en)
+        };
+      } finally { S.method=orig.method;S.type=orig.type;window._lang=orig.lang; }
+    }""")
+    ok58 = all(r58.get(k) for k in ['noHeader','noFlour','noWater','noYeast','enHeader','enFlour','enYeast'])
+    results.append(('shopping_list_totals_copyable_and_localized', ok58, r58))
+
     return results
 
 
