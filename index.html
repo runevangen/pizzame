@@ -60,6 +60,12 @@ body.mob-mode .pill.on{background:var(--forno-accent);color:#1a1512;border-color
 body.mob-mode .dropdown-select select{background:var(--forno-bg-raised);border:1px solid var(--forno-border);color-scheme:dark}
 .dropdown-select::after{content:'⌄';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:#6E6E73;pointer-events:none}
 body.mob-mode .dropdown-select::after{color:var(--forno-text-faint)}
+/* v0.669: harmonisert wizard-typografi (mobil) — ryddig 3-tier skala:
+   16px overskrift · 14px alle valg-kontroller · 12px caption/undertekst.
+   Samler pills (var 12–13px) og meltype-nedtrekket (var 13px) på ett
+   kontroll-nivå (14px), likt med steg-navigasjonen ellers. */
+body.mob-mode .mob-pill-wrap .pill{font-size:14px}
+body.mob-mode .dropdown-select select{font-size:14px}
 .menu-wrap{position:relative}
 .menu-trigger{display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 12px;border-radius:10px;background:#F2F2F7;font-size:13px;font-weight:600;color:var(--dyn-text);cursor:pointer}
 .menu-trigger:hover{background:#EDEDED}
@@ -543,6 +549,14 @@ body.fs-xxlarge .adv-toggle,body.fs-xxlarge .tab,body.fs-xxlarge .layout-toggle,
 body.fs-xxlarge .mb,body.fs-xxlarge .sw,body.fs-xxlarge input[type=range],
 body.fs-xxlarge .snum-btn,body.fs-xxlarge .mob-icon-btn,
 body.fs-xxlarge .mob-tab,body.fs-xxlarge .fs-visning-wrap{zoom:0.625}
+/* v0.669: mobil-metodekortene manglet i lista over, så de fikk IKKE den motsatte
+   zoomen som pills/nedtrekk får — og ble derfor rendret ~15 % større enn resten
+   av wizard-kontrollene. Det var den egentlige grunnen til at «meltype» så mindre
+   ut enn metodekortene. Legg dem til per skriftnivå, så alt matcher. */
+.mob-mcard-wrap{zoom:0.8696}
+body.fs-large .mob-mcard-wrap{zoom:0.7692}
+body.fs-xlarge .mob-mcard-wrap{zoom:0.6897}
+body.fs-xxlarge .mob-mcard-wrap{zoom:0.625}
 /* Modal-vinduer (Feedback, Hva er nytt, Formler, Guide, osv.) fikk tidligere samme
    motsatte zoom som knapper/faner, for å hindre at "max-height:85dvh" ble regnet feil
    i en zoomet kontekst (kunne gjøre modalen fysisk høyere enn skjermen). Det gjorde
@@ -5490,7 +5504,7 @@ function mobMethodCards(){
     const fit=methodFitNote(v);
     if(fit && fit.dim && !isOn) el.style.opacity='.55';
     const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;color:${fit.dim?'var(--forno-text-faint)':'#0F6E56'}">${escH(fit.txt)}</div>`:'';
-    el.innerHTML=`<div style="font-size:13px;font-weight:600;color:${isOn?'var(--forno-accent-text)':'var(--forno-text)'}">${t}</div><div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
+    el.innerHTML=`<div style="font-size:14px;font-weight:600;color:${isOn?'var(--forno-accent-text)':'var(--forno-text)'}">${t}</div><div style="font-size:12px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
     el.onclick=()=>{
       if(S.method!==v) clearStepProgress();
       S.method=v;
@@ -7137,7 +7151,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div class="mob-section-lbl" id="mob-cold-wiz-lbl">Kjøleskapsheving</div>
         <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .5rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
           <button onclick="stepColdWiz(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">−</button>
-          <span id="mob-cold-wiz-disp" style="font-family:var(--forno-font-mono);font-size:15px;font-weight:600;color:var(--forno-accent-text);min-width:70px;text-align:center">24 timer</span>
+          <span id="mob-cold-wiz-disp" style="font-family:var(--forno-font-mono);font-size:14px;font-weight:600;color:var(--forno-accent-text);min-width:70px;text-align:center">24 timer</span>
           <button onclick="stepColdWiz(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted)">+</button>
         </div>
       </div>
