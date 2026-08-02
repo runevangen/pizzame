@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.674",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Jeg begynner nå» er en kom-i-gang-modus uten frist — så kvalitetssjekken viser nå en rolig kvittering («✓ Du setter i gang nå · klar ca. …») i stedet for en «X ting å se på»-teller. Tips om mel, overmodning eller et steg midt på natta står fortsatt, men som myke «💡 Verdt å vite»-notater, ikke som blokkerende varsler. I «Planlagt steketid» (der du har en frist) er sjekken uendret."
+    ],
+    "changes_en": [
+      "\"I start now\" is a get-going mode with no deadline — so the quality check now shows a calm receipt (\"✓ You start now · ready around …\") instead of an \"X things to look at\" counter. Tips about flour, over-ripening or a step landing in the middle of the night still appear, but as soft \"💡 Worth knowing\" notes rather than blocking warnings. In \"Planned baking time\" (where you do have a deadline) the check is unchanged."
+    ]
+  },
+  {
     "v": "0.673",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -5717,6 +5717,27 @@ function wizCheckRender(){
     });
   } finally { _warnShowAll=prev; }
 
+  // «Jeg begynner nå» er en kom-i-gang-modus: du har ingen frist å bomme på, så
+  // panelet skal være en kvittering på fart — «du starter nå, klar ca. X» — ikke
+  // en bestått/ikke-bestått-sjekk. Kvalitets- og livsstils-hint vises fortsatt
+  // (melet, overmodning, et steg midt på natta), men som myke «verdt å vite»-
+  // notater under kvitteringen, ikke som en rød «N ting å se på»-teller. Frist-
+  // bremsene (pastStart/methodTime) er allerede tomme i denne modusen.
+  if(S.mode==='start'){
+    let klar='';
+    try{
+      const steps=computeCurrentSteps();
+      if(steps && steps.length){ let at=steps[steps.length-1].at; if(!(at instanceof Date)) at=new Date(at); if(!isNaN(at.getTime())) klar=fDT(at); }
+    }catch(e){}
+    const receipt=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem;margin-bottom:${parts.length?'.6rem':'0'}">
+      <div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:.25rem">✓ ${L('Du setter i gang nå','You start now')}</div>
+      <div style="font-size:12px;color:#0F6E56;line-height:1.5">${klar?L(`Deigen er klar ca. ${escH(klar)}. Følg stegene i ditt tempo — det er ingen frist å bomme på.`,`The dough is ready around ${escH(klar)}. Follow the steps at your own pace — there is no deadline to miss.`):L('Følg stegene i ditt tempo — det er ingen frist å bomme på.','Follow the steps at your own pace — there is no deadline to miss.')}</div>
+    </div>`;
+    const hintLead = parts.length ? `<div style="font-size:12px;font-weight:600;color:var(--forno-text-faint);margin-bottom:.4rem">💡 ${L('Verdt å vite','Worth knowing')}</div>` : '';
+    el.innerHTML=receipt+hintLead+parts.join('');
+    return;
+  }
+
   if(!openCount){
     const hasAccepted = parts.some(p=>p.includes('data-accepted'));
     el.innerHTML=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem;margin-bottom:${hasAccepted?'.6rem':'0'}">
