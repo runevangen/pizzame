@@ -2510,6 +2510,29 @@ def run_behavioral_tests(page):
     ok65 = all(r65.get(k) for k in ['startReceipt','startSoftHint','startNoAlarm','endStillAlarms'])
     results.append(('make_now_shows_calm_receipt_not_alarm_counter', ok65, r65))
 
+    # v0.675: statuslinje-tittelen ble kuttet midt i ordet («… pizza · Lon…»).
+    # Nå brukes det korte typenavnet (tnShort, uten «pizza»-halet) og tittelen
+    # brytes i stedet for å avkortes med ellipse.
+    r66 = page.evaluate("""() => {
+      const _lang=window._lang, _m=S.method, _t=S.type;
+      try{
+        S.type='napoletana'; S.method='standard';
+        const mk=()=>deigStatusBarHTML([{title:'x',at:new Date(2026,7,3,18,0,0),passive:false}], false, false);
+        window._lang='en'; const en=mk();
+        window._lang='no'; const no=mk();
+        // Første tittel-div (font-weight:700 rett etter space-between-raden).
+        const titleStyle = en.split('font-weight:700')[1].split('>')[0];
+        return {
+          enShort: en.includes('Neapolitan · Long-ferment dough'),
+          enNoPizzaSuffix: !en.includes('Neapolitan pizza ·'),
+          noShort: no.includes('Napoletansk · Langtidsdeig'),
+          noEllipsisTruncation: !titleStyle.includes('text-overflow:ellipsis') && !titleStyle.includes('white-space:nowrap')
+        };
+      } finally { window._lang=_lang; S.method=_m; S.type=_t; }
+    }""")
+    ok66 = all(r66.get(k) for k in ['enShort','enNoPizzaSuffix','noShort','noEllipsisTruncation'])
+    results.append(('status_bar_title_short_type_and_wraps_not_truncates', ok66, r66))
+
     return results
 
 
