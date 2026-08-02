@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.672",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fjernet «🛒 Handleliste»-knappen igjen — ingrediens-totalene finnes allerede i oppskrift-fanen og i «Kopier tidsplan», så en egen handleliste var overflødig."
+    ],
+    "changes_en": [
+      "Removed the \"🛒 Shopping list\" button again — the ingredient totals are already in the recipe tab and in \"Copy schedule\", so a separate shopping list was redundant."
+    ]
+  },
+  {
     "v": "0.671",
     "d": "august 2026",
     "d_en": "August 2026",

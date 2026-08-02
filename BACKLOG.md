@@ -321,12 +321,11 @@ men signalet går ingensteds brukeren ser det igjen. En resultat-historikk per d
 («forrige gang: 72t / 65 % → 4/5») lukker sløyfa og er distinkt — dataen samles
 allerede inn. Passer med F8.
 
-### F10. Samlet ingrediens-/handleliste ✅ BYGGET (v0.665, gren)
-> ✅ **Bygget (venter prod).** Ny «🛒 Handleliste»-knapp i handlings-radene (PC +
-> mobil) kopierer en samlet totalliste (`shoppingListText()`) med mel/vann/salt/
-> gjær + evt. olje/smør/sukker — samme R()-totaler som «Kopier tidsplan». Test:
-> `shopping_list_totals_copyable_and_localized`. (Handleliste ↔ kilder-utvidelsen
-> under er fortsatt parkert.)
+### F10. Samlet ingrediens-/handleliste ❌ FJERNET (v0.672, etter tilbakemelding)
+> ❌ **Bygget i v0.665, fjernet igjen i v0.672.** «🛒 Handleliste»-knappen ble
+> vurdert unødvendig: ingrediens-totalene finnes allerede i oppskrift-fanen og i
+> «Kopier tidsplan». Fjernet på brukerens forespørsel (funksjoner + knapper +
+> test borte). (Handleliste ↔ kilder-utvidelsen under er uansett fortsatt parkert.)
 >
 > **I klartekst:** «Trenger du»-chipsene viser ingredienser per steg, men det finnes
 > ingen samlet liste å handle etter *før* du starter — spesielt nyttig for fler-dagers
