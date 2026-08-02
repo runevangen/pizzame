@@ -349,6 +349,24 @@ allerede vokter konsistens på.
 > - **Endringsloggen** («Hva er nytt») rendres fra `CHANGELOG` som kun er norsk.
 > Lav prioritet (dekkes av «AI-oversatt»-varselet), men verdt å notere så det ikke
 > ser ut som en forglemmelse. Endringsloggen er den mest synlige av de tre.
+>
+> **Delvis løst (v0.660):** Endringsloggen er nå tospråklig (`d_en`/`changes_en`
+> per entry, `buildChangelogHTML` språkbevisst). PC-statisk HTML og admin gjenstår.
+
+### F13. Bytt plass på «☰ Mer» og «🧭 Smart-plan» i mobil-tabbaren
+> **I klartekst:** «Mer»-fanen bør ligge lengst til høyre — det er der en «mer/
+> flere»-fane konvensjonelt hører hjemme (som en overløps-meny). I dag er
+> rekkefølgen Planlegging · Tidsplan · Mer · Smart-plan, så «Mer» ligger nest
+> sist og Smart-plan lengst til høyre. Bytt de to, så det blir Planlegging ·
+> Tidsplan · Smart-plan · Mer. Rent kosmetisk/rekkefølge, liten jobb.
+- Tabbaren bygges som fire `.mob-tab`-divs (rundt `mob-tabbar`, i dag rekkefølge
+  `settings, plan, tips, beta`). Bytt om `tips` (☰ Mer) og `beta` (🧭 Smart-plan)
+  i selve HTML-en. Sjekk at rekkefølgen også speiles der fanene itereres:
+  `MOB_TABS`-arrayen, `mobShowTab`-løkka og `syncI18nUI`s tab-etikett/badge-løkke
+  (Mer-badgen `mob-tab-mer-badge` må fortsatt havne på Mer-fanen). Logikken er
+  rekkefølge-uavhengig; kun den visuelle plasseringen endres.
+- Ingen frosne tall berørt (ikke baseline). Verifiser at aktiv-markering og
+  Mer-tellerbadgen fortsatt lander riktig etter ombyttingen.
 
 ---
 
