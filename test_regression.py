@@ -2243,6 +2243,165 @@ def run_behavioral_tests(page):
             and r54.get('c')==r54.get('cExp') and r54.get('timeDefault')=='18:00')
     results.append(('smartplan_default_today_only_with_margin_else_tomorrow_1800', ok54, r54))
 
+    # F13 (v0.664): «☰ Mer» flyttet lengst til høyre i tabbaren, byttet med
+    # «🧭 Smart-plan». Ny visuell rekkefølge: Planlegging · Tidsplan · Smart-plan · Mer.
+    r55 = page.evaluate("""() => {
+      const order=[...document.querySelectorAll('.mob-tabbar .mob-tab')].map(el=>el.id.replace('mob-tab-',''));
+      const merLast = order[order.length-1]==='tips';
+      const betaBeforeMer = order.indexOf('beta') < order.indexOf('tips');
+      // badgen skal fortsatt havne på Mer-fanen etter ombyttingen
+      window._activeDeigCount=2; try{ updateMerTabBadge(); }catch(e){}
+      const badge=document.getElementById('mob-tab-mer-badge');
+      const badgeOnMer = !!badge && badge.closest('.mob-tab') && badge.closest('.mob-tab').id==='mob-tab-tips';
+      window._activeDeigCount=0; try{ updateMerTabBadge(); }catch(e){}
+      return {order, merLast, betaBeforeMer, badgeOnMer};
+    }""")
+    ok55 = (r55.get('order')==['settings','plan','beta','tips']
+            and r55.get('merLast') and r55.get('betaBeforeMer') and r55.get('badgeOnMer'))
+    results.append(('mer_tab_moved_rightmost_swapped_with_smartplan', ok55, r55))
+
+    # F11 (v0.664): tips/why-paritet. Kontrakt: HVERT steg som har understeg må ha
+    # en `why` (den pedagogiske «hvorfor dette steget»-teksten). Vokter alle
+    # metode×type-kombinasjoner mot at et understeg-steg mangler why fremover.
+    r56 = page.evaluate("""() => {
+      const anchor=new Date(2026,7,10,18,0,0);
+      const orig={type:S.type,method:S.method,poolishPauseH:S.poolishPauseH,poolishCold:S.poolishCold};
+      const gaps=[];
+      try{
+        const types=['napoletana','newyork','langpanne','chicago','ingenelting'];
+        const methods=['standard','hurtig','kveld','mania','poolish','biga'];
+        for(const type of types){
+          for(const method of methods){
+            if(type==='ingenelting' && method!=='standard') continue;
+            S.type=type; S.method=method; S.poolishPauseH=0;
+            let steps;
+            try{
+              if(type!=='ingenelting' && method==='hurtig') steps=hurtigSteps(anchor).steps;
+              else if(type!=='ingenelting' && method==='kveld') steps=kveldSteps(anchor).steps;
+              else steps=rawSteps(anchor);
+            }catch(e){ gaps.push(type+'/'+method+' ERROR '+e); continue; }
+            steps.forEach((s,i)=>{
+              const hasSub=Array.isArray(s.substeps)&&s.substeps.length>0;
+              if(hasSub && (!s.why || !String(s.why).trim())) gaps.push(type+'/'+method+' #'+i+' '+(s.title||''));
+            });
+          }
+        }
+      } finally { S.type=orig.type;S.method=orig.method;S.poolishPauseH=orig.poolishPauseH;S.poolishCold=orig.poolishCold; }
+      return {gapCount:gaps.length, gaps:gaps.slice(0,12)};
+    }""")
+    ok56 = (r56.get('gapCount')==0)
+    results.append(('every_substep_bearing_step_has_a_why_all_methods', ok56, r56))
+
+    # #7 (v0.665): biga-romhevingen i fixedFermOverheadHours rundes nå likt som
+    # tidsplanen (rtB=Math.round(rt*1.5)) — så overgjærings-varselet og planen
+    # regner samme tall, ikke et sub-minutt fra hverandre.
+    r57 = page.evaluate("""() => {
+      const orig={method:S.method,temp:S.temp,bigaH:S.bigaH};
+      try{
+        S.method='biga'; S.temp=23; S.bigaH=18;  // temp der rtM(60)*1.5 blir ikke-heltall
+        const got=fixedFermOverheadHours('biga');
+        const exp=S.bigaH + Math.round(rtM(60)*1.5)/60;
+        const rounded=fixedFermOverheadHours.toString().includes('Math.round(rtM(60)*1.5)');
+        return {got, exp, match:Math.abs(got-exp)<1e-9, rounded};
+      } finally { S.method=orig.method;S.temp=orig.temp;S.bigaH=orig.bigaH; }
+    }""")
+    ok57 = (r57.get('match') and r57.get('rounded'))
+    results.append(('biga_bulk_rise_rounded_consistently_in_overhead', ok57, r57))
+
+    # F10 (v0.665): samlet, kopierbar handleliste. shoppingListText() gir totalene
+    # (mel/vann/salt/gjær + evt. olje/smør/sukker) i ett kort tekstblokk, språktilpasset.
+    r58 = page.evaluate("""() => {
+      const orig={method:S.method,type:S.type,lang:window._lang};
+      try{
+        S.type='napoletana'; S.method='standard';
+        window._lang='no'; const no=shoppingListText();
+        window._lang='en'; const en=shoppingListText();
+        return {
+          noHeader: no.includes('Handleliste'),
+          noFlour: /Mel: \\d+g/.test(no),
+          noWater: /Vann: \\d+g/.test(no),
+          noYeast: /Gjær:/.test(no),
+          enHeader: en.includes('Shopping list'),
+          enFlour: /Flour: \\d+g/.test(en),
+          enYeast: /Yeast:/.test(en)
+        };
+      } finally { S.method=orig.method;S.type=orig.type;window._lang=orig.lang; }
+    }""")
+    ok58 = all(r58.get(k) for k in ['noHeader','noFlour','noWater','noYeast','enHeader','enFlour','enYeast'])
+    results.append(('shopping_list_totals_copyable_and_localized', ok58, r58))
+
+    # F8 (v0.666): søk/filter/sortering i Deiger-lista (applyDeigFilter). F9: meta-
+    # linja viser nå kjøletid + hydrering, så en ferdig deigs vurdering er knyttet
+    # til konkrete tall.
+    r59 = page.evaluate("""() => {
+      const _f=window._deigFilter;
+      try{
+        const list=[
+          {name:'Fredagspizza', config:{method:'poolish',cold:48,hydro:65,type:'napoletana'}, rating:5, finishedAt:'2026-07-20T18:00:00Z', anchorISO:'2026-07-20T18:00:00Z', status:'finished'},
+          {name:'Biga-test', config:{method:'biga',cold:24,hydro:70,type:'newyork'}, rating:3, finishedAt:'2026-07-10T18:00:00Z', anchorISO:'2026-07-10T18:00:00Z', status:'finished'},
+          {name:'Hurtig hverdag', config:{method:'hurtig',hydro:62,type:'napoletana'}, rating:2, finishedAt:'2026-07-25T18:00:00Z', anchorISO:'2026-07-25T18:00:00Z', status:'finished'}
+        ];
+        window._deigFilter={q:'biga',method:'',sort:'newest'};
+        const search=applyDeigFilter(list).map(b=>b.name);
+        window._deigFilter={q:'',method:'poolish',sort:'newest'};
+        const methodF=applyDeigFilter(list).map(b=>b.config.method);
+        window._deigFilter={q:'',method:'',sort:'newest'};
+        const newest=applyDeigFilter(list).map(b=>b.name);
+        window._deigFilter={q:'',method:'',sort:'rating'};
+        const byRating=applyDeigFilter(list).map(b=>b.rating);
+        const meta=bakeMetaLine(list[0]);
+        return {search, methodF, newestFirst:newest[0], byRating, metaHasCold:meta.includes('48t'), metaHasHyd:meta.includes('65%')};
+      } finally { window._deigFilter=_f; }
+    }""")
+    ok59 = (r59.get('search')==['Biga-test'] and r59.get('methodF')==['poolish']
+            and r59.get('newestFirst')=='Hurtig hverdag' and r59.get('byRating')==[5,3,2]
+            and r59.get('metaHasCold') and r59.get('metaHasHyd'))
+    results.append(('doughs_search_filter_sort_and_config_in_meta', ok59, r59))
+
+    # F7 (v0.667): tilgjengelighet. Avhaking (steg/ingrediens/understeg) er nå ekte
+    # role=checkbox med aria-checked + tastaturstøtte (Enter/Space), og den live-
+    # oppdaterende statuslinja har aria-live så skjermlesere hører endringene.
+    r60 = page.evaluate("""() => {
+      const orig={chosen:window._planChosen,type:S.type,method:S.method,subs:S.showSubsteps};
+      try{
+        const ing=recipeRowsHTML([{k:'Mel',v:'500g'}], true);
+        const sb=deigStatusBarHTML([{title:'x',at:new Date(),passive:false}], false, false);
+        window._planChosen=true; S.type='napoletana'; S.method='standard'; S.showSubsteps=true;
+        try{ mobGen(); }catch(e){}
+        const plan=document.getElementById('mob-plan-content').innerHTML;
+        return {
+          ingA11y: ing.includes('role=\"checkbox\"') && ing.includes('aria-checked') && ing.includes('onkeydown'),
+          sbLive: sb.includes('aria-live=\"polite\"'),
+          stepA11y: plan.includes('role=\"checkbox\"') && plan.includes('onkeydown=\"if(event.key'),
+          substepA11y: plan.includes('substep-item') && /substep-item[^>]*role=\"checkbox\"/.test(plan)
+        };
+      } finally { window._planChosen=orig.chosen;S.type=orig.type;S.method=orig.method;S.showSubsteps=orig.subs; }
+    }""")
+    ok60 = all(r60.get(k) for k in ['ingA11y','sbLive','stepA11y','substepA11y'])
+    results.append(('checkboxes_keyboard_accessible_and_statusbar_aria_live', ok60, r60))
+
+    # T-i18n (v0.668): PC-visningens statiske HTML oversettes nå — metodekort,
+    # seksjonsetiketter, meny, planleggings-boks (via syncStaticI18nUI) og topnav-
+    # fanene (L() i gen()). setLang re-rendrer PC-planen når PC er aktiv.
+    r61 = page.evaluate("""() => {
+      const _lang=window._lang;
+      try{
+        setLang('en');
+        const g=id=>{const e=document.getElementById(id);return e?e.textContent.trim():'';};
+        const method=[...document.querySelectorAll('#gmet .mc .mc-t')].map(e=>e.textContent);
+        const typeLbl=((document.getElementById('gtype')||{}).previousElementSibling||{}).textContent||'';
+        const en={plan:g('pc-lbl-planlegging'), menu:g('pc-menu-manual'), logout:g('pc-menu-logout'), bs:g('pc-bs-lbl'), method0:method[0], typeLbl};
+        setLang('no'); const noPlan=g('pc-lbl-planlegging');
+        return {en, noPlan, topnavWired:gen.toString().includes(\"L('Steg for steg','Step by step')\"), setLangRendersPc:setLang.toString().includes('gen()')};
+      } finally { window._lang=_lang; try{setLang(_lang||'no');}catch(e){} }
+    }""")
+    e61=r61.get('en',{})
+    ok61 = (e61.get('plan')=='📅 Planning' and e61.get('menu')=='📖 User guide' and e61.get('logout')=='Log out'
+            and e61.get('bs')=='When do you start?' and e61.get('method0')=='Long-ferment dough'
+            and e61.get('typeLbl')=='Pizza type' and r61.get('noPlan')=='📅 Planlegging'
+            and r61.get('topnavWired') and r61.get('setLangRendersPc'))
+    results.append(('pc_static_html_localized_including_topnav', ok61, r61))
+
     return results
 
 

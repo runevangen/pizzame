@@ -157,7 +157,10 @@ Samme klasse som v6.01-feilen, men bare halvfikset.
 
 ## P2 — Småfeil / kosmetisk
 
-### 7. Biga overgjæring: avrundet vs. uavrundet romheving **[baseline?]**
+### 7. Biga overgjæring: avrundet vs. uavrundet romheving **[baseline?]** ✅ BYGGET (v0.665, gren)
+> ✅ **Bygget (venter prod).** `fixedFermOverheadHours` runder nå biga-romhevingen
+> `Math.round(rtM(60)*1.5)` — likt tidsplanens `rtB`. Ingen frosne tall rørt. Test:
+> `biga_bulk_rise_rounded_consistently_in_overhead`.
 > **I klartekst:** På biga-metoden regner tidsplanen og overgjærings-varselet
 > romhevingen bittelitt ulikt — planen runder av til hele minutter, varselet gjør
 > det ikke. Forskjellen er under ett minutt og synes nesten aldri, men de to tallene
@@ -267,7 +270,14 @@ og appen er ikke reelt installerbar. En cache-first SW for skallet (index.html +
 changelog.js) passer den fler-dagers, én-fils naturen. NB: `manifest.json` ligger i
 `netlify/functions/`, ikke i site-roten `<link>` peker på — sjekk 404.
 
-### F7. Tilgjengelig, tastaturstyrt avhaking + live-region på statuslinjen
+### F7. Tilgjengelig, tastaturstyrt avhaking + live-region på statuslinjen ✅ BYGGET (v0.667, gren)
+> ✅ **Bygget (venter prod).** Steg-, ingrediens- og understeg-avhaking har nå
+> `role="checkbox"` + `aria-checked` + `tabindex="0"` + Enter/Space-tastatur, og
+> den levende statuslinja (`deigStatusBarHTML`) har `aria-live="polite"`. F5-stripa
+> hadde alt tastatur/role fra før. Render-baseline oppdatert (kun de nye a11y-
+> attributtene — verifisert at ingenting annet endret seg). Test:
+> `checkboxes_keyboard_accessible_and_statusbar_aria_live`.
+>
 > **I klartekst:** Avhaking av steg/understeg er i dag klikkbare `<div>`-er uten
 > «knapp»-semantikk eller tastaturstøtte, og den levende statuslinja har ingen
 > `aria-live` — så en skjermleser-bruker hører aldri «oppstart flyttet 2 t tidligere»-
@@ -280,7 +290,12 @@ deig-statuslinjen (flaggskip siden v5.53–5.54) har ingen `aria-live`, så
 skjermleser-brukere hører aldri årsak→virkning-oppdateringene. Gjør avhakinger til
 ekte knapper/checkbokser og merk statuslinjen `aria-live="polite"`.
 
-### F8. Søk / sorter / filter i «Deiger»-fanen
+### F8. Søk / sorter / filter i «Deiger»-fanen ✅ BYGGET (v0.666, gren)
+> ✅ **Bygget (venter prod).** Kontroll-rad over lista: tekstsøk (navn), metode-
+> filter og sortering (nyest/eldst/best vurdert). Lista males om fra
+> `window._bakesCache` uten ny fetch (`applyDeigFilter`/`paintBakeList`), så
+> søkefeltet beholder fokus. Test: `doughs_search_filter_sort_and_config_in_meta`.
+>
 > **I klartekst:** Deiger-lista har bare Aktive vs. Ferdige. Med per-bruker-lagring
 > og terningkast vokser den uendelig. F8 legger til filter på metode/type, sortering
 > på dato og tekstsøk — samme oppdagbarhets-polish som Beta-fanen har fått. Middels.
@@ -289,7 +304,14 @@ Lagret-deig-lista (`renderBakeList`, `5017`) har verken søk, filter eller sorte
 deiger vokser lista uendelig. Legg til filter på metode/type, sortering på dato og
 tekstsøk — samme oppdagbarhets-polish som Beta-fanen fikk (v5.51, v5.56, v5.86).
 
-### F9. Synliggjør deig-resultater («Hvordan ble den?») som historikk
+### F9. Synliggjør deig-resultater («Hvordan ble den?») som historikk ✅ BYGGET (v0.666, gren)
+> ✅ **Bygget (venter prod).** Ferdig-kortene viste allerede vurdering + notat +
+> bilde; nå viser `bakeMetaLine` også kjøletid + hydrering, så vurderingen er
+> knyttet til konkrete tall («72t · 65% → ★★★★»). Sammen med F8s «best vurdert»-
+> sortering fungerer Ferdige-lista som en resultat-historikk. (En kontekstuell
+> «forrige gang for denne oppskriften»-nudge ved planlegging er fortsatt mulig
+> senere, men dataen er nå synlig og sammenlignbar.)
+>
 > **I klartekst:** Når du markerer en deig som ferdig, samler appen inn terningkast,
 > bilde og notat — men det vises aldri tilbake til deg som en historikk. F9 lukker
 > sløyfa: «forrige gang: 72 t / 65 % → 4/5», så du kan gjenta suksessene. Dataen
@@ -299,7 +321,13 @@ men signalet går ingensteds brukeren ser det igjen. En resultat-historikk per d
 («forrige gang: 72t / 65 % → 4/5») lukker sløyfa og er distinkt — dataen samles
 allerede inn. Passer med F8.
 
-### F10. Samlet ingrediens-/handleliste
+### F10. Samlet ingrediens-/handleliste ✅ BYGGET (v0.665, gren)
+> ✅ **Bygget (venter prod).** Ny «🛒 Handleliste»-knapp i handlings-radene (PC +
+> mobil) kopierer en samlet totalliste (`shoppingListText()`) med mel/vann/salt/
+> gjær + evt. olje/smør/sukker — samme R()-totaler som «Kopier tidsplan». Test:
+> `shopping_list_totals_copyable_and_localized`. (Handleliste ↔ kilder-utvidelsen
+> under er fortsatt parkert.)
+>
 > **I klartekst:** «Trenger du»-chipsene viser ingredienser per steg, men det finnes
 > ingen samlet liste å handle etter *før* du starter — spesielt nyttig for fler-dagers
 > metoder (Poolish/Biga/Mania) der ingrediensene er delt over faser. F10 er en
@@ -319,7 +347,13 @@ posisjons-personvern for tvilsom nytte. Åpne valg: lenke ut vs. bare navngi; hv
 faktisk står inne for (bør bestemmes av bruker, ikke oppdiktes); og om EN-visningen skjuler
 seksjonen eller viser samme liste med «norske kilder»-merknad.
 
-### F11. Paritets-sjekk av tips/why på tvers av metoder
+### F11. Paritets-sjekk av tips/why på tvers av metoder ✅ BYGGET (v0.664, gren)
+> ✅ **Bygget (venter prod).** Audit av alle metode×type-kombinasjoner fant 8 steg
+> med understeg men uten `why` (2 i hurtigdeig, 6 i Mania). Fylt hver med en kort
+> tospråklig `why`. Kontrakt: hvert steg med understeg må ha en `why` (tip forblir
+> valgfritt på passive vente-steg). Vokter-test:
+> `every_substep_bearing_step_has_a_why_all_methods`.
+>
 > **I klartekst:** Vi tettet gjæringsstegene i v6.10, men en *full* gjennomgang av
 > at alle steg i alle metoder har jevn `tip`/`hvorfor`-dekning — pluss en test som
 > vokter det framover — gjenstår. Direkte fortsettelse av arbeidet vi gjorde, lav
@@ -331,7 +365,14 @@ flere steg definerer `substeps` uten `tip`/`why` (f.eks. passive Poolish/Biga-ve
 en regresjonstest à la eksisterende `pc_mobil_1to1_*` passer måten forfatteren
 allerede vokter konsistens på.
 
-### F12. Lys/mørk-tema også for PC-visningen
+### F12. Lys/mørk-tema også for PC-visningen ⏸️ UTSATT (bevisst, aug 2026)
+> ⏸️ **Utsatt etter avklaring.** Å koble PC på det delte tema-systemet (dark =
+> ingen `.theme-light`-klasse, som er standard) ville gjort PC **mørkt som
+> standard** — en synlig endring for dagens PC-brukere. Rune valgte å beholde PC
+> lyst for nå. Kan tas opp igjen senere; da må default-oppførselen (mørkt som
+> mobil vs. behold lyst med egen `.theme-dark`) bestemmes først. Forno-
+> mørkpaletten finnes ferdig å gjenbruke.
+>
 > **I klartekst:** v6.17 ga mobil-layouten en ekte lys/mørk-bryter (Tons of Rock-
 > kremtema). PC-visningen har fortsatt sin egen, faste lyse styling og får ikke
 > temavalget. F12 er å la `.theme-light`/mørk-tokenene også styre desktop-layouten,
@@ -339,7 +380,16 @@ allerede vokter konsistens på.
 > bruker `--dyn-*` i stedet for `--forno-*`, så det krever en egen mørk PC-palett
 > og re-scoping, ikke bare gjenbruk.
 
-### T-i18n. Gjenstående oversettelses-hull (engelsk)
+### T-i18n. Gjenstående oversettelses-hull (engelsk) ✅ STORT SETT BYGGET (v0.668, gren)
+> ✅ **PC-hovedlayout bygget (venter prod).** Oversatt: sidemenyen, metodekortene,
+> seksjonsetikettene, planleggings-boksen, glidebryter-etikettene (Melmengde/
+> Hydrering/Kjøleskapsheving/Romtemperatur) og topnav-fanene (Steg for steg/
+> Oppskrift/Notater). `setLang` re-rendrer nå PC-planen når PC er aktiv, så
+> topnav-en bytter språk med det samme. Endringsloggen ble tospråklig i v0.660.
+> **Gjenstår (lav prio):** de bittesmå range-endepunkt-etikettene («55% fast»,
+> «18°C kjølig»), det dype «Avanserte innstillinger»-panelet, og admin-verktøyet
+> (internt). Test: `pc_static_html_localized_including_topnav`.
+>
 > **I klartekst:** Hele mobilappen er oversatt (v6.15 + v6.20-vask), men noen
 > hjørner er fortsatt kun norske i engelsk modus:
 > - **PC-visningens statiske HTML** (sidebar-slidere, desktop-topnav «Steg for
@@ -353,7 +403,11 @@ allerede vokter konsistens på.
 > **Delvis løst (v0.660):** Endringsloggen er nå tospråklig (`d_en`/`changes_en`
 > per entry, `buildChangelogHTML` språkbevisst). PC-statisk HTML og admin gjenstår.
 
-### F13. Bytt plass på «☰ Mer» og «🧭 Smart-plan» i mobil-tabbaren
+### F13. Bytt plass på «☰ Mer» og «🧭 Smart-plan» i mobil-tabbaren ✅ BYGGET (v0.664, gren)
+> ✅ **Bygget (venter prod).** Fanene byttet i tabbar-HTML-en, `MOB_TABS` reordnet
+> til å speile ny rekkefølge (Planlegging · Tidsplan · Smart-plan · Mer). Mer-
+> badgen lander fortsatt på Mer. Test: `mer_tab_moved_rightmost_swapped_with_smartplan`.
+>
 > **I klartekst:** «Mer»-fanen bør ligge lengst til høyre — det er der en «mer/
 > flere»-fane konvensjonelt hører hjemme (som en overløps-meny). I dag er
 > rekkefølgen Planlegging · Tidsplan · Mer · Smart-plan, så «Mer» ligger nest

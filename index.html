@@ -752,25 +752,25 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 </div>
 
 <div class="menu-wrap">
-  <div class="menu-trigger" onclick="toggleSidenavMenu()"><span>☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
+  <div class="menu-trigger" onclick="toggleSidenavMenu()"><span id="pc-menu-trigger-lbl">☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
   <div class="menu-dropdown" id="sidenav-dropdown" style="display:none">
-    <div class="menu-row" onclick="sidenavGo(openManualModal)">📖 Bruksanvisning</div>
-    <div class="menu-row" onclick="sidenavGo(openTechModal)">💡 Tips</div>
+    <div class="menu-row" id="pc-menu-manual" onclick="sidenavGo(openManualModal)">📖 Bruksanvisning</div>
+    <div class="menu-row" id="pc-menu-tips" onclick="sidenavGo(openTechModal)">💡 Tips</div>
     <div class="menu-row" onclick="sidenavGo(openDeigerModal)">
-      <span>🍽️ Deiger</span>
+      <span id="pc-menu-deiger">🍽️ Deiger</span>
       <span id="active-deiger-count" class="cnt" style="display:none">0</span>
     </div>
-    <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none">★ Min favoritt</div>
-    <div class="menu-row" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
-    <div class="menu-row" onclick="sidenavGo(shareApp)">📤 Del appen</div>
+    <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none"><span id="pc-menu-fav">★ Min favoritt</span></div>
+    <div class="menu-row" id="pc-menu-feedback" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
+    <div class="menu-row" id="pc-menu-share" onclick="sidenavGo(shareApp)">📤 Del appen</div>
     <div style="height:1px;background:#F2F2F7"></div>
-    <div class="menu-row" onclick="sidenavGo(()=>setLayout('mob'))">📱 Bytt til mobilvisning</div>
+    <div class="menu-row" id="pc-menu-tomob" onclick="sidenavGo(()=>setLayout('mob'))">📱 Bytt til mobilvisning</div>
     <div style="height:1px;background:#F2F2F7"></div>
-    <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
-    <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
-    <div class="menu-row" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
+    <div class="menu-row" id="pc-menu-formler" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
+    <div class="menu-row" id="pc-menu-admin" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
+    <div class="menu-row" id="pc-menu-smart" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
     <div style="height:1px;background:#F2F2F7"></div>
-    <div class="menu-row" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
+    <div class="menu-row" id="pc-menu-logout" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
   </div>
 </div>
 
@@ -799,27 +799,27 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
   <div class="divl"></div>
 
   <div class="tbox">
-    <div class="tbox-t">📅 Planlegging</div>
+    <div class="tbox-t" id="pc-lbl-planlegging">📅 Planlegging</div>
     <div class="mbtns">
-      <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br>Starter nå</div>
-      <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br>Planlagt steketid</div>
+      <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br><span id="pc-mode-start-lbl">Starter nå</span></div>
+      <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br><span id="pc-mode-end-lbl">Planlagt steketid</span></div>
     </div>
     <div id="bs">
-      <div class="lbl" style="margin-bottom:4px">Når begynner du?</div>
+      <div class="lbl" id="pc-bs-lbl" style="margin-bottom:4px">Når begynner du?</div>
       <div class="dtg"><input type="date" id="sd"><input type="time" id="st" value="07:30"></div>
-      <div class="hint">Appen regner fremover og viser når hvert steg skjer.</div>
+      <div class="hint" id="pc-bs-hint">Appen regner fremover og viser når hvert steg skjer.</div>
     </div>
     <div id="be" style="display:none">
-      <div class="lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+      <div class="lbl" id="pc-be-lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
       <div class="dtg"><input type="date" id="ed"><input type="time" id="et" value="18:00"></div>
-      <div class="hint">Appen regner bakover og viser når du må starte.</div>
+      <div class="hint" id="pc-be-hint">Appen regner bakover og viser når du må starte.</div>
       <div id="earliest-hint" style="font-size:11px;color:#e8590c;margin-top:3px"></div>
     </div>
   </div>
 
   <div class="divl"></div>
 
-  <div><div class="lbl">Melmengde</div>
+  <div><div class="lbl" id="pc-mel-lbl">Melmengde</div>
     <div class="sr"><input type="range" id="msl" min="300" max="1500" step="100" value="500" title="Skalerer alle ingredienser automatisk." oninput="uMel(this.value)"><span class="sv" id="mdisp">500g</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>300g</span><span>1500g</span></div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
@@ -834,25 +834,25 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     </div>
   </div>
 
-  <div><div class="lbl">Hydrering — <span id="hlbl">65%</span><span id="hcat" class="hb"></span></div>
+  <div><div class="lbl"><span id="pc-hyd-lbl">Hydrering</span> — <span id="hlbl">65%</span><span id="hcat" class="hb"></span></div>
     <div class="sr"><input type="range" id="hsl" min="55" max="80" step="1" value="65" title="Vann som % av mel." oninput="uHydro(this.value)"><span class="sv" id="hdisp">65%</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>55% fast</span><span>80% flytende</span></div>
     <div id="hhint" class="hint"></div>
   </div>
 
-  <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">24 timer</span></div>
+  <div id="cwrap"><div class="lbl"><span id="pc-cold-lbl">Kjøleskapsheving</span> — <span id="clbl">24 timer</span></div>
     <div class="sr"><input type="range" id="csl" min="24" max="78" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">24 timer</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span>78 timer</span></div>
   </div>
 
-  <div><div class="lbl">Romtemperatur — <span id="tlbl">22°C</span></div>
+  <div><div class="lbl"><span id="pc-temp-lbl">Romtemperatur</span> — <span id="tlbl">22°C</span></div>
     <div class="sr"><input type="range" id="tsl" min="18" max="28" step="2" value="22" title="Påvirker hevingstid." oninput="uTemp(this.value)"><span class="sv" id="tdisp">22°C</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>18°C kjølig</span><span>28°C sommer</span></div>
     <div id="thint" class="hint"></div>
   </div>
 
   <div class="adv-toggle" onclick="toggleAdvanced()">
-    <span>⚙️ Avanserte innstillinger</span>
+    <span id="pc-adv-lbl">⚙️ Avanserte innstillinger</span>
     <span id="adv-arrow">▾</span>
   </div>
   <div id="adv-section" style="display:none">
@@ -931,7 +931,7 @@ function detectDefaultLang(langs){
 }
 window._lang  = detectDefaultLang();
 window._units = (()=>{ try{ return localStorage.getItem('pizzaUnits')||'metric'; }catch(e){ return 'metric'; } })();
-function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
+function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI(); const mobEl=document.getElementById('mob-layout'); const isMob=mobEl&&mobEl.classList.contains('active'); if(isMob){ mobGen(); } else { try{ gen(); }catch(e){} } }catch(e){} }
 function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
 function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
 function fmtW(g){ return window._units==='imperial' ? _oz(g) : g+'g'; }        // vekt-visning (slider/label)
@@ -1064,6 +1064,23 @@ function syncStaticI18nUI(){
   setPCPills('#ggj .pill',{torr:['Tørrgjær','Dry yeast'],fersk:['Fersk gjær','Fresh yeast']});
   setPCPills('#gkm .pill',{ankarsrum:['Ankarsrum','Ankarsrum'],manuell:['Manuell elting','Manual kneading'],annen:['Annen maskin','Other machine']});
   setPCPills('#govn .pill',{pizza:['Pizzaovn (430–450°C)','Pizza oven (430–450°C)'],vanlig:['Vanlig ovn (maks 250°C)','Regular oven (max 250°C)']});
+  // v0.668 (backlog T-i18n): PC-metodekort + seksjonsetiketter + meny + planlegging.
+  const _mcSub={standard:['Direkte + kjøl','Direct + fridge'],poolish:['Løs fordeig, 12–16t','Loose preferment, 12–16h'],biga:['Fast fordeig, 16–24t','Stiff preferment, 16–24h'],hurtig:['2–16 timer, romtemperatur','2–16 hours, room temperature'],kveld:['5–24t kjøleskap','5–24h fridge']};
+  document.querySelectorAll('#gmet .mc').forEach(mc=>{ const v=mc.dataset.v; const tt=mc.querySelector('.mc-t'); const ss=mc.querySelector('.mc-s'); if(tt) tt.textContent=mN(v); if(ss&&_mcSub[v]) ss.textContent=L(_mcSub[v][0],_mcSub[v][1]); });
+  const _typeLbl=(document.getElementById('gtype')||{}).previousElementSibling; if(_typeLbl&&_typeLbl.classList.contains('lbl')) _typeLbl.textContent=L('Pizzatype','Pizza type');
+  const _metWrap=document.getElementById('gmet-wrap'); if(_metWrap){ const ml=_metWrap.querySelector('.lbl'); if(ml) ml.textContent=L('Metode','Method'); }
+  st('pc-lbl-planlegging','📅 Planlegging','📅 Planning');
+  st('pc-mode-start-lbl','Starter nå','Starting now'); at('ms','title','Beregner fremover fra starttidspunkt','Calculates forward from the start time');
+  st('pc-mode-end-lbl','Planlagt steketid','Scheduled bake time'); at('me','title','Beregner bakover fra ønsket steketid','Calculates backward from the desired bake time');
+  st('pc-bs-lbl','Når begynner du?','When do you start?'); st('pc-bs-hint','Appen regner fremover og viser når hvert steg skjer.','The app calculates forward and shows when each step happens.');
+  st('pc-be-lbl','Når vil du ha pizzaen ferdig?','When do you want the pizza ready?'); st('pc-be-hint','Appen regner bakover og viser når du må starte.','The app calculates backward and shows when you need to start.');
+  st('pc-menu-trigger-lbl','☰ Meny','☰ Menu');
+  st('pc-menu-manual','📖 Bruksanvisning','📖 User guide'); st('pc-menu-tips','💡 Tips','💡 Tips'); st('pc-menu-deiger','🍽️ Deiger','🍽️ Doughs');
+  st('pc-menu-fav','★ Min favoritt','★ My favorite'); st('pc-menu-feedback','💬 Feedback','💬 Feedback'); st('pc-menu-share','📤 Del appen','📤 Share app');
+  st('pc-menu-tomob','📱 Bytt til mobilvisning','📱 Switch to mobile view'); st('pc-menu-formler','📊 Formler','📊 Formulas'); st('pc-menu-admin','🔒 Admin','🔒 Admin');
+  st('pc-menu-smart','🧭 Smart-plan','🧭 Smart plan'); st('pc-menu-logout','Logg ut','Log out');
+  st('pc-mel-lbl','Melmengde','Flour amount'); st('pc-hyd-lbl','Hydrering','Hydration'); st('pc-cold-lbl','Kjøleskapsheving','Cold proof'); st('pc-temp-lbl','Romtemperatur','Room temperature');
+  st('pcount-lbl','eller antall pizzaer:','or number of pizzas:'); st('pc-adv-lbl','⚙️ Avanserte innstillinger','⚙️ Advanced settings');
   // Tidsplan/Oppskrift-veksler (v6.33)
   st('mob-plan-seg-schedule-lbl','Tidsplan','Schedule');
   st('mob-plan-seg-recipe-lbl','Oppskrift','Recipe');
@@ -2308,8 +2325,9 @@ function rawSteps(a){
       {title:'Poolish kjøles ned',loc:'kjol',at:chillAt,dur:0,
         desc:L('Sett poolishen i kjøleskapet for nedkjøling.',`Put the poolish in the fridge to cool down.`),
         substeps:[L('Sett poolishen i kjøleskapet',`Put the poolish in the fridge`)],
+        why:L('Nedkjølingen bremser poolishen så den ikke overmodner, og gjør den lettere å blande inn i den kalde hoveddeigen.','Cooling slows the poolish so it does not over-mature, and makes it easier to mix into the cold main dough.'),
         tip:L('Minimum 1 time er nok, men det gjør ikke noe om den står 3–4 timer om du ikke rekker neste steg med det samme — dette steget er fleksibelt.',`A minimum of 1 hour is enough, but it doesn't matter if it stands 3–4 hours if you don't get to the next step right away — this step is flexible.`)},
-      {title:'Nedkjøling',loc:'kjol',at:chillAt,dur:CHILL,passive:true,desc:L('La stå kaldt i minst 2 timer.',`Let sit cold for at least 2 hours.`),substeps:[L('La stå kaldt i minst 2 timer',`Let sit cold for at least 2 hours`)]},
+      {title:'Nedkjøling',loc:'kjol',at:chillAt,dur:CHILL,passive:true,desc:L('La stå kaldt i minst 2 timer.',`Let sit cold for at least 2 hours.`),substeps:[L('La stå kaldt i minst 2 timer',`Let sit cold for at least 2 hours`)],why:L('De to timene i kulde setter fermenteringen på lav fart, så poolishen ikke overmodner før hoveddeigen blandes.','The two cold hours slow the fermentation right down, so the poolish does not over-mature before the main dough is mixed.')},
       {title:'Bland hoveddeig',loc:'benk',at:mixAt,dur:MIX_DUR,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(MIX_DUR+RISE1+15)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(MIX_DUR+RISE1+15)} of uninterrupted time — the next three steps are done in one go.`),
         desc:L(`Hell avkjølt poolish i bollen. Ha i ${rm.hovedMel}g mel, ${rm.hovedYd}g tørrgjær og ${rm.vann1}g kaldt vann (4–6°C) direkte i bollen — ingen forblanding av gjæren nødvendig. Kjør på lav hastighet til blandet. Tilsett resten av vannet (${rm.vann2}g) i dråper, vent til absorbert mellom hver — hold igjen 1/3 til slutt sammen med saltet. Etter ca. 15 min: tilsett ${rm.salt}g salt og resten av vannet. Kjør videre 5 min til smidig deig.`,`Pour the cooled poolish into the bowl. Add ${rm.hovedMel}g flour, ${rm.hovedYd}g dry yeast and ${rm.vann1}g cold water (4–6°C) directly into the bowl — no pre-mixing of the yeast needed. Run on low speed until combined. Add the rest of the water (${rm.vann2}g) in drops, waiting until absorbed between each — hold back 1/3 for the end along with the salt. After about 15 min: add ${rm.salt}g salt and the rest of the water. Keep running 5 min until a supple dough.`),
@@ -2324,7 +2342,8 @@ function rawSteps(a){
         tip:L('Deigtemp bør ligge 20–24°C — gå ikke over 26°C, aldri over 28°C. Da blir gjæringen ukontrollert og deigen kan bli ødelagt.',`Dough temp should be 20–24°C — don't go above 26°C, never above 28°C. Then the fermentation becomes uncontrolled and the dough can be ruined.`)},
       {title:'Hvile i ro',loc:'benk',at:aM(mixAt,MIX_DUR),dur:RISE1,passive:true,
         desc:L('Smør et tynt lag olivenolje på kjøkkenbenken og over deigen. Dekk til (brødpose eller plastfolie) og la ligge urørt.',`Spread a thin layer of olive oil on the counter and over the dough. Cover (bread bag or plastic wrap) and let it lie undisturbed.`),
-        substeps:[L('Smør et tynt lag olivenolje på benken og over deigen',`Spread a thin layer of olive oil on the counter and over the dough`),L('Dekk til og la ligge urørt',`Cover and let it lie undisturbed`)]},
+        substeps:[L('Smør et tynt lag olivenolje på benken og over deigen',`Spread a thin layer of olive oil on the counter and over the dough`),L('Dekk til og la ligge urørt',`Cover and let it lie undisturbed`)],
+        why:L('En rolig benkhvile lar gluten slappe av etter eltingen og gir deigen en første, jevn heving før forming.','A calm rest on the counter lets the gluten relax after kneading and gives the dough a first, even rise before shaping.')},
       {title:'Form til bolle → romtemperatur',loc:'rom',at:shapeAt,dur:ROOMTEMP1,passive:false,
         desc:L('Brett deigen noen ganger og lag en stram, rund bolle. Legg i bakebolle eller lignende, dekk med lokk eller plastfolie.',`Fold the dough a few times and make a tight, round ball. Place in a baking bowl or similar, cover with a lid or plastic wrap.`),
         substeps:[
@@ -2347,15 +2366,17 @@ function rawSteps(a){
           L('Form stramme baller',`Shape tight balls`),
           L('Legg i hver sin oljede boks eller dype skål, dekk til',`Place each in its own oiled container or deep bowl, cover`)
         ],
+        why:L('Deigen deles først etter den lange, samlede kjølehevingen — da bærer hvert emne med seg modningen hele deigen har bygget opp.','The dough is divided only after the long, undivided cold proof — so each ball carries the maturation the whole dough has built up.'),
         tip:L('Baller som er formet stramt holder seg bedre gjennom neste, lange romtemperaturheving.',`Balls shaped tightly hold up better through the next, long room-temperature rise.`)},
       {title:'Romtemperaturheving (delt)',loc:'rom',at:aM(divideAt,15),dur:FINAL_PROOF-15,passive:true,
         desc:L(`La emnene heve i romtemperatur ved ${S.temp}°C.`,`Let the balls rise at room temperature at ${S.temp}°C.`),
         substeps:[L(`La emnene heve i romtemperatur ved ${S.temp}°C`,`Let the balls rise at room temperature at ${S.temp}°C`)],
+        why:L('Emnene tar til seg romvarme og hever ferdig, så de blir luftige og strekkbare når du skal steke.',`The balls take on room warmth and finish rising, so they become airy and stretchable by the time you bake.`),
         tip:L('Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.',`After this they can also stand up to 4 hours extra at room temperature as a buffer, if you're not ready right then.`)},
       {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
         desc:oN()+'.',
         substeps:bakeSubsteps(S.type),
-        tip:L('Pizzastein/-stål MÅ varmes minst 45 min.',`Pizza stone/steel MUST be heated at least 45 min.`)}
+        why:WHY.st,tip:L('Pizzastein/-stål MÅ varmes minst 45 min.',`Pizza stone/steel MUST be heated at least 45 min.`)}
     ];
   }
   return[];
@@ -2419,10 +2440,10 @@ function hurtigSteps(anchor){
         ?L('Windowpane-testen er ekstra viktig her siden du ikke har lang hevetid til å kompensere for underelting.','The windowpane test is extra important here since you don\'t have a long rise to compensate for under-kneading.')
         :L('Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.','Knead a bit longer than you would with a longer rise — quick dough has less time for gluten to develop on its own.')},
     {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}.`,`Cover tightly. Rise at ${S.temp}°C for about ${fmtHM(ba)}.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}`,`Rise at ${S.temp}°C for about ${fmtHM(ba)}`)],why:rtW(ba),tip:TIP.roomRise},
-    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}. Round well.`),needs:[L(`📦 ${p.count} emne${p.count>1?'r':''}`,`📦 ${p.count} ball${p.count>1?'s':''}`)],substeps:[L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
+    {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}. Round well.`),needs:[L(`📦 ${p.count} emne${p.count>1?'r':''}`,`📦 ${p.count} ball${p.count>1?'s':''}`)],substeps:[L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],why:L('Runde, stramme emner holder formen gjennom den korte etterhevingen som følger, og gir jevn heving.','Round, tight balls hold their shape through the short final proof that follows, and rise evenly.'),tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
     {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${fmtHM(afm)}. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${fmtHM(afm)}. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${fmtHM(afm)}, tildekket`,`Final proof ${fmtHM(afm)}, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
-      tip:(oT(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
+      why:WHY.st,tip:(oT(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
   ]};
 }
 
@@ -2680,7 +2701,7 @@ function renderSteps(steps, mode='desktop'){
     }
     html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${(isDimmed && !isNext) ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
       <div class="${C.body}">
-        <div class="${C.head}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">
+        <div class="${C.head}" role="checkbox" aria-checked="${done?'true':'false'}" tabindex="0" onclick="toggleStepDone(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStepDone(${i});}" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">
           <div class="${C.chk} ${done ? 'on' : ''}">${done ? '✓' : ''}</div>
           <div class="${C.num} ${i===curIdx ? '' : C.numDim}">${i+1}</div>
           <div style="flex:1;min-width:0">
@@ -2834,7 +2855,7 @@ function recipeRowsHTML(rr, mob=false){
     const _ingNums=_ckNums(row.v);
     const checked = window._checkedIngredients && (window._checkedIngredients.has(ingSig(row.k,_ingNums)) || window._checkedIngredients.has(row.k));
     if(mob){
-      return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" style="cursor:pointer">
+      return `<div class="${rowClass}" role="checkbox" aria-checked="${checked?'true':'false'}" aria-label="${escH(lbl)}" tabindex="0" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('${row.k}','${_ingNums}');}" style="cursor:pointer">
         <span style="display:flex;align-items:center;gap:8px">
           <span class="ing-check${checked?' on':''}"></span>
           <span style="${checked?'text-decoration:line-through' : ''}" class="${checked?'dyn-faint-text':''}">${lbl}</span>
@@ -2842,7 +2863,7 @@ function recipeRowsHTML(rr, mob=false){
         <span class="${valClass}${checked?' dyn-faint-text':''}" style="${checked?'text-decoration:line-through':''}">${row.v}</span>
       </div>`;
     }
-    return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" style="cursor:pointer">
+    return `<div class="${rowClass}" role="checkbox" aria-checked="${checked?'true':'false'}" aria-label="${escH(lbl)}" tabindex="0" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('${row.k}','${_ingNums}');}" style="cursor:pointer">
       <span style="display:flex;align-items:center;gap:8px">
         <span class="ing-check${checked?' on':''}"></span>
         <span style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${lbl}</span>
@@ -2948,6 +2969,33 @@ function copyP(steps){
   }).catch(()=>alert(L('Kopi feilet — prøv manuelt.','Copy failed — try manually.')));
 }
 
+// v0.665 (backlog F10): samlet, kopierbar handleliste. Fler-dagers metoder
+// (Poolish/Biga/Mania) deler ingrediensene over faser i tidsplanen — dette gir
+// deg TOTALEN å handle etter, i ett kort tekstblokk. Bruker samme R()-totaler
+// som «Kopier tidsplan» sin ingrediensdel.
+function shoppingListText(){
+  const r=R(), p=pc();
+  const lines=[
+    L('🛒 Handleliste — UltimatePizza','🛒 Shopping list — UltimatePizza'),
+    L(`${r.name} · ${p.count} ${pcUnitLabel(true)} (${p.perPizza}g/emne)`,`${r.name} · ${p.count} ${pcUnitLabel(true)} (${p.perPizza}g/ball)`),
+    '',
+    L(`Mel: ${r.flour}g`,`Flour: ${r.flour}g`),
+    L(`Vann: ${r.water}g`,`Water: ${r.water}g`),
+    L(`Salt: ${r.salt}g`,`Salt: ${r.salt}g`),
+    ...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),
+    ...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),
+    ...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),
+    L(`Gjær: ${currentYeastAmount()}`,`Yeast: ${currentYeastAmount()}`)
+  ];
+  return lines.join('\n');
+}
+function copyShoppingList(btn){
+  const text=shoppingListText();
+  const done=()=>{ if(btn){ const o=btn.getAttribute('data-lbl')||btn.textContent; btn.textContent=L('✓ Kopiert!','✓ Copied!'); setTimeout(()=>{ btn.textContent=o; },2000); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>window.prompt(L('Kopier handlelisten:','Copy the shopping list:'), text));
+  } else { window.prompt(L('Kopier handlelisten:','Copy the shopping list:'), text); }
+}
 
 function icsStamp(d){
   return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
@@ -3285,7 +3333,10 @@ function openPizzatidFromWarning(){
 // Samme grep som warningWrapHTML i v5.74 — én implementasjon, alle hoppene
 // arver den.
 let _returnTo = null; // {tab, wizStep, stepTitle}
-const MOB_TABS = ['plan','settings','tips','beta'];
+// v0.664: visuell rekkefølge i tabbaren — Planlegging · Tidsplan · Smart-plan · Mer
+// («Mer» flyttet lengst til høyre, overløps-meny-konvensjon). Rekkefølgen her er
+// kun for lesbarhet; all logikk finner fanen på id, ikke posisjon.
+const MOB_TABS = ['settings','plan','beta','tips'];
 function currentMobTab(){
   return MOB_TABS.find(id=>{
     const el=document.getElementById('mob-'+id);
@@ -3554,7 +3605,10 @@ function runBetaSearch(){
 function fixedFermOverheadHours(method){
   const m=method||S.method;
   const preferment=m==='poolish'?S.poolishH:m==='biga'?S.bigaH:0;
-  const bulkRiseMin=m==='biga' ? rtM(60)*1.5 : rtM(60);
+  // v0.665 (backlog #7): biga-romhevingen må rundes likt som tidsplanen
+  // (rtB=Math.round(rt*1.5), rt=rtM(60)) — ellers regner overgjærings-varselet
+  // et sub-minutt annerledes enn planen viser.
+  const bulkRiseMin=m==='biga' ? Math.round(rtM(60)*1.5) : rtM(60);
   return preferment+bulkRiseMin/60;
 }
 function totalFermentHours(){
@@ -4581,7 +4635,7 @@ function gen(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">${L('Steg for steg','Step by step')}</div><div class="tab" onclick="showTab('recipe',this)">${L('Oppskrift','Recipe')}</div><div class="tab" onclick="showTab('notes',this)">${L('Notater','Notes')}</div></div>
     <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#e8590c;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
@@ -4603,7 +4657,7 @@ function hurtigRes(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">${L('Steg for steg','Step by step')}</div><div class="tab" onclick="showTab('recipe',this)">${L('Oppskrift','Recipe')}</div><div class="tab" onclick="showTab('notes',this)">${L('Notater','Notes')}</div></div>
     <h2>Hurtigdeig <span style="color:#e8590c;font-weight:500">· ${o.h} timer</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
@@ -4625,7 +4679,7 @@ function kveldRes(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">${L('Steg for steg','Step by step')}</div><div class="tab" onclick="showTab('recipe',this)">${L('Oppskrift','Recipe')}</div><div class="tab" onclick="showTab('notes',this)">${L('Notater','Notes')}</div></div>
     <h2>Kveldsdeig <span style="color:#e8590c;font-weight:500">· ${S.kveldH} timer kjøl</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
@@ -6057,7 +6111,7 @@ function substepsHTML(step, stepIdx){
     const legacy=stepIdx+'-'+subIdx;
     const done = checkable && (window._checkedSubsteps.has(substepSig(step, subIdx)) || window._checkedSubsteps.has(legacy));
     const numHtml = done ? '✓' : (subIdx+1);
-    const clickAttr = checkable ? ` onclick="toggleSubstepDone(${stepIdx},${subIdx})" style="cursor:pointer"` : '';
+    const clickAttr = checkable ? ` role="checkbox" aria-checked="${done?'true':'false'}" aria-label="${escH(txt)}" tabindex="0" onclick="toggleSubstepDone(${stepIdx},${subIdx})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSubstepDone(${stepIdx},${subIdx});}" style="cursor:pointer"` : '';
     return `<li class="substep-item${done?' substep-done':''}"${clickAttr}><span class="substep-num${done?' substep-num-done':''}">${numHtml}</span><span class="substep-txt">${escH(txt)}</span></li>`;
   }).join('');
   return `<ul class="substep-list">${items}</ul>`;
@@ -6343,7 +6397,12 @@ function bakeMetaLine(b){
   const lbl = b.anchorMode==='end' ? L('Steketid','Baking time') : L('Startet','Started');
   let dtStr = '';
   try{ dtStr = fDT(new Date(b.anchorISO)); }catch(e){}
-  return `${tn} · ${mn} · ${lbl}: ${dtStr}`;
+  // v0.666 (backlog F9): vis nøkkelparametrene (kjøletid + hydrering) i meta-linja,
+  // så en ferdig deigs vurdering er knyttet til konkrete tall («72t · 65% → ★★★★»).
+  const c = b.config||{};
+  const coldStr = (c.cold && ['standard','poolish','biga'].includes(c.method)) ? ` · ${c.cold}t${L(' kjøl',' fridge')}` : '';
+  const hydStr = c.hydro ? ` · ${c.hydro}%` : '';
+  return `${tn} · ${mn}${coldStr}${hydStr} · ${lbl}: ${dtStr}`;
 }
 
 // Liten «Delt»/«Delt av X»-merkelapp ved navnet.
@@ -6423,32 +6482,74 @@ async function toggleShareBake(id, currentlyShared){
   refreshBaksterPanels();
 }
 
+// v0.666 (backlog F8): søk / filter / sortering i Deiger-lista. Kontrollene
+// rendres én gang; selve lista males om fra window._bakesCache uten ny fetch,
+// så et tastetrykk i søkefeltet ikke mister fokus eller trigger nettverk.
 async function renderBaksterPanel(targetId){
   const el = document.getElementById(targetId);
   if(!el) return;
-  const mob = targetId.startsWith('mob-');
   const bakes = await fetchBakes();
   if(bakes===null){
     el.innerHTML = `<p style="color:#993C1D;font-size:12px;padding:.5rem 0">${L('Kunne ikke hente deiger. Sjekk at appen kjører på Netlify med bakes-funksjonen koblet til.','Could not fetch doughs. Make sure the app is running on Netlify with the bakes function connected.')}</p>`;
     return;
   }
   window._bakesCache = bakes;
-  // Del i «mine» (egne + eldre uten eier) og «delt med alle» (andres delte).
-  const mineB = bakes.filter(b=>bakeIsMine(b));
-  const sharedByOthers = bakes.filter(b=>!bakeIsMine(b));
-  const active = mineB.filter(b=>b.status==='active');
-  const finished = mineB.filter(b=>b.status==='finished');
+  el.innerHTML = bakeFilterControlsHTML(targetId) + `<div id="${targetId}-list"></div>`;
+  paintBakeList(targetId);
+}
+window._deigFilter = window._deigFilter || {q:'',method:'',sort:'newest'};
+function bakeFilterControlsHTML(targetId){
+  const f = window._deigFilter;
+  const methods=[['','Alle metoder','All methods'],['standard','Langtidsdeig','Long-ferment'],['poolish','Poolish','Poolish'],['biga','Biga','Biga'],['hurtig','Hurtigdeig','Quick'],['kveld','Kveldsdeig','Evening'],['mania','Mania','Mania']];
+  const sorts=[['newest','Nyest først','Newest first'],['oldest','Eldst først','Oldest first'],['rating','Best vurdert','Highest rated']];
+  const opt=(arr,cur)=>arr.map(o=>`<option value="${o[0]}"${o[0]===cur?' selected':''}>${L(o[1],o[2])}</option>`).join('');
+  const inputStyle='padding:7px 9px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-surface);color:var(--dyn-text);font-size:12px';
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.6rem">
+    <input id="${targetId}-q" value="${escH(f.q||'')}" oninput="onDeigFilterChange('${targetId}')" placeholder="${L('Søk etter navn…','Search by name…')}" style="flex:1;min-width:130px;${inputStyle}">
+    <select id="${targetId}-method" onchange="onDeigFilterChange('${targetId}')" style="${inputStyle}">${opt(methods,f.method)}</select>
+    <select id="${targetId}-sort" onchange="onDeigFilterChange('${targetId}')" style="${inputStyle}">${opt(sorts,f.sort)}</select>
+  </div>`;
+}
+function onDeigFilterChange(targetId){
+  const q=document.getElementById(targetId+'-q'), m=document.getElementById(targetId+'-method'), s=document.getElementById(targetId+'-sort');
+  window._deigFilter={ q:q?q.value:'', method:m?m.value:'', sort:s?s.value:'newest' };
+  paintBakeList(targetId);
+}
+function _bakeTs(b){ try{ return new Date(b.finishedAt||b.anchorISO||0).getTime()||0; }catch(e){ return 0; } }
+function applyDeigFilter(list){
+  const f=window._deigFilter||{q:'',method:'',sort:'newest'};
+  const q=(f.q||'').trim().toLowerCase();
+  let out=list.filter(b=>{
+    if(q && !String(b.name||'').toLowerCase().includes(q)) return false;
+    if(f.method && !(b.config && b.config.method===f.method)) return false;
+    return true;
+  });
+  if(f.sort==='oldest') out.sort((a,b)=>_bakeTs(a)-_bakeTs(b));
+  else if(f.sort==='rating') out.sort((a,b)=>(b.rating||0)-(a.rating||0) || _bakeTs(b)-_bakeTs(a));
+  else out.sort((a,b)=>_bakeTs(b)-_bakeTs(a));
+  return out;
+}
+function paintBakeList(targetId){
+  const listEl=document.getElementById(targetId+'-list');
+  if(!listEl) return;
+  const mob=targetId.startsWith('mob-');
+  const bakes=window._bakesCache||[];
+  const mineB=bakes.filter(b=>bakeIsMine(b));
+  const sharedByOthers=bakes.filter(b=>!bakeIsMine(b));
+  const active=applyDeigFilter(mineB.filter(b=>b.status==='active'));
+  const finished=applyDeigFilter(mineB.filter(b=>b.status==='finished'));
+  const sharedF=applyDeigFilter(sharedByOthers);
+  const f=window._deigFilter||{}; const filtering=!!((f.q&&f.q.trim())||f.method);
   let html = `<div class="lbl" style="margin-bottom:.4rem">${L('Aktive','Active')}</div>`;
-  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${L('Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".','No active doughs. Set up a recipe and tap "Save dough".')}</p>`;
+  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${filtering?L('Ingen aktive treff.','No active matches.'):L('Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".','No active doughs. Set up a recipe and tap "Save dough".')}</p>`;
   html += `<div class="lbl" style="margin:.8rem 0 .4rem">${L('Ferdige','Finished')}</div>`;
-  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">${L('Ingen ferdige deiger ennå.','No finished doughs yet.')}</p>`;
-  // Delt med alle — andres deiger som er delt. Vises som se/kopier (ikke redigerbare).
-  if(sharedByOthers.length){
+  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">${filtering?L('Ingen ferdige treff.','No finished matches.'):L('Ingen ferdige deiger ennå.','No finished doughs yet.')}</p>`;
+  if(sharedF.length){
     html += `<div class="lbl" style="margin:1.1rem 0 .4rem">${L('🌐 Delt med alle','🌐 Shared with everyone')}</div>`;
     html += `<p style="color:var(--dyn-faint);font-size:11px;padding:0 0 .5rem;line-height:1.4">${L('Deiger andre har delt. Du kan åpne og kopiere dem, men ikke endre andres deiger.','Doughs others have shared. You can open and copy them, but not edit doughs owned by others.')}</p>`;
-    html += sharedByOthers.map(b=>bakeCardHTML(b,mob)).join('');
+    html += sharedF.map(b=>bakeCardHTML(b,mob)).join('');
   }
-  el.innerHTML = html;
+  listEl.innerHTML = html;
 }
 
 function refreshBaksterPanels(){
@@ -6537,6 +6638,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   const deltaHTML = showDelta ? startDeltaChipHTML(startMs) : '';
   const actionsHTML = showActions ? `<div style="display:flex;gap:6px;margin-top:8px">
       <button onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan','Copy schedule')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📋</span>${t('a_copy')}</button>
+      <button onclick="copyShoppingList(this)" title="${L('Kopier samlet handleliste','Copy consolidated shopping list')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>🛒</span>${L('Handleliste','Shop list')}</button>
       <button onclick="downloadIcs(window._steps||[])" title="${L('Last ned til kalender','Download to calendar')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📅</span>${t('a_cal')}</button>
       <button id="mob-savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen','Save this dough')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>💾</span>${t('a_save')}</button>
     </div>` : '';
@@ -6552,7 +6654,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
       ${substepToggleHTML('mob-compact')}
       ${tipsToggleHTML('mob-compact')}
     </div>` : '';
-  return `<div style="padding:.55rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0)">
+  return `<div aria-live="polite" style="padding:.55rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0)">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
       <div style="font-size:12px;font-weight:700;color:var(--forno-text,#222);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(typeName)} · ${escH(methodNames[S.method]||S.method)}</div>
       ${showActions ? '' : justerBtn}
@@ -6661,6 +6763,7 @@ function actionGroupHTML(){
       <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen slik at du eller andre kan hente den frem igjen senere','Save this dough so you or others can bring it back later')}">${saveBakeLabel()}</button>
       <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="${L('Se alle lagrede deiger','See all saved doughs')}">${L('🍽️ Mine deiger','🍽️ My doughs')}</button>
       <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan som tekst','Copy schedule as text')}">${L('📋 Kopier','📋 Copy')}</button>
+      <button class="act-btn act-btn-sec" onclick="copyShoppingList(this)" title="${L('Kopier en samlet handleliste med totale ingrediensmengder','Copy a consolidated shopping list with total ingredient amounts')}">${L('🛒 Handleliste','🛒 Shopping list')}</button>
       <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert handlingssteg','Download the schedule as a calendar file, with a reminder 10 min before each action step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
       <button class="act-btn act-btn-sec" id="help-toggle" onclick="toggleHelpFromPlan()" title="${L('Vis eller skjul forklaringer og tips','Show or hide explanations and tips')}">${S.showHelp?L('💡 Skjul forklaringer','💡 Hide explanations'):L('💡 Vis forklaringer','💡 Show explanations')}</button>
       ${substepToggleHTML('pc')}
@@ -7282,11 +7385,11 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-tab" id="mob-tab-plan" onclick="mobShowTab('plan')">
       <span aria-hidden="true">📅</span>Tidsplan
     </div>
-    <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
-      <span aria-hidden="true">☰</span>Mer
-    </div>
     <div class="mob-tab" id="mob-tab-beta" onclick="mobShowTab('beta')">
       <span aria-hidden="true">🧭</span>Smart-plan
+    </div>
+    <div class="mob-tab" id="mob-tab-tips" onclick="mobShowTab('tips')">
+      <span aria-hidden="true">☰</span>Mer
     </div>
   </div>
 

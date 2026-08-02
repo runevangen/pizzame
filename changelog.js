@@ -3,6 +3,67 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.668",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Engelsk oversettelse av PC-visningen: meny, metodekort, planleggings-boks, glidebryter-etiketter og fane-navnene (Steg for steg/Oppskrift/Notater) vises nå på engelsk. Bytter du språk på PC, oppdateres planen med det samme."
+    ],
+    "changes_en": [
+      "English translation of the desktop view: menu, method cards, the planning box, slider labels and the tab names (Step by step/Recipe/Notes) now show in English. Switching language on desktop updates the plan right away."
+    ]
+  },
+  {
+    "v": "0.667",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Tilgjengelighet: avhaking av steg, ingredienser og understeg er nå ekte avkryssingsbokser du kan bruke med tastatur (Enter/mellomrom), og den levende statuslinja annonseres for skjermlesere."
+    ],
+    "changes_en": [
+      "Accessibility: checking off steps, ingredients and substeps are now real checkboxes you can operate with the keyboard (Enter/Space), and the live status bar is announced to screen readers."
+    ]
+  },
+  {
+    "v": "0.666",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Deiger-lista har fått søk, filter på metode og sortering (nyest, eldst, best vurdert) — så den holder seg ryddig når du har mange deiger.",
+      "Ferdige deiger viser nå kjøletid og hydrering i oversikten, så vurderingen henger sammen med de konkrete tallene («72t · 65 % → ★★★★»)."
+    ],
+    "changes_en": [
+      "The Doughs list now has search, filter by method and sorting (newest, oldest, highest rated) — so it stays tidy when you have many doughs.",
+      "Finished doughs now show fridge time and hydration in the overview, so the rating ties to the concrete numbers (\"72h · 65% → ★★★★\")."
+    ]
+  },
+  {
+    "v": "0.665",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny «🛒 Handleliste»-knapp: kopier en samlet liste med totale ingrediensmengder å handle etter — spesielt nyttig for fler-dagers metoder der ingrediensene ellers er delt over flere steg.",
+      "Rettet en bitteliten avrundingsforskjell i biga: overgjærings-varselet og tidsplanen regner nå romhevingen helt likt."
+    ],
+    "changes_en": [
+      "New \"🛒 Shopping list\" button: copy a consolidated list of total ingredient amounts to shop from — especially handy for multi-day methods where the ingredients are otherwise split across several steps.",
+      "Fixed a tiny rounding difference in biga: the over-fermentation warning and the schedule now compute the room rise identically."
+    ]
+  },
+  {
+    "v": "0.664",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Mer»-fanen ligger nå lengst til høyre i menylinja (byttet plass med Smart-plan) — der en «mer»-meny vanligvis hører hjemme. Ny rekkefølge: Planlegging · Tidsplan · Smart-plan · Mer.",
+      "Fylte inn manglende «hvorfor»-forklaringer på flere steg i hurtigdeig og Mania-poolish, så hvert steg i alle metoder nå forklarer hvorfor det er der."
+    ],
+    "changes_en": [
+      "The \"More\" tab now sits furthest right in the menu bar (swapped with Smart plan) — where a \"more\" menu usually belongs. New order: Planner · Schedule · Smart plan · More.",
+      "Filled in missing \"why\" explanations on several steps in the quick dough and Mania poolish, so every step in every method now explains why it is there."
+    ]
+  },
+  {
     "v": "0.663",
     "d": "august 2026",
     "d_en": "August 2026",
