@@ -2217,6 +2217,32 @@ def run_behavioral_tests(page):
             and r53.get('afterDismiss') and r53.get('enLabel') and r53.get('smartHasIgnore'))
     results.append(('all_warnings_have_clear_ignore_button', ok53, r53))
 
+    # v0.663: Smart-plan default-dato er smart. Åpner du appen tidlig nok til at en
+    # ekte deig rekker (≥8t margin til i dag kl. 18:00) → i dag. Ellers → i morgen
+    # kl. 18:00. Same-dag på ettermiddagen ga «rare» resultater. Tidsfeltet
+    # defaulter til 18:00 (samme som resten av appen).
+    r54 = page.evaluate("""() => {
+      const realNow=Date.now;
+      const fmt=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());};
+      try{
+        // A: tidlig morgen (08:00) → god margin → I DAG
+        Date.now=()=>new Date(2026,7,3,8,0,0).getTime();
+        const a=betaDefaultDate(), aExp=fmt(new Date(2026,7,3));
+        // B: ettermiddag (16:00) → for kort tid → I MORGEN
+        Date.now=()=>new Date(2026,7,3,16,0,0).getTime();
+        const b=betaDefaultDate(), bExp=fmt(new Date(2026,7,4));
+        // C: kveld etter 18 (20:00) → I MORGEN
+        Date.now=()=>new Date(2026,7,3,20,0,0).getTime();
+        const c=betaDefaultDate(), cExp=fmt(new Date(2026,7,4));
+        // authored default (getAttribute) — .value kan være mutert av en tidligere test
+        const timeDefault=document.getElementById('mob-beta-et').getAttribute('value');
+        return {a,aExp,b,bExp,c,cExp,timeDefault};
+      } finally { Date.now=realNow; }
+    }""")
+    ok54 = (r54.get('a')==r54.get('aExp') and r54.get('b')==r54.get('bExp')
+            and r54.get('c')==r54.get('cExp') and r54.get('timeDefault')=='18:00')
+    results.append(('smartplan_default_today_only_with_margin_else_tomorrow_1800', ok54, r54))
+
     return results
 
 
