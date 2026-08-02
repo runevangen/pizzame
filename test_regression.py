@@ -2330,6 +2330,34 @@ def run_behavioral_tests(page):
     ok58 = all(r58.get(k) for k in ['noHeader','noFlour','noWater','noYeast','enHeader','enFlour','enYeast'])
     results.append(('shopping_list_totals_copyable_and_localized', ok58, r58))
 
+    # F8 (v0.666): søk/filter/sortering i Deiger-lista (applyDeigFilter). F9: meta-
+    # linja viser nå kjøletid + hydrering, så en ferdig deigs vurdering er knyttet
+    # til konkrete tall.
+    r59 = page.evaluate("""() => {
+      const _f=window._deigFilter;
+      try{
+        const list=[
+          {name:'Fredagspizza', config:{method:'poolish',cold:48,hydro:65,type:'napoletana'}, rating:5, finishedAt:'2026-07-20T18:00:00Z', anchorISO:'2026-07-20T18:00:00Z', status:'finished'},
+          {name:'Biga-test', config:{method:'biga',cold:24,hydro:70,type:'newyork'}, rating:3, finishedAt:'2026-07-10T18:00:00Z', anchorISO:'2026-07-10T18:00:00Z', status:'finished'},
+          {name:'Hurtig hverdag', config:{method:'hurtig',hydro:62,type:'napoletana'}, rating:2, finishedAt:'2026-07-25T18:00:00Z', anchorISO:'2026-07-25T18:00:00Z', status:'finished'}
+        ];
+        window._deigFilter={q:'biga',method:'',sort:'newest'};
+        const search=applyDeigFilter(list).map(b=>b.name);
+        window._deigFilter={q:'',method:'poolish',sort:'newest'};
+        const methodF=applyDeigFilter(list).map(b=>b.config.method);
+        window._deigFilter={q:'',method:'',sort:'newest'};
+        const newest=applyDeigFilter(list).map(b=>b.name);
+        window._deigFilter={q:'',method:'',sort:'rating'};
+        const byRating=applyDeigFilter(list).map(b=>b.rating);
+        const meta=bakeMetaLine(list[0]);
+        return {search, methodF, newestFirst:newest[0], byRating, metaHasCold:meta.includes('48t'), metaHasHyd:meta.includes('65%')};
+      } finally { window._deigFilter=_f; }
+    }""")
+    ok59 = (r59.get('search')==['Biga-test'] and r59.get('methodF')==['poolish']
+            and r59.get('newestFirst')=='Hurtig hverdag' and r59.get('byRating')==[5,3,2]
+            and r59.get('metaHasCold') and r59.get('metaHasHyd'))
+    results.append(('doughs_search_filter_sort_and_config_in_meta', ok59, r59))
+
     return results
 
 

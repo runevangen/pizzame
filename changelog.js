@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.666",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Deiger-lista har fått søk, filter på metode og sortering (nyest, eldst, best vurdert) — så den holder seg ryddig når du har mange deiger.",
+      "Ferdige deiger viser nå kjøletid og hydrering i oversikten, så vurderingen henger sammen med de konkrete tallene («72t · 65 % → ★★★★»)."
+    ],
+    "changes_en": [
+      "The Doughs list now has search, filter by method and sorting (newest, oldest, highest rated) — so it stays tidy when you have many doughs.",
+      "Finished doughs now show fridge time and hydration in the overview, so the rating ties to the concrete numbers (\"72h · 65% → ★★★★\")."
+    ]
+  },
+  {
     "v": "0.665",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -283,7 +283,12 @@ deig-statuslinjen (flaggskip siden v5.53–5.54) har ingen `aria-live`, så
 skjermleser-brukere hører aldri årsak→virkning-oppdateringene. Gjør avhakinger til
 ekte knapper/checkbokser og merk statuslinjen `aria-live="polite"`.
 
-### F8. Søk / sorter / filter i «Deiger»-fanen
+### F8. Søk / sorter / filter i «Deiger»-fanen ✅ BYGGET (v0.666, gren)
+> ✅ **Bygget (venter prod).** Kontroll-rad over lista: tekstsøk (navn), metode-
+> filter og sortering (nyest/eldst/best vurdert). Lista males om fra
+> `window._bakesCache` uten ny fetch (`applyDeigFilter`/`paintBakeList`), så
+> søkefeltet beholder fokus. Test: `doughs_search_filter_sort_and_config_in_meta`.
+>
 > **I klartekst:** Deiger-lista har bare Aktive vs. Ferdige. Med per-bruker-lagring
 > og terningkast vokser den uendelig. F8 legger til filter på metode/type, sortering
 > på dato og tekstsøk — samme oppdagbarhets-polish som Beta-fanen har fått. Middels.
@@ -292,7 +297,14 @@ Lagret-deig-lista (`renderBakeList`, `5017`) har verken søk, filter eller sorte
 deiger vokser lista uendelig. Legg til filter på metode/type, sortering på dato og
 tekstsøk — samme oppdagbarhets-polish som Beta-fanen fikk (v5.51, v5.56, v5.86).
 
-### F9. Synliggjør deig-resultater («Hvordan ble den?») som historikk
+### F9. Synliggjør deig-resultater («Hvordan ble den?») som historikk ✅ BYGGET (v0.666, gren)
+> ✅ **Bygget (venter prod).** Ferdig-kortene viste allerede vurdering + notat +
+> bilde; nå viser `bakeMetaLine` også kjøletid + hydrering, så vurderingen er
+> knyttet til konkrete tall («72t · 65% → ★★★★»). Sammen med F8s «best vurdert»-
+> sortering fungerer Ferdige-lista som en resultat-historikk. (En kontekstuell
+> «forrige gang for denne oppskriften»-nudge ved planlegging er fortsatt mulig
+> senere, men dataen er nå synlig og sammenlignbar.)
+>
 > **I klartekst:** Når du markerer en deig som ferdig, samler appen inn terningkast,
 > bilde og notat — men det vises aldri tilbake til deg som en historikk. F9 lukker
 > sløyfa: «forrige gang: 72 t / 65 % → 4/5», så du kan gjenta suksessene. Dataen

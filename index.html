@@ -6380,7 +6380,12 @@ function bakeMetaLine(b){
   const lbl = b.anchorMode==='end' ? L('Steketid','Baking time') : L('Startet','Started');
   let dtStr = '';
   try{ dtStr = fDT(new Date(b.anchorISO)); }catch(e){}
-  return `${tn} · ${mn} · ${lbl}: ${dtStr}`;
+  // v0.666 (backlog F9): vis nøkkelparametrene (kjøletid + hydrering) i meta-linja,
+  // så en ferdig deigs vurdering er knyttet til konkrete tall («72t · 65% → ★★★★»).
+  const c = b.config||{};
+  const coldStr = (c.cold && ['standard','poolish','biga'].includes(c.method)) ? ` · ${c.cold}t${L(' kjøl',' fridge')}` : '';
+  const hydStr = c.hydro ? ` · ${c.hydro}%` : '';
+  return `${tn} · ${mn}${coldStr}${hydStr} · ${lbl}: ${dtStr}`;
 }
 
 // Liten «Delt»/«Delt av X»-merkelapp ved navnet.
@@ -6460,32 +6465,74 @@ async function toggleShareBake(id, currentlyShared){
   refreshBaksterPanels();
 }
 
+// v0.666 (backlog F8): søk / filter / sortering i Deiger-lista. Kontrollene
+// rendres én gang; selve lista males om fra window._bakesCache uten ny fetch,
+// så et tastetrykk i søkefeltet ikke mister fokus eller trigger nettverk.
 async function renderBaksterPanel(targetId){
   const el = document.getElementById(targetId);
   if(!el) return;
-  const mob = targetId.startsWith('mob-');
   const bakes = await fetchBakes();
   if(bakes===null){
     el.innerHTML = `<p style="color:#993C1D;font-size:12px;padding:.5rem 0">${L('Kunne ikke hente deiger. Sjekk at appen kjører på Netlify med bakes-funksjonen koblet til.','Could not fetch doughs. Make sure the app is running on Netlify with the bakes function connected.')}</p>`;
     return;
   }
   window._bakesCache = bakes;
-  // Del i «mine» (egne + eldre uten eier) og «delt med alle» (andres delte).
-  const mineB = bakes.filter(b=>bakeIsMine(b));
-  const sharedByOthers = bakes.filter(b=>!bakeIsMine(b));
-  const active = mineB.filter(b=>b.status==='active');
-  const finished = mineB.filter(b=>b.status==='finished');
+  el.innerHTML = bakeFilterControlsHTML(targetId) + `<div id="${targetId}-list"></div>`;
+  paintBakeList(targetId);
+}
+window._deigFilter = window._deigFilter || {q:'',method:'',sort:'newest'};
+function bakeFilterControlsHTML(targetId){
+  const f = window._deigFilter;
+  const methods=[['','Alle metoder','All methods'],['standard','Langtidsdeig','Long-ferment'],['poolish','Poolish','Poolish'],['biga','Biga','Biga'],['hurtig','Hurtigdeig','Quick'],['kveld','Kveldsdeig','Evening'],['mania','Mania','Mania']];
+  const sorts=[['newest','Nyest først','Newest first'],['oldest','Eldst først','Oldest first'],['rating','Best vurdert','Highest rated']];
+  const opt=(arr,cur)=>arr.map(o=>`<option value="${o[0]}"${o[0]===cur?' selected':''}>${L(o[1],o[2])}</option>`).join('');
+  const inputStyle='padding:7px 9px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-surface);color:var(--dyn-text);font-size:12px';
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.6rem">
+    <input id="${targetId}-q" value="${escH(f.q||'')}" oninput="onDeigFilterChange('${targetId}')" placeholder="${L('Søk etter navn…','Search by name…')}" style="flex:1;min-width:130px;${inputStyle}">
+    <select id="${targetId}-method" onchange="onDeigFilterChange('${targetId}')" style="${inputStyle}">${opt(methods,f.method)}</select>
+    <select id="${targetId}-sort" onchange="onDeigFilterChange('${targetId}')" style="${inputStyle}">${opt(sorts,f.sort)}</select>
+  </div>`;
+}
+function onDeigFilterChange(targetId){
+  const q=document.getElementById(targetId+'-q'), m=document.getElementById(targetId+'-method'), s=document.getElementById(targetId+'-sort');
+  window._deigFilter={ q:q?q.value:'', method:m?m.value:'', sort:s?s.value:'newest' };
+  paintBakeList(targetId);
+}
+function _bakeTs(b){ try{ return new Date(b.finishedAt||b.anchorISO||0).getTime()||0; }catch(e){ return 0; } }
+function applyDeigFilter(list){
+  const f=window._deigFilter||{q:'',method:'',sort:'newest'};
+  const q=(f.q||'').trim().toLowerCase();
+  let out=list.filter(b=>{
+    if(q && !String(b.name||'').toLowerCase().includes(q)) return false;
+    if(f.method && !(b.config && b.config.method===f.method)) return false;
+    return true;
+  });
+  if(f.sort==='oldest') out.sort((a,b)=>_bakeTs(a)-_bakeTs(b));
+  else if(f.sort==='rating') out.sort((a,b)=>(b.rating||0)-(a.rating||0) || _bakeTs(b)-_bakeTs(a));
+  else out.sort((a,b)=>_bakeTs(b)-_bakeTs(a));
+  return out;
+}
+function paintBakeList(targetId){
+  const listEl=document.getElementById(targetId+'-list');
+  if(!listEl) return;
+  const mob=targetId.startsWith('mob-');
+  const bakes=window._bakesCache||[];
+  const mineB=bakes.filter(b=>bakeIsMine(b));
+  const sharedByOthers=bakes.filter(b=>!bakeIsMine(b));
+  const active=applyDeigFilter(mineB.filter(b=>b.status==='active'));
+  const finished=applyDeigFilter(mineB.filter(b=>b.status==='finished'));
+  const sharedF=applyDeigFilter(sharedByOthers);
+  const f=window._deigFilter||{}; const filtering=!!((f.q&&f.q.trim())||f.method);
   let html = `<div class="lbl" style="margin-bottom:.4rem">${L('Aktive','Active')}</div>`;
-  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${L('Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".','No active doughs. Set up a recipe and tap "Save dough".')}</p>`;
+  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${filtering?L('Ingen aktive treff.','No active matches.'):L('Ingen aktive deiger. Sett opp en oppskrift og trykk "Lagre deig".','No active doughs. Set up a recipe and tap "Save dough".')}</p>`;
   html += `<div class="lbl" style="margin:.8rem 0 .4rem">${L('Ferdige','Finished')}</div>`;
-  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">${L('Ingen ferdige deiger ennå.','No finished doughs yet.')}</p>`;
-  // Delt med alle — andres deiger som er delt. Vises som se/kopier (ikke redigerbare).
-  if(sharedByOthers.length){
+  html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">${filtering?L('Ingen ferdige treff.','No finished matches.'):L('Ingen ferdige deiger ennå.','No finished doughs yet.')}</p>`;
+  if(sharedF.length){
     html += `<div class="lbl" style="margin:1.1rem 0 .4rem">${L('🌐 Delt med alle','🌐 Shared with everyone')}</div>`;
     html += `<p style="color:var(--dyn-faint);font-size:11px;padding:0 0 .5rem;line-height:1.4">${L('Deiger andre har delt. Du kan åpne og kopiere dem, men ikke endre andres deiger.','Doughs others have shared. You can open and copy them, but not edit doughs owned by others.')}</p>`;
-    html += sharedByOthers.map(b=>bakeCardHTML(b,mob)).join('');
+    html += sharedF.map(b=>bakeCardHTML(b,mob)).join('');
   }
-  el.innerHTML = html;
+  listEl.innerHTML = html;
 }
 
 function refreshBaksterPanels(){
