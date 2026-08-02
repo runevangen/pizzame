@@ -373,7 +373,16 @@ allerede vokter konsistens på.
 > bruker `--dyn-*` i stedet for `--forno-*`, så det krever en egen mørk PC-palett
 > og re-scoping, ikke bare gjenbruk.
 
-### T-i18n. Gjenstående oversettelses-hull (engelsk)
+### T-i18n. Gjenstående oversettelses-hull (engelsk) ✅ STORT SETT BYGGET (v0.668, gren)
+> ✅ **PC-hovedlayout bygget (venter prod).** Oversatt: sidemenyen, metodekortene,
+> seksjonsetikettene, planleggings-boksen, glidebryter-etikettene (Melmengde/
+> Hydrering/Kjøleskapsheving/Romtemperatur) og topnav-fanene (Steg for steg/
+> Oppskrift/Notater). `setLang` re-rendrer nå PC-planen når PC er aktiv, så
+> topnav-en bytter språk med det samme. Endringsloggen ble tospråklig i v0.660.
+> **Gjenstår (lav prio):** de bittesmå range-endepunkt-etikettene («55% fast»,
+> «18°C kjølig»), det dype «Avanserte innstillinger»-panelet, og admin-verktøyet
+> (internt). Test: `pc_static_html_localized_including_topnav`.
+>
 > **I klartekst:** Hele mobilappen er oversatt (v6.15 + v6.20-vask), men noen
 > hjørner er fortsatt kun norske i engelsk modus:
 > - **PC-visningens statiske HTML** (sidebar-slidere, desktop-topnav «Steg for

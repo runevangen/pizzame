@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.668",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Engelsk oversettelse av PC-visningen: meny, metodekort, planleggings-boks, glidebryter-etiketter og fane-navnene (Steg for steg/Oppskrift/Notater) vises nå på engelsk. Bytter du språk på PC, oppdateres planen med det samme."
+    ],
+    "changes_en": [
+      "English translation of the desktop view: menu, method cards, the planning box, slider labels and the tab names (Step by step/Recipe/Notes) now show in English. Switching language on desktop updates the plan right away."
+    ]
+  },
+  {
     "v": "0.667",
     "d": "august 2026",
     "d_en": "August 2026",

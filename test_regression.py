@@ -2380,6 +2380,28 @@ def run_behavioral_tests(page):
     ok60 = all(r60.get(k) for k in ['ingA11y','sbLive','stepA11y','substepA11y'])
     results.append(('checkboxes_keyboard_accessible_and_statusbar_aria_live', ok60, r60))
 
+    # T-i18n (v0.668): PC-visningens statiske HTML oversettes nå — metodekort,
+    # seksjonsetiketter, meny, planleggings-boks (via syncStaticI18nUI) og topnav-
+    # fanene (L() i gen()). setLang re-rendrer PC-planen når PC er aktiv.
+    r61 = page.evaluate("""() => {
+      const _lang=window._lang;
+      try{
+        setLang('en');
+        const g=id=>{const e=document.getElementById(id);return e?e.textContent.trim():'';};
+        const method=[...document.querySelectorAll('#gmet .mc .mc-t')].map(e=>e.textContent);
+        const typeLbl=((document.getElementById('gtype')||{}).previousElementSibling||{}).textContent||'';
+        const en={plan:g('pc-lbl-planlegging'), menu:g('pc-menu-manual'), logout:g('pc-menu-logout'), bs:g('pc-bs-lbl'), method0:method[0], typeLbl};
+        setLang('no'); const noPlan=g('pc-lbl-planlegging');
+        return {en, noPlan, topnavWired:gen.toString().includes(\"L('Steg for steg','Step by step')\"), setLangRendersPc:setLang.toString().includes('gen()')};
+      } finally { window._lang=_lang; try{setLang(_lang||'no');}catch(e){} }
+    }""")
+    e61=r61.get('en',{})
+    ok61 = (e61.get('plan')=='📅 Planning' and e61.get('menu')=='📖 User guide' and e61.get('logout')=='Log out'
+            and e61.get('bs')=='When do you start?' and e61.get('method0')=='Long-ferment dough'
+            and e61.get('typeLbl')=='Pizza type' and r61.get('noPlan')=='📅 Planlegging'
+            and r61.get('topnavWired') and r61.get('setLangRendersPc'))
+    results.append(('pc_static_html_localized_including_topnav', ok61, r61))
+
     return results
 
 

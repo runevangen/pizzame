@@ -752,25 +752,25 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 </div>
 
 <div class="menu-wrap">
-  <div class="menu-trigger" onclick="toggleSidenavMenu()"><span>☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
+  <div class="menu-trigger" onclick="toggleSidenavMenu()"><span id="pc-menu-trigger-lbl">☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
   <div class="menu-dropdown" id="sidenav-dropdown" style="display:none">
-    <div class="menu-row" onclick="sidenavGo(openManualModal)">📖 Bruksanvisning</div>
-    <div class="menu-row" onclick="sidenavGo(openTechModal)">💡 Tips</div>
+    <div class="menu-row" id="pc-menu-manual" onclick="sidenavGo(openManualModal)">📖 Bruksanvisning</div>
+    <div class="menu-row" id="pc-menu-tips" onclick="sidenavGo(openTechModal)">💡 Tips</div>
     <div class="menu-row" onclick="sidenavGo(openDeigerModal)">
-      <span>🍽️ Deiger</span>
+      <span id="pc-menu-deiger">🍽️ Deiger</span>
       <span id="active-deiger-count" class="cnt" style="display:none">0</span>
     </div>
-    <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none">★ Min favoritt</div>
-    <div class="menu-row" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
-    <div class="menu-row" onclick="sidenavGo(shareApp)">📤 Del appen</div>
+    <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none"><span id="pc-menu-fav">★ Min favoritt</span></div>
+    <div class="menu-row" id="pc-menu-feedback" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
+    <div class="menu-row" id="pc-menu-share" onclick="sidenavGo(shareApp)">📤 Del appen</div>
     <div style="height:1px;background:#F2F2F7"></div>
-    <div class="menu-row" onclick="sidenavGo(()=>setLayout('mob'))">📱 Bytt til mobilvisning</div>
+    <div class="menu-row" id="pc-menu-tomob" onclick="sidenavGo(()=>setLayout('mob'))">📱 Bytt til mobilvisning</div>
     <div style="height:1px;background:#F2F2F7"></div>
-    <div class="menu-row" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
-    <div class="menu-row" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
-    <div class="menu-row" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
+    <div class="menu-row" id="pc-menu-formler" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
+    <div class="menu-row" id="pc-menu-admin" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
+    <div class="menu-row" id="pc-menu-smart" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
     <div style="height:1px;background:#F2F2F7"></div>
-    <div class="menu-row" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
+    <div class="menu-row" id="pc-menu-logout" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
   </div>
 </div>
 
@@ -799,27 +799,27 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
   <div class="divl"></div>
 
   <div class="tbox">
-    <div class="tbox-t">📅 Planlegging</div>
+    <div class="tbox-t" id="pc-lbl-planlegging">📅 Planlegging</div>
     <div class="mbtns">
-      <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br>Starter nå</div>
-      <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br>Planlagt steketid</div>
+      <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br><span id="pc-mode-start-lbl">Starter nå</span></div>
+      <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br><span id="pc-mode-end-lbl">Planlagt steketid</span></div>
     </div>
     <div id="bs">
-      <div class="lbl" style="margin-bottom:4px">Når begynner du?</div>
+      <div class="lbl" id="pc-bs-lbl" style="margin-bottom:4px">Når begynner du?</div>
       <div class="dtg"><input type="date" id="sd"><input type="time" id="st" value="07:30"></div>
-      <div class="hint">Appen regner fremover og viser når hvert steg skjer.</div>
+      <div class="hint" id="pc-bs-hint">Appen regner fremover og viser når hvert steg skjer.</div>
     </div>
     <div id="be" style="display:none">
-      <div class="lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
+      <div class="lbl" id="pc-be-lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
       <div class="dtg"><input type="date" id="ed"><input type="time" id="et" value="18:00"></div>
-      <div class="hint">Appen regner bakover og viser når du må starte.</div>
+      <div class="hint" id="pc-be-hint">Appen regner bakover og viser når du må starte.</div>
       <div id="earliest-hint" style="font-size:11px;color:#e8590c;margin-top:3px"></div>
     </div>
   </div>
 
   <div class="divl"></div>
 
-  <div><div class="lbl">Melmengde</div>
+  <div><div class="lbl" id="pc-mel-lbl">Melmengde</div>
     <div class="sr"><input type="range" id="msl" min="300" max="1500" step="100" value="500" title="Skalerer alle ingredienser automatisk." oninput="uMel(this.value)"><span class="sv" id="mdisp">500g</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>300g</span><span>1500g</span></div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
@@ -834,25 +834,25 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     </div>
   </div>
 
-  <div><div class="lbl">Hydrering — <span id="hlbl">65%</span><span id="hcat" class="hb"></span></div>
+  <div><div class="lbl"><span id="pc-hyd-lbl">Hydrering</span> — <span id="hlbl">65%</span><span id="hcat" class="hb"></span></div>
     <div class="sr"><input type="range" id="hsl" min="55" max="80" step="1" value="65" title="Vann som % av mel." oninput="uHydro(this.value)"><span class="sv" id="hdisp">65%</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>55% fast</span><span>80% flytende</span></div>
     <div id="hhint" class="hint"></div>
   </div>
 
-  <div id="cwrap"><div class="lbl">Kjøleskapsheving — <span id="clbl">24 timer</span></div>
+  <div id="cwrap"><div class="lbl"><span id="pc-cold-lbl">Kjøleskapsheving</span> — <span id="clbl">24 timer</span></div>
     <div class="sr"><input type="range" id="csl" min="24" max="78" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">24 timer</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span>78 timer</span></div>
   </div>
 
-  <div><div class="lbl">Romtemperatur — <span id="tlbl">22°C</span></div>
+  <div><div class="lbl"><span id="pc-temp-lbl">Romtemperatur</span> — <span id="tlbl">22°C</span></div>
     <div class="sr"><input type="range" id="tsl" min="18" max="28" step="2" value="22" title="Påvirker hevingstid." oninput="uTemp(this.value)"><span class="sv" id="tdisp">22°C</span></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>18°C kjølig</span><span>28°C sommer</span></div>
     <div id="thint" class="hint"></div>
   </div>
 
   <div class="adv-toggle" onclick="toggleAdvanced()">
-    <span>⚙️ Avanserte innstillinger</span>
+    <span id="pc-adv-lbl">⚙️ Avanserte innstillinger</span>
     <span id="adv-arrow">▾</span>
   </div>
   <div id="adv-section" style="display:none">
@@ -931,7 +931,7 @@ function detectDefaultLang(langs){
 }
 window._lang  = detectDefaultLang();
 window._units = (()=>{ try{ return localStorage.getItem('pizzaUnits')||'metric'; }catch(e){ return 'metric'; } })();
-function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
+function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI(); const mobEl=document.getElementById('mob-layout'); const isMob=mobEl&&mobEl.classList.contains('active'); if(isMob){ mobGen(); } else { try{ gen(); }catch(e){} } }catch(e){} }
 function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
 function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
 function fmtW(g){ return window._units==='imperial' ? _oz(g) : g+'g'; }        // vekt-visning (slider/label)
@@ -1064,6 +1064,23 @@ function syncStaticI18nUI(){
   setPCPills('#ggj .pill',{torr:['Tørrgjær','Dry yeast'],fersk:['Fersk gjær','Fresh yeast']});
   setPCPills('#gkm .pill',{ankarsrum:['Ankarsrum','Ankarsrum'],manuell:['Manuell elting','Manual kneading'],annen:['Annen maskin','Other machine']});
   setPCPills('#govn .pill',{pizza:['Pizzaovn (430–450°C)','Pizza oven (430–450°C)'],vanlig:['Vanlig ovn (maks 250°C)','Regular oven (max 250°C)']});
+  // v0.668 (backlog T-i18n): PC-metodekort + seksjonsetiketter + meny + planlegging.
+  const _mcSub={standard:['Direkte + kjøl','Direct + fridge'],poolish:['Løs fordeig, 12–16t','Loose preferment, 12–16h'],biga:['Fast fordeig, 16–24t','Stiff preferment, 16–24h'],hurtig:['2–16 timer, romtemperatur','2–16 hours, room temperature'],kveld:['5–24t kjøleskap','5–24h fridge']};
+  document.querySelectorAll('#gmet .mc').forEach(mc=>{ const v=mc.dataset.v; const tt=mc.querySelector('.mc-t'); const ss=mc.querySelector('.mc-s'); if(tt) tt.textContent=mN(v); if(ss&&_mcSub[v]) ss.textContent=L(_mcSub[v][0],_mcSub[v][1]); });
+  const _typeLbl=(document.getElementById('gtype')||{}).previousElementSibling; if(_typeLbl&&_typeLbl.classList.contains('lbl')) _typeLbl.textContent=L('Pizzatype','Pizza type');
+  const _metWrap=document.getElementById('gmet-wrap'); if(_metWrap){ const ml=_metWrap.querySelector('.lbl'); if(ml) ml.textContent=L('Metode','Method'); }
+  st('pc-lbl-planlegging','📅 Planlegging','📅 Planning');
+  st('pc-mode-start-lbl','Starter nå','Starting now'); at('ms','title','Beregner fremover fra starttidspunkt','Calculates forward from the start time');
+  st('pc-mode-end-lbl','Planlagt steketid','Scheduled bake time'); at('me','title','Beregner bakover fra ønsket steketid','Calculates backward from the desired bake time');
+  st('pc-bs-lbl','Når begynner du?','When do you start?'); st('pc-bs-hint','Appen regner fremover og viser når hvert steg skjer.','The app calculates forward and shows when each step happens.');
+  st('pc-be-lbl','Når vil du ha pizzaen ferdig?','When do you want the pizza ready?'); st('pc-be-hint','Appen regner bakover og viser når du må starte.','The app calculates backward and shows when you need to start.');
+  st('pc-menu-trigger-lbl','☰ Meny','☰ Menu');
+  st('pc-menu-manual','📖 Bruksanvisning','📖 User guide'); st('pc-menu-tips','💡 Tips','💡 Tips'); st('pc-menu-deiger','🍽️ Deiger','🍽️ Doughs');
+  st('pc-menu-fav','★ Min favoritt','★ My favorite'); st('pc-menu-feedback','💬 Feedback','💬 Feedback'); st('pc-menu-share','📤 Del appen','📤 Share app');
+  st('pc-menu-tomob','📱 Bytt til mobilvisning','📱 Switch to mobile view'); st('pc-menu-formler','📊 Formler','📊 Formulas'); st('pc-menu-admin','🔒 Admin','🔒 Admin');
+  st('pc-menu-smart','🧭 Smart-plan','🧭 Smart plan'); st('pc-menu-logout','Logg ut','Log out');
+  st('pc-mel-lbl','Melmengde','Flour amount'); st('pc-hyd-lbl','Hydrering','Hydration'); st('pc-cold-lbl','Kjøleskapsheving','Cold proof'); st('pc-temp-lbl','Romtemperatur','Room temperature');
+  st('pcount-lbl','eller antall pizzaer:','or number of pizzas:'); st('pc-adv-lbl','⚙️ Avanserte innstillinger','⚙️ Advanced settings');
   // Tidsplan/Oppskrift-veksler (v6.33)
   st('mob-plan-seg-schedule-lbl','Tidsplan','Schedule');
   st('mob-plan-seg-recipe-lbl','Oppskrift','Recipe');
@@ -4618,7 +4635,7 @@ function gen(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">${L('Steg for steg','Step by step')}</div><div class="tab" onclick="showTab('recipe',this)">${L('Oppskrift','Recipe')}</div><div class="tab" onclick="showTab('notes',this)">${L('Notater','Notes')}</div></div>
     <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#e8590c;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
@@ -4640,7 +4657,7 @@ function hurtigRes(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">${L('Steg for steg','Step by step')}</div><div class="tab" onclick="showTab('recipe',this)">${L('Oppskrift','Recipe')}</div><div class="tab" onclick="showTab('notes',this)">${L('Notater','Notes')}</div></div>
     <h2>Hurtigdeig <span style="color:#e8590c;font-weight:500">· ${o.h} timer</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${o.b}</span><span class="badge ba">${S.mel}g · ${w}g vann · ${ya}</span><span class="badge bc">${oN()}</span></div>
     ${actionGroupHTML()}
@@ -4662,7 +4679,7 @@ function kveldRes(){
     <div id="main-content">
     ${meltypeWarningHTML()}
     ${hurtigWarmRoomWarningHTML()}
-    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">Steg for steg</div><div class="tab" onclick="showTab('recipe',this)">Oppskrift</div><div class="tab" onclick="showTab('notes',this)">Notater</div></div>
+    <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">${L('Steg for steg','Step by step')}</div><div class="tab" onclick="showTab('recipe',this)">${L('Oppskrift','Recipe')}</div><div class="tab" onclick="showTab('notes',this)">${L('Notater','Notes')}</div></div>
     <h2>Kveldsdeig <span style="color:#e8590c;font-weight:500">· ${S.kveldH} timer kjøl</span>${savedDeigSuffix()}${methodFlashHTML()}</h2>
     <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${S.kveldH}t i kjøleskap</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
