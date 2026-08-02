@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.669",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ryddet opp i skriftstørrelsene i planleggingen: metode-kortene ble ved en feil rendret litt større enn resten av kontrollene (de manglet i «kontroller beholder størrelse»-lista), noe som fikk meltype-velgeren til å se mindre ut. Nå deler metode, meltype og de andre kontrollene samme jevne skala."
+    ],
+    "changes_en": [
+      "Tidied up the font sizes in the planner: the method cards were accidentally rendered a bit larger than the other controls (they were missing from the 'controls keep their size' list), which made the flour-type picker look smaller. Method, flour type and the other controls now share one even scale."
+    ]
+  },
+  {
     "v": "0.668",
     "d": "august 2026",
     "d_en": "August 2026",

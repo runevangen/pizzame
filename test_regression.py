@@ -2402,6 +2402,29 @@ def run_behavioral_tests(page):
             and r61.get('topnavWired') and r61.get('setLangRendersPc'))
     results.append(('pc_static_html_localized_including_topnav', ok61, r61))
 
+    # v0.669: harmonisert wizard-typografi. Mobil-metodekortene manglet i «chrome
+    # beholder størrelse»-zoom-lista, så de ble ~15% større enn resten (derfor så
+    # meltype mindre ut). Nå er de zoom-kansellert (zoom<1), og metodekort-tittel
+    # (14px) + undertekst (12px) matcher meltype-nedtrekket (14px).
+    r62 = page.evaluate("""() => {
+      const orig=window._planChosen;
+      try{
+        window._planChosen=true; setLayout('mob'); mobShowTab('settings');
+        try{ wizGoto(2); }catch(e){}
+        const wrap=document.getElementById('mob-gmet');
+        const wrapZoom = wrap ? parseFloat(getComputedStyle(wrap).zoom) : 1;
+        const src=mobMethodCards.toString();
+        return {
+          methodCardsZoomCancelled: wrapZoom < 0.95,
+          titleAt14: src.includes('font-size:14px'),
+          subAt12: src.includes('font-size:12px'),
+          meltypeRuleWired: [...document.styleSheets].some(ss=>{ try{ return [...ss.cssRules].some(r=>/dropdown-select select/.test(r.selectorText||'') && /14px/.test(r.style&&r.style.fontSize||r.cssText||'')); }catch(e){ return false; } })
+        };
+      } finally { window._planChosen=orig; }
+    }""")
+    ok62 = (r62.get('methodCardsZoomCancelled') and r62.get('titleAt14') and r62.get('subAt12'))
+    results.append(('wizard_typography_harmonized_method_cards_zoom_cancelled', ok62, r62))
+
     return results
 
 
