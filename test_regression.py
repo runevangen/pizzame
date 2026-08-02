@@ -2474,6 +2474,42 @@ def run_behavioral_tests(page):
     ok64 = all(r64.get(k) for k in ['stayedStart','startNotInPast','feasibleAfterFix','noForceInMethodPick','modeSwitchEnsuresFeasible','wizCheckNoForceNoAutofix'])
     results.append(('make_now_respects_start_mode_and_feasible_bake_time', ok64, r64))
 
+    # v0.674: «Jeg begynner nå» er en kom-i-gang-modus uten frist. Kvalitetssjekken
+    # viser da en rolig kvittering («✓ Du setter i gang nå») med kvalitets-/livsstils-
+    # hint som myke «Verdt å vite»-notater — ikke den røde «N ting å se på»-telleren.
+    # I «Planlagt steketid» (med frist) er sjekken uendret: samme underliggende
+    # varsel rammes fortsatt inn som noe å se på.
+    r65 = page.evaluate("""() => {
+      const orig={mode:S.mode,method:S.method,cold:S.cold,type:S.type,mt:S.meltype,lang:window._lang,chosen:window._planChosen};
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('settings');
+        // Svakt mel + veldig lang kald gjæring -> kvalitets-hint (uten mode-vakt),
+        // slår til i begge modi, så vi kan sammenligne innrammingen A/B.
+        S.type='napoletana'; S.method='standard'; S.cold=100; S.meltype='doppio_zero';
+        const el=document.getElementById('wiz-check');
+
+        S.mode='start'; wizCheckRender();
+        const startHtml=el.innerHTML;
+
+        S.mode='end';
+        const p2=n=>String(n).padStart(2,'0');
+        const soon=new Date(Date.now()+2*3600000);
+        document.getElementById('mob-ed').value=soon.getFullYear()+'-'+p2(soon.getMonth()+1)+'-'+p2(soon.getDate());
+        document.getElementById('mob-et').value=p2(soon.getHours())+':'+p2(soon.getMinutes());
+        wizCheckRender();
+        const endHtml=el.innerHTML;
+
+        return {
+          startReceipt: startHtml.includes('Du setter i gang nå'),
+          startSoftHint: startHtml.includes('Verdt å vite'),
+          startNoAlarm: !startHtml.includes('ting å se på'),
+          endStillAlarms: endHtml.includes('ting å se på') || endHtml.includes('Oppstarten har allerede passert')
+        };
+      } finally { S.mode=orig.mode;S.method=orig.method;S.cold=orig.cold;S.type=orig.type;S.meltype=orig.mt;window._lang=orig.lang;window._planChosen=orig.chosen; try{wizCheckRender();}catch(e){} }
+    }""")
+    ok65 = all(r65.get(k) for k in ['startReceipt','startSoftHint','startNoAlarm','endStillAlarms'])
+    results.append(('make_now_shows_calm_receipt_not_alarm_counter', ok65, r65))
+
     return results
 
 
