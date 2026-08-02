@@ -2571,6 +2571,48 @@ def run_behavioral_tests(page):
             and r67.get('chip48On') and r67.get('hiddenForHurtig') and r67.get('enLabelled'))
     results.append(('longferment_gets_labelled_cold_time_picks_like_quick_dough', ok67, r67))
 
+    # v0.677: (1) «Verdt å vite»-hintene i nå-modus kan ignoreres (ikke tvunget
+    # _warnShowAll), mens steketid-modus beholder full sjekkliste uten ignorer.
+    # (2) «Annet mel / ikke i listen» (generic) demper det mel-spesifikke varselet,
+    # vises språk-bevisst i statuslinja, og skjevfordeler ikke kald-tak/Smart-plan.
+    r68 = page.evaluate("""() => {
+      const orig={mode:S.mode,method:S.method,cold:S.cold,type:S.type,hydro:S.hydro,mt:S.meltype,lang:window._lang,chosen:window._planChosen};
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('settings');
+        S.type='napoletana'; S.method='standard'; S.cold=100; S.hydro=65;
+        const el=document.getElementById('wiz-check');
+        // (1) Ignorer-knapp i nå-modus, ikke i steketid-modus
+        S.meltype='nuvola';
+        S.mode='start'; wizCheckRender(); const startHasIgnore = el.innerHTML.includes('Ignorer');
+        const p2=n=>String(n).padStart(2,'0'); const soon=new Date(Date.now()+2*3600000);
+        document.getElementById('mob-ed').value=soon.getFullYear()+'-'+p2(soon.getMonth()+1)+'-'+p2(soon.getDate());
+        document.getElementById('mob-et').value='18:00';
+        S.mode='end'; wizCheckRender(); const endHasIgnore = el.innerHTML.includes('Ignorer');
+        // (1b) Faktisk ignorering i nå-modus skjuler nettopp mel-hintet (flere
+        // varsler fyrer ved 100t, så vi treffer mel-varselets EGEN ignorer-knapp).
+        S.mode='start'; wizCheckRender();
+        const meltypeWrap=[...el.querySelectorAll('.warn-dismiss-wrap')].find(w=>w.textContent.includes('gjæret lenger enn anbefalt'));
+        let dismissedHides=false;
+        if(meltypeWrap){ meltypeWrap.querySelector('.warn-dismiss-btn').click(); dismissedHides = !document.getElementById('wiz-check').innerHTML.includes('gjæret lenger enn anbefalt'); }
+        _dismissedWarnings.clear();
+        // (2) «Annet mel»: varsel dempet
+        S.meltype='nuvola'; const nuvolaWarns = meltypeWarningHTML().length>0;
+        S.meltype='annet'; const annetSuppressed = meltypeWarningHTML()==='';
+        // (2b) statuslinje språk-bevisst
+        const sb=()=>deigStatusBarHTML([{title:'x',at:new Date(),passive:false}],false,false);
+        window._lang='no'; const sbNo=sb().includes('Annet mel');
+        window._lang='en'; const sbEn=sb().includes('Other flour'); window._lang='no';
+        // (2c) aggregater upåvirket
+        const coldCap = Math.max(...MELTYPER.map(m=>m.ferm.mx));
+        const annetInSmart = MELTYPER.filter(m=>30>=m.ferm.mn && 30<=m.ferm.mx).some(m=>m.v==='annet');
+        return { startHasIgnore, endHasIgnore, dismissedHides, nuvolaWarns, annetSuppressed, sbNo, sbEn, coldCap, annetInSmart };
+      } finally { S.mode=orig.mode;S.method=orig.method;S.cold=orig.cold;S.type=orig.type;S.hydro=orig.hydro;S.meltype=orig.mt;window._lang=orig.lang;window._planChosen=orig.chosen; try{_dismissedWarnings.clear();}catch(e){} }
+    }""")
+    ok68 = (r68.get('startHasIgnore') and not r68.get('endHasIgnore') and r68.get('dismissedHides')
+            and r68.get('nuvolaWarns') and r68.get('annetSuppressed') and r68.get('sbNo') and r68.get('sbEn')
+            and r68.get('coldCap')==78 and not r68.get('annetInSmart'))
+    results.append(('warnings_dismissible_in_now_mode_and_generic_flour_suppresses_meltype', ok68, r68))
+
     return results
 
 

@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.677",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nytt melvalg «Annet mel / ikke i listen»: bruker du et mel appen ikke kjenner, slår dette av det mel-spesifikke gjærings-/hydreringsvarselet — appen maser ikke lenger om et spenn den umulig kan vite. Melet påvirker verken kald-taket eller Smart-plan-forslagene.",
+      "«Verdt å vite»-hintene i «Jeg begynner nå» kan nå ignoreres (egen «Ignorer»-knapp), akkurat som varsler ellers i appen. I «Planlagt steketid» (der du har en frist) vises fortsatt hele sjekklista uten ignorering, så et reelt tidsproblem ikke blir skjult ved en port du ikke burde passere uoppmerksomt."
+    ],
+    "changes_en": [
+      "New flour option \"Other / not listed\": if you use a flour the app does not know, this turns off the flour-specific fermentation/hydration warning — the app no longer nags about a range it cannot possibly know. The flour affects neither the cold-proof cap nor the Smart-plan suggestions.",
+      "The \"Worth knowing\" hints in \"I start now\" can now be dismissed (their own \"Ignore\" button), just like warnings elsewhere in the app. In \"Planned baking time\" (where you have a deadline) the full checklist still shows without dismissal, so a real timing problem is not hidden at a gate you should not pass unnoticed."
+    ]
+  },
+  {
     "v": "0.676",
     "d": "august 2026",
     "d_en": "August 2026",
