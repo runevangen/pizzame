@@ -402,6 +402,37 @@ allerede vokter konsistens på.
 > **Delvis løst (v0.660):** Endringsloggen er nå tospråklig (`d_en`/`changes_en`
 > per entry, `buildChangelogHTML` språkbevisst). PC-statisk HTML og admin gjenstår.
 
+### T-i18n2. Språkbytte re-tegner feil fane — genererte paneler «henger igjen» ⏳ NOTERT (aug 2026)
+> **I klartekst:** Bytter du språk mens du står på **Deiger** eller **Smart-plan**
+> (eller deler av Innstillinger), blir det du ser på stående på gammelt språk til
+> du navigerer vekk og tilbake. Statiske tekster oversettes med det samme, men
+> *genererte* paneler på andre faner enn Tidsplan gjør det ikke. Liten fiks, lav
+> risiko — men bevisst parkert av Rune for nå (aug 2026).
+>
+> **Rotårsak:** `setLang` (`948`) oversetter statiske tekster (`syncStaticI18nUI`)
+> og re-rendrer så innhold — men kaller **alltid `mobGen()`**, som tegner
+> Tidsplan-fanen, uansett hvilken fane som faktisk vises. `mobShowTab` (`6056`)
+> re-rendrer derimot hver fane *når man lander på den* (Deiger →
+> `renderBaksterPanel`, Smart-plan → `renderBetaPanel`, Innstillinger →
+> `wizEnterSettingsTab`). Står du på en annen fane enn Tidsplan når du bytter
+> språk, oppdaterer `setLang` altså en skjult fane, mens den synlige beholder
+> gammelt språk til neste navigering self-healer den.
+>
+> **Anbefalt fiks (låg endring, gjenbruk):** la `setLang` re-tegne den *aktive*
+> fanen via samme render-vei som navigering (finn aktiv `mob-*`-skjerm og kjør
+> dens renderer — `mobGen`/`renderBaksterPanel`/`renderBetaPanel`/
+> `wizEnterSettingsTab`), i stedet for hardkodet `mobGen()`. PC-siden (`gen()`)
+> bør sjekkes for samme fler-panel-lekkasje. ~5 linjer, ingen ny i18n-arkitektur.
+>
+> **Alternativer vurdert:** (a) `location.reload()` ved språkbytte — 1 linje, total
+> dekning, men flimmer/lukker modaler/re-henter data; (b) deklarativ `data-i18n`-
+> sveip som erstatter id-lista — dreper «manglende statisk streng»-klassen for
+> alltid, men større engangsjobb og fikser ikke i seg selv de genererte panelene.
+>
+> **Forbehold:** dekker ikke en statisk streng som *mangler* i `syncStaticI18nUI`-
+> lista (egen liten fiks per streng, eller `data-i18n` senere). Den genererte-
+> panel-lekkasjen over er den klart største kilden til «henger igjen».
+
 ### F13. Bytt plass på «☰ Mer» og «🧭 Smart-plan» i mobil-tabbaren ✅ BYGGET (v0.664, gren)
 > ✅ **Bygget (venter prod).** Fanene byttet i tabbar-HTML-en, `MOB_TABS` reordnet
 > til å speile ny rekkefølge (Planlegging · Tidsplan · Smart-plan · Mer). Mer-
