@@ -3197,10 +3197,16 @@ const PIZZATID_DAY_LABELS=[['mon','Mandag'],['tue','Tirsdag'],['wed','Onsdag'],[
 const PIZZATID_DAY_LABELS_EN={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
 window._betaResultRegistry=[];
 // Standard-dato for Smart-plan: i dag kl. 19, eller i morgen hvis 19 alt er passert.
+// v0.663: smart default. Behold I DAG kl. 18:00 bare hvis appen åpnes tidlig
+// nok til at en ekte deig rekker (minst ~8t margin — dvs. før ca. kl. 10).
+// Ellers hopp til I MORGEN kl. 18:00. Same-dag på ettermiddagen ga «rare»
+// resultater (for kort tid til noe skikkelig); i morgen gir alltid rom for en
+// langtids-/poolish-/biga-deig. Klokkeslettet (18:00) må matche tidsfeltets default.
 function betaDefaultDate(){
-  const now=new Date();
-  let cand=new Date(now.getFullYear(),now.getMonth(),now.getDate(),19,0,0,0);
-  if(cand.getTime()<=now.getTime()) cand.setDate(cand.getDate()+1);
+  const now=new Date(Date.now());
+  const cand=new Date(now.getFullYear(),now.getMonth(),now.getDate(),18,0,0,0);
+  const MIN_LEAD_MS=8*3600000;
+  if(cand.getTime()-now.getTime() < MIN_LEAD_MS) cand.setDate(cand.getDate()+1);
   return fd(cand);
 }
 // iOS' datofelt har en innebygd «tøm»-knapp; tømmer man feltet ble det stående
@@ -3225,7 +3231,7 @@ function betaFmtDate(iso){
 // Speiler klokke/dato-verdiene inn i kortenes synlige etiketter.
 function betaSyncFieldLabels(){
   const tEl=document.getElementById('mob-beta-et'), tDisp=document.getElementById('mob-beta-et-disp');
-  if(tEl && tDisp) tDisp.textContent = tEl.value || '19:00';
+  if(tEl && tDisp) tDisp.textContent = tEl.value || '18:00';
   const dEl=document.getElementById('mob-beta-ed'), dDisp=document.getElementById('mob-beta-ed-disp');
   if(dEl && dDisp) dDisp.textContent = betaFmtDate(dEl.value);
 }
@@ -3529,7 +3535,7 @@ function runBetaSearch(){
     if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:#e8a06e">${L('Sett en dato først.','Set a date first.')}</div>`;
     return;
   }
-  const anchor=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'19:00'));
+  const anchor=new Date(dEl.value+'T'+(tEl&&tEl.value?tEl.value:'18:00'));
   if(isNaN(anchor.getTime())){
     if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:#e8a06e">${L('Ugyldig dato/klokkeslett.','Invalid date/time.')}</div>`;
     return;
@@ -7244,9 +7250,9 @@ document.addEventListener('change', firstInteractionCheck, true);
         <!-- Klokke og dato som to like store kort. Verdien vises via egen etikett
              (format vi styrer selv); en gjennomsiktig native-velger ligger oppå. -->
         <div class="beta-field" id="mob-beta-et-field" style="margin-bottom:8px">
-          <span class="beta-field-val" id="mob-beta-et-disp">19:00</span>
+          <span class="beta-field-val" id="mob-beta-et-disp">18:00</span>
           <span class="beta-done" aria-hidden="true">✓</span>
-          <input type="time" id="mob-beta-et" class="beta-field-input" value="19:00" onchange="betaSyncFieldLabels();betaTouch('time')" onblur="betaTouch('time')" aria-label="Klokkeslett">
+          <input type="time" id="mob-beta-et" class="beta-field-input" value="18:00" onchange="betaSyncFieldLabels();betaTouch('time')" onblur="betaTouch('time')" aria-label="Klokkeslett">
         </div>
         <div class="beta-field" id="mob-beta-ed-field" style="margin-bottom:10px">
           <span class="beta-field-val" id="mob-beta-ed-disp">—</span>

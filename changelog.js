@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.663",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan foreslår nå et smartere standard-tidspunkt. Åpner du appen tidlig nok på dagen til at en ekte deig rekker, foreslår den i dag kl. 18:00 — ellers hopper den til i morgen kl. 18:00. Før foreslo den alltid samme dag, som på ettermiddagen ga for kort tid og rare forslag. (Klokkeslettet er nå 18:00, som resten av appen.)"
+    ],
+    "changes_en": [
+      "Smart plan now suggests a smarter default time. If you open the app early enough in the day for a real dough to fit, it suggests today at 18:00 — otherwise it jumps to tomorrow at 18:00. It used to always suggest the same day, which left too little time in the afternoon and gave odd suggestions. (The time is now 18:00, matching the rest of the app.)"
+    ]
+  },
+  {
     "v": "0.662",
     "d": "august 2026",
     "d_en": "August 2026",
