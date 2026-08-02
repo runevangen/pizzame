@@ -2684,7 +2684,7 @@ function renderSteps(steps, mode='desktop'){
     }
     html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${(isDimmed && !isNext) ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
       <div class="${C.body}">
-        <div class="${C.head}" onclick="toggleStepDone(${i})" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">
+        <div class="${C.head}" role="checkbox" aria-checked="${done?'true':'false'}" tabindex="0" onclick="toggleStepDone(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStepDone(${i});}" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">
           <div class="${C.chk} ${done ? 'on' : ''}">${done ? '✓' : ''}</div>
           <div class="${C.num} ${i===curIdx ? '' : C.numDim}">${i+1}</div>
           <div style="flex:1;min-width:0">
@@ -2838,7 +2838,7 @@ function recipeRowsHTML(rr, mob=false){
     const _ingNums=_ckNums(row.v);
     const checked = window._checkedIngredients && (window._checkedIngredients.has(ingSig(row.k,_ingNums)) || window._checkedIngredients.has(row.k));
     if(mob){
-      return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" style="cursor:pointer">
+      return `<div class="${rowClass}" role="checkbox" aria-checked="${checked?'true':'false'}" aria-label="${escH(lbl)}" tabindex="0" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('${row.k}','${_ingNums}');}" style="cursor:pointer">
         <span style="display:flex;align-items:center;gap:8px">
           <span class="ing-check${checked?' on':''}"></span>
           <span style="${checked?'text-decoration:line-through' : ''}" class="${checked?'dyn-faint-text':''}">${lbl}</span>
@@ -2846,7 +2846,7 @@ function recipeRowsHTML(rr, mob=false){
         <span class="${valClass}${checked?' dyn-faint-text':''}" style="${checked?'text-decoration:line-through':''}">${row.v}</span>
       </div>`;
     }
-    return `<div class="${rowClass}" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" style="cursor:pointer">
+    return `<div class="${rowClass}" role="checkbox" aria-checked="${checked?'true':'false'}" aria-label="${escH(lbl)}" tabindex="0" onclick="toggleIngredientCheck('${row.k}','${_ingNums}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('${row.k}','${_ingNums}');}" style="cursor:pointer">
       <span style="display:flex;align-items:center;gap:8px">
         <span class="ing-check${checked?' on':''}"></span>
         <span style="${checked?'text-decoration:line-through;color:#8E8E93':''}">${lbl}</span>
@@ -6094,7 +6094,7 @@ function substepsHTML(step, stepIdx){
     const legacy=stepIdx+'-'+subIdx;
     const done = checkable && (window._checkedSubsteps.has(substepSig(step, subIdx)) || window._checkedSubsteps.has(legacy));
     const numHtml = done ? '✓' : (subIdx+1);
-    const clickAttr = checkable ? ` onclick="toggleSubstepDone(${stepIdx},${subIdx})" style="cursor:pointer"` : '';
+    const clickAttr = checkable ? ` role="checkbox" aria-checked="${done?'true':'false'}" aria-label="${escH(txt)}" tabindex="0" onclick="toggleSubstepDone(${stepIdx},${subIdx})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSubstepDone(${stepIdx},${subIdx});}" style="cursor:pointer"` : '';
     return `<li class="substep-item${done?' substep-done':''}"${clickAttr}><span class="substep-num${done?' substep-num-done':''}">${numHtml}</span><span class="substep-txt">${escH(txt)}</span></li>`;
   }).join('');
   return `<ul class="substep-list">${items}</ul>`;
@@ -6637,7 +6637,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
       ${substepToggleHTML('mob-compact')}
       ${tipsToggleHTML('mob-compact')}
     </div>` : '';
-  return `<div style="padding:.55rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0)">
+  return `<div aria-live="polite" style="padding:.55rem .9rem;background:var(--forno-bg-raised,#fff);border-bottom:1px solid var(--forno-border-soft,#e8e5e0)">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
       <div style="font-size:12px;font-weight:700;color:var(--forno-text,#222);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(typeName)} · ${escH(methodNames[S.method]||S.method)}</div>
       ${showActions ? '' : justerBtn}

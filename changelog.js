@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.667",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Tilgjengelighet: avhaking av steg, ingredienser og understeg er nå ekte avkryssingsbokser du kan bruke med tastatur (Enter/mellomrom), og den levende statuslinja annonseres for skjermlesere."
+    ],
+    "changes_en": [
+      "Accessibility: checking off steps, ingredients and substeps are now real checkboxes you can operate with the keyboard (Enter/Space), and the live status bar is announced to screen readers."
+    ]
+  },
+  {
     "v": "0.666",
     "d": "august 2026",
     "d_en": "August 2026",

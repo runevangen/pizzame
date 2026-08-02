@@ -2358,6 +2358,28 @@ def run_behavioral_tests(page):
             and r59.get('metaHasCold') and r59.get('metaHasHyd'))
     results.append(('doughs_search_filter_sort_and_config_in_meta', ok59, r59))
 
+    # F7 (v0.667): tilgjengelighet. Avhaking (steg/ingrediens/understeg) er nå ekte
+    # role=checkbox med aria-checked + tastaturstøtte (Enter/Space), og den live-
+    # oppdaterende statuslinja har aria-live så skjermlesere hører endringene.
+    r60 = page.evaluate("""() => {
+      const orig={chosen:window._planChosen,type:S.type,method:S.method,subs:S.showSubsteps};
+      try{
+        const ing=recipeRowsHTML([{k:'Mel',v:'500g'}], true);
+        const sb=deigStatusBarHTML([{title:'x',at:new Date(),passive:false}], false, false);
+        window._planChosen=true; S.type='napoletana'; S.method='standard'; S.showSubsteps=true;
+        try{ mobGen(); }catch(e){}
+        const plan=document.getElementById('mob-plan-content').innerHTML;
+        return {
+          ingA11y: ing.includes('role=\"checkbox\"') && ing.includes('aria-checked') && ing.includes('onkeydown'),
+          sbLive: sb.includes('aria-live=\"polite\"'),
+          stepA11y: plan.includes('role=\"checkbox\"') && plan.includes('onkeydown=\"if(event.key'),
+          substepA11y: plan.includes('substep-item') && /substep-item[^>]*role=\"checkbox\"/.test(plan)
+        };
+      } finally { window._planChosen=orig.chosen;S.type=orig.type;S.method=orig.method;S.showSubsteps=orig.subs; }
+    }""")
+    ok60 = all(r60.get(k) for k in ['ingA11y','sbLive','stepA11y','substepA11y'])
+    results.append(('checkboxes_keyboard_accessible_and_statusbar_aria_live', ok60, r60))
+
     return results
 
 

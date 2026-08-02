@@ -270,7 +270,14 @@ og appen er ikke reelt installerbar. En cache-first SW for skallet (index.html +
 changelog.js) passer den fler-dagers, én-fils naturen. NB: `manifest.json` ligger i
 `netlify/functions/`, ikke i site-roten `<link>` peker på — sjekk 404.
 
-### F7. Tilgjengelig, tastaturstyrt avhaking + live-region på statuslinjen
+### F7. Tilgjengelig, tastaturstyrt avhaking + live-region på statuslinjen ✅ BYGGET (v0.667, gren)
+> ✅ **Bygget (venter prod).** Steg-, ingrediens- og understeg-avhaking har nå
+> `role="checkbox"` + `aria-checked` + `tabindex="0"` + Enter/Space-tastatur, og
+> den levende statuslinja (`deigStatusBarHTML`) har `aria-live="polite"`. F5-stripa
+> hadde alt tastatur/role fra før. Render-baseline oppdatert (kun de nye a11y-
+> attributtene — verifisert at ingenting annet endret seg). Test:
+> `checkboxes_keyboard_accessible_and_statusbar_aria_live`.
+>
 > **I klartekst:** Avhaking av steg/understeg er i dag klikkbare `<div>`-er uten
 > «knapp»-semantikk eller tastaturstøtte, og den levende statuslinja har ingen
 > `aria-live` — så en skjermleser-bruker hører aldri «oppstart flyttet 2 t tidligere»-
