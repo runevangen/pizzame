@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.670",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Statuslinja i planleggingen viser nå hvilket mel planen bruker, sammen med oppstart og steketid — så du med ett blikk ser om planen matcher melet du faktisk har hjemme."
+    ],
+    "changes_en": [
+      "The planner's status bar now shows which flour the plan uses, alongside the start and bake times — so you can see at a glance whether the plan matches the flour you actually have at home."
+    ]
+  },
+  {
     "v": "0.669",
     "d": "august 2026",
     "d_en": "August 2026",
