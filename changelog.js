@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.691",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Selve stegteksten er tilbake på hvert kort. I forrige runde havnet også «hva du gjør»-teksten bak et ikon — nå står den alltid synlig øverst på steget igjen. Ingrediensene er samtidig blitt et rent 🧾-ikon på lik linje med understeg (📋) og tips (💡), så detaljraden er ryddig og kompakt. Trykk på ikonet for å hente fram akkurat det du trenger."
+    ],
+    "changes_en": [
+      "The step text itself is back on every card. In the last round the “what you do” text also ended up behind an icon — now it's always visible at the top of the step again. Ingredients have at the same time become a plain 🧾 icon, on par with sub-steps (📋) and tips (💡), so the detail row stays tidy and compact. Tap an icon to bring up exactly what you need."
+    ]
+  },
+  {
     "v": "0.690",
     "d": "august 2026",
     "d_en": "August 2026",
