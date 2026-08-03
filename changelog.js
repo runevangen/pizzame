@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.699",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Bedre kjøleskapsråd: hvor du setter deigen betyr mer enn tallet på hjulet. Et kjøleskap er sonedelt — kaldeste sone er bakerst og nederst, over grønnsakskuffen (ca. 2–4 °C), mens døra er varmest (5–7 °C) og svinger hver gang du åpner. Tipset ber deg nå sette deigboksene i den kaldeste sonen og unngå døra, så hevingen blir jevn. «Hvorfor»-tekstene om kald fermentering er samtidig strammet til 2–4 °C (der deigen faktisk står), i stedet for et bredere kjøleskaps-snitt."
+    ],
+    "changes_en": [
+      "Better fridge advice: where you put the dough matters more than the number on the dial. A fridge is zoned — the coldest zone is at the back and bottom, above the vegetable drawer (about 2–4 °C), while the door is the warmest (5–7 °C) and swings every time you open it. The tip now tells you to place the dough boxes in the coldest zone and avoid the door, so the rise stays even. The “Why” texts about cold fermentation are tightened to 2–4 °C (where the dough actually sits) rather than a broader fridge average."
+    ]
+  },
+  {
     "v": "0.698",
     "d": "august 2026",
     "d_en": "August 2026",

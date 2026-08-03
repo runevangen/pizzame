@@ -2933,13 +2933,16 @@ def run_behavioral_tests(page):
       const formWhy=form?form.why:''; const coldWhy=cold?cold.why:'';
       const whyDistinct = !!formWhy && !!coldWhy && formWhy!==coldWhy;
       const formAboutRounding = /rund/i.test(formWhy);
-      // v0.698: kjøleskapstemp harmonisert til 0–4°C (Mattilsynet), ikke 2–5/2–8.
-      const fkTemp = WHY.fk.includes('0–4°C') && !WHY.fk.includes('2–5°C') && !WHY.fk.includes('2–8°C');
+      // v0.699: fermenteringstemp strammet til den kaldeste sonen (2–4°C), der
+      // deigen faktisk skal stå. Ikke 2–5/2–8 (for varmt) eller det tidligere 0–4.
+      const fkTemp = WHY.fk.includes('2–4°C') && !WHY.fk.includes('2–5°C') && !WHY.fk.includes('2–8°C') && !WHY.fk.includes('0–4°C');
       // v0.698: den private +25–30 %-gjærregelen fjernet fra delt tips; termometer-
-      // rådet beholdt; ingen usammenhengende «kaldere enn det»-logikk.
+      // rådet beholdt; ingen usammenhengende «kaldere enn det»-logikk. v0.699:
+      // plasseringsråd (kaldeste sone / unngå døra) bygget inn.
       const fridgeTip = /termometer/.test(TIP.intoFridge)
         && !/25–30/.test(TIP.intoFridge) && !/øk gjæren/i.test(TIP.intoFridge)
-        && !/kaldere enn det/i.test(TIP.intoFridge);
+        && !/kaldere enn det/i.test(TIP.intoFridge)
+        && /grønnsakskuff/i.test(TIP.intoFridge) && /(døra|kjøleskapsdør)/i.test(TIP.intoFridge);
       S.method='poolish'; S.poolishCold=false;
       S.poolishH=14; const m14=prefermentYeastMult();
       S.poolishH=15; const m15=prefermentYeastMult();
