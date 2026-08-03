@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.684",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Meltypene ligger nå på server (som kjernetallene bak «Formler»), så nye mel kan legges til og egenskaper endres uten en ny appversjon. Mel-nedtrekkene bygges nå fra dataene, med en innebygd standardliste som fallback hvis serveren ikke svarer — så appen virker likt offline. Dette er første del; selve admin-redigeringen av mel kommer i neste steg."
+    ],
+    "changes_en": [
+      "The flour types now live on the server (like the core numbers behind \"Formulas\"), so new flours can be added and properties changed without a new app version. The flour dropdowns are now built from the data, with a built-in default list as a fallback if the server does not respond — so the app works the same offline. This is the first part; the admin editing of flours comes in the next step."
+    ]
+  },
+  {
     "v": "0.683",
     "d": "august 2026",
     "d_en": "August 2026",

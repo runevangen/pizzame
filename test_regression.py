@@ -2755,6 +2755,47 @@ def run_behavioral_tests(page):
     ok73 = all(r73.get(k) for k in ['noCorrect','enTranslated','srcNoSpisetid'])
     results.append(('conflict_flag_says_free_time_not_eating_time_bilingual', ok73, r73))
 
+    # v0.684: meltypene ligger nå på server (/api/flours) med innebygd seed-fallback.
+    # Nedtrekkene genereres fra MELTYPER (så server-mel dukker opp), «annet» er en
+    # frontend-sentinel som alltid ligger sist, og applyFlours overstyrer trygt
+    # (validerer, beholder seed ved ugyldig/tom respons).
+    r74 = page.evaluate("""() => {
+      const _lang=window._lang, _mt=S.meltype;
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('settings');
+        const opts=id=>[...document.getElementById(id).options].map(o=>o.value);
+        const seedOpts=opts('mob-gmel');
+        const seedLen=MELTYPER.length;
+        // annet språk-bevisst
+        window._lang='en'; populateMeltypeSelects();
+        const annetEn=[...document.getElementById('mob-gmel').options].find(o=>o.value==='annet').textContent;
+        window._lang='no'; populateMeltypeSelects();
+        // applyFlours: server-data bytter ut, annet beholdes sist
+        applyFlours([{v:'nytt_mel',t:'Test Supermel',protein:'15%',w:'400',hydro:'65–90%',hydroRange:{mn:65,mx:90},ferm:{mn:24,mx:96}}]);
+        populateMeltypeSelects();
+        const afterOpts=opts('mob-gmel');
+        const newPresent=MELTYPER.some(f=>f.v==='nytt_mel');
+        const annetLastAfter=MELTYPER[MELTYPER.length-1].v==='annet';
+        // ugyldig/tom -> behold forrige
+        const before=MELTYPER.length; applyFlours([]); const emptyKept=MELTYPER.length===before;
+        applyFlours('garbage'); const junkKept=MELTYPER.length===before;
+        // gjenopprett seed for etterfølgende tester
+        applyFlours(MELTYPER_SEED); populateMeltypeSelects();
+        return {
+          dropdownGenerated: seedOpts.length===seedLen && seedOpts[0]==='dallari',
+          annetLastSeed: seedOpts.slice(-1)[0]==='annet',
+          annetSentinelNotInSeedConst: !MELTYPER_SEED.some(f=>f.v==='annet'),
+          annetEnTranslated: annetEn.includes('Other'),
+          serverFlourAppears: newPresent && afterOpts.includes('nytt_mel'),
+          annetLastAfterApply: annetLastAfter,
+          invalidKeepsPrev: emptyKept && junkKept,
+          loadsFloursAtStartup: loadConfigThenStart.toString().includes('/api/flours')
+        };
+      } finally { window._lang=_lang; S.meltype=_mt; try{applyFlours(MELTYPER_SEED);populateMeltypeSelects();}catch(e){} }
+    }""")
+    ok74 = all(r74.get(k) for k in ['dropdownGenerated','annetLastSeed','annetSentinelNotInSeedConst','annetEnTranslated','serverFlourAppears','annetLastAfterApply','invalidKeepsPrev','loadsFloursAtStartup'])
+    results.append(('flour_types_server_backed_with_seed_fallback_and_generated_dropdowns', ok74, r74))
+
     return results
 
 
