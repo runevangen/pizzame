@@ -1246,6 +1246,7 @@ def run_behavioral_tests(page):
       S.mode='end'; S.temp=22; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
       const n = document.querySelectorAll('#mob-plan-content .mob-step').length;
+      // v0.691: selve stegteksten (desc) vises alltid — understeg ligger bak 📋.
       const descsBefore = document.querySelectorAll('#mob-plan-content .mob-sdesc').length;
       window._openSub=new Set([...Array(n).keys()]); mobGen(); // åpne alle steg per-steg
       const result = {
@@ -1258,8 +1259,8 @@ def run_behavioral_tests(page):
       return result;
     }""")
     ok27 = (
-      r27['n'] == 5 and r27['descsBefore'] == 0 and r27['substepLists'] == 5 and
-      r27['descsAfter'] == 0 and r27['firstItems'] == 4
+      r27['n'] == 5 and r27['descsBefore'] == 5 and r27['substepLists'] == 5 and
+      r27['descsAfter'] == 5 and r27['firstItems'] == 4
     )
     results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
 
@@ -1304,7 +1305,8 @@ def run_behavioral_tests(page):
       window._openSub=new Set(); S.type='napoletana'; mobGen();
       return out;
     }""")
-    ok28 = all(r28[m]['lists'] == r28[m]['total'] and r28[m]['descsLeft'] == 0 for m in r28)
+    # v0.691: desc vises nå alltid ved siden av understeg — hvert steg har begge.
+    ok28 = all(r28[m]['lists'] == r28[m]['total'] and r28[m]['descsLeft'] == r28[m]['total'] for m in r28)
     results.append(('every_method_has_full_substep_coverage', ok28, r28))
 
     # v0.688 (skisse B): Understeg/Tips flyttet fra globale verktøyrad-knapper til
@@ -2786,10 +2788,10 @@ def run_behavioral_tests(page):
     ok76 = all(r76.get(k) for k in ['topHasNoActions','hasBottomActions','saveAfterSteps'])
     results.append(('plan_export_save_actions_moved_to_bottom', ok76, r76))
 
-    # v0.690 (skisse B): renere stegkort «på forespørsel». Som standard viser
-    # kortet bare handlingen — ingen ingrediens-chips, ingen avsnittstekst. En
-    # «🧾 N ingredienser»-brikke henter fram chipsene; fremgangsmåte (📋) og tips
-    # (💡) er rene ikoner. Alt utvidbart per steg.
+    # v0.691 (justert skisse B): kortet viser selve stegteksten (desc) igjen — den
+    # er «hva du gjør» og skal alltid være synlig. Detaljene ligger bak rene ikoner
+    # på samme linje: 🧾 ingredienser (nå ikon-kun, på lik linje med de andre),
+    # 📋 understeg, 💡 tips. Ingen ingrediens-chips før 🧾 trykkes.
     r77 = page.evaluate("""() => {
       window._openIng=new Set(); window._openSub=new Set(); window._openTip=new Set();
       window._planChosen=true; setLayout('mob'); S.type='napoletana'; S.method='standard'; S.mode='start';
@@ -2798,23 +2800,23 @@ def run_behavioral_tests(page):
       const chipsBefore=plan().querySelectorAll('.mob-needchip').length;
       const descBefore=plan().querySelectorAll('.mob-sdesc').length;
       const btns=[...plan().querySelectorAll('.step-detail-btn')];
-      const ingBtn=btns.find(b=>b.textContent.includes('ingredienser'));
+      const ingBtn=btns.find(b=>b.textContent.trim()==='🧾');
+      const ingIconOnly=!!ingBtn && !ingBtn.textContent.toLowerCase().includes('ingred');
       const howIconOnly=!!btns.find(b=>b.textContent.trim()==='📋');
       const tipIconOnly=!!btns.find(b=>b.textContent.trim()==='💡');
-      const ingHasCount=ingBtn ? /🧾\\s*\\d+\\s+ingredienser/.test(ingBtn.textContent) : false;
       if(ingBtn) ingBtn.click();
       const chipsAfter=plan().querySelectorAll('.mob-needchip').length;
       window._openIng=new Set(); window._openSub=new Set(); window._openTip=new Set();
       return {
         chipsHiddenByDefault: chipsBefore===0,
-        descHiddenByDefault: descBefore===0,
-        ingChipHasCount: ingHasCount,
+        descShownByDefault: descBefore>0,
+        ingIconOnly,
         ingRevealsChips: chipsAfter>0,
         howIconOnly, tipIconOnly
       };
     }""")
-    ok77 = all(r77.get(k) for k in ['chipsHiddenByDefault','descHiddenByDefault','ingChipHasCount','ingRevealsChips','howIconOnly','tipIconOnly'])
-    results.append(('step_card_details_on_demand_ingredients_behind_chip', ok77, r77))
+    ok77 = all(r77.get(k) for k in ['chipsHiddenByDefault','descShownByDefault','ingIconOnly','ingRevealsChips','howIconOnly','tipIconOnly'])
+    results.append(('step_card_text_shown_details_behind_icons', ok77, r77))
 
     return results
 

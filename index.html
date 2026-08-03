@@ -2736,26 +2736,26 @@ function renderSteps(steps, mode='desktop'){
         conflictFlag=` <span class="conflict-flag"${click} title="${L(`Dette steget faller i ${winLbl} — se detaljer og valg i wizardens Sjekk`,`This step falls in ${winLbl} — see details and options in the wizard's Check`)}">⚠ ${lbl}</span>`;
       }
     }
-    // Skisse B — «på forespørsel»: kortet viser bare handlingen. Ingredienser bak
-    // en «🧾 N ingredienser»-brikke, fremgangsmåte (📋) og tips (💡) som rene
-    // ikoner. Ingenting er utvidet som standard — tapp for å hente fram det du
-    // trenger. (📋 viser understeg, ev. avsnittsteksten om steget mangler understeg.)
+    // Skisse B (justert): kortet viser selve stegteksten (desc) som før — det er
+    // «hva du gjør». Detaljene ligger bak rene ikoner på samme linje: 🧾 ingredienser,
+    // 📋 understeg, 💡 tips. Ingen ikon for innhold steget ikke har; ingenting av
+    // detaljene er utvidet som standard.
     const hasNeeds = !!(s.needs && s.needs.length);
     const hasSub = !!(s.substeps && s.substeps.length);
-    const hasHow = hasSub || !!s.desc;
     const hasTip = !!(s.why || s.tip);
     const ingOpen = window._openIng.has(i);
     const subOpen = window._openSub.has(i);
     const tipOpen = window._openTip.has(i);
-    const detailIcons = (hasNeeds||hasHow||hasTip)
+    const descBlock = s.desc ? `<div class="${C.desc}">${s.desc}</div>` : '';
+    const detailIcons = (hasNeeds||hasSub||hasTip)
       ? `<div class="step-detail-icons">`
-        + (hasNeeds?`<button type="button" class="step-detail-btn${ingOpen?' on':''}" aria-pressed="${ingOpen}" onclick="toggleStepDetail('ing',${i})">🧾 ${s.needs.length} ${L('ingredienser','ingredients')}</button>`:'')
-        + (hasHow?`<button type="button" class="step-detail-btn step-detail-ico${subOpen?' on':''}" aria-pressed="${subOpen}" aria-label="${L('Fremgangsmåte','How-to')}" title="${L('Fremgangsmåte','How-to')}" onclick="toggleStepDetail('sub',${i})">📋</button>`:'')
+        + (hasNeeds?`<button type="button" class="step-detail-btn step-detail-ico${ingOpen?' on':''}" aria-pressed="${ingOpen}" aria-label="${L('Ingredienser','Ingredients')}" title="${L('Ingredienser','Ingredients')}" onclick="toggleStepDetail('ing',${i})">🧾</button>`:'')
+        + (hasSub?`<button type="button" class="step-detail-btn step-detail-ico${subOpen?' on':''}" aria-pressed="${subOpen}" aria-label="${L('Understeg','Sub-steps')}" title="${L('Understeg','Sub-steps')}" onclick="toggleStepDetail('sub',${i})">📋</button>`:'')
         + (hasTip?`<button type="button" class="step-detail-btn step-detail-ico${tipOpen?' on':''}" aria-pressed="${tipOpen}" aria-label="Tips" title="Tips" onclick="toggleStepDetail('tip',${i})">💡</button>`:'')
         + `</div>`
       : '';
     const ingBlock = (hasNeeds && ingOpen) ? `<div class="${C.needs}">${s.needs.map(n=>`<span class="${C.needchip}">${n}</span>`).join('')}</div>` : '';
-    const bodyBlock = subOpen ? (hasSub ? substepsHTML(s, i) : (s.desc ? `<div class="${C.desc}">${s.desc}</div>` : '')) : '';
+    const bodyBlock = (hasSub && subOpen) ? substepsHTML(s, i) : '';
     const tipBlock = (hasTip && tipOpen)
       ? (s.why?`<div class="${C.why}"><b>${L('Hvorfor','Why')}:</b> ${s.why}</div>`:'') + (s.tip?`<div class="${C.tip}"><b>Tips:</b> ${s.tip}</div>`:'')
       : '';
@@ -2775,6 +2775,7 @@ function renderSteps(steps, mode='desktop'){
             </div>
           </div>
         </div>
+        ${descBlock}
         ${detailIcons}
         ${ingBlock}
         ${bodyBlock}
