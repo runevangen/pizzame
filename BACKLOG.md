@@ -487,3 +487,40 @@ Hele seksjonen er nå tatt inn (v6.10 «les deigen»-tegn + v6.11 praktiske råd
 - **PC/mobil-paritet.** Både render-datatapet (2) og understeg-mobilfiksen (v6.00)
   viser at de to render-veiene lett kommer i utakt — vurder å utvide
   `pc_mobil_1to1`-testene til å dekke avhaking-oppførsel, ikke bare tekst.
+
+---
+
+## Nytt (aug 2026 — oppskriftsgjennomgang v0.698)
+
+To punkter som kom ut av en inndata-forankret oppskriftsgjennomgang. Gjærtips-
+teksten som ble lagt til i v0.697 ble samtidig fjernet igjen (feil premiss for et
+norsk publikum: 1–3 °C er et *riktig* innstilt kjøleskap, ikke et kaldt et), og
+kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
+
+### F13. Kjøleskapstemperatur som inndata i Finjuster (med gjærkompensasjon)
+- **I klartekst:** Appen har i dag ingen anelse om hvor kaldt brukerens kjøleskap
+  er — den antar en implisitt referanse. Legg til et valg for kjøleskapstemperatur
+  (f.eks. 0–2 / 2–4 / 4–6 °C) i Finjuster, og la appen regne ut gjærkompensasjonen
+  selv (kaldere → litt mer gjær for samme sluttresultat til samme tid). Da slipper
+  vi et fast «+25–30 %»-tall i prosa som ikke vet hvilket kjøleskap leseren har.
+- Mattilsynet-forankring: riktig kjøleskap er 0–4 °C (over frysing, under 4 °C), så
+  standard/referanse bør ligge der — ikke «2–5 °C».
+- **[baseline]** — endrer gjærtall når temp≠referanse.
+
+### F14. Benketid/temperering (steg 7) skalerer ikke med romtemperatur
+- **I klartekst:** Den korte romtemperaturhevingen (steg 4) skalerer allerede med
+  `S.temp` via `rtM()`/`tf()` (18 °C → lengre, 26 °C → kortere). Men benketida etter
+  kjøleskapet — «Ta ut av kjøleskap», steg 7 — er hardkodet **240 min** i
+  `tailSteps()` (`index.html:2201`, `taUt=sM(bake,240)`; kald tid = `cM2-240-15`).
+  En bruker på 18 °C og en på 26 °C får identiske 4 timer, selv om samme steg-tekst
+  sier at «hvor lenge den trenger avhenger av hvor varmt rommet er». Gjelder
+  standard/poolish/biga (Kveldsdeig har egen `TEMPER_MIN`, men den skalerer på
+  kveld-timer, ikke romtemp).
+- **Fiks (skisse):** bytt `240` mot en temp-skalert verdi (`rtM(240)` e.l.), men
+  **bound den** slik at kald tid (`cM2 - temper - 15`) aldri blir negativ for korte
+  kald-innstillinger, og gjør steg-tekstens «ca. 4 timer» dynamisk. Ankeret (stek =
+  form + cM2) og middagstiden endres ikke — kun fordelingen kald tid ↔ benketid.
+- **Test:** generer samme plan på 18 °C og 26 °C, assert at benketida i steg 7
+  faktisk endrer seg (NB: poolish-*varigheten* i steg 1 skal IKKE endre seg — den er
+  et brukervalgt tall, ikke temp-styrt).
+- **[baseline]** — flytter tidsplan-tall.

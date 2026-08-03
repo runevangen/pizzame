@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.698",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Trakk tilbake gjærtipset fra forrige versjon. Rådet om å øke gjæren ~25–30 % «hvis kjøleskapet er kaldere enn ~4 °C» bygde på feil premiss for et norsk publikum: 1–3 °C er et riktig innstilt kjøleskap (Mattilsynet anbefaler 0–4 °C), ikke et for kaldt et — så teksten ville fått folk med korrekt temperatur til å legge til gjær de ikke trenger. Fjernet gjærprosenten fra den delte teksten; det gode rådet «mål med termometer» er beholdt, nå med riktig referanse (under 4 °C). Kjøleskapstemperaturen er også harmonisert til 0–4 °C i «Hvorfor»-tekstene (var 2–5 °C). Selve temperatur-kompensasjonen hører hjemme som et faktisk inndata-valg i Finjuster og er lagt i backloggen (F13), sammen med at benketida (steg 7) bør skalere med romtemperatur slik den korte hevingen allerede gjør (F14)."
+    ],
+    "changes_en": [
+      "Rolled back the yeast tip from the previous version. The advice to raise the yeast ~25–30% “if your fridge runs colder than ~4 °C” rested on a wrong premise for a Norwegian audience: 1–3 °C is a correctly set fridge (food-safety guidance is 0–4 °C), not too cold — so the text would have told people with correct temperatures to add yeast they don't need. Removed the yeast percentage from the shared text; the good advice “measure with a thermometer” is kept, now with the right reference (below 4 °C). The fridge temperature is also harmonized to 0–4 °C in the “Why” texts (was 2–5 °C). The actual temperature compensation belongs as a real input in Fine-tune and has been added to the backlog (F13), together with the bench time (step 7) that should scale with room temperature the way the short rise already does (F14)."
+    ]
+  },
+  {
     "v": "0.697",
     "d": "august 2026",
     "d_en": "August 2026",
