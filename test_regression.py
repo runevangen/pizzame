@@ -2834,6 +2834,27 @@ def run_behavioral_tests(page):
     ok77 = all(r77.get(k) for k in ['chipsHiddenByDefault','descShownByDefault','ingIconOnly','ingRevealsChips','howIconOnly','tipIconOnly'])
     results.append(('step_card_text_shown_details_behind_icons', ok77, r77))
 
+    # v0.694: tidspunktet i steg-kortet brakk stygt midt i datoen («man 3. aug kl.»
+    # / «15:10 · 30 min») fordi .mob-stim/.stim manglet white-space:nowrap. Tiden
+    # skal holdes på én linje; skulle den + stedet ikke få plass, wrapper .mob-smeta
+    # (flex-wrap) stedet ned i stedet for å splitte datoen. Sjekker computed style
+    # på både mobil (.mob-stim) og PC (.stim).
+    r78 = page.evaluate("""() => {
+      window._openIng=new Set(); window._openSub=new Set(); window._openTip=new Set();
+      window._planChosen=true; setLayout('mob'); S.type='napoletana'; S.method='standard'; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const mobTime=document.querySelector('#mob-plan-content .mob-stim');
+      const mobNowrap = mobTime ? getComputedStyle(mobTime).whiteSpace==='nowrap' : false;
+      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
+      gen();
+      const pcTime=document.querySelector('#p-plan .stim');
+      const pcNowrap = pcTime ? getComputedStyle(pcTime).whiteSpace==='nowrap' : false;
+      document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
+      return { hadMobTime:!!mobTime, mobNowrap, hadPcTime:!!pcTime, pcNowrap };
+    }""")
+    ok78 = all(r78.get(k) for k in ['hadMobTime','mobNowrap','hadPcTime','pcNowrap'])
+    results.append(('step_time_stays_on_one_line', ok78, r78))
+
     return results
 
 

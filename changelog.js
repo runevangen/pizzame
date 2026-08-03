@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.694",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fikset at tidspunktet på hvert steg i tidsplanen brakk rart midt i datoen (f.eks. «man 3. aug kl.» på én linje og «15:10 · 30 min» på neste). Tiden holdes nå samlet på én linje. Får den og stedet ikke plass sammen, flyttes stedet ned i stedet for å splitte selve datoen."
+    ],
+    "changes_en": [
+      "Fixed the timestamp on each schedule step breaking oddly in the middle of the date (e.g. “Mon Aug 3,” on one line and “15:10 · 30 min” on the next). The time is now kept together on one line. If it and the location don't fit together, the location moves down instead of splitting the date itself."
+    ]
+  },
+  {
     "v": "0.693",
     "d": "august 2026",
     "d_en": "August 2026",
