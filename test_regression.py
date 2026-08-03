@@ -2981,6 +2981,24 @@ def run_behavioral_tests(page):
     ok82 = all(r82.get(k) for k in ['pizzaNo45','pizzaMentionsFastPreheat','regHas45'])
     results.append(('bake_preheat_tip_oven_aware_pizza_vs_regular', ok82, r82))
 
+    # v0.700 (oppskriftsgjennomgang): poolish-blandesteget er satt av 20 min, men
+    # teksten sier «Elt totalt 10–12 min» — planens «20 min» og eltetiden kunne
+    # virke motstridende. La til presisering (mixWorkNote) om at 20 min er samlet
+    # arbeidstid, uten å fjerne den faktiske eltetiden.
+    r83 = page.evaluate("""() => {
+      const orig={method:S.method,km:S.kjokkenmaskin,type:S.type};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='poolish'; S.kjokkenmaskin='ankarsrum'; S.mode='start'; mobGen();
+      const s=(window._steps||[]).find(x=>/bland ferdig deig/i.test(x.title));
+      const desc=s?s.desc:'';
+      const kneadTime=/Elt totalt 10–12 min/.test(desc);
+      const workNote=/samlet arbeidstid/.test(desc) && /Selve eltingen/.test(desc);
+      S.method=orig.method;S.kjokkenmaskin=orig.km;S.type=orig.type; mobGen();
+      return { hadStep:!!s, kneadTime, workNote };
+    }""")
+    ok83 = all(r83.get(k) for k in ['hadStep','kneadTime','workNote'])
+    results.append(('poolish_mix_step_clarifies_work_time_vs_knead_time', ok83, r83))
+
     return results
 
 
