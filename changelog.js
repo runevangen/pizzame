@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.692",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fokus-modus viser mer av planen. Den enorme overskriften er krympet fra 32px til 21px, og i stedet for bare «Neste: …» får du nå en liten «Kommer»-stabel med de neste stegene (tid + tittel) rett under det aktive steget — trykk på et av dem for å hoppe dit. Slik ser du hva som venter uten å forlate fokus, og de store Ferdig-/Forrige-knappene og avhukingsflatene er uendret (laget for deigete fingre)."
+    ],
+    "changes_en": [
+      "Focus mode shows more of the plan. The huge heading is shrunk from 32px to 21px, and instead of just “Next: …” you now get a small “Coming up” stack of the next steps (time + title) right below the active step — tap one to jump there. That way you see what's ahead without leaving focus, and the large Done/Back buttons and check-off targets are unchanged (built for doughy fingers)."
+    ]
+  },
+  {
     "v": "0.691",
     "d": "august 2026",
     "d_en": "August 2026",

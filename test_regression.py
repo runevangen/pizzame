@@ -1651,6 +1651,14 @@ def run_behavioral_tests(page):
       const focusBodyHtml = document.getElementById('focus-body').innerHTML;
       const descDup = hasSubs && focusBodyHtml.includes('font-size:19px;line-height:1.45');
 
+      // v0.692 (skisse B): kommende steg vises som tappbar «Kommer»-stabel, og
+      // focusGoto hopper til et valgt steg.
+      const hasComingStack = /focusGoto\\(/.test(focusBodyHtml) && (bodyTxt.includes('Kommer') || bodyTxt.includes('Coming up'));
+      const gotoTarget = Math.min(total-1, window._focusIdx+2);
+      focusGoto(gotoTarget);
+      const gotoWorks = window._focusIdx === gotoTarget;
+      focusGoto(openedIdx); // tilbake til utgangspunktet før resten av navigasjonstesten
+
       // «Ferdig» haker av dette steget og hopper til neste ikke-avhakede.
       const beforeDone = window._focusIdx;
       focusMarkDone();
@@ -1670,12 +1678,13 @@ def run_behavioral_tests(page):
 
       resetTestState();
       return { total, openedIdx, shown, hasStepCounter, hasSubs, subsBefore, subsAfter,
-               descDup, markedDone, advanced, wentBack, closed, hasFocusBtn };
+               descDup, hasComingStack, gotoWorks, markedDone, advanced, wentBack, closed, hasFocusBtn };
     }""")
     ok35 = (
       r35['total'] > 2 and r35['openedIdx'] == 1 and r35['shown'] == 'flex' and
       r35['hasStepCounter'] and r35['hasSubs'] and
       r35['subsAfter'] == r35['subsBefore'] + 1 and r35['descDup'] is False and
+      r35['hasComingStack'] and r35['gotoWorks'] and
       r35['markedDone'] and r35['advanced'] and r35['wentBack'] and
       r35['closed'] and r35['hasFocusBtn']
     )
