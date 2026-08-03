@@ -2796,6 +2796,48 @@ def run_behavioral_tests(page):
     ok74 = all(r74.get(k) for k in ['dropdownGenerated','annetLastSeed','annetSentinelNotInSeedConst','annetEnTranslated','serverFlourAppears','annetLastAfterApply','invalidKeepsPrev','loadsFloursAtStartup'])
     results.append(('flour_types_server_backed_with_seed_fallback_and_generated_dropdowns', ok74, r74))
 
+    # v0.685 (fase 2): admin-editor for meltyper + dynamisk kald-tak. COLD_MAX
+    # utledes nå fra sterkeste mels ferm.mx (legger admin inn et sterkere mel,
+    # strekker slideren seg). Editoren lister ekte mel (ikke «annet»), og lagring
+    # POST-er riktig payload til /api/flours/admin.
+    r75 = page.evaluate("""() => {
+      const _mt=S.meltype, _pw=window._adminPassword;
+      try{
+        window._planChosen=true; setLayout('mob'); mobShowTab('settings'); syncMobControls();
+        const out={};
+        // dynamisk COLD_MAX
+        out.coldMaxSeed=COLD_MAX;
+        applyFlours([{v:'super',t:'Supermel',protein:'15%',w:'450',hydro:'70–95%',hydroRange:{mn:70,mx:95},ferm:{mn:24,mx:150}}]);
+        syncMobControls();
+        out.coldMaxGrows = COLD_MAX===150 && document.getElementById('mob-csl').getAttribute('max')==='150';
+        applyFlours(MELTYPER_SEED); syncMobControls();
+        out.coldMaxRestored = COLD_MAX===120;
+        out.derivesFromData = recomputeColdMax.toString().includes('ferm.mx');
+        // editor
+        window._adminPassword='x'; openFlourEditor();
+        out.editorOpens = document.getElementById('flour-modal').style.display==='flex';
+        out.listsRealFlours = document.querySelectorAll('#flour-modal-body .admin-card').length===9;
+        out.annetExcluded = ![...document.querySelectorAll('#flour-modal-body .admin-uname')].some(e=>e.textContent.includes('Annet'));
+        out.hasForm = !!document.getElementById('flour-f-t') && !!document.getElementById('flour-f-fmx');
+        // save payload via mock fetch
+        let cap=null; const _f=window.fetch;
+        window.fetch=(url,opts)=>{ cap={url,opts}; return Promise.resolve({status:200,ok:true,json:()=>Promise.resolve({ok:true,flours:MELTYPER_SEED})}); };
+        renderFlourEditor();
+        document.getElementById('flour-f-t').value='Ny Testmel';
+        document.getElementById('flour-f-hmn').value='60'; document.getElementById('flour-f-hmx').value='80';
+        document.getElementById('flour-f-fmn').value='12'; document.getElementById('flour-f-fmx').value='60';
+        return new Promise(resolve=>{ saveFlour().then(()=>{
+          window.fetch=_f; closeFlourModal();
+          const body=cap?JSON.parse(cap.opts.body):{};
+          out.savePatch = cap && cap.url==='/api/flours/admin' && cap.opts.method==='PATCH';
+          out.savePayloadOk = !!(body.flour && body.flour.v==='ny_testmel' && body.flour.ferm.mx===60 && body.password==='x');
+          resolve(out);
+        }); });
+      } finally { S.meltype=_mt; window._adminPassword=_pw; try{applyFlours(MELTYPER_SEED);syncMobControls();}catch(e){} }
+    }""")
+    ok75 = all(r75.get(k) for k in ['coldMaxGrows','coldMaxRestored','derivesFromData','editorOpens','listsRealFlours','annetExcluded','hasForm','savePatch','savePayloadOk'])
+    results.append(('flour_admin_editor_and_dynamic_cold_cap', ok75, r75))
+
     return results
 
 

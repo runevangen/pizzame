@@ -707,6 +707,12 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="modal-body" id="admin-modal-body"></div>
   </div>
 </div>
+<div id="flour-modal" class="modal-overlay" onclick="if(event.target===this)closeFlourModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b>🌾 Meltyper</b><button class="modal-x" onclick="closeFlourModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="flour-modal-body"></div>
+  </div>
+</div>
 <div id="tech-modal" class="modal-overlay" onclick="if(event.target===this)closeTechModal()">
   <div class="modal-box">
     <div class="modal-head"><b>💡 Tips</b><button class="modal-x" onclick="closeTechModal()" aria-label="Lukk">✕</button></div>
@@ -856,7 +862,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 
   <div id="cwrap"><div class="lbl"><span id="pc-cold-lbl">Kjøleskapsheving</span> — <span id="clbl">24 timer</span></div>
     <div class="sr"><input type="range" id="csl" min="24" max="120" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">24 timer</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span>120 timer</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span id="csl-max-lbl">120 timer</span></div>
   </div>
 
   <div><div class="lbl"><span id="pc-temp-lbl">Romtemperatur</span> — <span id="tlbl">22°C</span></div>
@@ -1324,12 +1330,20 @@ const COLDMULT={1:1.5,2:1.05,3:0.75,4:0.59,5:0.45,6:0.38};
 // jevnt mellom de SAMME, allerede uttestede punktene, omregnet til timer, slik at
 // gjærmengden også blir riktig for alt som ikke er et helt døgn.
 const COLDMULT_HOURS=[[24,1.5],[48,1.05],[72,0.75],[96,0.59],[120,0.45],[144,0.38]];
-// v0.659/v0.680: øvre tak for kjøleskapsheving. Hevet fra 78t til 120t (5 døgn)
-// fordi det sterkeste melet (Caputo Manitoba Oro, W340–390) reelt tåler lange
-// kald-gjæringer. Invariant: COLD_MAX === sterkeste mels ferm.mx (nå 120). Over
+// v0.659/v0.680: øvre tak for kjøleskapsheving. v0.685: UTLEDES nå fra sterkeste
+// mels ferm.mx (var hardkodet 120t) — legger admin inn et sterkere mel, strekker
+// slideren seg. Invariant: COLD_MAX === Math.max(ferm.mx) blant ekte mel. Over
 // dette tåler intet mel mer. Overmodnings-varselet (96t total) er den ærlige
-// bremsen i 96–120-sona; meltype-varselet dømmer per mel under det.
-const COLD_MAX=120;
+// bremsen i den lange enden; meltype-varselet dømmer per mel under det.
+let COLD_MAX=120;
+// Regn COLD_MAX på nytt fra MELTYPER (uten «annet»-sentinelen, ferm.mx=0) og
+// oppdater begge slider-maks + PC-endelappen. Kalt ved oppstart og etter applyFlours.
+function recomputeColdMax(){
+  const reals=MELTYPER.filter(f=>!f.generic && f.ferm && Number.isFinite(f.ferm.mx));
+  COLD_MAX=Math.max(24, reals.length?Math.max(...reals.map(f=>f.ferm.mx)):120);
+  ['csl','mob-csl'].forEach(id=>{ const el=document.getElementById(id); if(el) el.max=String(COLD_MAX); });
+  const lbl=document.getElementById('csl-max-lbl'); if(lbl) lbl.textContent=COLD_MAX+' timer';
+}
 function coldMultForHours(h){
   const pts=COLDMULT_HOURS;
   if(h<=pts[0][0]) return pts[0][1];
@@ -1399,6 +1413,7 @@ function applyFlours(serverFlours){
   if(!valid.length) return; // behold innebygd seed
   MELTYPER=[...valid.map(f=>({...f})), ANNET_FLOUR];
   try{ if(!MELTYPER.some(f=>f.v===S.meltype)) S.meltype=MELTYPER[0].v; }catch(e){}
+  try{ recomputeColdMax(); }catch(e){}
 }
 // Bygger meltype-nedtrekkene fra MELTYPER (så nye server-mel dukker opp automatisk).
 // Språk-bevisst for «annet»; merkevarenavn er språknøytrale. Beholder valgt verdi.
@@ -5133,8 +5148,9 @@ async function loadAdminView(password){
 }
 function renderAdminModal(users){
   const body = document.getElementById('admin-modal-body');
-  if(!users.length){ body.innerHTML = '<p style="color:#999;font-size:13px">Ingen registrerte brukere ennå.</p>'; return; }
-  body.innerHTML = users.map(u=>{
+  const floursBtn = `<button onclick="openFlourEditor()" class="admin-btn" style="margin-bottom:12px">🌾 Rediger meltyper</button>`;
+  if(!users.length){ body.innerHTML = floursBtn + '<p style="color:#999;font-size:13px">Ingen registrerte brukere ennå.</p>'; return; }
+  body.innerHTML = floursBtn + users.map(u=>{
     let created=''; try{ created=fDT(new Date(u.createdAt)); }catch(e){}
     let lastLogin=''; try{ lastLogin=fDT(new Date(u.lastLoginAt)); }catch(e){}
     return `<div class="admin-card" id="adminuser-${u.id}">
@@ -5150,6 +5166,94 @@ function renderAdminModal(users){
       </div>
     </div>`;
   }).join('');
+}
+
+// ===== MELTYPE-EDITOR (admin) — legg til / endre / slett mel uten deploy =====
+function closeFlourModal(){ const m=document.getElementById('flour-modal'); if(m) m.style.display='none'; }
+function openFlourEditor(){
+  if(!window._adminPassword){ alert('Kun for admin.'); return; }
+  renderFlourEditor();
+  document.getElementById('flour-modal').style.display='flex';
+}
+// Lag en trygg id (a-z0-9_) fra et navn — samme form som serveren forventer.
+function flourSlug(name){ return String(name||'').trim().toLowerCase().replace(/æ/g,'ae').replace(/ø/g,'o').replace(/å/g,'a').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+function flourTxtRow(lbl,id,v,ph){ return `<div style="margin-bottom:6px"><div style="font-size:10px;color:#888">${lbl}</div><input id="${id}" value="${v}" placeholder="${ph||''}" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--forno-border,#ccc);border-radius:6px;font-size:13px;background:var(--forno-bg,#fff);color:var(--dyn-text,#222)"></div>`; }
+function flourNumRow(lbl,id,v){ return `<div style="flex:1;margin-bottom:6px"><div style="font-size:10px;color:#888">${lbl}</div><input id="${id}" type="number" value="${v}" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--forno-border,#ccc);border-radius:6px;font-size:13px;background:var(--forno-bg,#fff);color:var(--dyn-text,#222)"></div>`; }
+function renderFlourEditor(editV){
+  const body=document.getElementById('flour-modal-body'); if(!body) return;
+  const reals=MELTYPER.filter(f=>!f.generic);
+  const ed = editV ? reals.find(f=>f.v===editV) : null;
+  const va=x=>x==null?'':escAttr(String(x));
+  const form=`<div style="border:1px solid var(--forno-border,#ddd);border-radius:10px;padding:10px;margin-bottom:12px;background:var(--forno-bg-raised,#fafafa)">
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px">${ed?('✏️ Endre: '+escH(ed.t)):'➕ Nytt mel'}</div>
+    <input type="hidden" id="flour-f-v" value="${ed?va(ed.v):''}">
+    ${flourTxtRow('Navn','flour-f-t', ed?va(ed.t):'')}
+    ${flourTxtRow('Navn (engelsk, valgfritt)','flour-f-ten', ed&&ed.tEn?va(ed.tEn):'')}
+    ${flourTxtRow('Protein','flour-f-protein', ed?va(ed.protein):'', 'f.eks. 12,5%')}
+    ${flourTxtRow('W-verdi','flour-f-w', ed?va(ed.w):'–', 'f.eks. 260–280 eller –')}
+    ${flourTxtRow('Hydrering (tekst)','flour-f-hydro', ed?va(ed.hydro):'', 'f.eks. 60–75%')}
+    <div style="display:flex;gap:6px">
+      ${flourNumRow('Hydro min %','flour-f-hmn', ed?va(ed.hydroRange.mn):'60')}
+      ${flourNumRow('Hydro max %','flour-f-hmx', ed?va(ed.hydroRange.mx):'70')}
+    </div>
+    <div style="display:flex;gap:6px">
+      ${flourNumRow('Gjæring min (t)','flour-f-fmn', ed?va(ed.ferm.mn):'24')}
+      ${flourNumRow('Gjæring max (t)','flour-f-fmx', ed?va(ed.ferm.mx):'48')}
+    </div>
+    <label style="display:flex;align-items:center;gap:7px;font-size:12px;margin:6px 0;color:var(--dyn-text,#222)"><input type="checkbox" id="flour-f-est" ${ed&&ed.estimated?'checked':''}> Tallene er anslått (ikke fra produsent)</label>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button onclick="saveFlour()" class="admin-btn" style="background:var(--forno-accent,#e8590c);color:#fff;border:none">💾 Lagre</button>
+      ${ed?`<button onclick="renderFlourEditor()" class="admin-btn">Avbryt</button>`:''}
+    </div>
+    <div style="font-size:10px;color:#aaa;margin-top:6px">Kald-taket (slideren) følger sterkeste mels gjæring-max. «Annet mel / ikke i listen» styres av appen og vises ikke her.</div>
+  </div>`;
+  const list=reals.map(f=>`<div class="admin-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div style="min-width:0">
+        <div class="admin-uname">${escH(f.t)}${f.estimated?' <span style="color:#EFAB27;font-size:10px">(anslått)</span>':''}</div>
+        <div class="admin-umeta">${escH(f.protein)} · W${escH(f.w)} · ${escH(f.hydro)} · ${f.ferm.mn}–${f.ferm.mx}t</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button onclick="renderFlourEditor('${escAttr(f.v)}')" class="admin-btn">✏️</button>
+        <button onclick="deleteFlour('${escAttr(f.v)}','${escAttr(f.t)}')" class="admin-btn danger">🗑️</button>
+      </div>
+    </div>
+  </div>`).join('');
+  body.innerHTML=form+`<div style="font-size:11px;color:#999;margin-bottom:6px">${reals.length} mel på server</div>`+list;
+}
+async function saveFlour(){
+  const g=id=>document.getElementById(id);
+  const name=g('flour-f-t').value.trim();
+  if(!name){ alert('Navn må fylles ut.'); return; }
+  const v=(g('flour-f-v').value.trim())||flourSlug(name);
+  if(!v){ alert('Kunne ikke lage en id fra navnet — bruk latinske bokstaver.'); return; }
+  if(v==='annet'){ alert('«annet» er reservert.'); return; }
+  const hmn=Number(g('flour-f-hmn').value), hmx=Number(g('flour-f-hmx').value);
+  const fmn=Number(g('flour-f-fmn').value), fmx=Number(g('flour-f-fmx').value);
+  if(![hmn,hmx,fmn,fmx].every(Number.isFinite)){ alert('Hydro og gjæring må være tall.'); return; }
+  const flour={ v, t:name, protein:g('flour-f-protein').value.trim()||'–', w:g('flour-f-w').value.trim()||'–',
+    hydro:g('flour-f-hydro').value.trim()||(hmn+'–'+hmx+'%'), hydroRange:{mn:Math.min(hmn,hmx),mx:Math.max(hmn,hmx)}, ferm:{mn:fmn,mx:fmx} };
+  const ten=g('flour-f-ten').value.trim(); if(ten) flour.tEn=ten;
+  if(g('flour-f-est').checked) flour.estimated=true;
+  try{
+    const res=await fetch('/api/flours/admin',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:window._adminPassword, flour})});
+    if(res.status===401){ alert('Feil admin-passord.'); return; }
+    const data=await res.json();
+    if(!res.ok){ alert('Kunne ikke lagre: '+(data.error||('HTTP '+res.status))); return; }
+    applyFlours(data.flours); populateMeltypeSelects(); renderFlourEditor();
+    try{ if(document.body.classList.contains('mob-mode')) mobGen(); else gen(); }catch(e){}
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); }
+}
+async function deleteFlour(v,name){
+  if(!confirm('Slette «'+name+'» fra meltypene?')) return;
+  try{
+    const res=await fetch('/api/flours/admin/'+encodeURIComponent(v)+'?password='+encodeURIComponent(window._adminPassword),{method:'DELETE'});
+    if(res.status===401){ alert('Feil admin-passord.'); return; }
+    const data=await res.json();
+    if(!res.ok){ alert('Kunne ikke slette: '+(data.error||('HTTP '+res.status))); return; }
+    applyFlours(data.flours); populateMeltypeSelects(); renderFlourEditor();
+    try{ if(document.body.classList.contains('mob-mode')) mobGen(); else gen(); }catch(e){}
+  }catch(e){ alert('Fikk ikke kontakt med serveren.'); }
 }
 async function adminResetPin(id, name){
   const newPin = prompt('Ny 4-sifret PIN for '+name+':');
@@ -5528,6 +5632,7 @@ function syncMobControls(){
   const later=new Date(now.getTime()+S.cold*3600000+14400000);
   s('mob-ed',fd(later));
   s('mob-et','18:00');
+  try{ recomputeColdMax(); }catch(e){}
   mobMethodCards();
   mobBuildHrows();
   mobBuildKrows();
@@ -6988,6 +7093,7 @@ function actionGroupHTML(){
 
 
 function syncDesktopControls(){
+  try{ recomputeColdMax(); }catch(e){}
   const msl=document.getElementById('msl');if(msl)msl.value=S.mel;
   const mdisp=document.getElementById('mdisp');if(mdisp)mdisp.textContent=S.mel+'g';
   const hsl=document.getElementById('hsl');if(hsl)hsl.value=S.hydro;
