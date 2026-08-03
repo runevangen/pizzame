@@ -2959,8 +2959,18 @@ function waitRow(s,next){
   const diffMs=next.at.getTime()-s.at.getTime()-(s.dur||0)*60000;
   if(diffMs<60000) return '';
   const mins=Math.round(diffMs/60000);
+  const sTitle=(s.title||'').toLowerCase();
   let icon,txt,val;
-  if(s.loc==='kjol'||next.loc==='kjol'){
+  // Fermentering av forspill (poolish/biga) skjer ved ROMTEMPERATUR. Uten denne
+  // grenen ble gapet feilmerket «La stå i kjøleskap» så snart neste steg var en
+  // kjøleskapspause (next.loc==='kjol'), selv om poolishen/bigaen faktisk gjærer
+  // på benken. Kjøleskaps-poolish (S.poolishCold) modnes derimot kaldt.
+  if(sTitle.includes('lag poolish')||sTitle.includes('lag biga')){
+    const fh=Math.round(mins/60), fd=Math.round(mins/60/24);
+    val=fh>=48?L(`${fd} dag${fd>1?'er':''}`,`${fd} day${fd>1?'s':''}`):fh>=1?L(`${fh} time${fh>1?'r':''}`,`${fh} hour${fh>1?'s':''}`):mins+' min';
+    if(sTitle.includes('poolish') && S.poolishCold){ icon='❄️'; txt=L('Poolish modnes kaldt','Poolish matures cold'); }
+    else { icon='🫧'; txt=sTitle.includes('biga')?L('Biga gjærer i romtemperatur','Biga ferments at room temperature'):L('Poolish gjærer i romtemperatur','Poolish ferments at room temperature'); }
+  } else if(s.loc==='kjol'||next.loc==='kjol'){
     const days=Math.round(mins/60/24);
     const hrs=Math.round(mins/60);
     icon='❄️';

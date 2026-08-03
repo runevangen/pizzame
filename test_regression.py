@@ -2886,6 +2886,37 @@ def run_behavioral_tests(page):
     ok79 = all(r79.get(k) for k in ['stable','iconsBeforeDesc','iconsBeforeSubs'])
     results.append(('step_detail_icons_anchored_do_not_jump', ok79, r79))
 
+    # v0.696: ventebanneret etter «Lag poolish» sa «La stå i kjøleskap» når planen
+    # hadde en kjøleskapspause (next.loc==='kjol'), selv om poolishen faktisk gjærer
+    # ved ROMTEMPERATUR. Poolish/biga-fermentering skal merkes som romtemperatur;
+    # kjøleskaps-poolish (S.poolishCold) skal si «modnes kaldt».
+    r80 = page.evaluate("""() => {
+      const orig={method:S.method,cold:S.poolishCold,pause:S.poolishPauseH,ph:S.poolishH};
+      window._openSub=new Set(); window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='poolish'; S.poolishCold=false; S.poolishPauseH=6; S.poolishH=14; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const steps=[...document.querySelectorAll('#mob-plan-content .mob-step')];
+      const titleOf=st=>{const t=st.querySelector('.mob-stit'); return t?t.textContent:'';};
+      const poolishStep=steps.find(st=>/lag poolish/i.test(titleOf(st)));
+      const hasPause=steps.some(st=>/kjøleskapspause/i.test(titleOf(st)));
+      const wRoom=poolishStep?((poolishStep.querySelector('.mob-swait')||{}).textContent||''):'';
+      // Kald poolish: samme steg skal nå si «modnes kaldt».
+      S.poolishCold=true; mobGen();
+      const steps2=[...document.querySelectorAll('#mob-plan-content .mob-step')];
+      const poolishStep2=steps2.find(st=>/lag poolish/i.test((st.querySelector('.mob-stit')||{}).textContent||''));
+      const wCold=poolishStep2?((poolishStep2.querySelector('.mob-swait')||{}).textContent||''):'';
+      S.method=orig.method; S.poolishCold=orig.cold; S.poolishPauseH=orig.pause; S.poolishH=orig.ph;
+      window._planChosen=true; mobGen();
+      return {
+        hadPoolishStep:!!poolishStep, hasPause,
+        roomSaysRoom: wRoom.toLowerCase().includes('romtemperatur'),
+        roomNotFridge: !wRoom.toLowerCase().includes('kjøleskap'),
+        coldSaysCold: wCold.toLowerCase().includes('kaldt')
+      };
+    }""")
+    ok80 = all(r80.get(k) for k in ['hadPoolishStep','hasPause','roomSaysRoom','roomNotFridge','coldSaysCold'])
+    results.append(('poolish_ferment_wait_labelled_room_temp_not_fridge', ok80, r80))
+
     return results
 
 
