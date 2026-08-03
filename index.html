@@ -855,8 +855,8 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
   </div>
 
   <div id="cwrap"><div class="lbl"><span id="pc-cold-lbl">Kjøleskapsheving</span> — <span id="clbl">24 timer</span></div>
-    <div class="sr"><input type="range" id="csl" min="24" max="78" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">24 timer</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span>78 timer</span></div>
+    <div class="sr"><input type="range" id="csl" min="24" max="120" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">24 timer</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span>120 timer</span></div>
   </div>
 
   <div><div class="lbl"><span id="pc-temp-lbl">Romtemperatur</span> — <span id="tlbl">22°C</span></div>
@@ -1226,7 +1226,7 @@ function restoreSetup(){
     const saved=JSON.parse(localStorage.getItem('pizzaSetup'));
     if(!saved || typeof saved!=='object') return false;
     SETUP_FIELDS.forEach(k=>{ if(saved[k]!==undefined) S[k]=saved[k]; });
-    // v0.659: eldre oppsett kan ha en kjøleskapsheving over det nye taket (78t) —
+    // v0.659: eldre oppsett kan ha en kjøleskapsheving over det nye taket (120t) —
     // klamp den ned så spak og plan ikke lover mer enn noe mel tåler.
     if(typeof S.cold==='number') S.cold=Math.max(24,Math.min(COLD_MAX,S.cold));
     return true;
@@ -1265,7 +1265,7 @@ const KOPTS=[{h:5,b:'Kveld til morgen',bEn:'Evening to morning'},{h:8,b:'Anbefal
 // en ærlig smaksstige (lenger kald heving = mer smak) i stedet for et nakent
 // tall. Slideren i Finjuster (mob-cwrap) beholdes for presis justering — begge
 // setter samme S.cold, så det er ett sannhetsgrunnlag. 48/72 ligger innenfor
-// COLD_MAX (78); et for svakt mel til den valgte tiden fanges av det myke
+// COLD_MAX (120); et for svakt mel til den valgte tiden fanges av det myke
 // meltype-hintet, akkurat som ellers i appen.
 const COLD_OPTS=[{h:24,b:'Rett fram',bEn:'Straightforward'},{h:48,b:'Mer smak',bEn:'More flavor'},{h:72,b:'Full smak',bEn:'Full flavor'}];
 // Poolish/biga sin forspill-varighet var tidligere et fast tall (14t/18t) i koden.
@@ -1323,10 +1323,12 @@ const COLDMULT={1:1.5,2:1.05,3:0.75,4:0.59,5:0.45,6:0.38};
 // jevnt mellom de SAMME, allerede uttestede punktene, omregnet til timer, slik at
 // gjærmengden også blir riktig for alt som ikke er et helt døgn.
 const COLDMULT_HOURS=[[24,1.5],[48,1.05],[72,0.75],[96,0.59],[120,0.45],[144,0.38]];
-// v0.659: øvre tak for kjøleskapsheving. Satt til 78t fordi det sterkeste
-// melet i appen (Caputo Manitoba Oro) er ratet for 24–78t — ingen mel tåler
-// mer. Den gamle grensen (144t) lot spaken love noe intet mel kunne innfri.
-const COLD_MAX=78;
+// v0.659/v0.680: øvre tak for kjøleskapsheving. Hevet fra 78t til 120t (5 døgn)
+// fordi det sterkeste melet (Caputo Manitoba Oro, W340–390) reelt tåler lange
+// kald-gjæringer. Invariant: COLD_MAX === sterkeste mels ferm.mx (nå 120). Over
+// dette tåler intet mel mer. Overmodnings-varselet (96t total) er den ærlige
+// bremsen i 96–120-sona; meltype-varselet dømmer per mel under det.
+const COLD_MAX=120;
 function coldMultForHours(h){
   const pts=COLDMULT_HOURS;
   if(h<=pts[0][0]) return pts[0][1];
@@ -1370,7 +1372,7 @@ const MELTYPER=[
   {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48}},
   {v:'regal_tipo00',t:'Regal Tipo 00',protein:'13%',w:'–',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48},estimated:true},
   {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:16,mx:54}},
-  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:78}},
+  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:120}},
   // «Annet mel / ikke i listen»: for et mel appen ikke kjenner. generic:true slår
   // av det mel-spesifikke gjærings-/hydreringsvarselet (appen kan ikke dømme et
   // spenn den ikke vet). Den tomme ferm-range-en {mn:999,mx:0} matcher aldri, så
@@ -3175,7 +3177,7 @@ function searchAllMethods(anchor){
   S.mode='end';
   S.poolishPauseH=0;
   const candidates=[];
-  // Sterkeste melets tak (Manitoba Oro = 78t). Over dette finnes ingen deig noe
+  // Sterkeste melets tak (Manitoba Oro = 120t). Over dette finnes ingen deig noe
   // mel tåler — det var kilden til «~145t / No registered flour covers this».
   const flourMax=Math.max(...MELTYPER.map(m=>m.ferm.mx));
   function timesOf(steps){
@@ -3186,7 +3188,7 @@ function searchAllMethods(anchor){
     return {startIso:startAt.toISOString(), bakeIso:bakeAt.toISOString()};
   }
   function evalCombo(label, snapshot){
-    // v0.661: kapp bare den LANGE enden — over det sterkeste melets tak (78t)
+    // v0.661: kapp bare den LANGE enden — over det sterkeste melets tak (120t)
     // finnes ingen deig noe mel tåler (kilden til ~145t-forslaget). Korte deiger
     // (under melenes anbefalte minimum) er greie: der er «mel som passer» en
     // smaks-anbefaling, ikke en fysisk grense, så dem beholder vi.
@@ -3493,7 +3495,7 @@ function renderResultBlock(containerId, label, anchorIso){
   const flours=flourMatchesForHours(top.totalHrs);
   // v0.661: tom liste kan bety to ting. Under melenes minimum (kort deig) tåler
   // ALLE mel den fint — det er bare en rask deig. Over taket (skal ikke skje nå
-  // som søket kapper ved 78t) finnes intet mel. Ikke skrem med «ingen mel» for
+  // som søket kapper ved COLD_MAX) finnes intet mel. Ikke skrem med «ingen mel» for
   // en helt grei hurtigdeig.
   const flourMin=Math.min(...MELTYPER.map(m=>m.ferm.mn));
   const flourTxt=flours.length
@@ -7303,7 +7305,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div class="mob-section-lbl"><span id="mob-cold-lbl">Kjøleskapsheving</span> — <span id="mob-clbl">24 timer</span></div>
       <div class="mob-slider-wrap" style="display:flex;align-items:center;gap:8px">
         <button onclick="stepMobSlider('mob-csl',-6,mobUCold)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
-        <input type="range" id="mob-csl" min="24" max="78" step="6" value="24" oninput="mobUCold(this.value)" style="flex:1;min-width:0">
+        <input type="range" id="mob-csl" min="24" max="120" step="6" value="24" oninput="mobUCold(this.value)" style="flex:1;min-width:0">
         <button onclick="stepMobSlider('mob-csl',6,mobUCold)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">+</button>
       </div>
     </div>

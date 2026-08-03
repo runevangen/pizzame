@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.680",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kald-hevingen kan nå gå til 120 timer (5 døgn), opp fra 78. Sterke mel (Caputo Manitoba Oro, W340–390) tåler reelt lange kald-gjæringer, så taket var unødvendig lavt. Melspesifikke og overmodnings-varslene (begge ignorerbare) informerer om den lange enden i stedet for å sperre den — overmodnings-varselet er den ærlige bremsen i 96–120-timers-sona."
+    ],
+    "changes_en": [
+      "Cold proof can now go up to 120 hours (5 days), up from 78. Strong flours (Caputo Manitoba Oro, W340–390) genuinely handle long cold fermentations, so the cap was needlessly low. The flour-specific and over-fermentation warnings (both dismissible) inform about the long end rather than blocking it — the over-fermentation warning is the honest brake in the 96–120 hour zone."
+    ]
+  },
+  {
     "v": "0.679",
     "d": "august 2026",
     "d_en": "August 2026",
