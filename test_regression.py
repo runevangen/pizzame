@@ -1264,38 +1264,22 @@ def run_behavioral_tests(page):
     )
     results.append(('setup_persists_and_restores_across_reload', ok26c, r26c))
 
-    # v6.14 (BACKLOG F5): live «nå/neste»-stripe. nextStepStripeHTML skal peke paa
-    # neste FREMTIDIGE ikke-avhakede steg med en nedtelling, vise «Alle steg gjort»
-    # naar alt er avhaket, «Naa» naar ingen fremtidige steg gjenstaar, og '' tomt.
+    # v0.686: F5-«nå/neste»-stripa er FJERNET (duplikerte lista + konkurrerte med
+    # nå-uthevingen/Fokus). Vokt at den ikke sniker seg tilbake: funksjonene/CSS-en
+    # skal være borte, og planen skal ikke inneholde en next-strip.
     r26d = page.evaluate("""() => {
-      resetTestState();
-      const now = Date.now();
-      const steps = [
-        {title:'A fortid', at:new Date(now - 3600000)},
-        {title:'Ta ut av kjøleskap', at:new Date(now + 200*60000)},
-        {title:'Strekk og stek', at:new Date(now + 999*60000)}
-      ];
-      window._checked = new Set([0]);
-      const html = nextStepStripeHTML(steps);
-
-      window._checked = new Set([0,1,2]);
-      const doneHtml = nextStepStripeHTML(steps);
-
-      window._checked = new Set();
-      const nowHtml = nextStepStripeHTML([{title:'Strekk og stek', at:new Date(now - 600000)}]);
-
-      const emptyHtml = nextStepStripeHTML([]);
-      window._checked = new Set();
-      return { html, doneHtml, nowHtml, emptyHtml };
+      window._planChosen=true; setLayout('mob'); mobShowTab('plan'); try{mobGen();}catch(e){}
+      const planHtml=(document.getElementById('mob-plan-content')||{}).innerHTML||'';
+      return {
+        stripeFnGone: typeof nextStepStripeHTML==='undefined',
+        tickerFnGone: typeof startNextStepTicker==='undefined',
+        countdownFnGone: typeof f5CountdownFromMs==='undefined',
+        noStripInPlan: !planHtml.includes('next-strip'),
+        scrollStillExists: typeof scrollToNextStep==='function'
+      };
     }""")
-    ok26d = (
-      'Neste' in r26d['html'] and 'Ta ut av kjøleskap' in r26d['html'] and
-      'om 3 t' in r26d['html'] and 'next-strip-count' in r26d['html'] and
-      'Alle steg gjort' in r26d['doneHtml'] and
-      'Nå' in r26d['nowHtml'] and 'Strekk og stek' in r26d['nowHtml'] and
-      r26d['emptyHtml'] == ''
-    )
-    results.append(('f5_next_step_stripe_shows_upcoming_step_and_countdown', ok26d, r26d))
+    ok26d = all(r26d.get(k) for k in ['stripeFnGone','tickerFnGone','countdownFnGone','noStripInPlan','scrollStillExists'])
+    results.append(('f5_next_step_stripe_removed', ok26d, r26d))
 
     # v5.98: REELL BUG (Rune) -- "jeg ser knappen, men ingenting skjer naar
     # jeg trykker". Ikke en klikk-feil: bryteren virket helt fint (label
