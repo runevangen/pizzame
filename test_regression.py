@@ -2703,6 +2703,32 @@ def run_behavioral_tests(page):
     ok71 = all(r71.get(k) for k in ['rows','allSix','excludedGone','persistedOff','headerCount','relaxedWhenAllOff','manualUntouched']) and r71.get('rows')==6
     results.append(('smartplan_method_filter_excludes_suggestions_persists_relaxes_when_empty', ok71, r71))
 
+    # v0.682: etter at kald-taket ble hevet til 120t (v0.680) løftet «lengst =
+    # best smak»-tiebreaken stadig ~115t-deiger som BARE Manitoba støtter. Nå veies
+    # mel-støtte inn (kappet ved 3): topp-forslaget foretrekker en gjæringstid
+    # flere mel takler (~48t, 5 mel) framfor 115t (1 mel) — men den lange finnes
+    # fortsatt i puljen (under «Se flere alternativer»).
+    r72 = page.evaluate("""() => {
+      const _sched=window._pizzatidSchedule;
+      try{
+        window._planChosen=true; setLayout('mob');
+        const allDay=[['00:00','23:59'],null];
+        window._pizzatidSchedule={mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay}; // null konflikter
+        const d=new Date(Date.now()+150*3600000); d.setHours(18,0,0,0); // masse tid -> alle lengder gjennomførbare
+        const res=searchAllMethods(new Date(d));
+        const top=res[0];
+        const topSupport=flourMatchesForHours(top.totalHrs).length;
+        return {
+          topSupportedByMany: topSupport>=3,
+          topNotExtreme: Math.round(top.totalHrs)<=60,
+          longStillInPool: res.some(c=>Math.round(c.totalHrs)>=110),
+          supportFieldWired: searchAllMethods.toString().includes('_support')
+        };
+      } finally { window._pizzatidSchedule=_sched; }
+    }""")
+    ok72 = all(r72.get(k) for k in ['topSupportedByMany','topNotExtreme','longStillInPool','supportFieldWired'])
+    results.append(('smartplan_prefers_broadly_supported_ferment_over_extreme_length', ok72, r72))
+
     return results
 
 

@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.682",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan slutter å over-tilby ekstremt lange gjæringer. Etter at kald-taket ble hevet til 120 timer (v0.680) foreslo den ofte ~115-timers deiger som bare Manitoba tåler, fordi «lengst = mest smak» avgjorde. Nå veies det inn hvor mange meltyper som faktisk støtter tiden: en 48-timers deig som 5 mel takler foreslås framfor en 115-timers bare ett mel takler. Innen samme dekning gjelder fortsatt lengst = mest smak, og de lange variantene ligger fremdeles under «Se flere alternativer»."
+    ],
+    "changes_en": [
+      "Smart plan stops over-offering extremely long fermentations. After the cold cap was raised to 120 hours (v0.680) it often suggested ~115-hour doughs that only Manitoba can handle, because \"longest = most flavor\" decided. Now it factors in how many flour types actually support the time: a 48-hour dough that 5 flours handle is suggested over a 115-hour one only one flour handles. Within the same coverage, longest = most flavor still applies, and the long variants remain under \"See more options\"."
+    ]
+  },
+  {
     "v": "0.681",
     "d": "august 2026",
     "d_en": "August 2026",
