@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.688",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Understeg og Tips er flyttet fra to globale brytere til sm\u00e5 ikoner PER STEG \u2014 kun p\u00e5 steg som faktisk har innhold. F\u00f8r sl\u00e5r \u00e9n bryter detaljene p\u00e5 for ALLE steg samtidig (en vegg av tekst); n\u00e5 er alt sammensl\u00e5tt som standard (en ryddig plan), og du \u00e5pner understeg eller tips der du trenger dem med \u00ab\ud83d\udccb Understeg\u00bb / \u00ab\ud83d\udca1 Tips\u00bb p\u00e5 det enkelte steget. Fokus er uendret (egen modus)."
+    ],
+    "changes_en": [
+      "Substeps and Tips have moved from two global toggles to small PER-STEP icons \u2014 only on steps that actually have content. Before, one toggle turned the details on for ALL steps at once (a wall of text); now everything is collapsed by default (a tidy plan), and you open substeps or tips where you need them via \u201c\ud83d\udccb Substeps\u201d / \u201c\ud83d\udca1 Tips\u201d on the individual step. Focus is unchanged (its own mode)."
+    ]
+  },
+  {
     "v": "0.687",
     "d": "august 2026",
     "d_en": "August 2026",

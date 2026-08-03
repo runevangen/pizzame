@@ -1125,103 +1125,49 @@ def run_behavioral_tests(page):
     )
     results.append(('step_needs_chips_match_prose_numbers_pc_and_mobile', ok25, r25))
 
-    # v5.96: Rune vil teste understeg-visningen i praksis for a bestemme seg,
-    # UTEN a miste den gamle avsnittsvisningen som backup. Ny bryter
-    # S.showSubsteps (default false -- render-lag-basisene rores derfor
-    # ikke). Tester at bryteren finnes bade pa mobil og PC, at PA viser
-    # nummererte understeg og AV viser eksakt samme avsnittstekst som for
-    # bryteren i det hele tatt fantes, at et klikk pa et understeg i et
-    # AKTIVT steg kan hakes av, og at et PASSIVT steg (Kjoleskapsheving)
-    # ikke er klikkbart -- det er ingenting a "gjore" der.
+    # v0.688 (skisse B): Understeg og Tips vises PER STEG med små ikoner — kun på
+    # steg som faktisk har innhold. Ingen global bryter lenger. Klikk et stegs
+    # 📋-ikon utvider nettopp det stegets understeg (avhakbare i aktive steg), og
+    # avsnittsteksten er fortsatt der som fallback når det er sammenslått.
     r26 = page.evaluate("""() => {
       resetTestState();
+      window._openSub=new Set(); window._openTip=new Set(); window._checkedSubsteps.clear();
       S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65; S.cold=24;
       S.mode='end'; S.temp=22; S.gjaer='torr';
-      window._checkedSubsteps.clear();
       mobShowTab('plan'); mobGen();
-
-      const descsBefore = document.querySelectorAll('#mob-plan-content .mob-sdesc').length;
-      const mobBtn = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
-      const hadMobToggle = !!mobBtn;
-
-      mobBtn.click();
-      const onState = {
-        flag: S.showSubsteps,
-        lists: document.querySelectorAll('#mob-plan-content .substep-list').length
-      };
-      const firstItem = document.querySelector('#mob-plan-content .substep-item');
-      firstItem.click();
-      const checkedAfterClick = !!document.querySelector('#mob-plan-content .substep-item.substep-done');
-
-      const coldCard = Array.from(document.querySelectorAll('#mob-plan-content .mob-step'))
-        .find(el => el.textContent.includes('Kjøleskapsheving'));
-      const coldSubstep = coldCard ? coldCard.querySelector('.substep-item') : null;
-      const passiveNotClickable = coldSubstep ? !coldSubstep.hasAttribute('onclick') : null;
-
-      mobBtn.click();
-      const offState = {
-        flag: S.showSubsteps,
-        lists: document.querySelectorAll('#mob-plan-content .substep-list').length,
-        descs: document.querySelectorAll('#mob-plan-content .mob-sdesc').length
-      };
-
-      // PC-siden skal ha samme bryter, delt tilstand
-      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
-      gen();
-      const pcBtn = document.querySelector('#substep-toggle');
-      document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
-
-      window._checkedSubsteps.clear();
-      return {
-        descsBefore, hadMobToggle, onState, checkedAfterClick, passiveNotClickable, offState,
-        hadPcToggle: !!pcBtn
-      };
+      const plan=()=>document.getElementById('mob-plan-content');
+      const noGlobal = !plan().innerHTML.includes('Vis understeg') && !plan().innerHTML.includes('Understeg PÅ') && !plan().innerHTML.includes('Vis forklaringer');
+      const icons=[...plan().querySelectorAll('.step-detail-btn')];
+      const hasIcons=icons.length>0;
+      const subBtn=icons.find(b=>b.textContent.includes('Understeg'));
+      const listsBefore=plan().querySelectorAll('.substep-list').length;
+      if(subBtn) subBtn.click();
+      const listsAfter=plan().querySelectorAll('.substep-list').length;
+      const expandsOne = listsAfter===listsBefore+1;
+      const item=plan().querySelector('.substep-item[onclick]');
+      let checkedWorks=null;
+      if(item){ item.click(); checkedWorks=!!plan().querySelector('.substep-item.substep-done'); }
+      window._openSub=new Set(); window._openTip=new Set(); window._checkedSubsteps.clear();
+      return { noGlobal, hasIcons, expandsOne, checkedWorks };
     }""")
-    ok26 = (
-      r26['descsBefore'] == 7 and r26['hadMobToggle'] and
-      r26['onState']['flag'] is True and r26['onState']['lists'] == 7 and
-      r26['checkedAfterClick'] and r26['passiveNotClickable'] and
-      r26['offState']['flag'] is False and r26['offState']['lists'] == 0 and
-      r26['offState']['descs'] == 7 and r26['hadPcToggle']
-    )
-    results.append(('substep_toggle_switches_view_and_old_view_is_unchanged', ok26, r26))
+    ok26 = (r26['noGlobal'] and r26['hasIcons'] and r26['expandsOne'] and r26['checkedWorks'])
+    results.append(('substep_and_tips_shown_per_step_via_icons', ok26, r26))
 
-    # v6.13 (BACKLOG F1/F2): understeg-avhaking huskes na -- lastes med lagret
-    # deig (openBake), og understeg-VISNINGEN huskes over reload (localStorage).
-    # Etiketten skal ikke lenger ramme dette som en "utproving".
+    # v6.13 (BACKLOG F1): understeg-avhaking huskes — lastes med lagret deig
+    # (openBake). (F2 «husk visning globalt» utgikk i v0.688 (skisse B): understeg
+    # vises nå per steg, transient — ikke en global husket modus.)
     r26b = page.evaluate("""() => {
       resetTestState();
-      // F1 (load-vei): openBake hydrerer _checkedSubsteps fra den lagrede deigen.
       window._bakesCache = [{ id:'bake_test_ff', name:'Test', status:'active',
         config:{...S}, anchorMode:'start', anchorISO:new Date().toISOString(),
         checkedSteps:[0,1], checkedIngredients:['Mel'], checkedSubsteps:['0-0','2-1'] }];
       try{ openBake('bake_test_ff'); }catch(e){}
       const loadedSubsteps = [...window._checkedSubsteps].sort();
-
-      // F2: toggleSubsteps husker valget i localStorage.
-      try{ localStorage.removeItem('pizzaSubsteps'); }catch(e){}
-      const before = !!S.showSubsteps;
-      toggleSubsteps();
-      let persisted=null; try{ persisted = localStorage.getItem('pizzaSubsteps'); }catch(e){}
-      const flagFlipped = !!S.showSubsteps !== before;
-
-      // Etiketten er ikke lenger "Prov"/"utproving".
-      document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
-      gen();
-      const pcLabel = (document.querySelector('#substep-toggle')||{}).textContent || '';
-      document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
-
-      // rydd opp saa vi ikke lekker til andre tester
-      S.showSubsteps=false; window._activeDeigId=null; window._checkedSubsteps=new Set();
-      try{ localStorage.removeItem('pizzaSubsteps'); }catch(e){}
-      return { loadedSubsteps, persisted, flagFlipped, pcLabel };
+      window._activeDeigId=null; window._checkedSubsteps=new Set();
+      return { loadedSubsteps };
     }""")
-    ok26b = (
-      r26b['loadedSubsteps'] == ['0-0','2-1'] and
-      r26b['persisted'] == '1' and r26b['flagFlipped'] and
-      'Prøv' not in r26b['pcLabel'] and 'utprøving' not in r26b['pcLabel']
-    )
-    results.append(('substep_progress_persists_and_view_is_remembered', ok26b, r26b))
+    ok26b = (r26b['loadedSubsteps'] == ['0-0','2-1'])
+    results.append(('substep_checkoffs_load_from_saved_dough', ok26b, r26b))
 
     # v6.13 (BACKLOG F3): paabegynt oppsett persisteres til localStorage og
     # rehydreres. Kun for USAGDE oppsett (no-op naar _activeDeigId er satt);
@@ -1293,23 +1239,24 @@ def run_behavioral_tests(page):
     # spesifikt, ikke bare at knappen reagerer.
     r27 = page.evaluate("""() => {
       resetTestState();
+      window._openSub=new Set(); window._openTip=new Set();
       S.type='napoletana'; S.method='kveld'; S.kveldH=15; S.mel=500; S.hydro=65;
       S.mode='end'; S.temp=22; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
+      const n = document.querySelectorAll('#mob-plan-content .mob-step').length;
       const descsBefore = document.querySelectorAll('#mob-plan-content .mob-sdesc').length;
-      const btn = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
-      btn.click();
+      window._openSub=new Set([...Array(n).keys()]); mobGen(); // åpne alle steg per-steg
       const result = {
-        descsBefore,
+        descsBefore, n,
         substepLists: document.querySelectorAll('#mob-plan-content .substep-list').length,
         descsAfter: document.querySelectorAll('#mob-plan-content .mob-sdesc').length,
         firstItems: document.querySelector('#mob-plan-content .mob-step').querySelectorAll('.substep-item').length
       };
-      S.showSubsteps=false; mobGen();
+      window._openSub=new Set(); mobGen();
       return result;
     }""")
     ok27 = (
-      r27['descsBefore'] == 5 and r27['substepLists'] == 5 and
+      r27['n'] == 5 and r27['descsBefore'] == 5 and r27['substepLists'] == 5 and
       r27['descsAfter'] == 0 and r27['firstItems'] == 4
     )
     results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
@@ -1328,78 +1275,68 @@ def run_behavioral_tests(page):
         ['kveld', {kveldH:10}], ['mania', {}]
       ];
       const out = {};
+      // Åpne ALLE steg per-steg (skisse B) i stedet for en global bryter.
+      const openAll=()=>{ const n=document.querySelectorAll('#mob-plan-content .mob-step').length; window._openSub=new Set([...Array(n).keys()]); mobGen(); return n; };
       scenarios.forEach(([method, extra]) => {
+        window._openSub=new Set();
         S.type='napoletana'; S.method=method; S.mel=500; S.hydro=65;
         S.mode='end'; S.temp=22; S.gjaer='torr';
         Object.keys(extra).forEach(k => S[k]=extra[k]);
         mobShowTab('plan'); mobGen();
-        const total = document.querySelectorAll('#mob-plan-content .mob-step').length;
-        const btn = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
-        btn.click();
+        const total = openAll();
         out[method] = {
           total,
           lists: document.querySelectorAll('#mob-plan-content .substep-list').length,
           descsLeft: document.querySelectorAll('#mob-plan-content .mob-sdesc').length
         };
-        S.showSubsteps=false; mobGen();
       });
+      window._openSub=new Set();
       S.type='ingenelting'; S.mel=500; S.hydro=75; S.mode='end'; S.temp=22; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
-      const btn2 = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
-      btn2.click();
+      const total2 = openAll();
       out['ingenelting'] = {
-        total: document.querySelectorAll('#mob-plan-content .mob-step').length,
+        total: total2,
         lists: document.querySelectorAll('#mob-plan-content .substep-list').length,
         descsLeft: document.querySelectorAll('#mob-plan-content .mob-sdesc').length
       };
-      S.showSubsteps=false; S.type='napoletana'; mobGen();
+      window._openSub=new Set(); S.type='napoletana'; mobGen();
       return out;
     }""")
     ok28 = all(r28[m]['lists'] == r28[m]['total'] and r28[m]['descsLeft'] == 0 for m in r28)
     results.append(('every_method_has_full_substep_coverage', ok28, r28))
 
-    # v6.00: Rune ba om aa flytte Understeg-knappen ved siden av Juster, og
-    # legge til en Tips-bryter paa samme sted (skisse B: navn alene paa topp,
-    # egen knapperad under med Juster+Understeg+Tips). Tester at alle tre
-    # finnes sammen i Tidsplan-visningen, at Tips-bryteren FAKTISK virker paa
-    # mobil naa (den var kun tilgjengelig paa PC for denne endringen), og at
-    # wizardens kompakte statuslinjer (Metode/Sjekk/Finjuster) beholder Juster
-    # inline uendret UTEN aa faa Understeg/Tips-rot -- de tre hoerer kun hjemme
-    # i selve Tidsplan-fanen.
+    # v0.688 (skisse B): Understeg/Tips flyttet fra globale verktøyrad-knapper til
+    # PER-STEG-ikoner. Verktøyraden i Tidsplan har nå KUN Juster; ingen global
+    # understeg/tips-bryter. Tips vises per steg: klikk et stegs 💡-ikon viser
+    # nettopp det stegets tips-boks. Wizardens kompakte statuslinjer beholder
+    # Juster inline, uten understeg/tips-rot.
     r29 = page.evaluate("""() => {
       resetTestState();
+      window._openSub=new Set(); window._openTip=new Set();
       S.type='napoletana'; S.method='kveld'; S.kveldH=15; S.mel=500; S.hydro=65;
       S.mode='end'; S.temp=22; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
-
-      const juster = document.querySelector('#mob-plan-content button[onclick="wizOpenFinjusterFromPlan()"]');
-      const understeg = document.querySelector('#mob-plan-content button[onclick="toggleSubsteps()"]');
-      const tips = document.querySelector('#mob-plan-content button[onclick="toggleHelpFromPlan()"]');
-      const allThreePresent = !!(juster && understeg && tips);
-
-      const tipsBoxesBefore = document.querySelectorAll('#mob-plan-content .mob-stip').length;
-      tips.click();
-      const tipsBoxesAfterOff = document.querySelectorAll('#mob-plan-content .mob-stip').length;
-      document.querySelector('#mob-plan-content button[onclick="toggleHelpFromPlan()"]').click();
-      const tipsBoxesRestored = document.querySelectorAll('#mob-plan-content .mob-stip').length;
+      const plan=()=>document.getElementById('mob-plan-content');
+      const juster = !!plan().querySelector('button[onclick="wizOpenFinjusterFromPlan()"]');
+      const noGlobalToggles = !plan().querySelector('button[onclick="toggleSubsteps()"]') && !plan().querySelector('button[onclick="toggleHelpFromPlan()"]');
+      // Tips per steg: finn et stegs Tips-ikon, klikk, verifiser tips-boks kom
+      const tipsBoxesBefore = plan().querySelectorAll('.mob-stip').length;
+      const tipBtn=[...plan().querySelectorAll('.step-detail-btn')].find(b=>b.textContent.includes('Tips'));
+      if(tipBtn) tipBtn.click();
+      const tipsBoxesAfter = plan().querySelectorAll('.mob-stip').length;
 
       mobShowTab('settings'); wizGoto(2);
       const wizHasJuster = !!document.querySelector('#wiz-status-step2 button[onclick="wizOpenFinjusterFromPlan()"]');
-      const wizHasUndersteg = !!document.querySelector('#wiz-status-step2 button[onclick="toggleSubsteps()"]');
-      const wizHasTips = !!document.querySelector('#wiz-status-step2 button[onclick="toggleHelpFromPlan()"]');
-
-      return {
-        allThreePresent, tipsBoxesBefore, tipsBoxesAfterOff, tipsBoxesRestored,
-        wizHasJuster, wizHasUndersteg, wizHasTips
-      };
+      const wizHasToggles = !!document.querySelector('#wiz-status-step2 button[onclick="toggleSubsteps()"]') || !!document.querySelector('#wiz-status-step2 button[onclick="toggleHelpFromPlan()"]');
+      window._openTip=new Set();
+      return { juster, noGlobalToggles, tipsBoxesBefore, tipsBoxesAfter, hadTipBtn:!!tipBtn, wizHasJuster, wizHasToggles };
     }""")
     ok29 = (
-      r29['allThreePresent'] and r29['tipsBoxesBefore'] > 0 and
-      r29['tipsBoxesAfterOff'] == 0 and
-      r29['tipsBoxesRestored'] == r29['tipsBoxesBefore'] and
-      r29['wizHasJuster'] and not r29['wizHasUndersteg'] and not r29['wizHasTips']
+      r29['juster'] and r29['noGlobalToggles'] and r29['hadTipBtn'] and
+      r29['tipsBoxesBefore'] == 0 and r29['tipsBoxesAfter'] > 0 and
+      r29['wizHasJuster'] and not r29['wizHasToggles']
     )
-    results.append(('juster_understeg_tips_grouped_in_tidsplan_toolbar', ok29, r29))
+    results.append(('plan_toolbar_juster_only_details_moved_per_step', ok29, r29))
 
     # v6.01: "Start ny deig"-knapp. doReset() var alltid i koden men koblet
     # til INGEN knapp -- testet direkte for bygging (26.07) og fant to reelle
@@ -2333,11 +2270,15 @@ def run_behavioral_tests(page):
     # role=checkbox med aria-checked + tastaturstøtte (Enter/Space), og den live-
     # oppdaterende statuslinja har aria-live så skjermlesere hører endringene.
     r60 = page.evaluate("""() => {
-      const orig={chosen:window._planChosen,type:S.type,method:S.method,subs:S.showSubsteps};
+      const orig={chosen:window._planChosen,type:S.type,method:S.method,openSub:window._openSub};
       try{
         const ing=recipeRowsHTML([{k:'Mel',v:'500g'}], true);
         const sb=deigStatusBarHTML([{title:'x',at:new Date(),passive:false}], false, false);
-        window._planChosen=true; S.type='napoletana'; S.method='standard'; S.showSubsteps=true;
+        window._planChosen=true; S.type='napoletana'; S.method='standard';
+        try{ mobGen(); }catch(e){}
+        // v0.688: understeg vises per steg — åpne alle så a11y-attributtene rendres.
+        const n=document.querySelectorAll('#mob-plan-content .mob-step').length;
+        window._openSub=new Set([...Array(n).keys()]);
         try{ mobGen(); }catch(e){}
         const plan=document.getElementById('mob-plan-content').innerHTML;
         return {
@@ -2346,7 +2287,7 @@ def run_behavioral_tests(page):
           stepA11y: plan.includes('role=\"checkbox\"') && plan.includes('onkeydown=\"if(event.key'),
           substepA11y: plan.includes('substep-item') && /substep-item[^>]*role=\"checkbox\"/.test(plan)
         };
-      } finally { window._planChosen=orig.chosen;S.type=orig.type;S.method=orig.method;S.showSubsteps=orig.subs; }
+      } finally { window._planChosen=orig.chosen;S.type=orig.type;S.method=orig.method;window._openSub=orig.openSub||new Set(); }
     }""")
     ok60 = all(r60.get(k) for k in ['ingA11y','sbLive','stepA11y','substepA11y'])
     results.append(('checkboxes_keyboard_accessible_and_statusbar_aria_live', ok60, r60))
