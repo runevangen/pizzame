@@ -2933,17 +2933,22 @@ def run_behavioral_tests(page):
       const formWhy=form?form.why:''; const coldWhy=cold?cold.why:'';
       const whyDistinct = !!formWhy && !!coldWhy && formWhy!==coldWhy;
       const formAboutRounding = /rund/i.test(formWhy);
-      const fkTemp = WHY.fk.includes('2–5°C') && !WHY.fk.includes('2–8°C');
-      const coldTip = /25–30/.test(TIP.intoFridge);
+      // v0.698: kjøleskapstemp harmonisert til 0–4°C (Mattilsynet), ikke 2–5/2–8.
+      const fkTemp = WHY.fk.includes('0–4°C') && !WHY.fk.includes('2–5°C') && !WHY.fk.includes('2–8°C');
+      // v0.698: den private +25–30 %-gjærregelen fjernet fra delt tips; termometer-
+      // rådet beholdt; ingen usammenhengende «kaldere enn det»-logikk.
+      const fridgeTip = /termometer/.test(TIP.intoFridge)
+        && !/25–30/.test(TIP.intoFridge) && !/øk gjæren/i.test(TIP.intoFridge)
+        && !/kaldere enn det/i.test(TIP.intoFridge);
       S.method='poolish'; S.poolishCold=false;
       S.poolishH=14; const m14=prefermentYeastMult();
       S.poolishH=15; const m15=prefermentYeastMult();
       S.poolishH=16; const m16=prefermentYeastMult();
       S.method=orig.method;S.oven=orig.oven;S.poolishH=orig.ph;S.type=orig.type;S.poolishCold=orig.cold; mobGen();
-      return { whyDistinct, formAboutRounding, fkTemp, coldTip, m14, m15, m16 };
+      return { whyDistinct, formAboutRounding, fkTemp, fridgeTip, m14, m15, m16 };
     }""")
     ok81 = (
-      r81['whyDistinct'] and r81['formAboutRounding'] and r81['fkTemp'] and r81['coldTip'] and
+      r81['whyDistinct'] and r81['formAboutRounding'] and r81['fkTemp'] and r81['fridgeTip'] and
       r81['m14'] == 1.0 and r81['m15'] < r81['m14'] and r81['m16'] < 0.85
     )
     results.append(('recipe_review_fixes_form_why_yeast_curve_temp_tip', ok81, r81))
