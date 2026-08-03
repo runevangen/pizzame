@@ -3244,7 +3244,15 @@ function searchAllMethods(anchor){
   const usingFallback=!feasible.length;
   const pool=feasible.length ? feasible : base;
   pool.forEach(c=>{ c.feasible=new Date(c.startIso).getTime()>=now; });
-  // Normalt: færrest tidskonflikter, deretter lengst gjæring (best smak).
+  // v0.682: hvor mange registrerte mel som FAKTISK tåler forslagets totale
+  // gjæringstid, kappet ved 3 = «komfortabelt dekket». Etter at taket ble hevet
+  // til 120t (v0.680) løftet «lengst = best smak»-tiebreaken stadig ~115t-deiger
+  // som BARE Manitoba støtter. Nå foretrekker vi tider flere mel takler: en 48t
+  // deig (5 mel) slår en 115t (1 mel) — men innen samme deknings-nivå gjelder
+  // fortsatt lengst = mest smak. Kappet gjør at 24t og 48t er «like godt dekket»,
+  // så den lengste av dem (48t) vinner, ikke den korteste.
+  pool.forEach(c=>{ c._support=Math.min(flourMatchesForHours(c.totalHrs).length,3); });
+  // Normalt: færrest tidskonflikter, så bredest mel-støtte, så lengst gjæring.
   // v0.661: MEN når ingenting kan starte nå (alle umulige), er «lengst gjæring»
   // helt feil tiebreak — den løftet en flere-døgns deig som skulle startet for
   // lenge siden helt til topps. Ranger heller de umulige etter hvilken som
@@ -3253,6 +3261,7 @@ function searchAllMethods(anchor){
   pool.sort((a,b)=>{
     if(a.violations!==b.violations) return a.violations-b.violations;
     if(usingFallback) return new Date(b.startIso).getTime()-new Date(a.startIso).getTime();
+    if(a._support!==b._support) return b._support-a._support;
     return b.totalHrs-a.totalHrs;
   });
   return pool;
