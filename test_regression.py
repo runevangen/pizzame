@@ -1143,16 +1143,21 @@ def run_behavioral_tests(page):
       const hasIcons=icons.length>0;
       const subBtn=icons.find(b=>b.textContent.trim()==='📋');
       const listsBefore=plan().querySelectorAll('.substep-list').length;
+      // v0.693: understeg ERSTATTER desc — åpner du ett stegs 📋 forsvinner nettopp
+      // det stegets avsnittstekst (mob-sdesc), og sjekklista tar plassen.
+      const descsBefore=plan().querySelectorAll('.mob-sdesc').length;
       if(subBtn) subBtn.click();
       const listsAfter=plan().querySelectorAll('.substep-list').length;
+      const descsAfter=plan().querySelectorAll('.mob-sdesc').length;
       const expandsOne = listsAfter===listsBefore+1;
+      const descReplaced = descsAfter === descsBefore - 1;
       const item=plan().querySelector('.substep-item[onclick]');
       let checkedWorks=null;
       if(item){ item.click(); checkedWorks=!!plan().querySelector('.substep-item.substep-done'); }
       window._openSub=new Set(); window._openTip=new Set(); window._checkedSubsteps.clear();
-      return { noGlobal, hasIcons, expandsOne, checkedWorks };
+      return { noGlobal, hasIcons, expandsOne, descReplaced, checkedWorks };
     }""")
-    ok26 = (r26['noGlobal'] and r26['hasIcons'] and r26['expandsOne'] and r26['checkedWorks'])
+    ok26 = (r26['noGlobal'] and r26['hasIcons'] and r26['expandsOne'] and r26['descReplaced'] and r26['checkedWorks'])
     results.append(('substep_and_tips_shown_per_step_via_icons', ok26, r26))
 
     # v6.13 (BACKLOG F1): understeg-avhaking huskes — lastes med lagret deig
@@ -1246,7 +1251,8 @@ def run_behavioral_tests(page):
       S.mode='end'; S.temp=22; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
       const n = document.querySelectorAll('#mob-plan-content .mob-step').length;
-      // v0.691: selve stegteksten (desc) vises alltid — understeg ligger bak 📋.
+      // v0.691: selve stegteksten (desc) vises som standard. v0.693: når understeg
+      // åpnes ERSTATTER de desc — så etter at alle er åpnet er det ingen desc igjen.
       const descsBefore = document.querySelectorAll('#mob-plan-content .mob-sdesc').length;
       window._openSub=new Set([...Array(n).keys()]); mobGen(); // åpne alle steg per-steg
       const result = {
@@ -1260,7 +1266,7 @@ def run_behavioral_tests(page):
     }""")
     ok27 = (
       r27['n'] == 5 and r27['descsBefore'] == 5 and r27['substepLists'] == 5 and
-      r27['descsAfter'] == 5 and r27['firstItems'] == 4
+      r27['descsAfter'] == 0 and r27['firstItems'] == 4
     )
     results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
 
@@ -1305,8 +1311,9 @@ def run_behavioral_tests(page):
       window._openSub=new Set(); S.type='napoletana'; mobGen();
       return out;
     }""")
-    # v0.691: desc vises nå alltid ved siden av understeg — hvert steg har begge.
-    ok28 = all(r28[m]['lists'] == r28[m]['total'] and r28[m]['descsLeft'] == r28[m]['total'] for m in r28)
+    # v0.693: understeg erstatter desc når de åpnes — så med alle understeg åpne er
+    # det ingen gjenværende avsnittstekst, og hvert steg har en understeg-liste.
+    ok28 = all(r28[m]['lists'] == r28[m]['total'] and r28[m]['descsLeft'] == 0 for m in r28)
     results.append(('every_method_has_full_substep_coverage', ok28, r28))
 
     # v0.688 (skisse B): Understeg/Tips flyttet fra globale verktøyrad-knapper til

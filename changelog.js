@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.693",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Understeg erstatter nå prosateksten i stedet for å komme i tillegg. Avsnittsteksten og understegene på et steg er i praksis samme innhold — samme oppskrift, én gang som paragraf og én gang som punktliste. Før viste vi begge når du åpnet 📋, så du leste det samme to ganger. Nå viker prosateksten for sjekklista når du åpner understeg (akkurat som Fokus-modus allerede gjør), og kommer tilbake når du lukker. Steg uten understeg beholder teksten som før. Ett format per steg, ingen dobbeltlesing."
+    ],
+    "changes_en": [
+      "Sub-steps now replace the prose text instead of appearing in addition to it. A step's paragraph and its sub-steps are essentially the same content — the same recipe, once as a paragraph and once as a checklist. Previously we showed both when you opened 📋, so you read the same thing twice. Now the prose gives way to the checklist when you open sub-steps (just like Focus mode already does), and comes back when you close them. Steps without sub-steps keep their text as before. One format per step, no double reading."
+    ]
+  },
+  {
     "v": "0.692",
     "d": "august 2026",
     "d_en": "August 2026",

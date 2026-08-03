@@ -2736,17 +2736,20 @@ function renderSteps(steps, mode='desktop'){
         conflictFlag=` <span class="conflict-flag"${click} title="${L(`Dette steget faller i ${winLbl} — se detaljer og valg i wizardens Sjekk`,`This step falls in ${winLbl} — see details and options in the wizard's Check`)}">⚠ ${lbl}</span>`;
       }
     }
-    // Skisse B (justert): kortet viser selve stegteksten (desc) som før — det er
-    // «hva du gjør». Detaljene ligger bak rene ikoner på samme linje: 🧾 ingredienser,
-    // 📋 understeg, 💡 tips. Ingen ikon for innhold steget ikke har; ingenting av
-    // detaljene er utvidet som standard.
+    // Skisse B (justert): kortet viser selve stegteksten (desc) som «hva du gjør».
+    // Detaljene ligger bak rene ikoner på samme linje: 🧾 ingredienser, 📋 understeg,
+    // 💡 tips. Ingen ikon for innhold steget ikke har; ingenting av detaljene er
+    // utvidet som standard.
+    // v0.693: understeg ERSTATTER prosateksten (som i Fokus) — desc og understeg er
+    // i praksis samme innhold, så åpner du 📋 viker avsnittet for sjekklista i stedet
+    // for å vise begge. Steg uten understeg beholder desc som før.
     const hasNeeds = !!(s.needs && s.needs.length);
     const hasSub = !!(s.substeps && s.substeps.length);
     const hasTip = !!(s.why || s.tip);
     const ingOpen = window._openIng.has(i);
     const subOpen = window._openSub.has(i);
     const tipOpen = window._openTip.has(i);
-    const descBlock = s.desc ? `<div class="${C.desc}">${s.desc}</div>` : '';
+    const descBlock = (s.desc && !(hasSub && subOpen)) ? `<div class="${C.desc}">${s.desc}</div>` : '';
     const detailIcons = (hasNeeds||hasSub||hasTip)
       ? `<div class="step-detail-icons">`
         + (hasNeeds?`<button type="button" class="step-detail-btn step-detail-ico${ingOpen?' on':''}" aria-pressed="${ingOpen}" aria-label="${L('Ingredienser','Ingredients')}" title="${L('Ingredienser','Ingredients')}" onclick="toggleStepDetail('ing',${i})">🧾</button>`:'')
