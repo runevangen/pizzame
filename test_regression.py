@@ -2109,31 +2109,32 @@ def run_behavioral_tests(page):
             and r49.get('shown') and r49.get('hasLatest') and r49.get('closes'))
     results.append(('version_number_clickable_opens_changelog', ok49, r49))
 
-    # v0.659: kjøleskaps-spaken gikk til 144t, men det sterkeste melet (Manitoba
-    # Oro) er ratet for maks 78t — ingen mel tåler mer. Spaken er kappet ved 78t
-    # (COLD_MAX), som matcher det sterkeste melets ferm.mx. Eldre oppsett med en
-    # høyere verdi klampes ned ved restore, og steg-knappen stopper på 78.
+    # v0.680: kald-spaken går nå til 120t (5 døgn) — sterke mel (Manitoba Oro,
+    # W340–390) tåler reelt lange kald-gjæringer, så taket er hevet fra 78 til 120.
+    # Invarianten holder: COLD_MAX === sterkeste mels ferm.mx (nå 120). Eldre,
+    # høyere oppsett klampes fortsatt ned ved restore, og steg-knappen stopper på
+    # COLD_MAX. Overmodnings-varselet (96t total) er den ærlige bremsen i 96–120-sona.
     r50 = page.evaluate("""() => {
       const _cold=S.cold, _saved=null;
       try{
         const pcMax=document.getElementById('csl').getAttribute('max');
         const mobMax=document.getElementById('mob-csl').getAttribute('max');
         const strongestFerm=Math.max(...MELTYPER.map(m=>m.ferm.mx));
-        const capMatchesStrongest = (COLD_MAX===strongestFerm) && pcMax==='78' && mobMax==='78';
+        const capMatchesStrongest = (COLD_MAX===strongestFerm) && pcMax==='120' && mobMax==='120';
         // steg-knappen klamper ved COLD_MAX
-        S.cold=78; stepColdWiz(1); const stepClamped=S.cold;
+        S.cold=120; stepColdWiz(1); const stepClamped=S.cold;
         // restore klamper ned et eldre, for høyt oppsett
         const orig=localStorage.getItem('pizzaSetup');
-        localStorage.setItem('pizzaSetup', JSON.stringify({cold:144}));
+        localStorage.setItem('pizzaSetup', JSON.stringify({cold:200}));
         restoreSetup(); const restoreClamped=S.cold;
         if(orig===null) localStorage.removeItem('pizzaSetup'); else localStorage.setItem('pizzaSetup',orig);
         return {pcMax, mobMax, strongestFerm, COLD_MAX, capMatchesStrongest, stepClamped, restoreClamped};
       } finally { S.cold=_cold; }
     }""")
-    ok50 = (r50.get('capMatchesStrongest') and r50.get('COLD_MAX')==78
-            and r50.get('strongestFerm')==78 and r50.get('stepClamped')==78
-            and r50.get('restoreClamped')==78)
-    results.append(('cold_ferment_slider_capped_at_strongest_flour_78h', ok50, r50))
+    ok50 = (r50.get('capMatchesStrongest') and r50.get('COLD_MAX')==120
+            and r50.get('strongestFerm')==120 and r50.get('stepClamped')==120
+            and r50.get('restoreClamped')==120)
+    results.append(('cold_ferment_slider_capped_at_strongest_flour_120h', ok50, r50))
 
     # v0.660: endringsloggen er tospråklig. Hver entry har d_en + changes_en med
     # like mange punkter som den norske, og buildChangelogHTML velger språk etter
@@ -2174,7 +2175,7 @@ def run_behavioral_tests(page):
         const pool=searchAllMethods(anchor);
         const top=pool[0];
         const flourMax=Math.max(...MELTYPER.map(m=>m.ferm.mx));
-        // fix (a): ingen kandidat overstiger sterkeste mel (78t) — dreper 145t-bugen
+        // fix (a): ingen kandidat overstiger sterkeste mel (120t) — dreper 145t-bugen
         const noneExceedFlourMax=pool.every(c=>c.totalHrs<=flourMax);
         // fix (b): blant kandidatene med færrest konflikter starter toppen nærmest nå
         const minViol=top.violations;
@@ -2610,7 +2611,7 @@ def run_behavioral_tests(page):
     }""")
     ok68 = (r68.get('startHasIgnore') and not r68.get('endHasIgnore') and r68.get('dismissedHides')
             and r68.get('nuvolaWarns') and r68.get('annetSuppressed') and r68.get('sbNo') and r68.get('sbEn')
-            and r68.get('coldCap')==78 and not r68.get('annetInSmart'))
+            and r68.get('coldCap')==120 and not r68.get('annetInSmart'))
     results.append(('warnings_dismissible_in_now_mode_and_generic_flour_suppresses_meltype', ok68, r68))
 
     # v0.678: overmodnings-varselet (flour-agnostisk fysikk) fyrer fortsatt for
