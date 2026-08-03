@@ -1095,14 +1095,17 @@ def run_behavioral_tests(page):
     # variabler, kan ikke drifte fra hverandre), for bade Kveldsdeig (steget
     # fra Runes skjermbilde) og Standard, og at PC- og mobilrendring viser
     # identiske chips siden renderSteps() er delt.
+    # v0.690 (skisse B): ingrediens-chips vises nå PÅ FORESPØRSEL (bak «🧾 N
+    # ingredienser»). Åpne dem per steg (_openIng) og sjekk at tallene stemmer, og
+    # at PC- og mobilrendring viser identiske chips siden renderSteps() er delt.
     r25 = page.evaluate("""() => {
       resetTestState();
+      window._openIng=new Set([0]); window._openSub=new Set(); window._openTip=new Set();
       S.type='napoletana'; S.method='kveld'; S.kveldH=15; S.mel=500; S.hydro=65;
       S.mode='end'; S.temp=22; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
       const mobStep = document.querySelector('#mob-plan-content .mob-step');
       const mobChips = mobStep ? Array.from(mobStep.querySelectorAll('.mob-needchip')).map(c=>c.textContent) : [];
-      const mobDesc = mobStep ? mobStep.querySelector('.mob-sdesc').textContent : '';
 
       document.body.classList.remove('mob-mode'); document.body.classList.add('pc-mode');
       gen();
@@ -1110,20 +1113,19 @@ def run_behavioral_tests(page):
       const pcChips = pcStep ? Array.from(pcStep.querySelectorAll('.needchip')).map(c=>c.textContent) : [];
       document.body.classList.remove('pc-mode'); document.body.classList.add('mob-mode');
 
-      S.method='standard'; S.cold=48;
+      S.method='standard'; S.cold=48; window._openIng=new Set([0]);
       mobGen();
       const stdStep = document.querySelector('#mob-plan-content .mob-step');
       const stdChips = stdStep ? Array.from(stdStep.querySelectorAll('.mob-needchip')).map(c=>c.textContent) : [];
-
-      return { mobChips, mobDesc, pcChips, stdChips };
+      window._openIng=new Set();
+      return { mobChips, pcChips, stdChips };
     }""")
     ok25 = (
       r25['mobChips'] == ['💧 325g vann', '🫙 1.01g tørrgjær', '🌾 500g mel', '🧂 14g salt'] and
-      all(chip.split(' ')[1] in r25['mobDesc'] for chip in r25['mobChips']) and
       r25['pcChips'] == r25['mobChips'] and
       len(r25['stdChips']) > 0
     )
-    results.append(('step_needs_chips_match_prose_numbers_pc_and_mobile', ok25, r25))
+    results.append(('step_needs_chips_correct_and_pc_mobile_parity', ok25, r25))
 
     # v0.688 (skisse B): Understeg og Tips vises PER STEG med små ikoner — kun på
     # steg som faktisk har innhold. Ingen global bryter lenger. Klikk et stegs
@@ -1139,7 +1141,7 @@ def run_behavioral_tests(page):
       const noGlobal = !plan().innerHTML.includes('Vis understeg') && !plan().innerHTML.includes('Understeg PÅ') && !plan().innerHTML.includes('Vis forklaringer');
       const icons=[...plan().querySelectorAll('.step-detail-btn')];
       const hasIcons=icons.length>0;
-      const subBtn=icons.find(b=>b.textContent.includes('Understeg'));
+      const subBtn=icons.find(b=>b.textContent.trim()==='📋');
       const listsBefore=plan().querySelectorAll('.substep-list').length;
       if(subBtn) subBtn.click();
       const listsAfter=plan().querySelectorAll('.substep-list').length;
@@ -1256,7 +1258,7 @@ def run_behavioral_tests(page):
       return result;
     }""")
     ok27 = (
-      r27['n'] == 5 and r27['descsBefore'] == 5 and r27['substepLists'] == 5 and
+      r27['n'] == 5 and r27['descsBefore'] == 0 and r27['substepLists'] == 5 and
       r27['descsAfter'] == 0 and r27['firstItems'] == 4
     )
     results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
@@ -1321,7 +1323,7 @@ def run_behavioral_tests(page):
       const noGlobalToggles = !plan().querySelector('button[onclick="toggleSubsteps()"]') && !plan().querySelector('button[onclick="toggleHelpFromPlan()"]');
       // Tips per steg: finn et stegs Tips-ikon, klikk, verifiser tips-boks kom
       const tipsBoxesBefore = plan().querySelectorAll('.mob-stip').length;
-      const tipBtn=[...plan().querySelectorAll('.step-detail-btn')].find(b=>b.textContent.includes('Tips'));
+      const tipBtn=[...plan().querySelectorAll('.step-detail-btn')].find(b=>b.textContent.trim()==='💡');
       if(tipBtn) tipBtn.click();
       const tipsBoxesAfter = plan().querySelectorAll('.mob-stip').length;
 
@@ -2783,6 +2785,36 @@ def run_behavioral_tests(page):
     }""")
     ok76 = all(r76.get(k) for k in ['topHasNoActions','hasBottomActions','saveAfterSteps'])
     results.append(('plan_export_save_actions_moved_to_bottom', ok76, r76))
+
+    # v0.690 (skisse B): renere stegkort «på forespørsel». Som standard viser
+    # kortet bare handlingen — ingen ingrediens-chips, ingen avsnittstekst. En
+    # «🧾 N ingredienser»-brikke henter fram chipsene; fremgangsmåte (📋) og tips
+    # (💡) er rene ikoner. Alt utvidbart per steg.
+    r77 = page.evaluate("""() => {
+      window._openIng=new Set(); window._openSub=new Set(); window._openTip=new Set();
+      window._planChosen=true; setLayout('mob'); S.type='napoletana'; S.method='standard'; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const plan=()=>document.getElementById('mob-plan-content');
+      const chipsBefore=plan().querySelectorAll('.mob-needchip').length;
+      const descBefore=plan().querySelectorAll('.mob-sdesc').length;
+      const btns=[...plan().querySelectorAll('.step-detail-btn')];
+      const ingBtn=btns.find(b=>b.textContent.includes('ingredienser'));
+      const howIconOnly=!!btns.find(b=>b.textContent.trim()==='📋');
+      const tipIconOnly=!!btns.find(b=>b.textContent.trim()==='💡');
+      const ingHasCount=ingBtn ? /🧾\\s*\\d+\\s+ingredienser/.test(ingBtn.textContent) : false;
+      if(ingBtn) ingBtn.click();
+      const chipsAfter=plan().querySelectorAll('.mob-needchip').length;
+      window._openIng=new Set(); window._openSub=new Set(); window._openTip=new Set();
+      return {
+        chipsHiddenByDefault: chipsBefore===0,
+        descHiddenByDefault: descBefore===0,
+        ingChipHasCount: ingHasCount,
+        ingRevealsChips: chipsAfter>0,
+        howIconOnly, tipIconOnly
+      };
+    }""")
+    ok77 = all(r77.get(k) for k in ['chipsHiddenByDefault','descHiddenByDefault','ingChipHasCount','ingRevealsChips','howIconOnly','tipIconOnly'])
+    results.append(('step_card_details_on_demand_ingredients_behind_chip', ok77, r77))
 
     return results
 

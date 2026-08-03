@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.690",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Renere stegkort i tidsplanen (skisse B \u2014 \u00abp\u00e5 foresp\u00f8rsel\u00bb). Hvert kort viser n\u00e5 bare selve handlingen (tittel, tid, sted). Ingrediensene ligger bak en \u00ab\ud83e\uddfe N ingredienser\u00bb-brikke, og fremgangsm\u00e5te (\ud83d\udccb) og tips (\ud83d\udca1) er rene ikoner \u2014 tapp for \u00e5 hente fram akkurat det du trenger. Det gj\u00f8r planen mye mer kompakt; ingrediens-boksene tok f\u00f8r mye plass p\u00e5 hvert steg. Fokus og \u00abn\u00e5\u00bb-uthevingen er uendret."
+    ],
+    "changes_en": [
+      "Cleaner step cards in the schedule (sketch B \u2014 \u201con demand\u201d). Each card now shows just the action itself (title, time, place). Ingredients sit behind a \u201c\ud83e\uddfe N ingredients\u201d chip, and the how-to (\ud83d\udccb) and tips (\ud83d\udca1) are plain icons \u2014 tap to bring up exactly what you need. This makes the plan far more compact; the ingredient boxes used to take a lot of space on every step. Focus and the \u201cnow\u201d highlight are unchanged."
+    ]
+  },
+  {
     "v": "0.689",
     "d": "august 2026",
     "d_en": "August 2026",
