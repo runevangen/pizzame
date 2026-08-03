@@ -1156,9 +1156,9 @@ function syncStaticI18nUI(){
   st('mob-govn-hint','Velg én','Choose one');
   st('mob-antall-lbl-fj','Antall','Quantity');
   st('mob-meltype-lbl-fj','Meltype','Flour type');
-  st('gmel-opt-annet','Annet mel / ikke i listen','Other / not listed');
-  st('mob-gmel-opt-annet','Annet mel / ikke i listen','Other / not listed');
-  st('mob-gmel-fj-opt-annet','Annet mel / ikke i listen','Other / not listed');
+  // Meltype-nedtrekkene genereres fra MELTYPER (populateMeltypeSelects) — kall det
+  // her så «annet»-etiketten (og evt. server-mel) bytter språk ved språkskifte.
+  try{ populateMeltypeSelects(); }catch(e){}
   st('wiz-finjuster-done','✓ Ferdig — se steg for steg','✓ Done — see step by step');
   // Info/settings tab
   st('mob-visning-lbl','Visning','Display');
@@ -1364,7 +1364,19 @@ const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 // Meltyper med anbefalt fermenteringsvindu (fra meny.no/italiensk-pizza/riktig-mel-til-pizza,
 // kryssjekket mot Maschmanns — norsk Caputo-distributør — 15. juli 2026).
 // Brukes til å varsle hvis planlagt total gjæringstid ligger utenfor melets styrke-område.
-const MELTYPER=[
+// «Annet mel / ikke i listen»: for et mel appen ikke kjenner. generic:true slår
+// av det mel-spesifikke gjærings-/hydreringsvarselet (appen kan ikke dømme et
+// spenn den ikke vet). Den tomme ferm-range-en {mn:999,mx:0} matcher aldri, så
+// melet påvirker verken kald-taket, Smart-plan-lista eller «bytt til»-forslag.
+// Dette er en frontend-SENTINEL — den lagres aldri på server og legges alltid
+// sist i MELTYPER, så admin verken kan redigere eller slette den bort.
+const ANNET_FLOUR={v:'annet',t:'Annet mel',tEn:'Other flour',generic:true,protein:'–',w:'–',hydro:'–',ferm:{mn:999,mx:0}};
+// v0.684: meltypene ligger nå på server (/api/flours) så nye mel kan legges til /
+// egenskaper endres uten deploy. Denne lista er den INNEBYGDE seed-en (fallback
+// hvis backend ikke svarer — bl.a. i regresjonstestene, der /api/flours 404-er);
+// applyFlours() overstyrer den ved oppstart om serveren har data. «annet» legges
+// alltid til på slutten.
+const MELTYPER_SEED=[
   {v:'dallari',t:'Dallari pizzamel',protein:'10,7%',w:'–',hydro:'55–60%',hydroRange:{mn:55,mx:60},ferm:{mn:4,mx:8}},
   {v:'doppio_zero',t:'Caputo Doppio Zero',protein:'11%',w:'220–230',hydro:'60–70%',hydroRange:{mn:60,mx:70},ferm:{mn:6,mx:24}},
   {v:'regal_pizzamel',t:'Regal Pizzamel',protein:'11%',w:'–',hydro:'60–68%',hydroRange:{mn:60,mx:68},ferm:{mn:6,mx:24},estimated:true},
@@ -1373,14 +1385,32 @@ const MELTYPER=[
   {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48}},
   {v:'regal_tipo00',t:'Regal Tipo 00',protein:'13%',w:'–',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48},estimated:true},
   {v:'couco',t:'Caputo Couco',protein:'13%',w:'300–340',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:16,mx:54}},
-  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:120}},
-  // «Annet mel / ikke i listen»: for et mel appen ikke kjenner. generic:true slår
-  // av det mel-spesifikke gjærings-/hydreringsvarselet (appen kan ikke dømme et
-  // spenn den ikke vet). Den tomme ferm-range-en {mn:999,mx:0} matcher aldri, så
-  // melet påvirker verken kald-taket, Smart-plan-lista eller «bytt til»-forslag —
-  // uten å måtte endre de aggregatene. Ingen hydroRange ⇒ hydrering dømmes ikke.
-  {v:'annet',t:'Annet mel',tEn:'Other flour',generic:true,protein:'–',w:'–',hydro:'–',ferm:{mn:999,mx:0}}
+  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:120}}
 ];
+let MELTYPER=[...MELTYPER_SEED.map(f=>({...f})), ANNET_FLOUR];
+// Overstyr MELTYPER med server-data (validert). Beholder seed hvis alt er ugyldig,
+// og legger alltid «annet»-sentinelen sist. Kalt ved oppstart etter /api/flours.
+function applyFlours(serverFlours){
+  if(!Array.isArray(serverFlours)) return;
+  const valid=serverFlours.filter(f=> f && typeof f.v==='string' && f.v && f.v!=='annet'
+    && typeof f.t==='string' && f.t
+    && f.ferm && Number.isFinite(f.ferm.mn) && Number.isFinite(f.ferm.mx)
+    && f.hydroRange && Number.isFinite(f.hydroRange.mn) && Number.isFinite(f.hydroRange.mx));
+  if(!valid.length) return; // behold innebygd seed
+  MELTYPER=[...valid.map(f=>({...f})), ANNET_FLOUR];
+  try{ if(!MELTYPER.some(f=>f.v===S.meltype)) S.meltype=MELTYPER[0].v; }catch(e){}
+}
+// Bygger meltype-nedtrekkene fra MELTYPER (så nye server-mel dukker opp automatisk).
+// Språk-bevisst for «annet»; merkevarenavn er språknøytrale. Beholder valgt verdi.
+function populateMeltypeSelects(){
+  ['gmel','mob-gmel','mob-gmel-fj'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const cur=el.value||S.meltype;
+    el.innerHTML=MELTYPER.map(f=>`<option value="${escH(f.v)}">${f.generic?L('Annet mel / ikke i listen','Other / not listed'):escH(f.t)}</option>`).join('');
+    if(MELTYPER.some(f=>f.v===cur)) el.value=cur;
+    else { el.value=MELTYPER[0].v; }
+  });
+}
 // Piller viser bare navn — egenskapene (protein/styrke/vann/gjæring) må vises et sted som
 // fungerer på touch-skjerm, siden hover-tekst (title=) er usynlig på mobil.
 // Språk-bevisst melnavn. Kun «annet» har tEn (merkevarenavnene er språknøytrale),
@@ -1401,6 +1431,7 @@ function updateMeltypeInfo(){
   });
 }
 function syncMeltypeSelect(){
+  populateMeltypeSelects();
   const el = document.getElementById('gmel');
   if(el){
     el.value = S.meltype;
@@ -1411,6 +1442,7 @@ function syncMeltypeSelect(){
 function syncMobMeltypeSelect(){
   // v6.34: meltype kan nå velges to steder — steg 2 (mob-gmel) OG Finjuster
   // (mob-gmel-fj). Begge holdes i synk, og en endring i én oppdaterer den andre.
+  populateMeltypeSelects();
   const ids=['mob-gmel','mob-gmel-fj'];
   ids.forEach(id=>{
     const el = document.getElementById(id);
@@ -5403,6 +5435,14 @@ async function loadConfigThenStart(){
     }
   }catch(e){
     console.error('Kunne ikke hente config — bruker innebygde standardverdier.', e);
+  }
+  // v0.684: hent server-lagrede meltyper (nye mel / endrede egenskaper uten deploy).
+  // Feiler den (offline / 404 lokalt), beholdes den innebygde MELTYPER_SEED-en.
+  try{
+    const fres = await fetch('/api/flours');
+    if(fres.ok){ const fd = await fres.json(); applyFlours(fd.flours); }
+  }catch(e){
+    console.error('Kunne ikke hente meltyper — bruker innebygde standardverdier.', e);
   }
   // Resten av oppstarten rører DOM-en (mob-layout m.m.), som ligger ETTER
   // hovedskriptet i fila. Denne funksjonen er async: på treg/vanlig nettrespons
