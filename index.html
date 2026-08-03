@@ -2734,9 +2734,13 @@ function renderSteps(steps, mode='desktop'){
       const sWin=(!s.passive && !isNaN(sAt.getTime())) ? ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(sAt.getHours(),sAt.getMinutes(),sAt.getDay())) : null;
       if(sWin){
         conflictFlagged=true;
-        const lbl=sWin.id==='busy'?'utenfor spisetid':'midt på natten';
+        // «busy» = et steg som havner utenfor den LEDIGE tiden du har satt av til
+        // pizza (ikke «spisetid» — du spiser ikke da, du jobber). Merket og
+        // hjelpeteksten er nå tospråklige (var norsk-only).
+        const lbl=sWin.id==='busy'?L('utenfor ledig tid','outside free time'):L('midt på natten','middle of the night');
         const click=(sWin.id==='busy' && isMob)?' onclick="event.stopPropagation();openPizzatidFromWarning()" style="cursor:pointer"':'';
-        conflictFlag=` <span class="conflict-flag"${click} title="Dette steget faller i ${sWin.label} — se detaljer og valg i wizardens Sjekk">⚠ ${lbl}</span>`;
+        const winLbl=(window._lang==='en' && sWin.labelEn) ? sWin.labelEn : sWin.label;
+        conflictFlag=` <span class="conflict-flag"${click} title="${L(`Dette steget faller i ${winLbl} — se detaljer og valg i wizardens Sjekk`,`This step falls in ${winLbl} — see details and options in the wizard's Check`)}">⚠ ${lbl}</span>`;
       }
     }
     if(s.sessionNote){

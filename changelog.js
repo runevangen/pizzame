@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.683",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet feil merkelapp: et steg som havner utenfor den ledige tiden du har satt av til pizza sa «⚠ utenfor spisetid» — men du spiser jo ikke da, du jobber. Merket sier nå «⚠ utenfor ledig tid». Samtidig ble merket og hjelpeteksten oversatt (viste norsk i engelsk modus): «outside free time»."
+    ],
+    "changes_en": [
+      "Fixed a wrong label: a step landing outside the free time you have set aside for pizza said \"⚠ outside eating time\" — but you are not eating then, you are working. The badge now says \"⚠ outside free time\". At the same time the badge and its tooltip were translated (they showed Norwegian in English mode)."
+    ]
+  },
+  {
     "v": "0.682",
     "d": "august 2026",
     "d_en": "August 2026",
