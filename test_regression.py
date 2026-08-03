@@ -2917,6 +2917,62 @@ def run_behavioral_tests(page):
     ok80 = all(r80.get(k) for k in ['hadPoolishStep','hasPause','roomSaysRoom','roomNotFridge','coldSaysCold'])
     results.append(('poolish_ferment_wait_labelled_room_temp_not_fridge', ok80, r80))
 
+    # v0.697 (Claude-oppskriftsgjennomgang): fire funn.
+    # Funn 4: forme-steget og kald-heving-steget delte ordrett WHY.fk. Forme-steget
+    #   har nå egen WHY.form (om runding/emner), ulik kald-hevingens WHY.fk.
+    # Funn 2: poolish-gjæren trukket ned i den lange enden (15–16t); 14t uendret 1.0×.
+    # Funn 1: TIP.intoFridge har fått råd om å øke gjæren ~25–30 % ved kaldt kjøleskap.
+    # Temp: kjøleskapstemp harmonisert til 2–5°C i WHY.fk (var 2–8°C).
+    r81 = page.evaluate("""() => {
+      const orig={method:S.method,oven:S.oven,ph:S.poolishH,type:S.type,cold:S.poolishCold};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='standard'; S.mode='start'; mobGen();
+      const steps=window._steps||[];
+      const form=steps.find(s=>/Form emner/i.test(s.title));
+      const cold=steps.find(s=>/^Kjøleskapsheving$/i.test(s.title));
+      const formWhy=form?form.why:''; const coldWhy=cold?cold.why:'';
+      const whyDistinct = !!formWhy && !!coldWhy && formWhy!==coldWhy;
+      const formAboutRounding = /rund/i.test(formWhy);
+      const fkTemp = WHY.fk.includes('2–5°C') && !WHY.fk.includes('2–8°C');
+      const coldTip = /25–30/.test(TIP.intoFridge);
+      S.method='poolish'; S.poolishCold=false;
+      S.poolishH=14; const m14=prefermentYeastMult();
+      S.poolishH=15; const m15=prefermentYeastMult();
+      S.poolishH=16; const m16=prefermentYeastMult();
+      S.method=orig.method;S.oven=orig.oven;S.poolishH=orig.ph;S.type=orig.type;S.poolishCold=orig.cold; mobGen();
+      return { whyDistinct, formAboutRounding, fkTemp, coldTip, m14, m15, m16 };
+    }""")
+    ok81 = (
+      r81['whyDistinct'] and r81['formAboutRounding'] and r81['fkTemp'] and r81['coldTip'] and
+      r81['m14'] == 1.0 and r81['m15'] < r81['m14'] and r81['m16'] < 0.85
+    )
+    results.append(('recipe_review_fixes_form_why_yeast_curve_temp_tip', ok81, r81))
+
+    # Funn 3: bake-steget viste «45 min» pizzastein-forvarming også for PIZZAOVN, der
+    # dekket er varmt på ~15–20 min. Nå ovnstype-bevisst: pizzaovn nevner ~15–20 min
+    # og ikke «45 min»; vanlig ovn beholder «45 min» (som er riktig der).
+    r82 = page.evaluate("""() => {
+      const orig={oven:S.oven,method:S.method,type:S.type};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='standard';
+      S.oven='pizza'; mobGen();
+      let steps=window._steps||[];
+      let bake=steps.find(s=>/Strekk og stek/i.test(s.title));
+      const pizzaText=bake?((bake.tip||'')+' '+((bake.substeps||[]).join(' '))):'';
+      S.oven='vanlig'; mobGen();
+      steps=window._steps||[];
+      bake=steps.find(s=>/Strekk og stek/i.test(s.title));
+      const regText=bake?((bake.tip||'')+' '+((bake.substeps||[]).join(' '))):'';
+      S.oven=orig.oven;S.method=orig.method;S.type=orig.type; mobGen();
+      return {
+        pizzaNo45: !/45\\s*min/.test(pizzaText),
+        pizzaMentionsFastPreheat: /15–20/.test(pizzaText),
+        regHas45: /45\\s*min/.test(regText)
+      };
+    }""")
+    ok82 = all(r82.get(k) for k in ['pizzaNo45','pizzaMentionsFastPreheat','regHas45'])
+    results.append(('bake_preheat_tip_oven_aware_pizza_vs_regular', ok82, r82))
+
     return results
 
 

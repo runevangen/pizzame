@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.697",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet fire funn fra en grundig oppskriftsgjennomgang. (1) Forme-steget og kald-heving-steget hadde ordrett samme «Hvorfor»-tekst om kald fermentering — forme-steget har nå sin egen begrunnelse om runding og emner. (2) Stekesteget sa «pizzastein/-stål MÅ varmes minst 45 min» også for pizzaovn, der dekket er varmt på ~15–20 min; teksten er nå ovnstype-bevisst (vanlig ovn beholder 45 min). (3) Kjøleskapstemperaturen var oppgitt tre ulike steder (2–8 / 4 / 2–5 °C) — nå harmonisert til 2–5 °C, og steg-teksten «ca. 4 timer» er i tråd med «Hvorfor». (4) Poolish-gjæren er trukket litt ned for lange forspill (15–16 t), som ellers kunne toppe og falle før du blander; standard 14 t er uendret. I tillegg: et nytt tips om å øke gjæren ~25–30 % hvis kjøleskapet ditt er kaldere enn ~4 °C, og et mer realistisk hevekriterium på den korte romtemperaturhevingen (ca. 30–50 %, ikke «dobbelt»)."
+    ],
+    "changes_en": [
+      "Fixed four findings from a thorough recipe review. (1) The shaping step and the cold-rise step had word-for-word the same “Why” text about cold fermentation — the shaping step now has its own rationale about rounding and balls. (2) The bake step said “the pizza stone/steel MUST preheat at least 45 min” even for a pizza oven, where the deck is hot in ~15–20 min; the text is now oven-aware (a regular oven keeps 45 min). (3) The fridge temperature was stated three different ways (2–8 / 4 / 2–5 °C) — now harmonized to 2–5 °C, and the step text “about 4 hours” matches the “Why”. (4) The poolish yeast is nudged down a little for long preferments (15–16 h), which could otherwise peak and collapse before you mix; the standard 14 h is unchanged. Plus: a new tip to raise the yeast ~25–30% if your fridge runs colder than ~4 °C, and a more realistic rise cue for the short room-temperature rise (about 30–50%, not “doubled”)."
+    ]
+  },
+  {
     "v": "0.696",
     "d": "august 2026",
     "d_en": "August 2026",
