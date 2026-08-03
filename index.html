@@ -4277,9 +4277,21 @@ function overfermentWarningHTML(){
   const methodTxt = S.method==='poolish' ? L(` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.poolishH}t poolish-forgjæring)`,` (${coldTimeLabel(S.cold)} fridge + about ${S.poolishH}h poolish pre-ferment)`)
     : S.method==='biga' ? L(` (${coldTimeLabel(S.cold)} kjøleskap + ca. ${S.bigaH}t biga-forgjæring)`,` (${coldTimeLabel(S.cold)} fridge + about ${S.bigaH}h biga pre-ferment)`)
     : L(` (${coldTimeLabel(S.cold)} kjøleskap)`,` (${coldTimeLabel(S.cold)} fridge)`);
+  // «Annet mel / ikke i listen»: appen kjenner ikke melets styrke. Ca. 4 døgn
+  // bryter ned de fleste mel, men et veldig sterkt ukjent mel KAN tåle det — så
+  // vi beholder sansesjekken, men bytter alarm-rammen («⚠️ fare for over-
+  // fermentering») mot en usikkerhets-erkjennende note. Kjente mel er uendret.
+  const flour = MELTYPER.find(m=>m.v===S.meltype);
+  const generic = !!(flour && flour.generic);
+  const title = generic
+    ? L('🌾 Lang gjæring for et ukjent mel','🌾 Long fermentation for an unknown flour')
+    : L('⚠️ Lang gjæringstid — fare for overfermentering','⚠️ Long fermentation time — risk of over-fermentation');
+  const body = generic
+    ? L(`Du har planlagt ca. ${totalDays} døgn total gjæringstid${methodTxt}. De fleste mel blir overmodne rundt her — glutenet brytes ned mer enn det bygges, og deigen kan bli slapp og klissete med en flat, sur smak. Men et veldig sterkt mel kan tåle det, og appen kjenner ikke ditt: sjekk deigen mot slutten og bak litt tidligere hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).`,`You have planned about ${totalDays} days of total fermentation${methodTxt}. Most flours over-ripen around here — the gluten breaks down faster than it builds, and the dough can become slack and sticky with a flat, sour taste. But a very strong flour may handle it, and the app does not know yours: check the dough toward the end and bake a little earlier if it looks over-ripe (large, shiny surface with bubbles that collapse easily).`)
+    : L(`Total effektiv gjæringstid er ca. ${totalDays} døgn${methodTxt}. Ved denne lengden bryter enzymer gradvis ned glutenstrukturen mer enn de bygger den — deigen kan bli slapp, klissete og vanskelig å forme, med en flat, tydelig sur smak. Sjekk deigen jevnlig mot slutten, og vær klar til å bake litt tidligere enn planlagt hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).`,`Total effective fermentation time is about ${totalDays} days${methodTxt}. At this length, enzymes gradually break down the gluten structure faster than they build it — the dough can become slack, sticky and hard to shape, with a flat, distinctly sour taste. Check the dough regularly toward the end, and be ready to bake a little earlier than planned if it looks over-ripe (large, shiny surface with bubbles that collapse easily).`);
   return warningWrapHTML(`overferment|${S.method}|${Math.round(totalHours)}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
-    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L('⚠️ Lang gjæringstid — fare for overfermentering','⚠️ Long fermentation time — risk of over-fermentation')}</div>
-    <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`Total effektiv gjæringstid er ca. ${totalDays} døgn${methodTxt}. Ved denne lengden bryter enzymer gradvis ned glutenstrukturen mer enn de bygger den — deigen kan bli slapp, klissete og vanskelig å forme, med en flat, tydelig sur smak. Sjekk deigen jevnlig mot slutten, og vær klar til å bake litt tidligere enn planlagt hvis den ser overmoden ut (stor, blank overflate med bobler som kollapser lett).`,`Total effective fermentation time is about ${totalDays} days${methodTxt}. At this length, enzymes gradually break down the gluten structure faster than they build it — the dough can become slack, sticky and hard to shape, with a flat, distinctly sour taste. Check the dough regularly toward the end, and be ready to bake a little earlier than planned if it looks over-ripe (large, shiny surface with bubbles that collapse easily).`)}</div>
+    <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${title}</div>
+    <div style="font-size:12px;color:#4a2a05;line-height:1.5">${body}</div>
     <div style="margin-top:.5rem"><span onclick="openFinjusterAt('mob-cwrap')" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">${L('⚙️ Se i Finjuster','⚙️ See in Fine-tune')}</span></div>
   </div>`);
 }

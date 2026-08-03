@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.678",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Overmodnings-varselet (det generelle «lang gjæringstid»-varselet ved ~4 døgn) er nå softere for «Annet mel / ikke i listen»: i stedet for «⚠️ fare for overfermentering» sier det «🌾 Lang gjæring for et ukjent mel — de fleste blir overmodne rundt her, men et veldig sterkt mel kan tåle det». Den nyttige sansesjekken beholdes; den falske sikkerheten om et mel appen ikke kjenner er borte. For kjente meltyper er varselet uendret."
+    ],
+    "changes_en": [
+      "The over-fermentation warning (the general \"long fermentation time\" one at ~4 days) is now gentler for \"Other / not listed\": instead of \"⚠️ risk of over-fermentation\" it says \"🌾 Long fermentation for an unknown flour — most over-ripen around here, but a very strong flour may handle it\". The useful sensory check is kept; the false certainty about a flour the app doesn't know is gone. For known flours the warning is unchanged."
+    ]
+  },
+  {
     "v": "0.677",
     "d": "august 2026",
     "d_en": "August 2026",
