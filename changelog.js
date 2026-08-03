@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.687",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fjernet «Ulagret oppsett — endringer lagres ikke automatisk»-varselet øverst i tidsplanen. Det var unødvendig støy. «Du redigerer <deig>» vises fortsatt når du faktisk har åpnet en lagret deig."
+    ],
+    "changes_en": [
+      "Removed the \"Unsaved setup — changes are not saved automatically\" notice at the top of the schedule. It was needless noise. \"You are editing <dough>\" still shows when you have actually opened a saved dough."
+    ]
+  },
+  {
     "v": "0.686",
     "d": "august 2026",
     "d_en": "August 2026",
