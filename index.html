@@ -6566,7 +6566,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){
     const {tmp,ya,p,steps}=hurtigSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}${planBottomActionsHTML()}</div>`;
     const r2=R(),w2=Math.round(S.mel*S.hydro/100);
     const rrH=[...baseIngredientRows({mel:S.mel,vann:w2,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Steking',v:tmp},{k:'Romtemperatur',v:`${S.temp}°C`},{k:'Ovntype',v:oN()}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${t('r_count')}</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">${t('r_size')}</div><div class="pv">${p.perPizza}g</div><div class="ps">${t('r_dough')}</div></div></div><div class="mob-rec">${recipeRowsHTML(rrH, true)}</div></div>`;
@@ -6576,7 +6576,7 @@ function mobGen(){
   if(S.type!=='ingenelting' && S.method==='kveld'){
     const {ya,steps}=kveldSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}${planBottomActionsHTML()}</div>`;
     const r2=R(),p=pc();
     const rrK=[...baseIngredientRows({mel:S.mel,vann:r2.water,hydro:S.hydro,salt:r2.salt,oil:r2.oil,butter:r2.butter,sugar:r2.sugar,gjaer:ya}),{k:'Kjøleskapsheving',v:L(`${S.kveldH} timer`,`${S.kveldH} hours`)},{k:'Ovntype',v:oN()}];
     document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${t('r_count')}</div><div class="pv">${p.count}</div><div class="ps">${pcUnitLabel(true)}</div></div><div class="mob-pcc"><div class="pl">${t('r_size')}</div><div class="pv">${p.perPizza}g</div><div class="ps">${t('r_dough')}</div></div></div><div class="mob-rec">${recipeRowsHTML(rrK, true)}</div></div>`;
@@ -6586,7 +6586,7 @@ function mobGen(){
   if(S.method==='mania'){
     const steps=rawSteps(anchor);
     window._steps=steps;
-    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+    document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}${planBottomActionsHTML()}</div>`;
     const rm=maniaRecipe(),p=pc();
     const rrPoolish=[{k:'Mel',v:`${rm.poolishMel}g`},{k:'Vann',v:`${rm.poolishVann}g`},{k:'Gjær',v:S.gjaer==='torr'?L(`${rm.poolishYd}g tørrgjær`,`${rm.poolishYd}g dry yeast`):L(`${rm.poolishYf}g fersk gjær`,`${rm.poolishYf}g fresh yeast`)}];
     const rrHoved=[{k:'Poolish',v:L('Hele poolishen over','The whole poolish, poured in')},{k:'Mel',v:`${rm.hovedMel}g`},{k:'Vann del 1',v:`${rm.vann1}g`},{k:'Vann del 2',v:`${rm.vann2}g`},{k:'Gjær',v:S.gjaer==='torr'?L(`${rm.hovedYd}g tørrgjær`,`${rm.hovedYd}g dry yeast`):L(`${rm.hovedYf}g fersk gjær`,`${rm.hovedYf}g fresh yeast`)},{k:'Salt',v:`${rm.salt}g`}];
@@ -6598,7 +6598,7 @@ function mobGen(){
   window._steps=steps;
   const r=R();
   const p=pc();
-  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}</div>`;
+  document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}${planBottomActionsHTML()}</div>`;
   // recipe tab
   const rr=[...baseIngredientRows({mel:r.flour,vann:r.water,hydro:S.hydro,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,gjaer:yA(r)}),...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemperatur',v:L(`${S.temp}°C — heving ca. ${rtM(60)} min`,`${S.temp}°C — rise about ${rtM(60)} min`)},{k:'Ovntype',v:S.type==='ingenelting'?L('Vanlig ovn, 250°C','Regular oven, 250°C'):oN()}];
   document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${L('Antall','Count')} ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">${L('stk','pcs')}</div></div><div class="mob-pcc"><div class="pl">${t('r_size')}</div><div class="pv">${p.perPizza}g</div><div class="ps">${t('r_dough')}</div></div></div><div class="mob-rec">${recipeRowsHTML(rr, true)}</div><div class="mob-swhy"><b>Ankarsrum:</b> ${L('Vann + gjær i bollen. Mel gradvis trinn 1–2. Salt etter 5 min. Trinn 3–4. Total 12–15 min. Deigtemp: 22–24°C.','Water + yeast in the bowl. Flour gradually on speed 1–2. Salt after 5 min. Speed 3–4. Total 12–15 min. Dough temp: 22–24°C.')}</div></div>`;
@@ -6897,6 +6897,19 @@ function syncSaveBakeLabel(){
 // Deig-statuslinje (Skisse A): samme mønster som Beta-fanens kort — viser
 // tydelig 🚀 oppstartstid og 🍕 steketid for oppsettet man jobber med, pluss
 // en fast "Juster"-inngang til Finjuster med retur-sløyfe tilbake til Steg.
+// v0.689: Kopier/Kalender/Lagre nederst i tidsplanen (ikke sticky) — sjeldent
+// brukt, hører hjemme etter at planen er lest, ikke i toppen over stegene.
+function planBottomActionsHTML(){
+  const btn = (onclick, icon, label, id) => `<button ${id?`id="${id}" `:''}onclick="${onclick}" style="flex:1;padding:9px 4px;border:1px solid var(--forno-border,#ddd);border-radius:9px;background:var(--forno-bg-raised,#fff);color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:16px">${icon}</span>${label}</button>`;
+  return `<div style="padding:1.1rem .9rem 1.5rem;border-top:1px solid var(--forno-border-soft,#e8e5e0);margin-top:.5rem">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-text-faint,#999);margin-bottom:8px">${L('Med denne planen','With this plan')}</div>
+    <div style="display:flex;gap:8px">
+      ${btn("copyP(window._steps||[])",'📋',t('a_copy'))}
+      ${btn("downloadIcs(window._steps||[])",'📅',t('a_cal'))}
+      ${btn("saveBake()",'💾',t('a_save'),'mob-savebake-btn')}
+    </div>
+  </div>`;
+}
 function deigStatusBarHTML(steps, showActions, showDelta){
   const methodNames = window._lang==='en'
     ? {standard:'Long-ferment dough',poolish:(S.poolishCold?'Poolish (fridge)':'Poolish'),biga:'Biga',mania:'Mania poolish',hurtig:'Quick dough',kveld:'Evening dough'}
@@ -6915,12 +6928,12 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   let startMs=null;
   try{ if(firstActive){ let at=firstActive.at; if(!(at instanceof Date)) at=new Date(at); if(!isNaN(at.getTime())) startMs=at.getTime(); } }catch(e){}
   const deltaHTML = showDelta ? startDeltaChipHTML(startMs) : '';
-  const actionsHTML = showActions ? `<div style="display:flex;gap:6px;margin-top:8px">
-      <button onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan','Copy schedule')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📋</span>${t('a_copy')}</button>
-      <button onclick="downloadIcs(window._steps||[])" title="${L('Last ned til kalender','Download to calendar')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>📅</span>${t('a_cal')}</button>
-      <button id="mob-savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen','Save this dough')}" style="flex:1;padding:7px 4px;border:1px solid var(--forno-border,#ddd);border-radius:8px;background:transparent;color:var(--forno-text,#222);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px"><span>💾</span>${t('a_save')}</button>
-    </div>` : '';
+  // v0.689: Kopier/Kalender/Lagre er flyttet fra statuslinja (topp) til BUNNEN av
+  // tidsplanen (planBottomActionsHTML) — de brukes sjelden og er «etter at planen
+  // er lest»-handlinger, så de tar ikke lenger toppplass fra selve stegene.
+  const actionsHTML = '';
   // v6.00: skisse B — Juster/Understeg/Tips samlet på én rad UNDER navnet, kun
+  // (planBottomActionsHTML defineres utenfor deigStatusBarHTML, se nedenfor.)
   // i Tidsplan-visningen (showActions). Wizardens kompakte statuslinjer
   // beholder Juster inline ved navnet, uendret — den er den dokumenterte
   // universelle veien til Finjuster fra ethvert wizardsteg (v5.81), og skal

@@ -2763,6 +2763,27 @@ def run_behavioral_tests(page):
     ok75 = all(r75.get(k) for k in ['coldMaxGrows','coldMaxRestored','derivesFromData','editorOpens','listsRealFlours','annetExcluded','hasForm','savePatch','savePayloadOk'])
     results.append(('flour_admin_editor_and_dynamic_cold_cap', ok75, r75))
 
+    # v0.689: Kopier/Kalender/Lagre flyttet fra statuslinja (topp) til bunnen av
+    # tidsplanen (ikke sticky) — sjeldent brukt, tar ikke lenger toppplass.
+    r76 = page.evaluate("""() => {
+      window._planChosen=true; setLayout('mob'); S.type='napoletana'; S.method='standard'; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const plan=document.getElementById('mob-plan-content');
+      const statusBar=plan.querySelector('[aria-live]');
+      const bottom=[...plan.querySelectorAll('div')].find(d=>d.textContent.includes('Med denne planen'));
+      const savebtn=plan.querySelector('#mob-savebake-btn');
+      const steps=[...plan.querySelectorAll('.mob-step')];
+      const lastStep=steps[steps.length-1];
+      const saveAfterSteps = !!(savebtn && lastStep && (savebtn.compareDocumentPosition(lastStep) & Node.DOCUMENT_POSITION_PRECEDING));
+      return {
+        topHasNoActions: !!statusBar && !statusBar.textContent.includes('Kopier'),
+        hasBottomActions: !!bottom && bottom.textContent.includes('Kopier') && bottom.textContent.includes('Lagre'),
+        saveAfterSteps
+      };
+    }""")
+    ok76 = all(r76.get(k) for k in ['topHasNoActions','hasBottomActions','saveAfterSteps'])
+    results.append(('plan_export_save_actions_moved_to_bottom', ok76, r76))
+
     return results
 
 
