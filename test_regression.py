@@ -3014,6 +3014,42 @@ def run_behavioral_tests(page):
     ok84 = all(r84.get(k) for k in ['hadPause','mentions18','noFewHours'])
     results.append(('poolish_cold_pause_why_internally_consistent', ok84, r84))
 
+    # v0.702: kjøleskapspausen er passiv (deigen venter), men STARTEN krever at du er
+    # hjemme og setter bollen i kjøleskapet. Den er nå merket needsPresence, så den
+    # (1) teller i Smart-planens ledig-tid-scoring, (2) får ⚠-flagg / full advarsel
+    # som et aktivt steg, og (3) får den eksisterende «fortsett likevel»-ignorer­knappen.
+    # Vanlige passive steg (gjæring, kjøleskapsheving) telles fortsatt IKKE.
+    r85 = page.evaluate("""() => {
+      const savedSched=window._pizzatidSchedule, savedSteps=window._steps;
+      const savedS={method:S.method,type:S.type,ph:S.poolishH,mode:S.mode,pause:S.poolishPauseH};
+      window._pizzatidSchedule=defaultPizzatidSchedule(); // hverdag ledig 16–23:30 + 06:30–08
+      const friBusy=new Date(2026,7,7,10,40,0); // fredag 7. aug 2026, 10:40 = opptatt-vindu
+      const pause={at:friBusy,passive:true,needsPresence:true,title:'🧊 Kjøleskapspause'};
+      const plain={at:friBusy,passive:true,title:'Poolish gjærer'};
+      // 1) Smart-plan-scoring teller pausen, men ikke et vanlig passivt steg
+      const scorePause=scorePizzatidWindows([pause]);
+      const scorePlain=scorePizzatidWindows([plain]);
+      // 2) konflikt-oppdaging (flagg/advarsel) finner pausen som «busy», ikke plain
+      const fc=firstStepConflict([pause]); const fcPlain=firstStepConflict([plain]);
+      // 3) full advarsel for pausen har ignorer-knappen (acceptStepConflict)
+      S.method='poolish'; S.type='napoletana'; S.poolishH=14; S.mode='start'; S.poolishPauseH=0;
+      window._steps=[pause];
+      let warn=''; try{ warn=activeStepTimeWarningHTML(); }catch(e){ warn='ERR:'+e; }
+      window._steps=savedSteps; window._pizzatidSchedule=savedSched;
+      S.method=savedS.method;S.type=savedS.type;S.poolishH=savedS.ph;S.mode=savedS.mode;S.poolishPauseH=savedS.pause;
+      return {
+        scorePause, scorePlain,
+        fcBusy: !!(fc && fc.win && fc.win.id==='busy'),
+        fcPlainNull: fcPlain===null,
+        warnHasIgnore: /acceptStepConflict/.test(warn) && /Kj\\u00f8leskapspause/.test(warn)
+      };
+    }""")
+    ok85 = (
+      r85['scorePause']==1 and r85['scorePlain']==0 and
+      r85['fcBusy'] and r85['fcPlainNull'] and r85['warnHasIgnore']
+    )
+    results.append(('cold_pause_start_counts_as_presence_needed_with_ignore', ok85, r85))
+
     return results
 
 

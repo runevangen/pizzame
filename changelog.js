@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.702",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kjøleskapspausen teller nå med i «ledig tid». Steget er passivt (deigen bare venter), men STARTEN krever at du er hjemme og setter poolish-bollen i kjøleskapet — og det tok ikke Smart-planen hensyn til før, så den kunne legge det midt på en travel formiddag uten å si ifra. Nå behandles det som et steg du må være til stede for: Smart-planen prøver å legge det i den ledige tida di, og faller det likevel utenfor (eller midt på natten), får du samme varsel som for andre steg — med en «Dette er greit — fortsett likevel»-knapp, i tilfelle du fint kan stikke innom og sette bollen i kjøleskapet den dagen likevel. Vanlige passive steg (gjæring, kjøleskapsheving) teller fortsatt ikke."
+    ],
+    "changes_en": [
+      "The cold pause now counts toward your “free time”. The step is passive (the dough just waits), but its START requires you to be home to put the poolish bowl in the fridge — and Smart plan didn't account for that before, so it could place it in the middle of a busy morning without flagging it. It's now treated as a step you need to be present for: Smart plan tries to fit it into your free time, and if it still falls outside (or in the middle of the night) you get the same warning as for other steps — with a “This is fine — continue anyway” button, in case you can pop home to put the bowl in the fridge that day after all. Ordinary passive steps (fermenting, cold rise) still don't count."
+    ]
+  },
+  {
     "v": "0.701",
     "d": "august 2026",
     "d_en": "August 2026",

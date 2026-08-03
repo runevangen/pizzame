@@ -2322,7 +2322,7 @@ function rawSteps(a){
         tip:S.kjokkenmaskin==='ankarsrum'
           ?L(`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. ${poolishRestText()}`,`No extra bowl to wash — the poolish ferments right in the Ankarsrum bowl. ${poolishRestText()}`)
           :poolishRestText()},
-      ...(pauseMin>0?[{title:'🧊 Kjøleskapspause',loc:'kjol',at:rdy,dur:pauseMin,passive:true,
+      ...(pauseMin>0?[{title:'🧊 Kjøleskapspause',loc:'kjol',at:rdy,dur:pauseMin,passive:true,needsPresence:true,
         desc:L(`Sett poolish-bollen i kjøleskapet i ca. ${fmtDur(pauseMin)}. Kulda bremser gjæringen kraftig ned uten å stoppe den — poolishen «venter» på deg til du er klar til å blande ferdig deig. Middagstiden er den samme.`,`Put the poolish bowl in the fridge for about ${durEn(fmtDur(pauseMin))}. The cold slows the fermentation down sharply without stopping it — the poolish "waits" for you until you're ready to mix the final dough. Dinnertime stays the same.`),
         substeps:[
           L(`Sett poolish-bollen i kjøleskapet`,`Put the poolish bowl in the fridge`),
@@ -2737,7 +2737,7 @@ function renderSteps(steps, mode='desktop'){
     let conflictFlag='';
     if(!conflictFlagged){
       let sAt=s.at; if(!(sAt instanceof Date)) sAt=new Date(sAt);
-      const sWin=(!s.passive && !isNaN(sAt.getTime())) ? ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(sAt.getHours(),sAt.getMinutes(),sAt.getDay())) : null;
+      const sWin=((!s.passive || s.needsPresence) && !isNaN(sAt.getTime())) ? ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(sAt.getHours(),sAt.getMinutes(),sAt.getDay())) : null;
       if(sWin){
         conflictFlagged=true;
         // «busy» = et steg som havner utenfor den LEDIGE tiden du har satt av til
@@ -3211,7 +3211,9 @@ function outsidePizzatid(hh,mm,day){
 function scorePizzatidWindows(steps){
   let violations=0;
   for(const s of steps){
-    if(s.passive) continue;
+    // v0.702: kjøleskapspausen er passiv (deigen venter), MEN starten krever at du
+    // er hjemme og setter bollen i kjøleskapet — derfor teller den (needsPresence).
+    if(s.passive && !s.needsPresence) continue;
     let at=s.at; if(!(at instanceof Date)) at=new Date(at);
     if(!inPizzatidWindow(at.getHours(),at.getMinutes(),at.getDay())) violations++;
   }
@@ -3961,7 +3963,7 @@ const ACTIVE_STEP_TIME_WINDOWS=[
 const POOLISH_BIGA_PROBE={lo:8, hi:48};
 function firstStepConflict(steps){
   for(const s of (steps||[])){
-    if(s.passive) continue;
+    if(s.passive && !s.needsPresence) continue;
     let at=s.at; if(!(at instanceof Date)) at=new Date(at);
     if(isNaN(at.getTime())) continue;
     const win=ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(at.getHours(),at.getMinutes(),at.getDay()));
@@ -4045,7 +4047,7 @@ function activeStepTimeWarningHTML(){
   const steps=window._steps||[];
   if(!steps.length) return '';
   for(const s of steps){
-    if(s.passive) continue;
+    if(s.passive && !s.needsPresence) continue;
     let at=s.at; if(!(at instanceof Date)) at=new Date(at);
     if(isNaN(at.getTime())) continue;
     const h=at.getHours(), mm=at.getMinutes(), day=at.getDay();
