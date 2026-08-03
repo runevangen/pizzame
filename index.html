@@ -2743,6 +2743,9 @@ function renderSteps(steps, mode='desktop'){
     // v0.693: understeg ERSTATTER prosateksten (som i Fokus) — desc og understeg er
     // i praksis samme innhold, så åpner du 📋 viker avsnittet for sjekklista i stedet
     // for å vise begge. Steg uten understeg beholder desc som før.
+    // v0.695: ikonraden er forankret rett under tittelen (over alt utvidbart
+    // innhold), så den ikke hopper opp/ned når desc byttes mot understeg. Alt du
+    // åpner (ingredienser, tekst/understeg, tips) utvider seg NEDENFOR ikonene.
     const hasNeeds = !!(s.needs && s.needs.length);
     const hasSub = !!(s.substeps && s.substeps.length);
     const hasTip = !!(s.why || s.tip);
@@ -2778,9 +2781,9 @@ function renderSteps(steps, mode='desktop'){
             </div>
           </div>
         </div>
-        ${descBlock}
         ${detailIcons}
         ${ingBlock}
+        ${descBlock}
         ${bodyBlock}
         ${tipBlock}
       </div>

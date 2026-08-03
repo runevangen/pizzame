@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.695",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ikonraden (🧾 / 📋 / 💡) på hvert steg hoppet opp og ned når du åpnet eller lukket understeg. Årsaken var at raden lå under prosateksten, som forsvinner når understeg tar over. Nå er ikonraden forankret rett under steg-tittelen, og alt du åpner (ingredienser, tekst/understeg, tips) utvider seg nedenfor — så ikonene holder seg i ro uansett hva du velger."
+    ],
+    "changes_en": [
+      "The icon row (🧾 / 📋 / 💡) on each step jumped up and down when you opened or closed sub-steps. The cause was that the row sat below the prose text, which disappears when sub-steps take over. The icon row is now anchored right under the step title, and everything you open (ingredients, text/sub-steps, tips) expands below it — so the icons stay put no matter what you choose."
+    ]
+  },
+  {
     "v": "0.694",
     "d": "august 2026",
     "d_en": "August 2026",
