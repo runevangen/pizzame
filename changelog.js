@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.696",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fikset feil ventetekst for poolish/biga. Ventebanneret etter «Lag poolish» (og «Lag biga») sa «La stå i kjøleskap» når planen hadde en kjøleskapspause etterpå — men forspillet gjærer jo på benken ved romtemperatur. Nå står det riktig «🫧 Poolish gjærer i romtemperatur» (og tilsvarende for biga), med tiden i timer i stedet for avrundet til «1 dag». Velger du kjøleskaps-poolish, står det «❄️ Poolish modnes kaldt»."
+    ],
+    "changes_en": [
+      "Fixed the wrong wait text for poolish/biga. The wait banner after “Make poolish” (and “Make biga”) said “Rest in the fridge” when the plan had a fridge pause afterwards — but the preferment actually ferments on the counter at room temperature. It now correctly reads “🫧 Poolish ferments at room temperature” (and likewise for biga), with the time in hours instead of rounded to “1 day”. If you choose a cold poolish, it reads “❄️ Poolish matures cold”."
+    ]
+  },
+  {
     "v": "0.695",
     "d": "august 2026",
     "d_en": "August 2026",
