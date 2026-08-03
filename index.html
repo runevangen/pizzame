@@ -1194,6 +1194,7 @@ function syncStaticI18nUI(){
   st('mob-beta-baketime-lbl','Når skal deigen være klar?','When should the dough be ready?');
   st('mob-beta-baketime-sub','Ferdig hevet og klar for ovnen.','Proofed and ready for the oven.');
   st('mob-beta-search-btn','🔍 Finn oppskriften','🔍 Find the recipe');
+  st('mob-beta-methods-help','Bare metodene du huker av foreslås i Smart-plan. Du kan alltid velge enhver metode manuelt.','Only the methods you tick are suggested in Smart plan. You can always pick any method manually.');
   st('mob-beta-popular-lbl','Eller velg et populært tidspunkt','Or pick a popular time');
   st('mob-beta-popular-help','Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.','Tap a preset time, and we fill in the date and time above and run the search right away.');
   syncPizzatidToggleLabel();  // v0.656: «Vis/Skjul»-etiketten var statisk norsk til første trykk
@@ -3231,9 +3232,17 @@ function searchAllMethods(anchor){
   // kombinasjoner; fall bare tilbake til de umulige hvis absolutt ingenting
   // annet finnes (så resultatet i det minste er ærlig, ikke tomt).
   const now=Date.now();
-  const feasible=candidates.filter(c=>new Date(c.startIso).getTime()>=now);
+  // v0.681: brukerens metode-filter (kun Smart-plan-forslag). Metoder du har
+  // skrudd av faller ut av puljen. Har du skrudd av ALT, slapper vi filteret og
+  // viser alle (flagg til render) — aldri en tom skjerm. Den manuelle velgeren
+  // er uberørt: du kan alltid velge enhver metode selv.
+  const methodOk = c => (typeof betaMethodAllowed==='function') ? betaMethodAllowed(c.snapshot.method) : true;
+  const allowedCands = candidates.filter(methodOk);
+  window._betaFilterRelaxed = candidates.length>0 && allowedCands.length===0;
+  const base = allowedCands.length ? allowedCands : candidates;
+  const feasible=base.filter(c=>new Date(c.startIso).getTime()>=now);
   const usingFallback=!feasible.length;
-  const pool=feasible.length ? feasible : candidates;
+  const pool=feasible.length ? feasible : base;
   pool.forEach(c=>{ c.feasible=new Date(c.startIso).getTime()>=now; });
   // Normalt: færrest tidskonflikter, deretter lengst gjæring (best smak).
   // v0.661: MEN når ingenting kan starte nå (alle umulige), er «lengst gjæring»
@@ -3252,6 +3261,53 @@ function searchAllMethods(anchor){
 // FAKTISK den totale gjæringstiden resultatet endte opp med.
 function flourMatchesForHours(hrs){
   return MELTYPER.filter(m=>hrs>=m.ferm.mn && hrs<=m.ferm.mx).map(m=>m.t);
+}
+
+// ===== Smart-plan: metode-filter (hvilke metoder du blir tilbudt) =====
+// Kun for FORSLAG i Smart-plan — den manuelle metodevelgeren er uberørt.
+// Persisteres i localStorage (som tema/enheter), standard: alle på (opt-out).
+const BETA_METHOD_DEFS=[['standard','Langtidsdeig','Long-ferment dough'],['poolish','Poolish','Poolish'],['biga','Biga','Biga'],['mania','Mania-poolish','Mania poolish'],['hurtig','Hurtigdeig','Quick dough'],['kveld','Kveldsdeig','Evening dough']];
+let _betaMethods=null;
+function loadBetaMethods(){
+  if(_betaMethods) return _betaMethods;
+  const m={}; BETA_METHOD_DEFS.forEach(([k])=>m[k]=true);
+  try{ const s=localStorage.getItem('pizzaBetaMethods'); if(s){ const p=JSON.parse(s); BETA_METHOD_DEFS.forEach(([k])=>{ if(typeof p[k]==='boolean') m[k]=p[k]; }); } }catch(e){}
+  _betaMethods=m; return m;
+}
+function betaMethodAllowed(method){ return loadBetaMethods()[method]!==false; }
+function toggleBetaMethod(v){
+  const m=loadBetaMethods(); m[v]=!m[v];
+  try{ localStorage.setItem('pizzaBetaMethods', JSON.stringify(m)); }catch(e){}
+  renderBetaMethodFilter();
+  // Oppdater et allerede vist resultat med det samme, så filteret føles direkte.
+  const res=document.getElementById('mob-beta-result');
+  if(res && res.innerHTML.trim()){ try{ runBetaSearch(); }catch(e){} }
+}
+function toggleBetaMethodsOpen(){
+  const body=document.getElementById('mob-beta-methods-body');
+  const chev=document.getElementById('mob-beta-methods-chev');
+  if(!body) return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if(chev) chev.textContent=open?'▾':'▴';
+}
+function renderBetaMethodFilter(){
+  const body=document.getElementById('mob-beta-methods-rows');
+  const m=loadBetaMethods();
+  if(body){
+    body.innerHTML=BETA_METHOD_DEFS.map(([v,no,en])=>{
+      const on=m[v]!==false;
+      return `<div onclick="toggleBetaMethod('${v}')" role="checkbox" aria-checked="${on}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleBetaMethod('${v}')}" style="display:flex;align-items:center;gap:9px;padding:7px 2px;cursor:pointer">
+        <span aria-hidden="true" style="width:18px;height:18px;border-radius:5px;border:2px solid ${on?'var(--forno-accent)':'var(--forno-border)'};background:${on?'var(--forno-accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a1512;font-size:12px;font-weight:800">${on?'✓':''}</span>
+        <span style="font-size:13px;color:var(--forno-text)">${escH(L(no,en))}</span>
+      </div>`;
+    }).join('');
+  }
+  const lbl=document.getElementById('mob-beta-methods-lbl');
+  if(lbl){
+    const onCount=BETA_METHOD_DEFS.filter(([v])=>m[v]!==false).length;
+    lbl.textContent=L('🎛️ Metoder du blir tilbudt','🎛️ Methods you are offered')+(onCount<BETA_METHOD_DEFS.length?L(` · ${onCount} av 6`,` · ${onCount} of 6`):L(' · alle',' · all'));
+  }
 }
 
 // ===== BETA-fane: rendring =====
@@ -3326,6 +3382,7 @@ async function renderBetaPanel(){
   window._betaTouched={time:false,date:false}; // frisk guide hver gang fanen åpnes
   betaUpdateGuide();
   renderBetaFasteTider();
+  renderBetaMethodFilter();
 }
 // Åpner Beta-fanen og folder ut Pizzatid-panelet, slik at "Rediger pizzatiden
 // din" i varselet lander på selve redigeringen og ikke bare på fanen.
@@ -3519,7 +3576,11 @@ function renderResultBlock(containerId, label, anchorIso){
   const tooLateWarning = !top.feasible
     ? `<div data-smartwarn style="position:relative;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:7px 74px 7px 9px;margin-bottom:6px;font-size:11px;color:#633806">${L('⏱️ Ingen kombinasjon rekker fra akkurat nå — denne krever oppstart som allerede er passert. Vurder et senere spisetidspunkt.','⏱️ No combination fits starting right now — this one requires a start time that has already passed. Consider a later eating time.')}<button onclick="this.closest('[data-smartwarn]').style.display='none'" title="${L('Ignorer dette varselet','Ignore this warning')}" aria-label="${L('Ignorer dette varselet','Ignore this warning')}" style="position:absolute;top:6px;right:7px;padding:3px 10px;border:1px solid rgba(138,90,0,.32);border-radius:999px;background:rgba(255,255,255,.55);color:#8a5a00;font-size:11px;font-weight:700;cursor:pointer;line-height:1.5;font-family:inherit;white-space:nowrap">${L('Ignorer','Ignore')}</button></div>`
     : '';
+  const relaxedNote = window._betaFilterRelaxed
+    ? `<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:8px;padding:7px 9px;margin-bottom:6px;font-size:11px;color:var(--forno-text-muted)">${L('Du har skrudd av alle metoder — viser alle likevel. Skru på minst én under «Metoder du blir tilbudt».','You have turned off all methods — showing all anyway. Turn on at least one under "Methods you are offered".')}</div>`
+    : '';
   el.innerHTML=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:10px;margin-top:6px">
+    ${relaxedNote}
     ${tooLateWarning}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
       <div style="font-size:13px;font-weight:700;color:var(--forno-text)">${escH(label)}</div>
@@ -7470,6 +7531,16 @@ document.addEventListener('change', firstInteractionCheck, true);
         </div>
         <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
         <div id="mob-beta-result"></div>
+        <div style="margin-top:10px;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised)">
+          <div id="mob-beta-methods-toggle" onclick="toggleBetaMethodsOpen()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleBetaMethodsOpen()}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;cursor:pointer">
+            <span id="mob-beta-methods-lbl" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🎛️ Metoder du blir tilbudt</span>
+            <span id="mob-beta-methods-chev" style="font-size:12px;color:var(--forno-text-faint)">▾</span>
+          </div>
+          <div id="mob-beta-methods-body" style="display:none;padding:0 11px 8px">
+            <div id="mob-beta-methods-help" style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;padding:0 0 4px">Bare metodene du huker av foreslås i Smart-plan. Du kan alltid velge enhver metode manuelt.</div>
+            <div id="mob-beta-methods-rows"></div>
+          </div>
+        </div>
       </div>
 
       <div style="height:1px;background:var(--forno-border);margin:1.7rem 1rem 0"></div>

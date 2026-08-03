@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.681",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan lar deg nå styre hvilke metoder du blir tilbudt: under søket ligger en sammenleggbar «🎛️ Metoder du blir tilbudt» med avhuking for hver av de seks metodene (Langtidsdeig, Poolish, Biga, Mania, Hurtig, Kveld). Skrur du av en metode, foreslås den ikke lenger. Valget huskes, og et aktivt filter vises i overskriften («3 av 6»).",
+      "Filteret gjelder kun forslagene i Smart-plan — den manuelle metodevelgeren er uberørt, så du kan alltid velge enhver metode selv. Skrur du av alle, viser Smart-plan alle likevel (aldri en tom skjerm) med en påminnelse om å skru på minst én."
+    ],
+    "changes_en": [
+      "Smart plan now lets you control which methods you are offered: under the search there is a collapsible \"🎛️ Methods you are offered\" with a checkbox for each of the six methods (Long-ferment, Poolish, Biga, Mania, Quick, Evening). Turn a method off and it is no longer suggested. The choice is remembered, and an active filter is shown in the header (\"3 of 6\").",
+      "The filter only affects the Smart-plan suggestions — the manual method picker is untouched, so you can always choose any method yourself. If you turn them all off, Smart plan shows all of them anyway (never an empty screen) with a reminder to turn at least one on."
+    ]
+  },
+  {
     "v": "0.680",
     "d": "august 2026",
     "d_en": "August 2026",

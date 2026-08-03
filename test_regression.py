@@ -2664,6 +2664,45 @@ def run_behavioral_tests(page):
     ok70 = all(r70.get(k) for k in ['labelsMatchNeighbor','buttonsMatchNeighbor','noOverflowAnyLevel','visningNotZoomCancelled'])
     results.append(('display_section_scales_like_page_not_zoom_cancelled', ok70, r70))
 
+    # v0.681: Smart-plan-metode-filter. Seks avhukinger i beta-panelet styrer hvilke
+    # metoder som foreslås (kun forslag — manuell velger uberørt). Ekskluderte
+    # metoder faller ut av søket; persisteres i localStorage; skrur du av ALT
+    # slappes filteret (relaxed-flagg) så skjermen aldri blir tom.
+    r71 = page.evaluate("""() => {
+      const _lang=window._lang, _saved=localStorage.getItem('pizzaBetaMethods');
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('beta');
+        _betaMethods=null; try{localStorage.removeItem('pizzaBetaMethods');}catch(e){}
+        renderBetaMethodFilter();
+        const rows=document.querySelectorAll('#mob-beta-methods-rows > div').length;
+        const d=new Date(Date.now()+140*3600000); d.setHours(18,0,0,0); // langt anker: alle metoder gjennomførbare
+        const methodsIn=()=>[...new Set(searchAllMethods(new Date(d)).map(c=>c.snapshot.method))];
+        const before=methodsIn();
+        // skru av biga/poolish/mania
+        ['biga','poolish','mania'].forEach(m=>toggleBetaMethod(m));
+        const after=methodsIn();
+        const persisted=JSON.parse(localStorage.getItem('pizzaBetaMethods')||'{}');
+        const header=document.getElementById('mob-beta-methods-lbl').textContent;
+        // skru av resten -> relaxed fallback, ikke tomt
+        ['standard','hurtig','kveld'].forEach(m=>toggleBetaMethod(m));
+        const resAll=searchAllMethods(new Date(d));
+        const relaxed=window._betaFilterRelaxed, nonEmpty=resAll.length>0;
+        return {
+          rows, allSix: ['standard','poolish','biga','mania','hurtig','kveld'].every(m=>before.includes(m)),
+          excludedGone: !after.includes('biga') && !after.includes('poolish') && !after.includes('mania') && after.includes('standard'),
+          persistedOff: persisted.biga===false && persisted.poolish===false && persisted.standard===true,
+          headerCount: header.includes('3 av 6'),
+          relaxedWhenAllOff: relaxed===true && nonEmpty,
+          manualUntouched: typeof mobMethodCards==='function' && !mobMethodCards.toString().includes('betaMethodAllowed')
+        };
+      } finally {
+        window._lang=_lang; _betaMethods=null;
+        if(_saved===null){ try{localStorage.removeItem('pizzaBetaMethods');}catch(e){} } else { try{localStorage.setItem('pizzaBetaMethods',_saved);}catch(e){} }
+      }
+    }""")
+    ok71 = all(r71.get(k) for k in ['rows','allSix','excludedGone','persistedOff','headerCount','relaxedWhenAllOff','manualUntouched']) and r71.get('rows')==6
+    results.append(('smartplan_method_filter_excludes_suggestions_persists_relaxes_when_empty', ok71, r71))
+
     return results
 
 
