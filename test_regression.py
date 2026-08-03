@@ -3050,6 +3050,34 @@ def run_behavioral_tests(page):
     )
     results.append(('cold_pause_start_counts_as_presence_needed_with_ignore', ok85, r85))
 
+    # v0.703: konflikt-flagget i Tidsplanen har nå en inline «Ignorer»-knapp, så den
+    # virker uansett om du kom via Smart-plan (som lander på Tidsplan, ikke Sjekk).
+    # Samme _acceptedConflicts-nøkkel som Sjekk-panelets «fortsett likevel» → delt
+    # tilstand. Å ignorere skjuler nettopp det stegets flagg (men ikke senere steg).
+    r86 = page.evaluate("""() => {
+      const savedSched=window._pizzatidSchedule, savedChosen=window._planChosen;
+      const savedS={method:S.method,type:S.type,ph:S.poolishH,mode:S.mode,pause:S.poolishPauseH,cold:S.poolishCold};
+      _acceptedConflicts.clear();
+      window._pizzatidSchedule={mon:[],tue:[],wed:[],thu:[],fri:[],sat:[],sun:[]}; // ingen ledig tid → aktive steg blir «busy»
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='poolish'; S.poolishCold=false; S.poolishPauseH=6; S.poolishH=14; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const plan=()=>document.getElementById('mob-plan-content');
+      const before=plan().innerHTML;
+      const m=before.match(/acceptStepConflict\\('([^']+)'\\)/);
+      const key=m?m[1]:null;
+      const hasIgnoreBtn=/>Ignorer<\\/button>/.test(before) && /acceptStepConflict\\(/.test(before);
+      if(key) acceptStepConflict(key); // acceptStepConflict re-tegner selv
+      const after=plan().innerHTML;
+      const thatFlagGone = key ? !after.includes("acceptStepConflict('"+key+"')") : false;
+      _acceptedConflicts.clear(); window._pizzatidSchedule=savedSched; window._planChosen=savedChosen;
+      S.method=savedS.method;S.type=savedS.type;S.poolishH=savedS.ph;S.mode=savedS.mode;S.poolishPauseH=savedS.pause;S.poolishCold=savedS.cold;
+      mobGen();
+      return { hasIgnoreBtn, keyFound:!!key, thatFlagGone };
+    }""")
+    ok86 = all(r86.get(k) for k in ['hasIgnoreBtn','keyFound','thatFlagGone'])
+    results.append(('plan_conflict_flag_has_inline_ignore_button', ok86, r86))
+
     return results
 
 

@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.703",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Ignorer» rett i Tidsplanen. Får et steg ⚠-merket «utenfor ledig tid» (eller «midt på natten»), sitter det nå en liten «Ignorer»-knapp rett på merket — så du kan skjule varselet der du faktisk ser det. Før bodde den knappen bare inne i wizardens «Sjekk», som Smart-planen aldri sender deg innom (den lander på Tidsplan), så hvis du kom den veien var det i praksis ingen måte å avvise varselet på. «Ignorer» her og «fortsett likevel» i Sjekk deler nå samme tilstand — ignorerer du ett sted, er det ignorert begge steder."
+    ],
+    "changes_en": [
+      "“Ignore” right in the schedule. When a step gets the ⚠ “outside free time” (or “middle of the night”) mark, there's now a small “Ignore” button right on the mark — so you can hide the warning where you actually see it. Before, that button lived only inside the wizard's “Check”, which Smart plan never routes you through (it lands on the schedule), so if you came that way there was effectively no way to dismiss it. “Ignore” here and “continue anyway” in Check now share the same state — ignore it in one place and it's ignored in both."
+    ]
+  },
+  {
     "v": "0.702",
     "d": "august 2026",
     "d_en": "August 2026",
