@@ -2613,6 +2613,27 @@ def run_behavioral_tests(page):
             and r68.get('coldCap')==78 and not r68.get('annetInSmart'))
     results.append(('warnings_dismissible_in_now_mode_and_generic_flour_suppresses_meltype', ok68, r68))
 
+    # v0.678: overmodnings-varselet (flour-agnostisk fysikk) fyrer fortsatt for
+    # «Annet mel», men med en softere, usikkerhets-erkjennende ramme i stedet for
+    # «⚠️ fare for overfermentering» — sansesjekken beholdes. Kjente mel uendret.
+    r69 = page.evaluate("""() => {
+      const orig={type:S.type,method:S.method,cold:S.cold,bigaH:S.bigaH,mt:S.meltype,lang:window._lang};
+      try{
+        window._lang='no'; S.type='napoletana'; S.method='biga'; S.cold=78; S.bigaH=24; // stables til >92t
+        S.meltype='manitoba'; const known=overfermentWarningHTML();
+        S.meltype='annet'; const gen=overfermentWarningHTML();
+        window._lang='en'; const genEn=overfermentWarningHTML();
+        return {
+          knownFiresAlarm: known.includes('fare for overfermentering'),
+          genSoftTitle: gen.includes('Lang gjæring for et ukjent mel') && !gen.includes('fare for overfermentering'),
+          genKeepsCheck: gen.includes('sjekk deigen mot slutten') && gen.includes('et veldig sterkt mel kan tåle det'),
+          genEnSoft: genEn.includes('Long fermentation for an unknown flour') && genEn.includes('a very strong flour may handle it')
+        };
+      } finally { S.type=orig.type;S.method=orig.method;S.cold=orig.cold;S.bigaH=orig.bigaH;S.meltype=orig.mt;window._lang=orig.lang; }
+    }""")
+    ok69 = all(r69.get(k) for k in ['knownFiresAlarm','genSoftTitle','genKeepsCheck','genEnSoft'])
+    results.append(('overferment_softened_for_generic_flour_alarm_for_known', ok69, r69))
+
     return results
 
 
