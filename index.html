@@ -573,17 +573,6 @@ body.fs-xxlarge .mob-mcard-wrap{zoom:0.625}
 .step-next{border-left:3px solid #1D7FE9}
 .mob-step.step-next{border-left:3px solid #1D7FE9}
 .next-flag{display:inline-block;font-size:10px;font-weight:600;color:#1257A0;background:#E3F0FD;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
-/* F5: live «nå/neste»-stripe øverst i planen */
-.next-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 .7rem;padding:9px 12px;background:#eaf3fd;border:1px solid #cfe3fa;border-left:3px solid #1D7FE9;border-radius:8px;font-size:13px;cursor:pointer}
-.next-strip:focus-visible{outline:2px solid #1D7FE9;outline-offset:2px}
-.next-strip-lbl{font-weight:700;color:#1560b8;font-size:11px;letter-spacing:.03em;white-space:nowrap}
-.next-strip-title{font-weight:600;color:#1a1a1a}
-.next-strip-count{margin-left:auto;font-weight:700;color:#1560b8;font-variant-numeric:tabular-nums;white-space:nowrap}
-.next-strip.done{border-left-color:#e8590c;background:#fbe4d4;color:#0F6E56;cursor:default;font-weight:600}
-body.mob-mode .next-strip{background:var(--forno-accent-soft);border-color:var(--forno-border);border-left-color:var(--forno-accent);color:var(--forno-text)}
-body.mob-mode .next-strip-lbl,body.mob-mode .next-strip-count{color:var(--forno-accent-text)}
-body.mob-mode .next-strip-title{color:var(--forno-text)}
-body.mob-mode .next-strip.done{border-left-color:#e8590c}
 .missed-flag{display:inline-block;font-size:10px;font-weight:600;color:#9A5B00;background:#FAEEDA;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .conflict-flag{display:inline-block;font-size:10px;font-weight:600;color:#8a5a00;background:#FAEEDA;border:1px solid #EF9F27;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
 .adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#F2F2F7;border-radius:8px;font-size:12px;font-weight:600;color:#3A3A3C;cursor:pointer;margin:.6rem 0}
@@ -2600,69 +2589,9 @@ function fmtDur(mins){
   if(mins>=60){ const h=Math.round(mins/6)/10; return h.toString().replace('.',',')+(h===1?' time':' timer'); }
   return mins+' min';
 }
-// ===== F5 (BACKLOG): live «nå/neste»-stripe øverst i planen =====
-// Produktet ER en tidsplan, men «hva gjør jeg nå / når er neste» krevde scrolling.
-// Stripa løfter det fram med en nedtelling som en ticker oppdaterer hvert 30. sek,
-// uten å bygge om hele planen (kun ved et stegskille, så nå/neste flytter seg).
-function f5CountdownFromMs(ms){
-  if(ms <= 0) return 'nå';
-  let mins = Math.round(ms/60000);
-  if(mins < 1) return 'nå';
-  const days = Math.floor(mins/1440); mins -= days*1440;
-  const hrs = Math.floor(mins/60); mins -= hrs*60;
-  const parts = [];
-  if(days) parts.push(days+' d');
-  if(hrs) parts.push(hrs+' t');
-  if(mins || (!days && !hrs)) parts.push(mins+' min');
-  return 'om '+parts.join(' ');
-}
-function nextStepStripeHTML(steps){
-  if(!steps || !steps.length) return '';
-  const now = Date.now();
-  const isChecked = i => stepChecked(steps[i], i);
-  if(steps.every((s,i)=>isChecked(i))){
-    return `<div class="next-strip done">✓ Alle steg gjort — nyt pizzaen 🍕</div>`;
-  }
-  // Neste kommende (fremtidig, ikke avhaket) steg — det nedtellingen tjener. Er du
-  // midt i en passiv heving, peker dette på slutten av hevingen, ikke hevingen selv.
-  let up = -1;
-  for(let i=0;i<steps.length;i++){ if(!isChecked(i) && steps[i].at.getTime() > now){ up = i; break; } }
-  let label, title, count;
-  if(up !== -1){
-    label = '👉 Neste'; title = steps[up].title;
-    count = `<span class="next-strip-count" id="next-strip-count" data-at="${steps[up].at.getTime()}" data-future="1">${f5CountdownFromMs(steps[up].at.getTime()-now)}</span>`;
-  } else {
-    // Ingen fremtidig steg igjen — det første ikke-avhakede skal gjøres nå.
-    let cur = -1;
-    for(let i=0;i<steps.length;i++){ if(!isChecked(i)){ cur = i; break; } }
-    if(cur === -1) return `<div class="next-strip done">✓ Alle steg gjort — nyt pizzaen 🍕</div>`;
-    label = '👉 Nå'; title = steps[cur].title;
-    count = `<span class="next-strip-count">på tide</span>`;
-  }
-  return `<div class="next-strip" onclick="scrollToNextStep()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToNextStep();}" title="Hopp til neste steg" role="button" tabindex="0">`
-    + `<span class="next-strip-lbl">${label}</span><span class="next-strip-title">${escH(title)}</span>${count}</div>`;
-}
-function scrollToNextStep(){
-  const el = document.querySelector('.step-next') || document.querySelector('.now');
-  if(el && el.scrollIntoView){ try{ el.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }
-}
-let _f5Ticker = null;
-function startNextStepTicker(){
-  if(_f5Ticker) return;
-  _f5Ticker = setInterval(()=>{
-    const el = document.getElementById('next-strip-count');
-    if(!el) return;                       // ingen stripe akkurat nå (annen fane / ingen plan)
-    const at = parseInt(el.getAttribute('data-at')||'0', 10);
-    if(!at) return;
-    const ms = at - Date.now();
-    el.textContent = f5CountdownFromMs(ms);
-    if(el.getAttribute('data-future')==='1' && ms <= 0){
-      el.setAttribute('data-future','0');  // tiden passerte stegskillet
-      const mobEl=document.getElementById('mob-layout');
-      if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
-    }
-  }, 30000);
-}
+// F5-stripa («nå/neste» + nedtelling) fjernet v0.686 — den duplikerte lista
+// og konkurrerte med «nå»-uthevingen/Fokus-modus. Timelinens egne merker
+// (nå-utheving, «👉 neste», «⚠️ ikke avhaket») dekker «hva er neste».
 function renderSteps(steps, mode='desktop'){
   const isMob = mode === 'mobile';
   const today = new Date(); today.setHours(0,0,0,0);
@@ -2743,8 +2672,7 @@ function renderSteps(steps, mode='desktop'){
     tip: 'stip',
   };
 
-  startNextStepTicker();
-  let html = nextStepStripeHTML(steps);
+  let html = '';
   let lastDay = null;
   let conflictFlagged = false; // kun det FØRSTE steget som kolliderer merkes (som varselkortet)
 

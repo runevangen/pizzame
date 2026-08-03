@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.686",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fjernet «👉 Neste»-stripa med nedtelling øverst i tidsplanen. Den duplikerte det lista allerede viser, brukte et annet «neste»-begrep enn selve stegene (den pekte forbi steget du står på), og konkurrerte med «nå»-uthevingen og Fokus-modus om oppmerksomheten. Tidsplanen er nå roligere: timelinen med sin egen nå-utheving for oversikt, og Fokus-modus for ett steg om gangen. Andre måter å varsle «neste» på kan komme senere."
+    ],
+    "changes_en": [
+      "Removed the \"👉 Next\" strip with countdown at the top of the schedule. It duplicated what the list already shows, used a different notion of \"next\" than the steps themselves (it pointed past the step you're on), and competed with the \"now\" highlight and Focus mode for attention. The schedule is calmer now: the timeline with its own \"now\" highlight for the overview, and Focus mode for one step at a time. Other ways to signal \"next\" may come later."
+    ]
+  },
+  {
     "v": "0.685",
     "d": "august 2026",
     "d_en": "August 2026",
