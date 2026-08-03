@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.685",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Admin kan nå legge til, endre og slette meltyper direkte i appen (Admin → «🌾 Rediger meltyper»), uten en ny appversjon — fullfører eksternaliseringen fra forrige oppdatering. Hvert mel har navn, protein, W, hydrering og gjæringsvindu.",
+      "Kald-hevings-taket følger nå sterkeste mel automatisk: legger admin inn et mel som tåler lengre gjæring, strekker kald-slideren seg tilsvarende (før var taket et fast tall). «Annet mel / ikke i listen» styres fortsatt av appen og kan ikke redigeres bort."
+    ],
+    "changes_en": [
+      "Admin can now add, edit and delete flour types directly in the app (Admin → \"🌾 Edit flours\"), without a new app version — completing the externalization from the previous update. Each flour has name, protein, W, hydration and a fermentation window.",
+      "The cold-proof cap now follows the strongest flour automatically: if admin adds a flour that tolerates a longer fermentation, the cold slider extends accordingly (previously the cap was a fixed number). \"Other / not listed\" is still controlled by the app and cannot be edited away."
+    ]
+  },
+  {
     "v": "0.684",
     "d": "august 2026",
     "d_en": "August 2026",
