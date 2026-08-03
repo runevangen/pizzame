@@ -524,3 +524,17 @@ kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
   faktisk endrer seg (NB: poolish-*varigheten* i steg 1 skal IKKE endre seg — den er
   et brukervalgt tall, ikke temp-styrt).
 - **[baseline]** — flytter tidsplan-tall.
+
+### F15. Anbefalt vanntemperatur (°C) i blandestegene for poolish/biga/standard
+- **I klartekst:** Hurtigdeig oppgir allerede en konkret vanntemperatur i °C
+  (regnet ut fra ønsket deigtemperatur og friksjonsvarme, `index.html:~2106`,
+  `t = 3*target − S.temp − S.temp − FF`). Poolish/biga/standard sine blandesteg
+  bruker bare den kvalitative `waterTempPhrase()` («kjølig eller romtemperert vann»).
+  En konkret °C-anbefaling der ville gitt jevnere resultat gjennom året (kaldt
+  kjøkken om vinteren vs varmt om sommeren treffer samme ~24 °C deigtemperatur).
+- **Skisse:** gjenbruk hurtig-metodens vanntemp-utregning i et delt
+  `recommendedWaterTempC()` og flett inn i blandestegenes desc ved siden av
+  `waterTempPhrase()`. Husk friksjonsvarme varierer med kjøkkenmaskin (FF).
+- Foreslått av oppskriftsgjennomgang, aug 2026 (sammen med work-time/knead-time-
+  presiseringen som ble gjort i v0.700).
+- **[baseline]** hvis tallet vises i frosne render-tester.

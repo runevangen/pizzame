@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.700",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ryddet en liten uklarhet i poolish-blandesteget: steget er satt av ~20 minutter, men teksten sier «elt totalt 10–12 min», så planens tidsavsetning og eltetiden kunne virke motstridende. La til en presisering om at de ~20 minuttene er samlet arbeidstid — tilsetting av mel og salt, elting og temperaturmåling — mens selve eltingen er den kortere tiden. Den faktiske eltetiden står fortsatt. (En større idé fra samme gjennomgang — å oppgi en anbefalt vanntemperatur i °C i blandestegene, slik hurtigdeig allerede gjør — er lagt i backloggen.)"
+    ],
+    "changes_en": [
+      "Cleared up a small ambiguity in the poolish mixing step: the step is allotted ~20 minutes, but the text says “knead 10–12 min total”, so the plan's time allocation and the kneading time could look contradictory. Added a note that the ~20 minutes is total working time — adding flour and salt, kneading and measuring temperature — while the kneading itself is the shorter time. The actual kneading time is still shown. (A larger idea from the same review — showing a recommended water temperature in °C in the mixing steps, the way the quick dough already does — has been added to the backlog.)"
+    ]
+  },
+  {
     "v": "0.699",
     "d": "august 2026",
     "d_en": "August 2026",
