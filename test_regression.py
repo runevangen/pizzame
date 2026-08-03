@@ -477,7 +477,7 @@ def run_behavioral_tests(page):
       document.getElementById('mob-ed').value = fd(d);
       document.getElementById('mob-et').value = '18:00';
       mobShowTab('plan'); mobGen();
-      // Tidsplan viser nå et nedtonet «⚠ utenfor spisetid»-merke på steget i
+      // Tidsplan viser nå et nedtonet «⚠ utenfor ledig tid»-merke på steget i
       // stedet for hele kortet — redigering av pizzatid skal fjerne merket live.
       const has = () => !!document.querySelector('#mob-plan-content .conflict-flag');
       const before = has();
@@ -2728,6 +2728,32 @@ def run_behavioral_tests(page):
     }""")
     ok72 = all(r72.get(k) for k in ['topSupportedByMany','topNotExtreme','longStillInPool','supportFieldWired'])
     results.append(('smartplan_prefers_broadly_supported_ferment_over_extreme_length', ok72, r72))
+
+    # v0.683: tidskonflikt-merket på et steg som havner utenfor din LEDIGE tid sa
+    # feilaktig «utenfor spisetid» (du spiser ikke da — du jobber), og var norsk-
+    # only. Nå: «utenfor ledig tid» / «outside free time», tospråklig.
+    r73 = page.evaluate("""() => {
+      const _sched=window._pizzatidSchedule, _lang=window._lang, _m=S.method, _hh=S.hurtigH, _mode=S.mode;
+      try{
+        window._planChosen=true; setLayout('mob');
+        window._pizzatidSchedule={mon:[null,null],tue:[null,null],wed:[null,null],thu:[null,null],fri:[null,null],sat:[null,null],sun:[null,null]};
+        S.type='napoletana'; S.method='hurtig'; S.hurtigH=4; S.mode='end';
+        const d=new Date(Date.now()+30*3600000); d.setHours(14,0,0,0); // oppstart ~kl 10, dagtid
+        document.getElementById('mob-ed').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+        document.getElementById('mob-et').value='14:00';
+        mobShowTab('plan');
+        const grab=()=>{const f=document.querySelector('#mob-plan-content .conflict-flag'); return f?f.textContent.trim():'';};
+        window._lang='no'; mobGen(); const no=grab();
+        window._lang='en'; mobGen(); const en=grab();
+        return {
+          noCorrect: no.includes('utenfor ledig tid') && !no.includes('spisetid'),
+          enTranslated: en.includes('outside free time'),
+          srcNoSpisetid: !renderSteps.toString().includes('utenfor spisetid')
+        };
+      } finally { window._pizzatidSchedule=_sched; window._lang=_lang; S.method=_m; S.hurtigH=_hh; S.mode=_mode; }
+    }""")
+    ok73 = all(r73.get(k) for k in ['noCorrect','enTranslated','srcNoSpisetid'])
+    results.append(('conflict_flag_says_free_time_not_eating_time_bilingual', ok73, r73))
 
     return results
 
