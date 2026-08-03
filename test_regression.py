@@ -2855,6 +2855,37 @@ def run_behavioral_tests(page):
     ok78 = all(r78.get(k) for k in ['hadMobTime','mobNowrap','hadPcTime','pcNowrap'])
     results.append(('step_time_stays_on_one_line', ok78, r78))
 
+    # v0.695: ikonraden (🧾/📋/💡) hoppet opp/ned når man åpnet understeg, fordi den
+    # lå UNDER prosateksten — og v0.693 lar teksten vike for sjekklista. Nå er raden
+    # forankret rett under tittelen (over alt utvidbart innhold). Sjekker at
+    # .step-detail-icons har SAMME posisjon blant kortets barn før og etter at
+    # understeg åpnes (altså ikke flytter seg), og at den ligger foran både desc og
+    # understeg-lista.
+    r79 = page.evaluate("""() => {
+      window._openIng=new Set(); window._openSub=new Set(); window._openTip=new Set();
+      window._planChosen=true; setLayout('mob'); S.type='napoletana'; S.method='standard'; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const idxOfIcons=()=>{
+        const icons=document.querySelector('#mob-plan-content .mob-step .step-detail-icons');
+        if(!icons) return -1;
+        return Array.prototype.indexOf.call(icons.parentElement.children, icons);
+      };
+      const idxClosed=idxOfIcons();
+      // desc synlig og LIGGER ETTER ikonene når understeg er lukket
+      const bodyClosed=document.querySelector('#mob-plan-content .mob-step .mob-sbody, #mob-plan-content .mob-step').innerHTML;
+      const iconsBeforeDesc = bodyClosed.indexOf('step-detail-icons') < bodyClosed.indexOf('mob-sdesc');
+      // åpne understeg på steg 0
+      window._openSub=new Set([0]); mobGen();
+      const idxOpen=idxOfIcons();
+      const bodyOpen=document.querySelector('#mob-plan-content .mob-step .mob-sbody, #mob-plan-content .mob-step').innerHTML;
+      const iconsBeforeSubs = bodyOpen.indexOf('step-detail-icons') < bodyOpen.indexOf('substep-list');
+      window._openIng=new Set(); window._openSub=new Set(); window._openTip=new Set();
+      return { idxClosed, idxOpen, stable: idxClosed>=0 && idxClosed===idxOpen,
+               iconsBeforeDesc, iconsBeforeSubs };
+    }""")
+    ok79 = all(r79.get(k) for k in ['stable','iconsBeforeDesc','iconsBeforeSubs'])
+    results.append(('step_detail_icons_anchored_do_not_jump', ok79, r79))
+
     return results
 
 
