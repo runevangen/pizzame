@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.679",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet at teksten under «Mer → Visning» (Tema og Skriftstørrelse) var mindre enn resten av skjermen. Seksjonen var feilaktig «zoom-kansellert» (holdt på fast chrome-størrelse), mens nabo-seksjonen Språk/Enheter skalerte med lesetekst. Nå skalerer den likt, og etikettene matcher nabo-seksjonen på alle skriftstørrelser."
+    ],
+    "changes_en": [
+      "Fixed the text under \"More → Display\" (Theme and Font size) being smaller than the rest of the screen. The section was mistakenly \"zoom-cancelled\" (held at a fixed chrome size), while the neighboring Language/Units section scaled with the reading text. It now scales the same way, and the labels match the neighboring section at every font size."
+    ]
+  },
+  {
     "v": "0.678",
     "d": "august 2026",
     "d_en": "August 2026",

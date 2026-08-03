@@ -2634,6 +2634,35 @@ def run_behavioral_tests(page):
     ok69 = all(r69.get(k) for k in ['knownFiresAlarm','genSoftTitle','genKeepsCheck','genEnSoft'])
     results.append(('overferment_softened_for_generic_flour_alarm_for_known', ok69, r69))
 
+    # v0.679: «Mer → Visning»-seksjonen var zoom-kansellert (.fs-visning-wrap holdt
+    # den på «chrome»-størrelse) så teksten ble mindre enn resten av skjermen. Nå
+    # skalerer den med lesetekst som nabo-seksjonen (Språk/Enheter): felt-etikettene
+    # matcher, og ingenting flyter over horisontalt på noe skriftnivå.
+    r70 = page.evaluate("""() => {
+      const orig=window._planChosen;
+      try{
+        window._planChosen=true; setLayout('mob'); mobShowTab('tips');
+        const eff = (id,sel) => { let el=document.getElementById(id); if(sel) el=el&&el.querySelector(sel); if(!el) return null;
+          let z=1,n=el; while(n&&n!==document.documentElement){z*=(parseFloat(getComputedStyle(n).zoom)||1);n=n.parentElement;}
+          return Math.round(parseFloat(getComputedStyle(el).fontSize)*z*10)/10; };
+        const themeL=eff('mob-theme-lbl'), fsL=eff('mob-fs-lbl'), langL=eff('mob-i18n-lang-lbl');
+        const fsBtn=eff('mob-fs-seg','.o'), langBtn=eff('mob-l-no');
+        const ov={}; for(const lvl of ['','fs-large','fs-xlarge','fs-xxlarge']){
+          document.body.classList.remove('fs-large','fs-xlarge','fs-xxlarge'); if(lvl)document.body.classList.add(lvl);
+          ov[lvl||'normal']=document.documentElement.scrollWidth-document.documentElement.clientWidth;
+        } document.body.classList.remove('fs-large','fs-xlarge','fs-xxlarge');
+        const notCancelled = ![...document.styleSheets].some(ss=>{ try{ return [...ss.cssRules].some(r=>/fs-visning-wrap/.test(r.selectorText||'')); }catch(e){ return false; } });
+        return {
+          labelsMatchNeighbor: themeL!=null && themeL===fsL && fsL===langL,
+          buttonsMatchNeighbor: fsBtn!=null && fsBtn===langBtn,
+          noOverflowAnyLevel: Object.values(ov).every(v=>v<=0),
+          visningNotZoomCancelled: notCancelled
+        };
+      } finally { window._planChosen=orig; }
+    }""")
+    ok70 = all(r70.get(k) for k in ['labelsMatchNeighbor','buttonsMatchNeighbor','noOverflowAnyLevel','visningNotZoomCancelled'])
+    results.append(('display_section_scales_like_page_not_zoom_cancelled', ok70, r70))
+
     return results
 
 
