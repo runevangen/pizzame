@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.689",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Flyttet «Kopier / Kalender / Lagre» fra toppen av tidsplanen ned til bunnen (under «Med denne planen»). De brukes sjelden og er handlinger du gj\u00f8r ETTER at planen er lest \u2014 s\u00e5 de tar ikke lenger toppplass fra selve stegene. Ikke sticky, bare nederst. \u00ab\ud83d\udd0e Fokus\u00bb blir v\u00e6rende \u00f8verst."
+    ],
+    "changes_en": [
+      "Moved \"Copy / Calendar / Save\" from the top of the schedule down to the bottom (under \"With this plan\"). They are rarely used and are actions you take AFTER reading the plan \u2014 so they no longer take prime space above the steps. Not sticky, just at the bottom. \"\ud83d\udd0e Focus\" stays at the top."
+    ]
+  },
+  {
     "v": "0.688",
     "d": "august 2026",
     "d_en": "August 2026",
