@@ -2999,6 +2999,21 @@ def run_behavioral_tests(page):
     ok83 = all(r83.get(k) for k in ['hadStep','kneadTime','workNote'])
     results.append(('poolish_mix_step_clarifies_work_time_vs_knead_time', ok83, r83))
 
+    # v0.701: kjøleskapspause-steget sa både «tåler noen timer kaldt» OG «maks 18
+    # timer» — selvmotsigende, siden 18 timer ikke er «noen timer». Teksten er nå
+    # konsistent: kulda pauser gjæringen, poolishen holder seg en god stund (maks 18t).
+    r84 = page.evaluate("""() => {
+      const orig={method:S.method,pause:S.poolishPauseH,ph:S.poolishH,type:S.type};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='poolish'; S.poolishCold=false; S.poolishPauseH=6; S.poolishH=14; S.mode='start'; mobGen();
+      const s=(window._steps||[]).find(x=>/kjøleskapspause/i.test(x.title));
+      const why=s?s.why:'';
+      S.method=orig.method;S.poolishPauseH=orig.pause;S.poolishH=orig.ph;S.type=orig.type; mobGen();
+      return { hadPause:!!s, mentions18:/18 timer/.test(why), noFewHours:!/noen timer kaldt/.test(why) };
+    }""")
+    ok84 = all(r84.get(k) for k in ['hadPause','mentions18','noFewHours'])
+    results.append(('poolish_cold_pause_why_internally_consistent', ok84, r84))
+
     return results
 
 
