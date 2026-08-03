@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.701",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet en liten selvmotsigelse i kjøleskapspause-steget: «Hvorfor»-teksten sa både at en moden poolish «tåler noen timer kaldt» og at pausen er «maks 18 timer» — men 18 timer er ikke «noen timer». Teksten er nå konsistent: i kjøleskapet nærmest pauses gjæringen, så poolishen holder seg godt en god stund, med 18 timer som øvre grense."
+    ],
+    "changes_en": [
+      "Fixed a small contradiction in the cold-pause step: the “Why” text said both that a mature poolish “tolerates a few hours cold” and that the pause is “up to 18 hours” — but 18 hours isn't “a few hours”. The text is now consistent: in the fridge the fermentation is all but paused, so the poolish keeps well for a good while, with 18 hours as the upper limit."
+    ]
+  },
+  {
     "v": "0.700",
     "d": "august 2026",
     "d_en": "August 2026",
