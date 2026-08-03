@@ -2739,14 +2739,26 @@ function renderSteps(steps, mode='desktop'){
       let sAt=s.at; if(!(sAt instanceof Date)) sAt=new Date(sAt);
       const sWin=((!s.passive || s.needsPresence) && !isNaN(sAt.getTime())) ? ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(sAt.getHours(),sAt.getMinutes(),sAt.getDay())) : null;
       if(sWin){
-        conflictFlagged=true;
-        // «busy» = et steg som havner utenfor den LEDIGE tiden du har satt av til
-        // pizza (ikke «spisetid» — du spiser ikke da, du jobber). Merket og
-        // hjelpeteksten er nå tospråklige (var norsk-only).
-        const lbl=sWin.id==='busy'?L('utenfor ledig tid','outside free time'):L('midt på natten','middle of the night');
-        const click=(sWin.id==='busy' && isMob)?' onclick="event.stopPropagation();openPizzatidFromWarning()" style="cursor:pointer"':'';
-        const winLbl=(window._lang==='en' && sWin.labelEn) ? sWin.labelEn : sWin.label;
-        conflictFlag=` <span class="conflict-flag"${click} title="${L(`Dette steget faller i ${winLbl} — se detaljer og valg i wizardens Sjekk`,`This step falls in ${winLbl} — see details and options in the wizard's Check`)}">⚠ ${lbl}</span>`;
+        let cDt=''; try{ cDt=fDT(sAt); }catch(e){}
+        // Samme nøkkel som Sjekk-panelets «fortsett likevel» (acceptStepConflict),
+        // så «Ignorer» her i Tidsplanen og «fortsett likevel» der deler tilstand.
+        const cKey=warnKey(`activestep|${sWin.id}|${s.title}|${cDt}`);
+        // v0.703: er konflikten godtatt (herfra ELLER fra Sjekk), skjul flagget —
+        // men IKKE lås conflictFlagged, så et senere ikke-godtatt steg fortsatt kan
+        // flagges. Ellers ville ett godtatt steg skjult alle senere konflikter.
+        if(!_acceptedConflicts.has(cKey)){
+          conflictFlagged=true;
+          // «busy» = et steg som havner utenfor den LEDIGE tiden du har satt av til
+          // pizza (ikke «spisetid» — du spiser ikke da, du jobber). Merket og
+          // hjelpeteksten er nå tospråklige (var norsk-only).
+          const lbl=sWin.id==='busy'?L('utenfor ledig tid','outside free time'):L('midt på natten','middle of the night');
+          const click=(sWin.id==='busy' && isMob)?' onclick="event.stopPropagation();openPizzatidFromWarning()" style="cursor:pointer"':'';
+          const winLbl=(window._lang==='en' && sWin.labelEn) ? sWin.labelEn : sWin.label;
+          // Inline «Ignorer» rett på flagget — virker uansett om du kom via Smart-plan
+          // (som lander på Tidsplan) eller wizarden. Ikke lenger nødvendig å åpne Sjekk.
+          const ignoreBtn=`<button type="button" onclick="event.stopPropagation();acceptStepConflict('${cKey}')" title="${L('Marker at dette er greit — skjul varselet','Mark this as fine — hide the warning')}" style="margin-left:5px;padding:0 7px;border:1px solid #EF9F27;border-radius:999px;background:#fff;color:#8a5a00;font-size:10px;font-weight:700;cursor:pointer;vertical-align:1px;line-height:1.7;font-family:inherit">${L('Ignorer','Ignore')}</button>`;
+          conflictFlag=` <span class="conflict-flag"${click} title="${L(`Dette steget faller i ${winLbl}`,`This step falls in ${winLbl}`)}">⚠ ${lbl}</span>${ignoreBtn}`;
+        }
       }
     }
     // Skisse B (justert): kortet viser selve stegteksten (desc) som «hva du gjør».
