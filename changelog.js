@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.708",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "To rettelser på Smart-plan-valgene. (1) Det står nå tydelig at alternativenes «når»-boks ER en konflikt — en «⚠ Utenfor ledig tid»-etikett (eller «Midt på natten») over tidspunktet, så du slipper å gjette hvorfor steget er trukket fram. (2) Fikset at gjæringstiden kunne flyte ut av kortet: «mer smak» er flyttet ned på egen linje, så tallet (~43t) holder seg kort ved siden av lange metodenavn som wrapper over flere linjer."
+    ],
+    "changes_en": [
+      "Two fixes for the Smart plan options. (1) It now says clearly that the alternatives' “when” box IS a conflict — a “⚠ Outside free time” label (or “Middle of the night”) above the time, so you don't have to guess why the step is highlighted. (2) Fixed the fermentation time overflowing the card: “more flavor” has moved to its own line, so the figure (~43h) stays short next to long method names that wrap across several lines."
+    ]
+  },
+  {
     "v": "0.707",
     "d": "august 2026",
     "d_en": "August 2026",

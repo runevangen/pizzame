@@ -588,11 +588,14 @@ body.fs-xxlarge .mob-mcard-wrap{zoom:0.625}
 .beta-card{border:1px solid var(--forno-border,#e0d3b5);border-radius:10px;padding:10px;margin-top:9px;background:var(--forno-bg,#f5f0e6)}
 .beta-card.beta-win{background:var(--forno-accent-soft,#fbe4d4);border-color:var(--forno-accent,#e8590c)}
 .beta-row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.beta-m{font-size:12.5px;font-weight:700;color:var(--forno-text,#3f2d10);line-height:1.25}
+.beta-m{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;font-size:12.5px;font-weight:700;color:var(--forno-text,#3f2d10);line-height:1.25}
 .beta-card.beta-win .beta-m{font-weight:800;color:var(--forno-accent-text,#c2410c)}
-.beta-hrs{font-size:11px;color:var(--forno-text-faint,#6d5a3a);white-space:nowrap;font-weight:700;text-align:right}
-.beta-whenrow{margin-top:7px;background:var(--forno-bg-raised,#fffdf8);border:1px solid var(--forno-border-soft,#ece3d2);border-radius:8px;padding:6px 9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.beta-hrs{flex:0 0 auto;font-size:11px;color:var(--forno-text-faint,#6d5a3a);white-space:nowrap;font-weight:700;text-align:right}
+.beta-sub{font-size:9.5px;color:var(--forno-text-faint,#6d5a3a);margin-top:1px}
+.beta-whenrow{margin-top:7px;background:var(--forno-bg-raised,#fffdf8);border:1px solid var(--forno-border-soft,#ece3d2);border-radius:8px;padding:7px 9px}
 .beta-card.beta-win .beta-whenrow{background:rgba(255,255,255,.5)}
+.beta-conf-lbl{font-size:9.5px;font-weight:800;color:#b45309;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+.beta-when-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .beta-when-big{font-size:14px;font-weight:900;color:var(--forno-accent-text,#c2410c);white-space:nowrap}
 .beta-when-step{font-size:10.5px;color:var(--forno-text-muted,#40301a);line-height:1.4}
 .beta-eff{display:inline-block;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 8px;white-space:nowrap}
@@ -3666,12 +3669,16 @@ function betaWhenRow(conflicts){
   if(!conflicts || !conflicts.length) return `<span class="beta-eff fits" style="font-size:11px;padding:2px 10px">✓ ${L('alt passer','all fits')}</span>`;
   const c=conflicts[0];
   const dy=['søn','man','tir','ons','tor','fre','lør'];
-  let when=''; try{ const at=new Date(c.atIso); when=dy[at.getDay()]+' '+fT(at); }catch(e){}
+  let when='', night=false;
+  try{ const at=new Date(c.atIso); when=dy[at.getDay()]+' '+fT(at); night=at.getHours()>=23||at.getHours()<6; }catch(e){}
   const quick=conflictIsQuick(c);
   const eff=quick?L('kort håndgrep','quick handling'):`~${c.dur} min ${L('aktivt','active')}`;
   const more=conflicts.length>1?` <span style="color:var(--forno-text-faint,#6d5a3a);font-weight:400">+${conflicts.length-1}</span>`:'';
-  return `<span class="beta-when-big">${escH(when)}</span>`
-    +`<span class="beta-when-step">${escH(dispTitle(c.title))}${more}<br><span class="beta-eff ${quick?'quick':'active'}" style="margin-top:2px">${eff}</span></span>`;
+  // Uten en etikett måtte man gjette at «når»-boksen ER en konflikt. Si det rett ut.
+  const lbl=night?L('Midt på natten','Middle of the night'):L('Utenfor ledig tid','Outside free time');
+  return `<div class="beta-conf-lbl">⚠ ${lbl}</div>`
+    +`<div class="beta-when-line"><span class="beta-when-big">${escH(when)}</span>`
+    +`<span class="beta-when-step">${escH(dispTitle(c.title))}${more}<br><span class="beta-eff ${quick?'quick':'active'}" style="margin-top:2px">${eff}</span></span></div>`;
 }
 function renderResultBlock(containerId, label, anchorIso){
   const results=searchAllMethods(new Date(anchorIso));
@@ -3697,11 +3704,12 @@ function renderResultBlock(containerId, label, anchorIso){
     const isWin=i===0;
     const flav=(!isWin && c.totalHrs>top.totalHrs+2) ? L('mer smak','more flavor')
              : (!isWin && c.totalHrs<top.totalHrs-2 ? L('kortere','shorter') : '');
-    const hrs=`~${Math.round(c.totalHrs)}${L('t','h')}${flav?' · '+flav:''}`;
     // Hvert valg er et kort med egen «Bruk denne»-knapp: fylt for anbefalt, omriss
-    // for alternativene. Slik er det tydelig at også alternativene kan velges.
+    // for alternativene. «mer smak» på egen linje så gjæringstallet holder seg kort
+    // og ikke flyter ut av kortet ved siden av et langt, wrappet metodenavn.
     return `<div class="beta-card${isWin?' beta-win':''}">
-      <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">${hrs}</span></div>
+      <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">~${Math.round(c.totalHrs)}${L('t','h')}</span></div>
+      ${flav?`<div class="beta-sub">${flav}</div>`:''}
       <div class="beta-whenrow">${betaWhenRow(c.conflicts)}</div>
       <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${i})">${L('Bruk denne','Use this one')}</button>
     </div>`;

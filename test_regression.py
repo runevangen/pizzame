@@ -3139,6 +3139,11 @@ def run_behavioral_tests(page):
         bigTimeProminent:/beta-when-big/.test(h),             // tidspunktet stort/fremhevet
         confUnderMethod: orderInCard,                          // tid under metoden, ikke ved siden av
         altBtnOutline:/beta-use beta-sec/.test(h),            // alternativer = omriss-knapp
+        // v0.708: konflikten er MERKET som konflikt (ikke noe å gjette), og «mer smak»
+        // ligger på egen linje så gjæringstallet ikke flyter ut ved siden av et langt navn.
+        conflictLabelled:/beta-conf-lbl/.test(h) && /(Utenfor ledig tid|Midt på natten)/.test(h),
+        flavOnOwnLine:/class=\"beta-sub\">(mer smak|kortere)/.test(h),
+        hrsHasNoFlav: !/beta-hrs\">[^<]*(mer smak|kortere)/.test(h),
         winnerFits:/beta-eff fits/.test(h),
         altQuickPill:/beta-eff quick/.test(h),
         altShowsStep:/Ta ut av kj/.test(h),
@@ -3146,7 +3151,7 @@ def run_behavioral_tests(page):
         quickForDur0:qkTouch===true, activeForDur20:qkActive===false, quickForPassive:qkPassive===true
       };
     }""")
-    ok88 = all(r88.get(k) for k in ['noErr','threeCards','perCardUseButtons','bigTimeProminent','confUnderMethod','altBtnOutline','winnerFits','altQuickPill','altShowsStep','noOldBottomBtn','quickForDur0','activeForDur20','quickForPassive'])
+    ok88 = all(r88.get(k) for k in ['noErr','threeCards','perCardUseButtons','bigTimeProminent','confUnderMethod','altBtnOutline','conflictLabelled','flavOnOwnLine','hrsHasNoFlav','winnerFits','altQuickPill','altShowsStep','noOldBottomBtn','quickForDur0','activeForDur20','quickForPassive'])
     results.append(('smartplan_result_comparison_table_shows_conflict_effort', ok88, r88))
 
     return results
