@@ -3078,6 +3078,32 @@ def run_behavioral_tests(page):
     ok86 = all(r86.get(k) for k in ['hasIgnoreBtn','keyFound','thatFlagGone'])
     results.append(('plan_conflict_flag_has_inline_ignore_button', ok86, r86))
 
+    # v0.704: «Kopier oppskrift»-prompten ber nå også om interne inkonsistenser
+    # (tekst/tall som motsier hverandre), med et anker-vern: vurder mot det som
+    # faktisk står, ikke mot bransjenormer. (Fanger opp klassen av feil de siste
+    # gjennomgangene faktisk fant, og demper støyen fra ekstern-norm-pirk.)
+    r87 = page.evaluate("""() => {
+      const savedS={method:S.method,type:S.type,mode:S.mode};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='poolish'; S.mode='start'; mobShowTab('plan'); mobGen();
+      let captured='', orig=null;
+      try{
+        if(!navigator.clipboard){ Object.defineProperty(navigator,'clipboard',{value:{},configurable:true}); }
+        orig=navigator.clipboard.writeText;
+        navigator.clipboard.writeText=(t)=>{ captured=t; return Promise.resolve(); };
+      }catch(e){}
+      try{ copyP(window._steps||[]); }catch(e){ captured='ERR:'+e; }
+      try{ if(orig) navigator.clipboard.writeText=orig; }catch(e){}
+      S.method=savedS.method;S.type=savedS.type;S.mode=savedS.mode; mobGen();
+      return {
+        hasInconsistency: /interne inkonsistenser/.test(captured),
+        hasAnchorGuard: /ikke mot generelle bransjenormer/.test(captured),
+        stillHasInputs: /Hydrering/.test(captured) && /INGREDIENSER/.test(captured)
+      };
+    }""")
+    ok87 = all(r87.get(k) for k in ['hasInconsistency','hasAnchorGuard','stillHasInputs'])
+    results.append(('copy_prompt_asks_for_internal_inconsistencies_with_anchor_guard', ok87, r87))
+
     return results
 
 

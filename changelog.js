@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.704",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Kopier oppskrift»-teksten ber nå AI-en også sjekke for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg med motstridende råd). Det er nettopp den typen feil de siste gjennomgangene faktisk fant. Samtidig er det lagt inn et vern mot støy: AI-en bes vurdere mot det som faktisk står i oppskriften og det du selv har oppgitt — ikke mot generelle bransjenormer eller antatt praksis (som er der de svakeste, mest villedende funnene pleide å komme fra)."
+    ],
+    "changes_en": [
+      "The “Copy recipe” text now also asks the AI to check for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). That's exactly the kind of error the recent reviews actually found. At the same time it adds a guard against noise: the AI is asked to judge against what's actually written in the recipe and what you specified yourself — not against general industry norms or assumed practice (which is where the weakest, most misleading findings tended to come from)."
+    ]
+  },
+  {
     "v": "0.703",
     "d": "august 2026",
     "d_en": "August 2026",
