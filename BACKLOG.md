@@ -507,7 +507,15 @@ kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
   standard/referanse bør ligge der — ikke «2–5 °C».
 - **[baseline]** — endrer gjærtall når temp≠referanse.
 
-### F14. Benketid/temperering (steg 7) skalerer ikke med romtemperatur
+### F14. Benketid/temperering (steg 7) skalerer ikke med romtemperatur ✅ FIKSET (v0.720)
+> ✅ **Fikset.** `tailSteps` regner nå `temper=Math.max(60,Math.min(rtM(240),
+> cM2-15-60))` — 22°C gir 240 min som før (baseline urørt), 18°C→384, 26°C→156.
+> Kald tid = cM2−temper−15, aldri under 60 min. Stek/middag flyttes ikke (temper
+> avledes fra stek-tidspunktet). Stegtekst + understeg viser nå dynamisk tid og
+> romtemp; WHY.tu sier «noen timer» i stedet for «ca. 4 timer». Kveldsdeigs egen
+> TEMPER_MIN bevisst urørt (skalerer med kjøletimer). Test:
+> `bench_temper_scales_with_room_temp_dinner_fixed` (skalering, sum-invariant,
+> fast middag, poolish-forspill upåvirket, nedre binding).
 - **I klartekst:** Den korte romtemperaturhevingen (steg 4) skalerer allerede med
   `S.temp` via `rtM()`/`tf()` (18 °C → lengre, 26 °C → kortere). Men benketida etter
   kjøleskapet — «Ta ut av kjøleskap», steg 7 — er hardkodet **240 min** i

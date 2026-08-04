@@ -1935,7 +1935,7 @@ const LOC=new Proxy({},{get:(_,k)=>((window._lang==='en'?LOC_EN:LOC_NO)[k])});
 const WHY_NO={
   fk:'Kald fermentering (2–4°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet. Kulda er også tilgivende — siden den bremser hele prosessen, tåler en kald deig litt mer gjær enn du skulle tro før det blir et problem.',
   form:'Tette, godt rundede emner holder på gassen og formen gjennom hele kjøleskapshevingen. En løs, dårlig rundet kule flyter utover og gir en flat, ustrukturert pizza. Rundingen bygger også overflatespenning som får emnet til å heve oppover i stedet for utover — grunnlaget for en luftig kant.',
-  tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 2–4°C, og ca. 4 timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
+  tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 2–4°C, og noen timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
@@ -1943,7 +1943,7 @@ const WHY_NO={
 const WHY_EN={
   fk:'Cold fermentation (2–4°C) slows the yeast so enzymes break down starch over time. Gives deep flavor, good digestibility and a long shelf life. The cold is also forgiving — since it slows the whole process, a cold dough tolerates a bit more yeast than you would think before it becomes a problem.',
   form:'Tight, well-rounded balls hold on to the gas and their shape throughout the cold rise. A loose, poorly rounded ball spreads out and gives a flat, structureless pizza. The rounding also builds surface tension that makes the ball rise upward rather than outward — the basis for an airy crust.',
-  tu:'The counter time after the fridge does two things at once. The gluten relaxes — cold dough is stiff and tough at 2–4°C, and about 4 hours at room temperature makes it stretchable so you can open the ball without it tearing. And the yeast, which lay almost dormant in the cold, wakes up again and gives one last short rise that makes the crust airy and light. If you skip the counter time, the dough is both hard to stretch and denser once baked. How long it needs depends on how warm the room is — a warmer room goes faster, so use the time as a guide and the dough itself as the final word.',
+  tu:'The counter time after the fridge does two things at once. The gluten relaxes — cold dough is stiff and tough at 2–4°C, and a few hours at room temperature make it stretchable so you can open the ball without it tearing. And the yeast, which lay almost dormant in the cold, wakes up again and gives one last short rise that makes the crust airy and light. If you skip the counter time, the dough is both hard to stretch and denser once baked. How long it needs depends on how warm the room is — a warmer room goes faster, so use the time as a guide and the dough itself as the final word.',
   st:'High heat gives a fast "oven spring" — the pizza rises in a flash for airy edges and a crisp base.',
   pl:'Poolish ferments for a long time with little yeast. Enzymes break starch down into sugar that the yeast ferments, and aromatic compounds and mild organic acids develop that give more complex flavor and better digestibility.',
   bi:'A stiff preferment with low hydration. Slow fermentation gives a nutty flavor and a chewier dough.',
@@ -2119,9 +2119,17 @@ function rawSteps(a){
   }
   // Felles hjelper: bygger de fire siste stegene (form, kjøleskapsheving, ta ut, stek)
   // slik at fremover og bakover ALLTID gir identisk timing.
-  // Ankerpunkt: form-tid. Stek = form + cM2. Ta ut = stek - 240. Kald tid = cM2 - 240 - 15.
+  // Ankerpunkt: form-tid. Stek = form + cM2. Ta ut = stek - temper. Kald tid = cM2 - temper - 15.
+  // F14: benketida (temperering) var hardkodet 240 min uansett romtemperatur —
+  // mens steg-teksten selv sa «hvor lenge den trenger avhenger av hvor varmt
+  // rommet er». Nå skaleres den med tf() som de andre rom-fasene (22°C = 240 min
+  // som før; 18°C → lengre, 26°C → kortere), bundet nedad til 60 min og oppad
+  // slik at kald tid aldri blir under 60 min for korte kjøletider. Steketid og
+  // middag flyttes IKKE — kun fordelingen kald tid ↔ benketid endres.
   function tailSteps(formAt){
-    const bake=aM(formAt,cM2),taUt=sM(bake,240);
+    const temper=Math.max(60,Math.min(rtM(240), cM2-15-60));
+    const coldDur=cM2-temper-15;
+    const bake=aM(formAt,cM2),taUt=sM(bake,temper);
     return[
       {title:S.type==='langpanne'?'Del i langpanner → kjøleskap':'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:15,
         desc:S.type==='langpanne'
@@ -2138,19 +2146,19 @@ function rawSteps(a){
         ],
         why:WHY.form,
         tip:TIP.intoFridge},
-      {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:cM2-240-15,passive:true,
-        desc:L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}. Ikke åpne boksene.`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(cM2-240-15))}. Don't open the containers.`),
+      {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:coldDur,passive:true,
+        desc:L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(coldDur)}. Ikke åpne boksene.`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(coldDur))}. Don't open the containers.`),
         substeps:[
-          L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(cM2-240-15)}`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(cM2-240-15))}`),
+          L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(coldDur)}`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(coldDur))}`),
           L('Ikke åpne boksene',`Don't open the containers`)
         ],
         why:WHY.fk,
         tip:TIP.coldRise},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
-        desc:L('Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. 4 timer før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.',`Take the dough balls out onto the counter — this is the bench rest (warming up) after the cold fermentation. Let them sit covered at room temperature for about 4 hours before baking, so the dough both becomes stretchable and gets a final rise. Don't open the containers yet.`),
+        desc:L(`Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. ${fmtDur(temper)} (ved ${S.temp}°C) før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.`,`Take the dough balls out onto the counter — this is the bench rest (warming up) after the cold fermentation. Let them sit covered at room temperature for about ${durEn(fmtDur(temper))} (at ${S.temp}°C) before baking, so the dough both becomes stretchable and gets a final rise. Don't open the containers yet.`),
         substeps:[
           L('Ta deigemnene ut av kjøleskapet, over på benken',`Take the dough balls out of the fridge, onto the counter`),
-          L('La stå dekket ved romtemperatur i ca. 4 timer (benktid)',`Let sit covered at room temperature for about 4 hours (bench time)`),
+          L(`La stå dekket ved romtemperatur i ca. ${fmtDur(temper)} (benktid)`,`Let sit covered at room temperature for about ${durEn(fmtDur(temper))} (bench time)`),
           L('Ikke åpne boksene ennå',`Don't open the containers yet`)
         ],
         why:WHY.tu,

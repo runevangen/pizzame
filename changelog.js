@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.720",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Benketida etter kjøleskapet («Ta ut av kjøleskap»-steget) tilpasser seg nå romtemperaturen din, slik steg-teksten hele tiden har sagt at den burde: ved 22°C er den 4 timer som før, ved 18°C får deigen lengre tid på å bli strekkbar (ca. 6,4 t), ved 26°C kortere (ca. 2,6 t). Steketiden og middagen flyttes ikke — det er bare fordelingen mellom kald tid og benketid som justeres, og kald tid går aldri under 1 time. Gjelder Langtidsdeig, Poolish og Biga (Kveldsdeig har sin egen, kortere temperering som skalerer med kjøletiden). Poolish/biga-forspillet er bevisst upåvirket — det er et valg du selv har satt."
+    ],
+    "changes_en": [
+      "The bench time after the fridge (the “Take out of the fridge” step) now adapts to your room temperature, as the step text always said it should: at 22°C it stays 4 hours as before, at 18°C the dough gets longer to become stretchable (about 6.4h), at 26°C shorter (about 2.6h). The bake time and dinner don't move — only the split between cold time and bench time adjusts, and cold time never drops below 1 hour. Applies to long-ferment, poolish and biga (evening dough has its own shorter temper that scales with the chill hours). The poolish/biga preferment is deliberately unaffected — that's a number you chose yourself."
+    ]
+  },
+  {
     "v": "0.719",
     "d": "august 2026",
     "d_en": "August 2026",
