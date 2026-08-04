@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.719",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Under panseret: selve beregningsmotoren (oppskrifts-sannheten, kalibreringskurvene, metode-registeret og gjæringstid-utregningene) er skilt ut i en egen fil, engine.js — samme mønster som endringsloggen og guiden. Ingen synlige endringer; all oppførsel er verifisert identisk. Dette fullfører motor-robusthetsarbeidet (seks trinn siden v0.714): én ingredienskilde, én interpolator, én planleggingsretning, ett metoderegister, invariant-tester som vokter det hele — og nå en ren, avgrenset motorfil."
+    ],
+    "changes_en": [
+      "Under the hood: the calculation engine itself (the recipe truth, calibration curves, method registry and fermentation-time derivations) has been split into its own file, engine.js — same pattern as the changelog and guide. No visible changes; all behavior verified identical. This completes the engine robustness work (six steps since v0.714): one ingredient source, one interpolator, one scheduling direction, one method registry, invariant tests guarding it all — and now a clean, bounded engine file."
+    ]
+  },
+  {
     "v": "0.718",
     "d": "august 2026",
     "d_en": "August 2026",

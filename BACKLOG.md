@@ -661,7 +661,18 @@ rekkefølgen. F17 er det klart mest verdifulle.
   ett register; dispatch-stedene blir oppslagsfelt.
 - Gjøres naturlig ETTER F17/F19 (da finnes recipe/phases å peke på). Middels.
 
-### F22. Trekk motoren ut i `engine.js` (valgfritt sluttsteg)
+### F22. Trekk motoren ut i `engine.js` (valgfritt sluttsteg) ✅ BYGGET (v0.719)
+> ✅ **Bygget.** `engine.js` (190 linjer) inneholder nå kjernen: CALIBRATION +
+> interpLin + prefermentYeastMult + coldMultForHours, tf/rtM, R/MANIA_T/
+> maniaRecipe/yA/recipeFor/yLabelFor/pc, METHODS/mN/methodShowsColdSlider,
+> currentYeastAmount, totalFermentHours/fixedFermOverheadHours, flourForCount.
+> Lastes før hovedscriptet (som changelog.js/guide.js); deler globalt miljø, så
+> ingen API-endring. Ingrediens-%-tabellene (BSALT m.fl.) ble bevisst igjen i
+> index.html — de er `let` og admin-muterte via applyFlours/recomputeColdMax
+> (DOM-koblet). Test: `engine_extracted_to_engine_js_and_functional`; hele
+> suiten (122) beviser uendret oppførsel.
+>
+> **Med dette er hele motortrappen F17–F22 levert** (v0.714–v0.719, PR #115–#120).
 - **I klartekst:** Samme grep som da `changelog.js` ble skilt ut: ren
   beregningskjerne (recipeFor, planlegger, kalibrering) uten DOM-avhengigheter i
   egen fil. Da kan mattetestene kjøre uten Playwright/nettleser (raskere, flere
