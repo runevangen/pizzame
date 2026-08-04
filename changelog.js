@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.721",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Blandestegene for Langtidsdeig, Poolish og Biga anbefaler nå en konkret vanntemperatur i °C — regnet ut fra romtemperaturen din og kjøkkenmaskinens friksjonsvarme, slik Hurtigdeig allerede gjorde. Et kaldt kjøkken om vinteren og et varmt om sommeren treffer dermed samme måltemperatur på ferdig deig (ca. 23°C). Eksempel ved 22°C rom: ca. 17°C vann med Ankarsrum, ca. 9°C med vanlig kjøkkenmaskin (som tilfører mer friksjonsvarme). «Ingen elting» beholder den enkle teksten — der blandes det med skje og starttemperaturen betyr lite."
+    ],
+    "changes_en": [
+      "The mixing steps for long-ferment, poolish and biga now recommend a concrete water temperature in °C — computed from your room temperature and your mixer's friction heat, as the quick dough already did. A cold kitchen in winter and a warm one in summer thus hit the same target dough temperature (about 23°C). Example at a 22°C room: about 17°C water with the Ankarsrum, about 9°C with a regular stand mixer (which adds more friction heat). No-knead keeps its simple wording — it's mixed with a spoon, and the starting temperature matters little there."
+    ]
+  },
+  {
     "v": "0.720",
     "d": "august 2026",
     "d_en": "August 2026",
