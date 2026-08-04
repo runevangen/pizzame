@@ -3385,6 +3385,35 @@ def run_behavioral_tests(page):
     ok93 = r93.get('ok')
     results.append(('pc_recipe_tab_mania_uses_maniarecipe_not_r', ok93, r93))
 
+    # v0.716 (F18): alle gjærkurvene samlet i CALIBRATION + én interpLin (tf og
+    # coldMultForHours hadde egne kopier av samme løkke; tf rundet til 2 desimaler,
+    # resten til 3 — dec-parameteren bevarer det). Fasiten under er håndregnet fra
+    # kurvepunktene og fryser kalibreringskontrakten på punkter MELLOM ankrene
+    # (der selve interpolasjonen jobber) + klemming i begge ender.
+    r94 = page.evaluate("""() => {
+      const saved={temp:S.temp,method:S.method,pC:S.poolishCold,pH:S.poolishH,bH:S.bigaH};
+      const out={};
+      const tfCase=(t,exp)=>{S.temp=t;return tf()===exp;};
+      out.tf = tfCase(16,1.6)&&tfCase(19,1.45)&&tfCase(21,1.15)&&tfCase(23,0.9)&&tfCase(25,0.73)&&tfCase(27,0.57)&&tfCase(30,0.5); // 27°C: 0,575*100=57,4999… i float → 0,57 (verifisert identisk med gammel tf)
+      out.cold = coldMultForHours(12)===1.5 && coldMultForHours(36)===1.275
+              && coldMultForHours(60)===0.9 && coldMultForHours(100)===0.567
+              && coldMultForHours(200)===0.38;
+      S.method='poolish'; S.poolishCold=false; S.poolishH=13;
+      out.poolishRoom = prefermentYeastMult()===1.1;
+      S.poolishCold=true; S.poolishH=30;
+      out.poolishCold = prefermentYeastMult()===0.75;
+      S.method='biga'; S.bigaH=21;
+      out.biga = prefermentYeastMult()===0.885;
+      S.method='standard';
+      out.neutral = prefermentYeastMult()===1.0;
+      out.calibrationExists = typeof CALIBRATION==='object' && Array.isArray(CALIBRATION.tempFactor);
+      S.temp=saved.temp;S.method=saved.method;S.poolishCold=saved.pC;S.poolishH=saved.pH;S.bigaH=saved.bH;
+      out.ok = out.tf&&out.cold&&out.poolishRoom&&out.poolishCold&&out.biga&&out.neutral&&out.calibrationExists;
+      return out;
+    }""")
+    ok94 = r94.get('ok')
+    results.append(('calibration_curves_unified_interpolator_identical_values', ok94, r94))
+
     return results
 
 

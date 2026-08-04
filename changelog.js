@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.716",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Under panseret: alle gjærings- og gjærkurvene (temperaturfaktor, kaldhevings-multiplikator, poolish/biga-forspillskurver) er samlet i én kalibreringsblokk, tolket av én felles interpolator — tre funksjoner hadde hver sin kopi av samme utregning. Tallene er bevist bit-identiske med før (ny test fryser kurveverdiene mellom ankerpunktene). Åpner for at kurvene senere kan versjoneres eller redigeres på ett sted."
+    ],
+    "changes_en": [
+      "Under the hood: all fermentation and yeast curves (temperature factor, cold-proof multiplier, poolish/biga preferment curves) are gathered in one calibration block, interpreted by one shared interpolator — three functions each had their own copy of the same computation. The numbers are proven bit-identical to before (a new test freezes curve values between the anchor points). Paves the way for versioning or editing the curves in one place later."
+    ]
+  },
+  {
     "v": "0.715",
     "d": "august 2026",
     "d_en": "August 2026",
