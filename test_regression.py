@@ -3107,7 +3107,7 @@ def run_behavioral_tests(page):
     # v0.705: Smart-plan-resultatet er en sammenligningstabell (vinner + inntil 2
     # alternativer). Hver konflikt viser HVA/NÅR/HVOR MYE arbeid: vinneren «✓ alt
     # passer», alternativene sitt ene konfliktsteg («Ta ut av kjøleskap») med grønt
-    # «kort håndgrep»-merke (dur 0 = kjapt, kan gjøres hjemmefra). Alt-rader er
+    # «raskt gjort»-merke (dur 0 = kjapt, kan gjøres hjemmefra). Alt-rader er
     # tappbare (applyBetaResult). conflictIsQuick: dur 0/passiv = kjapt, dur>1 = aktivt.
     r88 = page.evaluate("""() => {
       const savedSched=window._pizzatidSchedule;
