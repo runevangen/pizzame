@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.714",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Under panseret: nye automatiske konsistenssjekker som vokter selve beregningsmotoren. For hver metode sjekkes det nå at en plan regnet fremover fra oppstart og en plan regnet baklengs fra steketiden gir nøyaktig samme tidsplan, at stegene alltid kommer i riktig tidsrekkefølge, og at Mania-oppskriftens vanndeler alltid summerer til riktig hydrering uansett melmengde. Ingen synlige endringer — dette er sikkerhetsnett for videre utvikling."
+    ],
+    "changes_en": [
+      "Under the hood: new automatic consistency checks guarding the calculation engine itself. For every method, we now verify that a plan computed forward from the start and one computed backward from the bake time produce exactly the same schedule, that steps always come in chronological order, and that the Mania recipe's water parts always sum to the correct hydration regardless of flour amount. No visible changes — this is a safety net for further development."
+    ]
+  },
+  {
     "v": "0.713",
     "d": "august 2026",
     "d_en": "August 2026",
