@@ -1,6 +1,6 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 29.07.2026 · gjelder index.html rundt v6.20.
+Sist oppdatert: 04.08.2026 · motor-/arkitekturtrappen F17–F22 lagt til (gjelder index.html rundt v0.713).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -538,6 +538,92 @@ kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
 - Foreslått av oppskriftsgjennomgang, aug 2026 (sammen med work-time/knead-time-
   presiseringen som ble gjort i v0.700).
 - **[baseline]** hvis tallet vises i frosne render-tester.
+
+## Motor / arkitektur (aug 2026 — motorgjennomgang v0.713)
+
+Resultat av en systematisk gjennomgang av beregningsmotoren (gjær, mel, tider).
+Dommen: matten er sunn (prosentbasert + interpolerte gjærkurver med ærlige kilder),
+og testharnesset (114 tester + `baseline_results.json`) er grunnen til at vi tør
+endre noe som helst. Skjørheten er arkitektonisk: **flere sannhetskilder** og
+**håndspeilede beregninger**. De tre siste oppskriftsgjennomgangene fant alle
+sammen feil som F17+F19 ville gjort *umulige* (ikke bare usannsynlige): kopier-
+oppskrift ≠ steg (v0.713 Mania, tidligere hurtig/kveld via `currentYeastAmount`),
+duplikatsteg, skygge-konstanter i utakt.
+
+Punktene er en trapp — hvert trinn kan shippes alene med grønne tester, i denne
+rekkefølgen. F17 er det klart mest verdifulle.
+
+### F17. Én oppskriftskilde: `recipeFor(state)` for ALLE metoder og flater
+- **I klartekst:** Gjær-sannheten bor i dag på fire steder: `R()` med
+  `BYEAST`×`coldMultForHours`×`prefermentYeastMult` (`index.html:1919`),
+  `HOPTS.yp` for hurtig (`1283`), `KCOLDMULT` for kveld (`1337`) og
+  `maniaRecipe()` (`1930`). Hver flate som viser ingredienser (Tidsplan-steg,
+  Oppskrift-fanen PC + mobil, Kopier oppskrift, kalender) må kjenne alle fire —
+  glemmer én flate ett tilfelle, spriker tallene. Det er nøyaktig feilklassen bak
+  `currentYeastAmount()`-plasteret (`3048`) og v0.713-Mania-fiksen i `copyP`.
+- **Fiks (skisse):** ett kall `recipeFor(state)` som returnerer hele sannheten
+  — mel, vann, salt, fett, gjær (tørr/fersk), hydrering, ev. forspill-splitt
+  (poolish/biga/mania) — uansett metode. Alle flater leser denne; `R()`,
+  `maniaRecipe()` og `currentYeastAmount()` blir interne detaljer bak døra.
+  Mest flytting av eksisterende kode, lite ny logikk.
+- **Gevinst:** klassen «kopien viser andre tall enn stegene» dør strukturelt.
+- Ikke [baseline] hvis riktig gjort — tallene skal være identiske før/etter.
+
+### F18. Én interpolator + samlet `CALIBRATION`-blokk
+- **I klartekst:** `interpLin()` (`1328`) finnes, men `coldMultForHours()` (`1369`)
+  og `tf()` (`~1495`) har hver sin kopi av samme løkke. Kalibreringskurvene ligger
+  spredt: `HOPTS`, `KCOLDMULT`, `COLDMULT_HOURS`, poolish/biga-punktene i
+  `prefermentYeastMult()`. Samle kurvene i ett `CALIBRATION`-objekt og bruk én
+  interpolator overalt. Åpner for versjonering/admin-redigering senere (samme
+  mønster som MELTYPER + `recomputeColdMax`, som allerede gjør dette riktig).
+- Liten jobb, null adferdsendring. Ikke [baseline].
+
+### F19. Deklarative fasespesifikasjoner + én planlegger (frem OG tilbake)
+- **I klartekst:** Hver metode bygger stegkjeden sin to ganger for hånd — én
+  fremover-gren og én baklengs-gren med minus-fortegn (`rawSteps` `2160`,
+  mania-grenen `2410`, `hurtigSteps` `2506`, `kveldSteps` `2569`). Hvert nye steg
+  må legges til begge steder. I tillegg finnes skygge-konstanter som håndsummerer
+  strukturen på nytt: `totalFermentHours()` for Mania er bokstavelig talt
+  `720/60 + 120/60 + 25/60 + …` (`3853`) — endres et steg uten at summen
+  oppdateres, lyver Smart-plan og melvarslene stille.
+- **Fiks (skisse):** beskriv hver metode som data:
+  `[{id:'poolish-mix', dur:8, loc:'benk'}, {id:'poolish-ferment', dur:712, passive:true}, …]`
+  med tekster for seg, nøklet på id. Én felles planlegger går kjeden fremover
+  eller baklengs fra ankeret. Da kan frem/tilbake aldri sprike,
+  `totalFermentHours = sum(durs)` (skygge-konstanten dør), og Smart-plan leser
+  samme spesifikasjon. Migrér én metode om gangen (start med hurtig — enklest),
+  med baseline-JSON som garanti for uendret output underveis.
+- Størst jobb i bunken, størst strukturell gevinst. Ikke [baseline] per metode
+  hvis migrert riktig (output skal være identisk).
+
+### F20. Generiske invariant-tester (egenskaper, ikke bare frosne fasiter)
+- **I klartekst:** Dagens tester fryser konkrete tall (bra!) og vokter konkrete
+  fikser (én test per feil vi har hatt). Legg til egenskaps-tester som kjøres for
+  *alle* metoder × typer × moduser automatisk: (a) fremover(anker) og
+  baklengs(samme steketid) gir identisk plan; (b) kopier-tall == oppskriftsfane-
+  tall == steg-tall; (c) vanndeler summerer til hydrering×mel; (d) stegkjeden er
+  monotont stigende i tid uten hull/overlapp. Én slik test dekker automatisk hver
+  ny metode som fødes — i stedet for at hver review finner samme klasse på nytt.
+- Kan bygges FØR F17/F19 og fungere som sikkerhetsnett under refaktoreringen.
+  Middels jobb. Ikke [baseline].
+
+### F21. Metode-register: ett `METHODS`-objekt i stedet for spredt dispatch
+- **I klartekst:** 71 steder spør `S.method==='…'` og 21 spør `S.type==='…'`,
+  inkludert hardkodede lister som `(v==='hurtig'||v==='kveld'||v==='mania')?'none'`
+  for kald-slideren (`1597`, `5854`) og metode-lister i Smart-plan/filter
+  (`3384`, `6927`). En metode nr. 7 betyr å finne alle sammen. Samle
+  `{label, recipe, phases, uiFlags:{harKaldSlider, justerbar, …}}` per metode i
+  ett register; dispatch-stedene blir oppslagsfelt.
+- Gjøres naturlig ETTER F17/F19 (da finnes recipe/phases å peke på). Middels.
+
+### F22. Trekk motoren ut i `engine.js` (valgfritt sluttsteg)
+- **I klartekst:** Samme grep som da `changelog.js` ble skilt ut: ren
+  beregningskjerne (recipeFor, planlegger, kalibrering) uten DOM-avhengigheter i
+  egen fil. Da kan mattetestene kjøre uten Playwright/nettleser (raskere, flere
+  caser), og index.html krymper. Forutsetter F17+F19; ellers flytter man bare
+  spaghettien. Liten jobb når trappen ellers er tatt.
+
+---
 
 ### F16. Temperer-tipset (`TIP.benchTemper`) sier «form» etter kjøling — men forming skjer FØR ✅ FIKSET (v0.712)
 - **I klartekst:** Tipset på «Ta ut av kjøleskap / temperer»-steget sier «gi dem mer
