@@ -3258,7 +3258,7 @@ function scorePizzatidWindows(steps){
 }
 // v0.705: samme predikat som scorePizzatidWindows, men returnerer DETALJENE om hvert
 // konfliktsteg — så Smart-plan kan vise HVA som kolliderer, NÅR, og HVOR MYE arbeid
-// det er (kort håndgrep vs. aktivt). En «ta ut av kjøleskap» (dur 0) kan gjøres
+// det er (raskt gjort vs. aktivt). En «ta ut av kjøleskap» (dur 0) kan gjøres
 // hjemmefra; 20 min elting kan det ikke. conflicts.length === violations for ekte steg.
 function conflictsOf(steps){
   const out=[];
@@ -3663,7 +3663,7 @@ function saveBetaPizzatid(){
 // en gang, "se flere alternativer" åpner en rangert topp 2-3-liste.
 // v0.707 (skisse 3): innholdet i «når»-linja for ett valg. Viser NÅR konflikten er
 // (stort og først — det avgjør om du kan ta den), HVA som kolliderer, og HVOR MYE
-// arbeid — grønt «kort håndgrep» (passivt/dur 0, f.eks. ta ut av kjøleskap — kan
+// arbeid — grønt «raskt gjort» (passivt/dur 0, f.eks. ta ut av kjøleskap — kan
 // gjøres hjemmefra) vs. oransje «~X min aktivt». Ingen konflikt → «✓ alt passer».
 function betaWhenRow(conflicts){
   if(!conflicts || !conflicts.length) return `<span class="beta-eff fits" style="font-size:11px;padding:2px 10px">✓ ${L('alt passer','all fits')}</span>`;
@@ -3672,7 +3672,7 @@ function betaWhenRow(conflicts){
   let when='', night=false;
   try{ const at=new Date(c.atIso); when=dy[at.getDay()]+' '+fT(at); night=at.getHours()>=23||at.getHours()<6; }catch(e){}
   const quick=conflictIsQuick(c);
-  const eff=quick?L('kort håndgrep','quick handling'):`~${c.dur} min ${L('aktivt','active')}`;
+  const eff=quick?L('raskt gjort','quickly done'):`~${c.dur} min ${L('aktivt','active')}`;
   const more=conflicts.length>1?` <span style="color:var(--forno-text-faint,#6d5a3a);font-weight:400">+${conflicts.length-1}</span>`:'';
   // Uten en etikett måtte man gjette at «når»-boksen ER en konflikt. Si det rett ut.
   const lbl=night?L('Midt på natten','Middle of the night'):L('Utenfor ledig tid','Outside free time');
@@ -3699,7 +3699,7 @@ function renderResultBlock(containerId, label, anchorIso){
         : L('Ingen registrert meltype dekker dette','No registered flour type covers this'));
   // v0.705: sammenligningstabell — vinner + inntil 2 alternativer, hver med konflikt-
   // detalj (steg, tid, arbeidsmengde). Slik kan du velge et lengre, mer smaksrikt
-  // alternativ når du ser at «ulempen» bare er et kort håndgrep du kan ta hjemmefra.
+  // alternativ når du ser at «ulempen» bare er raskt gjort — noe du kan ta hjemmefra.
   const compRows=results.slice(0,3).map((c,i)=>{
     const isWin=i===0;
     const flav=(!isWin && c.totalHrs>top.totalHrs+2) ? L('mer smak','more flavor')
@@ -3716,7 +3716,7 @@ function renderResultBlock(containerId, label, anchorIso){
   }).join('');
   const compTable=`<div class="beta-list">${compRows}</div>`;
   const whyLine=(ok && results.length>1)
-    ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${L('vant på færrest tidskonflikter. Alternativene over gir mer smak — er konflikten deres bare et kort håndgrep (som å ta ut av kjøleskap), kan du velge dem i stedet.','won on fewest time conflicts. The alternatives above give more flavor — if their conflict is just a quick handling (like taking it out of the fridge), you can pick them instead.')}</div>`
+    ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${L('vant på færrest tidskonflikter. Alternativene over gir mer smak — er konflikten deres raskt gjort (som å ta ut av kjøleskap), kan du velge dem i stedet.','won on fewest time conflicts. The alternatives above give more flavor — if their conflict is quickly done (like taking it out of the fridge), you can pick them instead.')}</div>`
     : '';
   const el=document.getElementById(containerId);
   if(!el) return;

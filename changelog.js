@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.709",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Bedre norsk på Smart-plan-merket: «kort håndgrep» er byttet til «raskt gjort» — mindre stivt, og tydeligere at konfliktsteget (som å ta ut av kjøleskap) er unnagjort på et øyeblikk. Samme ordbytte i forklaringslinja under alternativene."
+    ],
+    "changes_en": [
+      "Better wording on the Smart plan badge: “quick handling” is now “quickly done” — less stiff, and clearer that the conflict step (like taking it out of the fridge) is over in a moment. Same wording change in the explanatory line under the alternatives."
+    ]
+  },
+  {
     "v": "0.708",
     "d": "august 2026",
     "d_en": "August 2026",
