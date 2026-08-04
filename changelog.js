@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.715",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Alle ingredienstall (mel, vann, salt, gjær, hydrering) hentes nå fra én felles kilde uansett metode og visning — tidsplan, oppskriftsfane, kopier-oppskrift og kalender kan ikke lenger vise ulike tall for samme deig. Dette retter samtidig to feil: PC-visningens oppskriftsfane viste generelle tall for Mania-poolish (325g vann/14g salt/65%) i stedet for Manias egne (320g/15g/64%), og «Ingen elting»-typen kunne vise feil oppskriftsfane hvis Mania sto valgt som metode.",
+      "Mania-poolish på PC: «Kjøleskapsheving»-raden viste den justerbare kjøletiden fra andre metoder — Mania har fast struktur (10t udelt + 10t i emner). Raden sier nå det."
+    ],
+    "changes_en": [
+      "All ingredient numbers (flour, water, salt, yeast, hydration) are now read from one shared source regardless of method and view — the schedule, recipe tab, copy-recipe and calendar can no longer show different numbers for the same dough. This also fixes two bugs: the desktop recipe tab showed generic numbers for Mania poolish (325g water/14g salt/65%) instead of Mania's own (320g/15g/64%), and the no-knead type could show the wrong recipe tab if Mania happened to be the selected method.",
+      "Mania poolish on desktop: the “Cold proof” row showed the adjustable cold time from other methods — Mania has a fixed structure (10h undivided + 10h in balls). The row now says so."
+    ]
+  },
+  {
     "v": "0.714",
     "d": "august 2026",
     "d_en": "August 2026",
