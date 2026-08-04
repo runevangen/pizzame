@@ -3629,6 +3629,39 @@ def run_behavioral_tests(page):
     ok101 = not _missing_code and not _missing_shell and _cache_bumped and len(_srcs) >= 3
     results.append(('sw_treats_every_index_script_as_network_first_code', ok101, r101))
 
+    # v0.724: NY-sukkeret er for farge i vanlig ovn (6–9 min); i pizzaovn på
+    # 400°C+ brenner det seg («skip sugar if baking with open flame») — appen
+    # visste hvilken ovn du har, men ga alltid 1,5% sukker. Nå: effSugarPct()=0
+    # ved pizzaovn. Napoletana (sukker 0 uansett) og alle frosne scenarioer
+    # (napoletana/chicago) er upåvirket.
+    r102 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,mel:S.mel,hydro:S.hydro,oven:S.oven};
+      S.method='standard'; S.type='newyork'; S.mode='start'; S.mel=400; S.hydro=63;
+      S.oven='vanlig';
+      const recV=recipeFor();
+      const stepsV=stepsForAnchor(new Date(2027,2,10,10,0));
+      const mixV=stepsV.find(s=>s.title.includes('gjær og salt'));
+      const flourV=flourForCount(2);
+      S.oven='pizza';
+      const recP=recipeFor();
+      const stepsP=stepsForAnchor(new Date(2027,2,10,10,0));
+      const mixP=stepsP.find(s=>s.title.includes('gjær og salt'));
+      const flourP=flourForCount(2);
+      S.type='napoletana'; S.oven='vanlig';
+      const recNapV=recipeFor(); S.oven='pizza'; const recNapP=recipeFor();
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.mel=saved.mel;S.hydro=saved.hydro;S.oven=saved.oven;
+      return {
+        regularHasSugar: recV.sugar===6,
+        pizzaOvenNoSugar: recP.sugar===0,
+        stepMentionsSugarRegular: !!mixV && /sukker/.test(mixV.desc),
+        stepNoSugarPizza: !!mixP && !/sukker/.test(mixP.desc),
+        flourCountConsistent: flourP>=flourV, // mindre frac (uten sukker) → mer mel for samme antall
+        napoletanaUnaffected: recNapV.sugar===0 && recNapP.sugar===0
+      };
+    }""")
+    ok102 = all(r102.get(k) for k in ['regularHasSugar','pizzaOvenNoSugar','stepMentionsSugarRegular','stepNoSugarPizza','flourCountConsistent','napoletanaUnaffected'])
+    results.append(('ny_sugar_dropped_for_pizza_oven_kept_for_regular', ok102, r102))
+
     return results
 
 

@@ -4859,7 +4859,7 @@ function langpanneRoundupInfo(){
   const p=pc();
   const shortfall=IDEAL*p.count-p.totalDough;
   if(shortfall<=15) return null; // nærme nok — ikke bry brukeren med en ubetydelig forskjell
-  const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+(BSUGAR[S.type]||0)/100;
+  const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+effSugarPct()/100;
   const extraFlour=Math.round(shortfall/frac/5)*5;
   if(extraFlour<=0) return null;
   return {count:p.count, extraFlour, currentPerPan:p.perPizza};

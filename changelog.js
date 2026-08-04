@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.724",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "New York-pizza: sukkeret droppes nå automatisk når du har valgt pizzaovn. Sukkeret er der for å gi skorpa farge i vanlig ovn (6–9 min steketid) — i pizzaovn på 400°C+ rekker det bare å brenne seg før skorpa er ferdig. Med vanlig ovn får du 1,5% sukker som før. (Klassisk NY-råd: «skip sugar if baking with open flame» — appen vet jo allerede hvilken ovn du har.)"
+    ],
+    "changes_en": [
+      "New York pizza: the sugar is now dropped automatically when you've selected a pizza oven. The sugar is there to color the crust in a regular oven (6–9 min bake) — in a pizza oven at 400°C+ it only manages to burn before the crust is done. With a regular oven you get 1.5% sugar as before. (Classic NY advice: “skip sugar if baking with open flame” — the app already knows which oven you have.)"
+    ]
+  },
+  {
     "v": "0.723",
     "d": "august 2026",
     "d_en": "August 2026",
