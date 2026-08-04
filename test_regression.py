@@ -3468,6 +3468,26 @@ def run_behavioral_tests(page):
     ok96 = r96.get('ok')
     results.append(('methods_registry_drives_names_flags_and_pc_cold_slider_fix', ok96, r96))
 
+    # v0.719 (F22): beregningsmotoren bor i engine.js (lastes før hovedscriptet,
+    # samme mønster som changelog.js/guide.js). Testen vokter at script-taggen
+    # finnes og at kjernefunksjonene faktisk er definert og virker fra den delte
+    # globale konteksten — resten av suiten beviser at oppførselen er uendret.
+    r97 = page.evaluate("""() => {
+      const tag=!!document.querySelector('script[src="engine.js"]');
+      const fns=['recipeFor','maniaRecipe','pc','interpLin','coldMultForHours','tf','rtM',
+                 'mN','methodShowsColdSlider','totalFermentHours','fixedFermOverheadHours',
+                 'currentYeastAmount','yLabelFor','flourForCount'];
+      const missing=fns.filter(f=>typeof window[f]!=='function');
+      // NB: const-ene er skript-skopede lexikalske bindinger — de ligger IKKE på
+      // window, men deles på tvers av script-filer via det globale miljøet.
+      const objs=[['CALIBRATION',typeof CALIBRATION],['METHODS',typeof METHODS],['MANIA_T',typeof MANIA_T]]
+        .filter(([,t])=>t!=='object').map(([n])=>n);
+      const callable=(()=>{try{const r=recipeFor();return typeof r.flour==='number'&&typeof r.yDry==='number';}catch(e){return false;}})();
+      return {tag, missing, objs, callable, ok: tag&&missing.length===0&&objs.length===0&&callable};
+    }""")
+    ok97 = r97.get('ok')
+    results.append(('engine_extracted_to_engine_js_and_functional', ok97, r97))
+
     return results
 
 
