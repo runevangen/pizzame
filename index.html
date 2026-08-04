@@ -1302,35 +1302,49 @@ const COLD_OPTS=[{h:24,b:'Rett fram',bEn:'Straightforward'},{h:48,b:'Mer smak',b
 // noen endring i oppskriften sin.
 const POOLISH_OPTS=[{h:12,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:13,b:'Kort',bEn:'Short'},{h:14,b:'Anbefalt',bEn:'Recommended'},{h:15,b:'Lang',bEn:'Long'},{h:16,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
 const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:18,b:'Anbefalt',bEn:'Recommended'},{h:20,b:'Lang',bEn:'Long'},{h:22,b:'Lengre',bEn:'Longer'},{h:24,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
+// F18: alle interpolerte gjærings-/gjærkurver samlet på ETT sted, tolket av én
+// felles interpLin(). Punktene er UENDRET fra de tidligere spredte konstantene og
+// funksjons-lokale arrayene — historikken/kildene i kommentarene gjelder fortsatt.
+// Diskrete valgtabeller med UI-etiketter (HOPTS, KOPTS, KCOLDMULT, COLD_OPTS)
+// er bevisst ikke flyttet hit — de er menyer, ikke kurver.
+const CALIBRATION={
+  // tf(): romtemperatur → tidsfaktor for romhevinger (22°C = 1,0-referanse)
+  tempFactor:[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]],
+  // Gjærmultiplikator for kjøleskapsheving i TIMER. Interpolerer mellom de samme
+  // uttestede punktene som den gamle dags-tabellen COLDMULT {1:1.5 … 6:0.38}
+  // (skalert ned ~25% fra AVPN-kilder, se historikk ved v0.659).
+  coldMultHours:[[24,1.5],[48,1.05],[72,0.75],[96,0.59],[120,0.45],[144,0.38]],
+  // Forspill-gjær, romtemperatur-poolish. v0.697 (funn 2): all gjæren ligger i
+  // poolishen, så en lang romtemp-poolish (15–16t) topper og faller lett hvis
+  // gjæren står for høyt — trukket ned i den lange enden (15t: 0,925→0,80,
+  // 16t: 0,85→0,66). 14t er uendret 1,0×-referanse så standardvalget ikke endres.
+  poolishRoom:[[12,1.2],[14,1.0],[15,0.80],[16,0.66]],
+  // Forspill-gjær, kjøleskaps-poolish: mesteparten av tiden er ved kjøleskaps-
+  // temperatur — gjæraktiviteten er langt roligere enn tilsvarende lang
+  // romtemperatur-poolish (som uansett ikke er trygg utover ~16t).
+  poolishCold:[[12,1.2],[16,1.0],[24,0.85],[36,0.65],[48,0.5]],
+  // Forspill-gjær, biga (18t = 1,0-referanse).
+  biga:[[16,1.15],[18,1.0],[20,0.92],[22,0.85],[24,0.8]]
+};
 function prefermentYeastMult(){
   if(S.method==='poolish'){
-    if(S.poolishCold){
-      // Kjøleskaps-poolish: mesteparten av tiden er ved kjøleskapstemperatur, ikke
-      // romtemperatur — gjæraktiviteten er langt roligere enn en tilsvarende lang
-      // romtemperatur-poolish ville gitt (som uansett ikke er trygg utover ~16t).
-      const pts=[[12,1.2],[16,1.0],[24,0.85],[36,0.65],[48,0.5]];
-      return interpLin(pts,S.poolishH);
-    }
-    // v0.697 (funn 2): all gjæren ligger i poolishen, så en lang romtemperatur-
-    // poolish (15–16t) topper og faller lett hvis gjæren står for høyt. Trukket
-    // ned i den lange enden (15t: 0,925→0,80, 16t: 0,85→0,66) så den gjærer
-    // roligere. 14t holdes uendret på 1,0× som referanse, slik at standardvalget
-    // ikke endres for dem som ikke rører innstillingen.
-    const pts=[[12,1.2],[14,1.0],[15,0.80],[16,0.66]];
-    return interpLin(pts,S.poolishH);
+    return interpLin(S.poolishCold?CALIBRATION.poolishCold:CALIBRATION.poolishRoom,S.poolishH);
   }
   if(S.method==='biga'){
-    const pts=[[16,1.15],[18,1.0],[20,0.92],[22,0.85],[24,0.8]];
-    return interpLin(pts,S.bigaH);
+    return interpLin(CALIBRATION.biga,S.bigaH);
   }
   return 1.0;
 }
-function interpLin(pts,x){
+// F18: den ENE interpolatoren — coldMultForHours() og tf() hadde tidligere hver
+// sin kopi av samme løkke. dec styrer avrundingen (tf brukte 2 desimaler, resten
+// 3) så tallene er bit-identiske med før.
+function interpLin(pts,x,dec=3){
+  const f=Math.pow(10,dec);
   if(x<=pts[0][0]) return pts[0][1];
   if(x>=pts[pts.length-1][0]) return pts[pts.length-1][1];
   for(let i=0;i<pts.length-1;i++){
     const [x0,y0]=pts[i],[x1,y1]=pts[i+1];
-    if(x>=x0&&x<=x1) return Math.round((y0+(y1-y0)*(x-x0)/(x1-x0))*1000)/1000;
+    if(x>=x0&&x<=x1) return Math.round((y0+(y1-y0)*(x-x0)/(x1-x0))*f)/f;
   }
   return 1.0;
 }
@@ -1343,15 +1357,11 @@ let BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0,ingenelting:6.0};
 // flere anerkjente oppskrifter (King Arthur, Sally's Baking) lander på 15-22% totalt fett.
 const BBUTTER={napoletana:0,newyork:0,langpanne:0,chicago:12.0,ingenelting:0};
 let BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:0.2};
-// Skalert ned ~25% fra opprinnelig kurve — AVPN-kilder antyder enda lavere gjærmengde ved
-// lange kaldhevinger (0,1-0,2% fersk gjær for 48-72t), men vi holder oss til en mer praktisk
-// mellomting som ikke krever en presisjonsvekt for hjemmebakere. Samme prinsipp som Kveldsdeig.
-const COLDMULT={1:1.5,2:1.05,3:0.75,4:0.59,5:0.45,6:0.38};
-// S.cold ble endret fra hele dager til timer (finere steg). Gjærmengden var
-// koblet direkte til COLDMULT (kun 6 diskrete dags-verdier) — denne interpolerer
-// jevnt mellom de SAMME, allerede uttestede punktene, omregnet til timer, slik at
-// gjærmengden også blir riktig for alt som ikke er et helt døgn.
-const COLDMULT_HOURS=[[24,1.5],[48,1.05],[72,0.75],[96,0.59],[120,0.45],[144,0.38]];
+// Kaldhevings-gjærkurven (tidl. COLDMULT dags-tabell + COLDMULT_HOURS) bor nå i
+// CALIBRATION.coldMultHours (F18) — skalert ned ~25% fra opprinnelig kurve; AVPN-
+// kilder antyder enda lavere gjærmengde ved lange kaldhevinger (0,1-0,2% fersk
+// gjær for 48-72t), men vi holder en praktisk mellomting som ikke krever
+// presisjonsvekt. Samme prinsipp som Kveldsdeig.
 // v0.659/v0.680: øvre tak for kjøleskapsheving. v0.685: UTLEDES nå fra sterkeste
 // mels ferm.mx (var hardkodet 120t) — legger admin inn et sterkere mel, strekker
 // slideren seg. Invariant: COLD_MAX === Math.max(ferm.mx) blant ekte mel. Over
@@ -1366,16 +1376,7 @@ function recomputeColdMax(){
   ['csl','mob-csl'].forEach(id=>{ const el=document.getElementById(id); if(el) el.max=String(COLD_MAX); });
   const lbl=document.getElementById('csl-max-lbl'); if(lbl) lbl.textContent=COLD_MAX+' timer';
 }
-function coldMultForHours(h){
-  const pts=COLDMULT_HOURS;
-  if(h<=pts[0][0]) return pts[0][1];
-  if(h>=pts[pts.length-1][0]) return pts[pts.length-1][1];
-  for(let i=0;i<pts.length-1;i++){
-    const [h0,m0]=pts[i],[h1,m1]=pts[i+1];
-    if(h>=h0&&h<=h1) return Math.round((m0+(m1-m0)*(h-h0)/(h1-h0))*1000)/1000;
-  }
-  return 1.0;
-}
+function coldMultForHours(h){ return interpLin(CALIBRATION.coldMultHours,h); }
 // Leselig visningstekst for kjøleskapstid — alltid i timer, aldri "dager", for
 // konsekvens med resten av det time-baserte systemet (Poolish/Biga-valgene,
 // Hurtigdeig/Kveldsdeig) som allerede viser timer gjennomgående.
@@ -1493,17 +1494,7 @@ function syncMobMeltypeSelect(){
   });
   updateMeltypeInfo();
 }
-function tf(){
-  const pts=[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]];
-  const t=S.temp;
-  if(t<=pts[0][0])return pts[0][1];
-  if(t>=pts[pts.length-1][0])return pts[pts.length-1][1];
-  for(let i=0;i<pts.length-1;i++){
-    const [t0,f0]=pts[i],[t1,f1]=pts[i+1];
-    if(t>=t0&&t<=t1)return Math.round((f0+(f1-f0)*(t-t0)/(t1-t0))*100)/100;
-  }
-  return 1.0;
-}
+function tf(){ return interpLin(CALIBRATION.tempFactor,S.temp,2); }
 function rtM(b){return Math.round(b*tf());}
 function fd(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function initD(){

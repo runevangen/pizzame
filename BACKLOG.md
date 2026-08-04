@@ -576,7 +576,13 @@ rekkefølgen. F17 er det klart mest verdifulle.
 - **Gevinst:** klassen «kopien viser andre tall enn stegene» dør strukturelt.
 - Ikke [baseline] hvis riktig gjort — tallene skal være identiske før/etter.
 
-### F18. Én interpolator + samlet `CALIBRATION`-blokk
+### F18. Én interpolator + samlet `CALIBRATION`-blokk ✅ BYGGET (v0.716)
+> ✅ **Bygget.** `CALIBRATION` samler tempFactor/coldMultHours/poolishRoom/
+> poolishCold/biga-kurvene; `interpLin(pts,x,dec)` er den ene interpolatoren
+> (dec-param bevarer tf sine 2 desimaler — verifisert bit-identisk). Død
+> COLDMULT-dagstabell fjernet. HOPTS/KOPTS/KCOLDMULT bevisst ikke flyttet
+> (menyer med UI-etiketter, ikke kurver). Test:
+> `calibration_curves_unified_interpolator_identical_values`.
 - **I klartekst:** `interpLin()` (`1328`) finnes, men `coldMultForHours()` (`1369`)
   og `tf()` (`~1495`) har hver sin kopi av samme løkke. Kalibreringskurvene ligger
   spredt: `HOPTS`, `KCOLDMULT`, `COLDMULT_HOURS`, poolish/biga-punktene i
