@@ -3122,9 +3122,15 @@ def run_behavioral_tests(page):
       const qkTouch=conflictIsQuick({dur:0}), qkActive=conflictIsQuick({dur:20}), qkPassive=conflictIsQuick({passive:true,dur:360});
       window._pizzatidSchedule=savedSched;
       S.type=savedS.type;S.mel=savedS.mel;S.hydro=savedS.hydro;S.temp=savedS.temp;S.gjaer=savedS.gjaer;S.kjokkenmaskin=savedS.km;S.oven=savedS.oven;
+      // v0.706: konflikten står på egen linje UNDER metode+gjæring (.beta-conf i
+      // .beta-row), ikke som sidekolonne. Sjekk at rekkefølgen i markup er
+      // metode → gjæring → konflikt innenfor samme rad.
+      const firstRow=(h.match(/<div class=\"beta-row[\\s\\S]*?<div class=\"beta-conf\"[\\s\\S]*?<\\/div>\\s*<\\/div>/)||[''])[0];
+      const order = firstRow.indexOf('beta-m')>=0 && firstRow.indexOf('beta-hrs')>firstRow.indexOf('beta-m') && firstRow.indexOf('beta-conf')>firstRow.indexOf('beta-hrs');
       return {
         noErr: err==='',
-        hasTable:/beta-comp/.test(h),
+        hasRows:/beta-row/.test(h),
+        confUnderNotBeside: order && /beta-conf/.test(h),
         winnerFits:/beta-eff fits/.test(h),
         altQuickPill:/beta-eff quick/.test(h),
         altShowsStep:/Ta ut av kj/.test(h),
@@ -3132,7 +3138,7 @@ def run_behavioral_tests(page):
         quickForDur0:qkTouch===true, activeForDur20:qkActive===false, quickForPassive:qkPassive===true
       };
     }""")
-    ok88 = all(r88.get(k) for k in ['noErr','hasTable','winnerFits','altQuickPill','altShowsStep','altTappable','quickForDur0','activeForDur20','quickForPassive'])
+    ok88 = all(r88.get(k) for k in ['noErr','hasRows','confUnderNotBeside','winnerFits','altQuickPill','altShowsStep','altTappable','quickForDur0','activeForDur20','quickForPassive'])
     results.append(('smartplan_result_comparison_table_shows_conflict_effort', ok88, r88))
 
     return results

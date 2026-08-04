@@ -581,18 +581,22 @@ body.fs-xxlarge .mob-mcard-wrap{zoom:0.625}
 .step-detail-btn:focus-visible{outline:2px solid var(--forno-accent,#e8590c);outline-offset:2px}
 .step-detail-btn.step-detail-ico{padding:3px 10px;font-size:15px}
 .conflict-flag{display:inline-block;font-size:10px;font-weight:600;color:#8a5a00;background:#FAEEDA;border:1px solid #EF9F27;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
-/* v0.705: Smart-plan avveinings-tabell (vinner + alternativer med konflikt-detalj) */
-.beta-comp{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}
-.beta-comp th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--forno-text-faint,#8a7a68);font-weight:800;text-align:left;padding:0 5px 4px}
-.beta-comp th.num,.beta-comp td.num{text-align:right}
-.beta-comp td{padding:7px 5px;border-top:1px solid var(--forno-border-soft,#ece3d2);color:var(--forno-text-muted,#40301a);vertical-align:top}
-.beta-comp tr.beta-alt{cursor:pointer}
-.beta-comp tr.beta-win td{background:var(--forno-accent-soft,#fbe4d4)}
-.beta-comp tr.beta-win .beta-m{font-weight:800;color:var(--forno-accent-text,#c2410c)}
-.beta-comp .beta-m{font-weight:700;color:var(--forno-text,#3f2d10)}
-.beta-comp .beta-sub{display:block;font-size:9.5px;color:var(--forno-text-faint,#6d5a3a);font-weight:400;margin-top:2px}
-.beta-comp .beta-when{display:block;font-size:9.5px;color:var(--forno-text-faint,#6d5a3a);margin-top:1px}
-.beta-eff{display:inline-block;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 7px;margin-top:3px;white-space:nowrap}
+/* v0.705: Smart-plan avveinings-liste (vinner + alternativer). v0.706: stablede
+   rader — metode + gjæring øverst, konflikten på EGEN LINJE under (ikke ved siden av),
+   så lange metodenavn ikke klemmer konflikt-kolonnen. */
+.beta-list{margin-top:8px}
+.beta-row{border-top:1px solid var(--forno-border-soft,#ece3d2);padding:8px 4px}
+.beta-row:first-child{border-top:none}
+.beta-row.beta-alt{cursor:pointer}
+.beta-row.beta-win{background:var(--forno-accent-soft,#fbe4d4);border-radius:8px;border-top:none;padding:8px}
+.beta-row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.beta-m{font-size:12.5px;font-weight:700;color:var(--forno-text,#3f2d10);line-height:1.25}
+.beta-row.beta-win .beta-m{font-weight:800;color:var(--forno-accent-text,#c2410c)}
+.beta-hrs{font-size:11px;color:var(--forno-text-faint,#6d5a3a);white-space:nowrap;font-weight:700}
+.beta-sub{font-size:9.5px;color:var(--forno-text-faint,#6d5a3a);margin-top:1px}
+.beta-conf{margin-top:5px;font-size:10.5px;color:var(--forno-text-muted,#40301a);line-height:1.5;display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.beta-conf .beta-when{color:var(--forno-text-faint,#6d5a3a)}
+.beta-eff{display:inline-block;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 7px;white-space:nowrap}
 .beta-eff.quick{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
 .beta-eff.active{background:#fbe4d4;color:#b45309;border:1px solid #f1c49a}
 .beta-eff.fits{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
@@ -3662,7 +3666,7 @@ function betaConflictCell(conflicts){
   const quick=conflictIsQuick(c);
   const eff=quick?L('kort håndgrep','quick handling'):`~${c.dur} min ${L('aktivt','active')}`;
   const more=conflicts.length>1?` <span style="color:var(--forno-text-faint,#6d5a3a);font-weight:400">+${conflicts.length-1}</span>`:'';
-  return `<span class="beta-m" style="font-weight:600">${escH(dispTitle(c.title))}${more}</span>`
+  return `<span style="font-weight:700;color:var(--forno-text,#3f2d10)">${escH(dispTitle(c.title))}${more}</span>`
     +`<span class="beta-when">${escH(when)}</span>`
     +`<span class="beta-eff ${quick?'quick':'active'}">${eff}</span>`;
 }
@@ -3688,12 +3692,16 @@ function renderResultBlock(containerId, label, anchorIso){
   // alternativ når du ser at «ulempen» bare er et kort håndgrep du kan ta hjemmefra.
   const compRows=results.slice(0,3).map((c,i)=>{
     const isWin=i===0;
-    const flav=(!isWin && c.totalHrs>top.totalHrs+2) ? `<span class="beta-sub">${L('mer smak','more flavor')}</span>`
-             : (!isWin && c.totalHrs<top.totalHrs-2 ? `<span class="beta-sub">${L('kortere','shorter')}</span>` : '');
-    const attr=isWin ? 'class="beta-win"' : `class="beta-alt" onclick="applyBetaResult(${regId},${i})"`;
-    return `<tr ${attr}><td><span class="beta-m">${escH(c.label)}</span>${flav}</td><td class="num">~${Math.round(c.totalHrs)}${L('t','h')}</td><td>${betaConflictCell(c.conflicts)}</td></tr>`;
+    const flav=(!isWin && c.totalHrs>top.totalHrs+2) ? L('mer smak','more flavor')
+             : (!isWin && c.totalHrs<top.totalHrs-2 ? L('kortere','shorter') : '');
+    const attr=isWin ? 'class="beta-row beta-win"' : `class="beta-row beta-alt" onclick="applyBetaResult(${regId},${i})"`;
+    return `<div ${attr}>
+      <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">~${Math.round(c.totalHrs)}${L('t','h')}</span></div>
+      ${flav?`<div class="beta-sub">${flav}</div>`:''}
+      <div class="beta-conf">${betaConflictCell(c.conflicts)}</div>
+    </div>`;
   }).join('');
-  const compTable=`<table class="beta-comp"><thead><tr><th>${L('Metode','Method')}</th><th class="num">${L('Gjæring','Ferment')}</th><th>${L('Konflikt','Conflict')}</th></tr></thead><tbody>${compRows}</tbody></table>`;
+  const compTable=`<div class="beta-list">${compRows}</div>`;
   const whyLine=(ok && results.length>1)
     ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${L('vant på færrest tidskonflikter. Alternativene over gir mer smak — er konflikten deres bare et kort håndgrep (som å ta ut av kjøleskap), kan du velge dem i stedet.','won on fewest time conflicts. The alternatives above give more flavor — if their conflict is just a quick handling (like taking it out of the fridge), you can pick them instead.')}</div>`
     : '';
