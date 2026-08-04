@@ -538,3 +538,19 @@ kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
 - Foreslått av oppskriftsgjennomgang, aug 2026 (sammen med work-time/knead-time-
   presiseringen som ble gjort i v0.700).
 - **[baseline]** hvis tallet vises i frosne render-tester.
+
+### F16. Temperer-tipset (`TIP.benchTemper`) sier «form» etter kjøling — men forming skjer FØR
+- **I klartekst:** Tipset på «Ta ut av kjøleskap / temperer»-steget sier «gi dem mer
+  tid **før du former**» og «**form og stek** uten å vente lenger». Men i alle
+  metodene (standard/poolish/biga og Kveldsdeig) formes emnene til boller FØR
+  kjøleskapet («Form emner → kjøleskap»). Etter temperering er neste steg «Strekk og
+  stek» — du strekker/åpner emnet til pizza, du former det ikke på nytt. «Forme» er
+  attpåtil navnet på det tidligere steget, så teksten leser som om forming skjer
+  etter kjøling — motstridende med planens rekkefølge. Ser gjenbrukt fra en
+  arbeidsflyt der man baller ETTER kald bulk (som ikke er appens flyt).
+- **Fiks (skisse):** bytt «former/form» i `TIP.benchTemper` (`index.html:2068` NO,
+  `2077` EN) mot strekke-/åpne-språk: f.eks. «gi dem mer tid før du strekker og
+  steker» og «strekk og stek uten å vente lenger». Gjelder begge bruksstedene
+  (`2262` standard-hale, `2622` Kveldsdeig) automatisk siden de deler `TIP.benchTemper`.
+  Behold NO + EN, og «vanskelig å åpne»-formuleringen (den er allerede riktig).
+- Funnet av Kveldsdeig-gjennomgang, aug 2026. Ikke [baseline] (tips-tekst, ingen frosne tall).
