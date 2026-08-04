@@ -3104,6 +3104,37 @@ def run_behavioral_tests(page):
     ok87 = all(r87.get(k) for k in ['hasInconsistency','hasAnchorGuard','stillHasInputs'])
     results.append(('copy_prompt_asks_for_internal_inconsistencies_with_anchor_guard', ok87, r87))
 
+    # v0.705: Smart-plan-resultatet er en sammenligningstabell (vinner + inntil 2
+    # alternativer). Hver konflikt viser HVA/NÅR/HVOR MYE arbeid: vinneren «✓ alt
+    # passer», alternativene sitt ene konfliktsteg («Ta ut av kjøleskap») med grønt
+    # «kort håndgrep»-merke (dur 0 = kjapt, kan gjøres hjemmefra). Alt-rader er
+    # tappbare (applyBetaResult). conflictIsQuick: dur 0/passiv = kjapt, dur>1 = aktivt.
+    r88 = page.evaluate("""() => {
+      const savedSched=window._pizzatidSchedule;
+      const savedS={type:S.type,mel:S.mel,hydro:S.hydro,temp:S.temp,gjaer:S.gjaer,km:S.kjokkenmaskin,oven:S.oven};
+      window._pizzatidSchedule=defaultPizzatidSchedule();
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.gjaer='torr'; S.kjokkenmaskin='ankarsrum'; S.oven='pizza';
+      let a=new Date(2027,7,1,18,0); while(a.getDay()!==5) a.setDate(a.getDate()+1); // fredag 18:00 langt frem → alt feasible
+      const d=document.createElement('div'); d.id='__t88'; document.body.appendChild(d);
+      let err='';
+      try{ renderResultBlock('__t88','fre 18:00', a.toISOString()); }catch(e){ err=''+e; }
+      const h=d.innerHTML; d.remove();
+      const qkTouch=conflictIsQuick({dur:0}), qkActive=conflictIsQuick({dur:20}), qkPassive=conflictIsQuick({passive:true,dur:360});
+      window._pizzatidSchedule=savedSched;
+      S.type=savedS.type;S.mel=savedS.mel;S.hydro=savedS.hydro;S.temp=savedS.temp;S.gjaer=savedS.gjaer;S.kjokkenmaskin=savedS.km;S.oven=savedS.oven;
+      return {
+        noErr: err==='',
+        hasTable:/beta-comp/.test(h),
+        winnerFits:/beta-eff fits/.test(h),
+        altQuickPill:/beta-eff quick/.test(h),
+        altShowsStep:/Ta ut av kj/.test(h),
+        altTappable:/beta-alt[^>]*applyBetaResult/.test(h),
+        quickForDur0:qkTouch===true, activeForDur20:qkActive===false, quickForPassive:qkPassive===true
+      };
+    }""")
+    ok88 = all(r88.get(k) for k in ['noErr','hasTable','winnerFits','altQuickPill','altShowsStep','altTappable','quickForDur0','activeForDur20','quickForPassive'])
+    results.append(('smartplan_result_comparison_table_shows_conflict_effort', ok88, r88))
+
     return results
 
 

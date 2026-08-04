@@ -581,6 +581,21 @@ body.fs-xxlarge .mob-mcard-wrap{zoom:0.625}
 .step-detail-btn:focus-visible{outline:2px solid var(--forno-accent,#e8590c);outline-offset:2px}
 .step-detail-btn.step-detail-ico{padding:3px 10px;font-size:15px}
 .conflict-flag{display:inline-block;font-size:10px;font-weight:600;color:#8a5a00;background:#FAEEDA;border:1px solid #EF9F27;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
+/* v0.705: Smart-plan avveinings-tabell (vinner + alternativer med konflikt-detalj) */
+.beta-comp{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}
+.beta-comp th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--forno-text-faint,#8a7a68);font-weight:800;text-align:left;padding:0 5px 4px}
+.beta-comp th.num,.beta-comp td.num{text-align:right}
+.beta-comp td{padding:7px 5px;border-top:1px solid var(--forno-border-soft,#ece3d2);color:var(--forno-text-muted,#40301a);vertical-align:top}
+.beta-comp tr.beta-alt{cursor:pointer}
+.beta-comp tr.beta-win td{background:var(--forno-accent-soft,#fbe4d4)}
+.beta-comp tr.beta-win .beta-m{font-weight:800;color:var(--forno-accent-text,#c2410c)}
+.beta-comp .beta-m{font-weight:700;color:var(--forno-text,#3f2d10)}
+.beta-comp .beta-sub{display:block;font-size:9.5px;color:var(--forno-text-faint,#6d5a3a);font-weight:400;margin-top:2px}
+.beta-comp .beta-when{display:block;font-size:9.5px;color:var(--forno-text-faint,#6d5a3a);margin-top:1px}
+.beta-eff{display:inline-block;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 7px;margin-top:3px;white-space:nowrap}
+.beta-eff.quick{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
+.beta-eff.active{background:#fbe4d4;color:#b45309;border:1px solid #f1c49a}
+.beta-eff.fits{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
 .adv-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#F2F2F7;border-radius:8px;font-size:12px;font-weight:600;color:#3A3A3C;cursor:pointer;margin:.6rem 0}
 .adv-toggle:hover{background:#e5e2dc}
 
@@ -3231,6 +3246,26 @@ function scorePizzatidWindows(steps){
   }
   return violations;
 }
+// v0.705: samme predikat som scorePizzatidWindows, men returnerer DETALJENE om hvert
+// konfliktsteg — så Smart-plan kan vise HVA som kolliderer, NÅR, og HVOR MYE arbeid
+// det er (kort håndgrep vs. aktivt). En «ta ut av kjøleskap» (dur 0) kan gjøres
+// hjemmefra; 20 min elting kan det ikke. conflicts.length === violations for ekte steg.
+function conflictsOf(steps){
+  const out=[];
+  for(const s of (steps||[])){
+    if(s.passive && !s.needsPresence) continue;
+    let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+    if(isNaN(at.getTime())) continue;
+    if(!inPizzatidWindow(at.getHours(),at.getMinutes(),at.getDay())){
+      out.push({title:s.title, atIso:at.toISOString(), dur:s.dur||0, passive:!!s.passive, needsPresence:!!s.needsPresence});
+    }
+  }
+  return out;
+}
+// «Kort håndgrep» = passivt steg (sett i kjøleskap) eller et steg uten aktiv varighet
+// (ta ut av kjøleskap, dur 0) — du er borti deigen ~1 min. Ellers er dur den aktive
+// arbeidstiden.
+function conflictIsQuick(c){ return !!c.passive || !c.dur || c.dur<=1; }
 // Søker på tvers av ALLE metoder (ikke bare Poolish/Biga) for et gitt spisetids-
 // punkt, mot brukerens ukentlige Pizzatid-vinduer. Rangerer på færrest
 // tidskonflikter først, deretter lengst total gjæringstid som "best smak"-
@@ -3260,7 +3295,7 @@ function searchAllMethods(anchor){
     const total=totalFermentHours();
     if(total>flourMax) return;
     const steps=rawSteps(anchor);
-    candidates.push({label, violations:scorePizzatidWindows(steps), totalHrs:total, snapshot:{...snapshot}, ...timesOf(steps)});
+    candidates.push({label, violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:total, snapshot:{...snapshot}, ...timesOf(steps)});
   }
   // Langtidsdeig (tidligere "Standard")
   S.method='standard';
@@ -3280,13 +3315,13 @@ function searchAllMethods(anchor){
   for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
   // Hurtigdeig — bruker HOPTS sine faste alternativer
   S.method='hurtig';
-  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:L('Hurtigdeig','Quick dough'), violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
+  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:L('Hurtigdeig','Quick dough'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
   // Kveldsdeig — bruker KOPTS sine faste alternativer
   S.method='kveld';
-  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:L('Kveldsdeig','Evening dough'), violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
+  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:L('Kveldsdeig','Evening dough'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
   // Mania-poolish — fast struktur, ingenting å søke i, bare mål den ene planen
   S.method='mania';
-  { const steps=rawSteps(anchor); candidates.push({label:L('Mania-poolish','Mania poolish'), violations:scorePizzatidWindows(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
+  { const steps=rawSteps(anchor); candidates.push({label:L('Mania-poolish','Mania poolish'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
 
   S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
   S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold; S.poolishPauseH=origPoolishPauseH;
@@ -3616,6 +3651,21 @@ function saveBetaPizzatid(){
 }
 // Delt visning for ett søkeresultat — alternativ C: toppanbefaling synlig med
 // en gang, "se flere alternativer" åpner en rangert topp 2-3-liste.
+// v0.705: én konflikt-celle i sammenligningstabellen. Viser HVA som kolliderer, NÅR
+// (ukedag + klokkeslett), og HVOR MYE arbeid — grønt «kort håndgrep» (passivt/dur 0,
+// f.eks. ta ut av kjøleskap — kan gjøres hjemmefra) vs. oransje «~X min aktivt».
+function betaConflictCell(conflicts){
+  if(!conflicts || !conflicts.length) return `<span class="beta-eff fits">✓ ${L('alt passer','all fits')}</span>`;
+  const c=conflicts[0];
+  const dy=['søn','man','tir','ons','tor','fre','lør'];
+  let when=''; try{ const at=new Date(c.atIso); when=dy[at.getDay()]+' '+fT(at); }catch(e){}
+  const quick=conflictIsQuick(c);
+  const eff=quick?L('kort håndgrep','quick handling'):`~${c.dur} min ${L('aktivt','active')}`;
+  const more=conflicts.length>1?` <span style="color:var(--forno-text-faint,#6d5a3a);font-weight:400">+${conflicts.length-1}</span>`:'';
+  return `<span class="beta-m" style="font-weight:600">${escH(dispTitle(c.title))}${more}</span>`
+    +`<span class="beta-when">${escH(when)}</span>`
+    +`<span class="beta-eff ${quick?'quick':'active'}">${eff}</span>`;
+}
 function renderResultBlock(containerId, label, anchorIso){
   const results=searchAllMethods(new Date(anchorIso));
   const regId=window._betaResultRegistry.length;
@@ -3633,11 +3683,20 @@ function renderResultBlock(containerId, label, anchorIso){
     : (top.totalHrs<flourMin
         ? L('Alle mel passer (rask deig)','Any flour works (quick dough)')
         : L('Ingen registrert meltype dekker dette','No registered flour type covers this'));
-  const altList=results.slice(1,3).map((c,i)=>`
-      <div onclick="applyBetaResult(${regId},${i+1})" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;background:var(--forno-bg);margin-top:4px;cursor:pointer">
-        <span style="font-size:11.5px;color:var(--forno-text)">${escH(c.label)}</span>
-        <span style="font-size:10.5px;color:${c.violations===0?'var(--forno-text-faint)':'#e8a06e'}">${c.violations===0?L('Passer','Fits'):L(`${c.violations} avvik`,`${c.violations} conflicts`)} · ~${Math.round(c.totalHrs)}${L('t','h')}</span>
-      </div>`).join('');
+  // v0.705: sammenligningstabell — vinner + inntil 2 alternativer, hver med konflikt-
+  // detalj (steg, tid, arbeidsmengde). Slik kan du velge et lengre, mer smaksrikt
+  // alternativ når du ser at «ulempen» bare er et kort håndgrep du kan ta hjemmefra.
+  const compRows=results.slice(0,3).map((c,i)=>{
+    const isWin=i===0;
+    const flav=(!isWin && c.totalHrs>top.totalHrs+2) ? `<span class="beta-sub">${L('mer smak','more flavor')}</span>`
+             : (!isWin && c.totalHrs<top.totalHrs-2 ? `<span class="beta-sub">${L('kortere','shorter')}</span>` : '');
+    const attr=isWin ? 'class="beta-win"' : `class="beta-alt" onclick="applyBetaResult(${regId},${i})"`;
+    return `<tr ${attr}><td><span class="beta-m">${escH(c.label)}</span>${flav}</td><td class="num">~${Math.round(c.totalHrs)}${L('t','h')}</td><td>${betaConflictCell(c.conflicts)}</td></tr>`;
+  }).join('');
+  const compTable=`<table class="beta-comp"><thead><tr><th>${L('Metode','Method')}</th><th class="num">${L('Gjæring','Ferment')}</th><th>${L('Konflikt','Conflict')}</th></tr></thead><tbody>${compRows}</tbody></table>`;
+  const whyLine=(ok && results.length>1)
+    ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${L('vant på færrest tidskonflikter. Alternativene over gir mer smak — er konflikten deres bare et kort håndgrep (som å ta ut av kjøleskap), kan du velge dem i stedet.','won on fewest time conflicts. The alternatives above give more flavor — if their conflict is just a quick handling (like taking it out of the fridge), you can pick them instead.')}</div>`
+    : '';
   const el=document.getElementById(containerId);
   if(!el) return;
   let startTxt='', bakeTxt='';
@@ -3659,14 +3718,13 @@ function renderResultBlock(containerId, label, anchorIso){
       <div style="font-size:13px;font-weight:700;color:var(--forno-text)">${escH(label)}</div>
       <div style="font-size:14px">${ok?'✅':'⚠️'}</div>
     </div>
-    <div style="font-size:12px;color:var(--forno-accent-text);font-weight:600">${escH(top.label)}</div>
+    <div style="font-size:12px;color:var(--forno-accent-text);font-weight:600">${escH(top.label)} <span style="font-size:10.5px;color:var(--forno-text-faint);font-weight:600">— ${L('anbefalt','recommended')}</span></div>
     <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${L('🚀 Oppstartstid:','🚀 Start time:')} <b style="color:var(--forno-text)">${escH(startTxt)}</b></div>
     <div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${L('🍕 Planlagt steketid:','🍕 Planned baking time:')} <b style="color:var(--forno-text)">${escH(bakeTxt)}</b></div>
-    <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${ok?L('Alt passer den ledige tiden din','Everything fits your free time'):L(`Krever litt jobbing utenom din vanlige ledige tid (${top.violations} ${top.violations===1?'steg':'steg'})`,`Needs a little work outside your usual free time (${top.violations} ${top.violations===1?'step':'steps'})`)} · ~${Math.round(top.totalHrs)}${L('t','h')} ${L('total gjæring','total fermentation')}</div>
-    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">${L('Mel som passer:','Flour that fits:')} ${escH(flourTxt)}</div>
+    ${compTable}
+    ${whyLine}
+    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:6px">${L('Mel som passer:','Flour that fits:')} ${escH(flourTxt)}</div>
     <button onclick="applyBetaResult(${regId},0)" style="width:100%;margin-top:8px;height:34px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">${L('Bruk denne','Use this one')}</button>
-    ${altList?`<div style="text-align:center;margin-top:6px"><span onclick="this.parentElement.nextElementSibling.style.display='block';this.style.display='none'" style="font-size:11px;color:var(--forno-accent-text);cursor:pointer;text-decoration:underline">${L('Se flere alternativer','See more options')}</span></div>
-    <div style="display:none">${altList}</div>`:''}
   </div>`;
 }
 function applyBetaResult(regId,altIdx){
