@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.707",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan-valgene er nå tydeligere å velge mellom. Hvert forslag — både det anbefalte og alternativene — er et eget kort med sin egen «Bruk denne»-knapp (fylt for det anbefalte, omriss for alternativene), så det er åpenbart at du kan velge et alternativ. Og konflikt-tidspunktet er løftet fram: det står nå stort og først på en egen «når»-linje (f.eks. «fre 14:00»), med steget og arbeidsmengden ved siden av — for det er nettopp klokkeslettet som avgjør om du rekker det håndgrepet."
+    ],
+    "changes_en": [
+      "The Smart plan options are now clearer to choose between. Each suggestion — both the recommended one and the alternatives — is its own card with its own “Use this one” button (filled for the recommended, outlined for the alternatives), so it's obvious you can pick an alternative. And the conflict time is brought to the front: it now sits large and first on its own “when” line (e.g. “Fri 14:00”), with the step and effort beside it — because it's exactly the time that decides whether you can manage that handling."
+    ]
+  },
+  {
     "v": "0.706",
     "d": "august 2026",
     "d_en": "August 2026",

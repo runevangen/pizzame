@@ -581,22 +581,25 @@ body.fs-xxlarge .mob-mcard-wrap{zoom:0.625}
 .step-detail-btn:focus-visible{outline:2px solid var(--forno-accent,#e8590c);outline-offset:2px}
 .step-detail-btn.step-detail-ico{padding:3px 10px;font-size:15px}
 .conflict-flag{display:inline-block;font-size:10px;font-weight:600;color:#8a5a00;background:#FAEEDA;border:1px solid #EF9F27;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:1px}
-/* v0.705: Smart-plan avveinings-liste (vinner + alternativer). v0.706: stablede
-   rader — metode + gjæring øverst, konflikten på EGEN LINJE under (ikke ved siden av),
-   så lange metodenavn ikke klemmer konflikt-kolonnen. */
+/* Smart-plan avveinings-valg (vinner + alternativer). v0.707 (skisse 3): hvert valg
+   er et kort med egen «når»-linje — konflikt-TIDSPUNKTET stort og først (det avgjør
+   om du kan ta den), steget ved siden av — og en egen «Bruk denne»-knapp per kort. */
 .beta-list{margin-top:8px}
-.beta-row{border-top:1px solid var(--forno-border-soft,#ece3d2);padding:8px 4px}
-.beta-row:first-child{border-top:none}
-.beta-row.beta-alt{cursor:pointer}
-.beta-row.beta-win{background:var(--forno-accent-soft,#fbe4d4);border-radius:8px;border-top:none;padding:8px}
+.beta-card{border:1px solid var(--forno-border,#e0d3b5);border-radius:10px;padding:10px;margin-top:9px;background:var(--forno-bg,#f5f0e6)}
+.beta-card.beta-win{background:var(--forno-accent-soft,#fbe4d4);border-color:var(--forno-accent,#e8590c)}
 .beta-row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .beta-m{font-size:12.5px;font-weight:700;color:var(--forno-text,#3f2d10);line-height:1.25}
-.beta-row.beta-win .beta-m{font-weight:800;color:var(--forno-accent-text,#c2410c)}
-.beta-hrs{font-size:11px;color:var(--forno-text-faint,#6d5a3a);white-space:nowrap;font-weight:700}
-.beta-sub{font-size:9.5px;color:var(--forno-text-faint,#6d5a3a);margin-top:1px}
-.beta-conf{margin-top:5px;font-size:10.5px;color:var(--forno-text-muted,#40301a);line-height:1.5;display:flex;flex-wrap:wrap;align-items:center;gap:5px}
-.beta-conf .beta-when{color:var(--forno-text-faint,#6d5a3a)}
-.beta-eff{display:inline-block;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.beta-card.beta-win .beta-m{font-weight:800;color:var(--forno-accent-text,#c2410c)}
+.beta-hrs{font-size:11px;color:var(--forno-text-faint,#6d5a3a);white-space:nowrap;font-weight:700;text-align:right}
+.beta-whenrow{margin-top:7px;background:var(--forno-bg-raised,#fffdf8);border:1px solid var(--forno-border-soft,#ece3d2);border-radius:8px;padding:6px 9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.beta-card.beta-win .beta-whenrow{background:rgba(255,255,255,.5)}
+.beta-when-big{font-size:14px;font-weight:900;color:var(--forno-accent-text,#c2410c);white-space:nowrap}
+.beta-when-step{font-size:10.5px;color:var(--forno-text-muted,#40301a);line-height:1.4}
+.beta-eff{display:inline-block;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.beta-eff.quick,.beta-eff.fits{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
+.beta-eff.active{background:#fbe4d4;color:#b45309;border:1px solid #f1c49a}
+.beta-use{width:100%;height:34px;border:none;border-radius:8px;background:var(--forno-accent,#e8590c);color:#1a1512;font-size:12px;font-weight:800;cursor:pointer;margin-top:8px;font-family:inherit}
+.beta-use.beta-sec{background:transparent;border:1.5px solid var(--forno-accent,#e8590c);color:var(--forno-accent-text,#c2410c)}
 .beta-eff.quick{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
 .beta-eff.active{background:#fbe4d4;color:#b45309;border:1px solid #f1c49a}
 .beta-eff.fits{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
@@ -3655,20 +3658,20 @@ function saveBetaPizzatid(){
 }
 // Delt visning for ett søkeresultat — alternativ C: toppanbefaling synlig med
 // en gang, "se flere alternativer" åpner en rangert topp 2-3-liste.
-// v0.705: én konflikt-celle i sammenligningstabellen. Viser HVA som kolliderer, NÅR
-// (ukedag + klokkeslett), og HVOR MYE arbeid — grønt «kort håndgrep» (passivt/dur 0,
-// f.eks. ta ut av kjøleskap — kan gjøres hjemmefra) vs. oransje «~X min aktivt».
-function betaConflictCell(conflicts){
-  if(!conflicts || !conflicts.length) return `<span class="beta-eff fits">✓ ${L('alt passer','all fits')}</span>`;
+// v0.707 (skisse 3): innholdet i «når»-linja for ett valg. Viser NÅR konflikten er
+// (stort og først — det avgjør om du kan ta den), HVA som kolliderer, og HVOR MYE
+// arbeid — grønt «kort håndgrep» (passivt/dur 0, f.eks. ta ut av kjøleskap — kan
+// gjøres hjemmefra) vs. oransje «~X min aktivt». Ingen konflikt → «✓ alt passer».
+function betaWhenRow(conflicts){
+  if(!conflicts || !conflicts.length) return `<span class="beta-eff fits" style="font-size:11px;padding:2px 10px">✓ ${L('alt passer','all fits')}</span>`;
   const c=conflicts[0];
   const dy=['søn','man','tir','ons','tor','fre','lør'];
   let when=''; try{ const at=new Date(c.atIso); when=dy[at.getDay()]+' '+fT(at); }catch(e){}
   const quick=conflictIsQuick(c);
   const eff=quick?L('kort håndgrep','quick handling'):`~${c.dur} min ${L('aktivt','active')}`;
   const more=conflicts.length>1?` <span style="color:var(--forno-text-faint,#6d5a3a);font-weight:400">+${conflicts.length-1}</span>`:'';
-  return `<span style="font-weight:700;color:var(--forno-text,#3f2d10)">${escH(dispTitle(c.title))}${more}</span>`
-    +`<span class="beta-when">${escH(when)}</span>`
-    +`<span class="beta-eff ${quick?'quick':'active'}">${eff}</span>`;
+  return `<span class="beta-when-big">${escH(when)}</span>`
+    +`<span class="beta-when-step">${escH(dispTitle(c.title))}${more}<br><span class="beta-eff ${quick?'quick':'active'}" style="margin-top:2px">${eff}</span></span>`;
 }
 function renderResultBlock(containerId, label, anchorIso){
   const results=searchAllMethods(new Date(anchorIso));
@@ -3694,11 +3697,13 @@ function renderResultBlock(containerId, label, anchorIso){
     const isWin=i===0;
     const flav=(!isWin && c.totalHrs>top.totalHrs+2) ? L('mer smak','more flavor')
              : (!isWin && c.totalHrs<top.totalHrs-2 ? L('kortere','shorter') : '');
-    const attr=isWin ? 'class="beta-row beta-win"' : `class="beta-row beta-alt" onclick="applyBetaResult(${regId},${i})"`;
-    return `<div ${attr}>
-      <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">~${Math.round(c.totalHrs)}${L('t','h')}</span></div>
-      ${flav?`<div class="beta-sub">${flav}</div>`:''}
-      <div class="beta-conf">${betaConflictCell(c.conflicts)}</div>
+    const hrs=`~${Math.round(c.totalHrs)}${L('t','h')}${flav?' · '+flav:''}`;
+    // Hvert valg er et kort med egen «Bruk denne»-knapp: fylt for anbefalt, omriss
+    // for alternativene. Slik er det tydelig at også alternativene kan velges.
+    return `<div class="beta-card${isWin?' beta-win':''}">
+      <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">${hrs}</span></div>
+      <div class="beta-whenrow">${betaWhenRow(c.conflicts)}</div>
+      <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${i})">${L('Bruk denne','Use this one')}</button>
     </div>`;
   }).join('');
   const compTable=`<div class="beta-list">${compRows}</div>`;
@@ -3731,8 +3736,7 @@ function renderResultBlock(containerId, label, anchorIso){
     <div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${L('🍕 Planlagt steketid:','🍕 Planned baking time:')} <b style="color:var(--forno-text)">${escH(bakeTxt)}</b></div>
     ${compTable}
     ${whyLine}
-    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:6px">${L('Mel som passer:','Flour that fits:')} ${escH(flourTxt)}</div>
-    <button onclick="applyBetaResult(${regId},0)" style="width:100%;margin-top:8px;height:34px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:12px;font-weight:600;cursor:pointer">${L('Bruk denne','Use this one')}</button>
+    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:8px">${L('Mel som passer:','Flour that fits:')} ${escH(flourTxt)}</div>
   </div>`;
 }
 function applyBetaResult(regId,altIdx){

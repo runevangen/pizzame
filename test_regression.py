@@ -3122,23 +3122,31 @@ def run_behavioral_tests(page):
       const qkTouch=conflictIsQuick({dur:0}), qkActive=conflictIsQuick({dur:20}), qkPassive=conflictIsQuick({passive:true,dur:360});
       window._pizzatidSchedule=savedSched;
       S.type=savedS.type;S.mel=savedS.mel;S.hydro=savedS.hydro;S.temp=savedS.temp;S.gjaer=savedS.gjaer;S.kjokkenmaskin=savedS.km;S.oven=savedS.oven;
-      // v0.706: konflikten står på egen linje UNDER metode+gjæring (.beta-conf i
-      // .beta-row), ikke som sidekolonne. Sjekk at rekkefølgen i markup er
-      // metode → gjæring → konflikt innenfor samme rad.
-      const firstRow=(h.match(/<div class=\"beta-row[\\s\\S]*?<div class=\"beta-conf\"[\\s\\S]*?<\\/div>\\s*<\\/div>/)||[''])[0];
-      const order = firstRow.indexOf('beta-m')>=0 && firstRow.indexOf('beta-hrs')>firstRow.indexOf('beta-m') && firstRow.indexOf('beta-conf')>firstRow.indexOf('beta-hrs');
+      // v0.707 (skisse 3): hvert valg er et .beta-card med egen «Bruk denne»-knapp
+      // (indeks 0/1/2), og konflikten står i en «når»-linje der tidspunktet er stort
+      // (.beta-when-big). Isoler første alternativ-kort og sjekk rekkefølge innen det:
+      // metode (beta-m) → tid (beta-when-big) → knapp (beta-use).
+      const parts=h.split('class=\"beta-card');
+      const altCard=parts[2]||''; // parts[1]=vinner, parts[2]=første alternativ
+      const orderInCard = altCard.indexOf('beta-m')>=0
+        && altCard.indexOf('beta-when-big')>altCard.indexOf('beta-m')
+        && altCard.indexOf('beta-use')>altCard.indexOf('beta-when-big');
+      const useIdx=[...h.matchAll(/class=\"beta-use[^\"]*\"[^>]*onclick=\"applyBetaResult\\(\\d+,(\\d+)\\)/g)].map(m=>m[1]);
       return {
         noErr: err==='',
-        hasRows:/beta-row/.test(h),
-        confUnderNotBeside: order && /beta-conf/.test(h),
+        threeCards:(h.match(/class=\"beta-card/g)||[]).length===3,
+        perCardUseButtons: useIdx.join(',')==='0,1,2',        // egen «Bruk denne» på hvert valg
+        bigTimeProminent:/beta-when-big/.test(h),             // tidspunktet stort/fremhevet
+        confUnderMethod: orderInCard,                          // tid under metoden, ikke ved siden av
+        altBtnOutline:/beta-use beta-sec/.test(h),            // alternativer = omriss-knapp
         winnerFits:/beta-eff fits/.test(h),
         altQuickPill:/beta-eff quick/.test(h),
         altShowsStep:/Ta ut av kj/.test(h),
-        altTappable:/beta-alt[^>]*applyBetaResult/.test(h),
+        noOldBottomBtn: !/Mel som passer[\\s\\S]*applyBetaResult/.test(h),
         quickForDur0:qkTouch===true, activeForDur20:qkActive===false, quickForPassive:qkPassive===true
       };
     }""")
-    ok88 = all(r88.get(k) for k in ['noErr','hasRows','confUnderNotBeside','winnerFits','altQuickPill','altShowsStep','altTappable','quickForDur0','activeForDur20','quickForPassive'])
+    ok88 = all(r88.get(k) for k in ['noErr','threeCards','perCardUseButtons','bigTimeProminent','confUnderMethod','altBtnOutline','winnerFits','altQuickPill','altShowsStep','noOldBottomBtn','quickForDur0','activeForDur20','quickForPassive'])
     results.append(('smartplan_result_comparison_table_shows_conflict_effort', ok88, r88))
 
     return results
