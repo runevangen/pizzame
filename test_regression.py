@@ -3241,6 +3241,85 @@ def run_behavioral_tests(page):
     ok89 = all(r89.get(k) for k in ['waterMatches','saltMatches','yeastMatches','hydroMatches','chillMerged','waterWordingClear','noErr'])
     results.append(('mania_copy_recipe_matches_maniarecipe_and_no_duplicate_chill_step', ok89, r89))
 
+    # v0.714 (F20): generiske invariant-tester — egenskaper som skal holde for ALLE
+    # metoder × moduser, ikke frosne enkelttall. (a) Fremover fra et anker og
+    # baklengs fra samme steketid skal gi en IDENTISK plan (tailSteps-garantien,
+    # men håndhevet for hver metode — baklengs-grenene er håndskrevne speil av
+    # fremover-grenene og kan drifte). (b) Tidslinjen er monotont ikke-synkende
+    # med ikke-negative varigheter. En ny metode som legges til i stepsForAnchor
+    # blir automatisk dekket ved å legge én linje i case-lista her.
+    r90 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,pP:S.poolishPauseH,pC:S.poolishCold,
+                   pH:S.poolishH,bH:S.bigaH,hH:S.hurtigH,kH:S.kveldH,cold:S.cold,mel:S.mel};
+      const cases=[
+        ['standard',        {type:'napoletana'}],
+        ['poolish',         {type:'napoletana', poolishPauseH:0, poolishCold:false}],
+        ['poolish_pause6',  {method:'poolish', type:'napoletana', poolishPauseH:6, poolishCold:false}],
+        ['poolish_kald',    {method:'poolish', type:'napoletana', poolishPauseH:0, poolishCold:true, poolishH:24}],
+        ['biga',            {type:'napoletana'}],
+        ['mania',           {type:'napoletana'}],
+        ['hurtig',          {type:'napoletana'}],
+        ['kveld',           {type:'napoletana'}],
+        ['ingenelting',     {method:'standard', type:'ingenelting'}]
+      ];
+      const out={};
+      for(const [name,cfg] of cases){
+        S.method=cfg.method||name; S.type=cfg.type;
+        if('poolishPauseH' in cfg) S.poolishPauseH=cfg.poolishPauseH;
+        if('poolishCold' in cfg) S.poolishCold=cfg.poolishCold;
+        if('poolishH' in cfg) S.poolishH=cfg.poolishH;
+        S.mode='start';
+        const anchor=new Date(2027,2,3,10,0);
+        let fwd,bwd,err='';
+        try{
+          fwd=stepsForAnchor(anchor);
+          S.mode='end';
+          bwd=stepsForAnchor(new Date(fwd[fwd.length-1].at.getTime()));
+        }catch(e){ err=''+e; }
+        if(err||!fwd||!bwd){ out[name]={err:err||'no steps'}; continue; }
+        const sameLen=fwd.length===bwd.length;
+        let sameTimes=sameLen, sameTitles=sameLen;
+        for(let i=0;i<Math.min(fwd.length,bwd.length);i++){
+          if(fwd[i].at.getTime()!==bwd[i].at.getTime()) sameTimes=false;
+          if(fwd[i].title!==bwd[i].title) sameTitles=false;
+        }
+        let monotonic=true, nonNegDur=true;
+        for(let i=0;i<fwd.length;i++){
+          if(i>0 && fwd[i].at.getTime()<fwd[i-1].at.getTime()) monotonic=false;
+          if((fwd[i].dur||0)<0) nonNegDur=false;
+        }
+        out[name]={ok:sameLen&&sameTimes&&sameTitles&&monotonic&&nonNegDur,
+                   sameLen,sameTimes,sameTitles,monotonic,nonNegDur,n:fwd.length};
+      }
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.poolishPauseH=saved.pP;
+      S.poolishCold=saved.pC;S.poolishH=saved.pH;S.bigaH=saved.bH;S.hurtigH=saved.hH;
+      S.kveldH=saved.kH;S.cold=saved.cold;S.mel=saved.mel;
+      return out;
+    }""")
+    ok90 = all(isinstance(v, dict) and v.get('ok') for v in r90.values())
+    results.append(('invariant_forward_equals_backward_and_monotonic_all_methods', ok90, r90))
+
+    # v0.714 (F20): mania-oppskriftens avrundede deler skal summere til sin egen
+    # fasit over hele melspennet — poolishVann+vann1+vann2 er tre separat
+    # avrundede ledd (0,5 + 0,09957 + 0,04069 = 64,03% av melet); avvik fra
+    # målhydreringen skal aldri overstige avrundingsstøyen (±2g). Salt er 3,0%.
+    r91 = page.evaluate("""() => {
+      const savedMel=S.mel;
+      let worst=0, worstMel=null, saltOk=true;
+      for(let mel=200; mel<=1000; mel+=25){
+        S.mel=mel;
+        const rm=maniaRecipe();
+        const w=rm.poolishVann+rm.vann1+rm.vann2;
+        const dev=Math.abs(w-mel*0.64026);
+        if(dev>worst){worst=dev;worstMel=mel;}
+        if(Math.abs(rm.salt-mel*0.03)>0.0500001) saltOk=false; // 1-desimal-avrunding gir maks 0,05 (+ float-epsilon)
+      }
+      S.mel=savedMel;
+      return {worstDeviationG:Math.round(worst*100)/100, worstMel, withinTolerance:worst<=2, saltOk};
+    }""")
+    ok91 = r91.get('withinTolerance') and r91.get('saltOk')
+    results.append(('invariant_mania_water_parts_sum_to_hydration_and_salt_3pct', ok91, r91))
+
     return results
 
 

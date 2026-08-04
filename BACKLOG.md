@@ -596,7 +596,15 @@ rekkefølgen. F17 er det klart mest verdifulle.
 - Størst jobb i bunken, størst strukturell gevinst. Ikke [baseline] per metode
   hvis migrert riktig (output skal være identisk).
 
-### F20. Generiske invariant-tester (egenskaper, ikke bare frosne fasiter)
+### F20. Generiske invariant-tester (egenskaper, ikke bare frosne fasiter) ✅ BYGGET (v0.714)
+> ✅ **Bygget.** To invariant-tester: (a) `invariant_forward_equals_backward_and_
+> monotonic_all_methods` — 9 caser (alle metoder + poolish-varianter + ingen
+> elting) verifiserer at fremover- og baklengs-planen er identisk (lengde, titler,
+> tidspunkter) og at tidslinjen er monoton med ikke-negative varigheter;
+> (b) `invariant_mania_water_parts_sum_to_hydration_and_salt_3pct` — mania-
+> vanndelene summerer til 64,03%±2g og salt 3,0%±avrunding over mel 200–1000g.
+> Ny metode dekkes ved én linje i case-lista. Kjørt grønn FØR refaktoreringen
+> (F17/F19) starter — det var poenget.
 - **I klartekst:** Dagens tester fryser konkrete tall (bra!) og vokter konkrete
   fikser (én test per feil vi har hatt). Legg til egenskaps-tester som kjøres for
   *alle* metoder × typer × moduser automatisk: (a) fremover(anker) og
