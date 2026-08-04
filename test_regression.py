@@ -3528,6 +3528,38 @@ def run_behavioral_tests(page):
     ok98 = all(r98.get(k) for k in ['scales','sums','dinnerFixed','poolishUntouched','boundedCold'])
     results.append(('bench_temper_scales_with_room_temp_dinner_fixed', ok98, r98))
 
+    # v0.721 (F15): standard/poolish/biga sine blandesteg oppgir nå konkret
+    # vanntemperatur i °C (DDT: 3·23 − 2·romtemp − friksjonsvarme per maskin,
+    # klemt til 4–38°C) via waterTempPhrase — samme utregning Hurtigdeig alt
+    # hadde. Hurtig er uendret (mål 24°C); Ingen elting beholder kvalitativ
+    # tekst (skje-blanding, ingen maskinfriksjon, 15t romheving).
+    r99 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,km:S.kjokkenmaskin};
+      const anchor=new Date(2027,2,10,10,0);
+      S.type='napoletana'; S.mode='start'; S.kjokkenmaskin='ankarsrum';
+      const descOf=(method,titleFrag)=>{S.method=method;const st=stepsForAnchor(anchor);const s=st.find(x=>x.title.includes(titleFrag));return s?s.desc:'';};
+      S.temp=22;
+      const std22=descOf('standard','autolyse'), pl22=descOf('poolish','bland ferdig'), bg22=descOf('biga','bland ferdig'), hu22=descOf('hurtig','bland deig raskt');
+      S.temp=26;
+      const std26=descOf('standard','autolyse');
+      S.temp=22; S.kjokkenmaskin='annen';
+      const stdAnnen=descOf('standard','autolyse');
+      S.kjokkenmaskin='ankarsrum'; S.type='ingenelting';
+      const ie=descOf('standard','Bland alt i bollen');
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.temp=saved.temp;S.kjokkenmaskin=saved.km;
+      return {
+        std22Has17: std22.includes('anbefalt ca. 17°C'),
+        pl22Has17: pl22.includes('anbefalt ca. 17°C'),
+        bg22Has17: bg22.includes('anbefalt ca. 17°C'),
+        std26Has9: std26.includes('anbefalt ca. 9°C'),
+        annenHas9: stdAnnen.includes('anbefalt ca. 9°C') && stdAnnen.includes('rett fra kjøleskapet'),
+        hurtigUnchanged: hu22.includes('20°C'),
+        ingeneltingQualitative: ie.includes('ikke iskaldt') && !ie.includes('anbefalt')
+      };
+    }""")
+    ok99 = all(r99.get(k) for k in ['std22Has17','pl22Has17','bg22Has17','std26Has9','annenHas9','hurtigUnchanged','ingeneltingQualitative'])
+    results.append(('mix_steps_recommend_concrete_water_temp_c_std_poolish_biga', ok99, r99))
+
     return results
 
 

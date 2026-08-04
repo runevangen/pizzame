@@ -2006,10 +2006,18 @@ function rtW(actualMins){
 // for å nå samme sluttemperatur. Vanlige kjøkkenmaskiner (eltekrok) tilfører mye friksjonsvarme —
 // trenger kaldere vann. Kilde: King Arthur Baking friksjonsfaktor-data (stand mixer ~22–24°F,
 // håndelting ~0–4°F) og uavhengige Ankarsrum-sammenligninger (nær håndelting i friksjon).
+// F15: konkret °C-anbefaling (DDT-regnet, som Hurtigdeig) også i standard/
+// poolish/biga sine blandesteg — kaldt kjøkken om vinteren og varmt om sommeren
+// treffer da samme ~23°C deigtemperatur (midt i 22–24-målet), med friksjons-
+// varme per kjøkkenmaskin innbakt. Ingen elting beholder den kvalitative
+// teksten: der blandes det med skje (ingen maskinfriksjon) og deigen står
+// uansett 15 timer i romtemperatur, så starttemperaturen betyr lite.
 function waterTempPhrase(){
+  if(S.type==='ingenelting') return L('kjølig eller romtemperert vann (ikke iskaldt)','cool or room-temperature water (not ice-cold)');
+  const t=calcWaterTempC(23);
   return S.kjokkenmaskin==='annen'
-    ? L('kaldt vann, gjerne rett fra kjøleskapet','cold water, ideally straight from the fridge')
-    : L('kjølig eller romtemperert vann (ikke iskaldt)','cool or room-temperature water (not ice-cold)');
+    ? L(`kaldt vann, gjerne rett fra kjøleskapet (anbefalt ca. ${t}°C)`,`cold water, ideally straight from the fridge (recommended about ${t}°C)`)
+    : L(`kjølig eller romtemperert vann (anbefalt ca. ${t}°C)`,`cool or room-temperature water (recommended about ${t}°C)`);
 }
 // Blande-/elte-steget er satt av ~20 min, men selve eltingen er kortere (10–12 min
 // e.l.). Uten denne presiseringen kunne planens «20 min» og teksten «elt 10–12 min»
@@ -2023,9 +2031,10 @@ function mixWorkNote(){
 // varierer med eltemetode — Ankarsrum/hånd gir lite friksjonsvarme, kraftigere eltekroker mer.
 // Mål: ~24°C ferdig deig, uansett hvor lang eller kort gjæringstiden er — det er gjærmengden,
 // ikke vanntemperaturen, som skal styre farten på gjæringen.
-function calcWaterTempC(){
+// F15: target-parameter — Hurtigdeig sikter mot 24°C ferdig deig (standard),
+// standard/poolish/biga-blandestegene mot 23°C (midt i 22–24-målet deres).
+function calcWaterTempC(target=24){
   const FF = {ankarsrum:8, manuell:4, annen:16}[S.kjokkenmaskin] ?? 10;
-  const target = 24;
   const t = Math.round(3*target - S.temp - S.temp - FF);
   return Math.max(4, Math.min(t, 38)); // fornuftige grenser: fra kaldt kjøleskapsvann til lunkent
 }

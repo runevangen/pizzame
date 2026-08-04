@@ -533,7 +533,15 @@ kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
   et brukervalgt tall, ikke temp-styrt).
 - **[baseline]** — flytter tidsplan-tall.
 
-### F15. Anbefalt vanntemperatur (°C) i blandestegene for poolish/biga/standard
+### F15. Anbefalt vanntemperatur (°C) i blandestegene for poolish/biga/standard ✅ FIKSET (v0.721)
+> ✅ **Fikset.** `calcWaterTempC(target=24)` generalisert med target-parameter i
+> stedet for en egen `recommendedWaterTempC` (én utregning, to mål: hurtig 24°C,
+> standard/poolish/biga 23°C — midt i deres 22–24-mål). `waterTempPhrase()`
+> fletter inn «(anbefalt ca. X°C)» og beholder maskin-avhengig ordlyd; FF-
+> friksjonsvarmen (ankarsrum 8 / manuell 4 / annen 16) er innbakt. Ingen elting
+> beholder kvalitativ tekst (skje-blanding, ingen friksjon, 15t romheving).
+> Test: `mix_steps_recommend_concrete_water_temp_c_std_poolish_biga` (alle tre
+> metodene, temp- og maskinrespons, hurtig uendret, ingenelting kvalitativ).
 - **I klartekst:** Hurtigdeig oppgir allerede en konkret vanntemperatur i °C
   (regnet ut fra ønsket deigtemperatur og friksjonsvarme, `index.html:~2106`,
   `t = 3*target − S.temp − S.temp − FF`). Poolish/biga/standard sine blandesteg
