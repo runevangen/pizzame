@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.706",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Justerte layouten på Smart-plan-sammenligningen: konflikten står nå på en egen linje UNDER metoden og gjæringstiden, ikke som en trang sidekolonne. Metodenavn som «Poolish (romtemp + 18t kjøleskapspause)» wrapper over flere linjer, og da ble konflikt-kolonnen klemt. Nå får hver rad metode + gjæring øverst, og konflikt-detaljen (steg · tid · arbeidsmengde) i full bredde under — mye lettere å lese."
+    ],
+    "changes_en": [
+      "Adjusted the layout of the Smart plan comparison: the conflict now sits on its own line BELOW the method and fermentation time, not as a cramped side column. Method names like “Poolish (room temp + 18h cold pause)” wrap across several lines, which squeezed the conflict column. Now each row has method + fermentation on top, and the conflict detail (step · time · effort) at full width underneath — much easier to read."
+    ]
+  },
+  {
     "v": "0.705",
     "d": "august 2026",
     "d_en": "August 2026",
