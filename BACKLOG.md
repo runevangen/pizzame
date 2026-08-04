@@ -497,7 +497,17 @@ teksten som ble lagt til i v0.697 ble samtidig fjernet igjen (feil premiss for e
 norsk publikum: 1–3 °C er et *riktig* innstilt kjøleskap, ikke et kaldt et), og
 kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
 
-### F13. Kjøleskapstemperatur som inndata i Finjuster (med gjærkompensasjon)
+### F13. Kjøleskapstemperatur som inndata i Finjuster (med gjærkompensasjon) ✅ FIKSET (v0.722)
+> ✅ **Fikset.** Fire soner i Finjuster (0–2/2–4/4–6/6–8°C, `S.fridgeC` = sone-
+> midtpunkt), gjærkompensasjon via `CALIBRATION.fridgeMult` [[1,1.3],[3,1.0],
+> [5,0.8],[7,0.65]] og `fridgeYeastMult()` i motoren. Referanse 2–4°C = 1,0× →
+> standardvalget endrer ingen tall (baseline urørt), akkurat som backlog-punktet
+> krevde (Mattilsynet-forankret, ikke «+25–30%» i prosa). Gjelder standard/
+> poolish/biga (via R()) og kveld (via recipeFor — kveldSteps leser nå også
+> recipeFor i stedet for lokal duplikat-utregning); mania (fast publisert
+> oppskrift) og hurtig (kaldhever ikke) bevisst unntatt via nytt
+> `METHODS.fridgeTemp`-flagg som også styrer synligheten i Finjuster. Test:
+> `fridge_temp_input_compensates_yeast_default_unchanged`.
 - **I klartekst:** Appen har i dag ingen anelse om hvor kaldt brukerens kjøleskap
   er — den antar en implisitt referanse. Legg til et valg for kjøleskapstemperatur
   (f.eks. 0–2 / 2–4 / 4–6 °C) i Finjuster, og la appen regne ut gjærkompensasjonen

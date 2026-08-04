@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.722",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nytt valg i Finjuster: kjøleskapstemperatur (0–2 / 2–4 / 4–6 / 6–8°C). Appen kompenserer gjærmengden automatisk — et kaldere kjøleskap bremser gjæringen, så du får litt mer gjær for samme resultat til samme tid (ca. +30% ved 0–2°C); et varmere skap eller dørhylle gir litt mindre. Standardvalget 2–4°C er et riktig innstilt kjøleskap (Mattilsynet: 0–4°C) og endrer ingen tall. Gjelder Langtidsdeig, Poolish, Biga og Kveldsdeig; Mania-poolish er en fast, publisert oppskrift og justeres ikke. Usikker på temperaturen? Mål med termometer — 1–5-skalaene er ikke like mellom merker."
+    ],
+    "changes_en": [
+      "New choice in Fine-tune: fridge temperature (0–2 / 2–4 / 4–6 / 6–8°C). The app compensates the yeast amount automatically — a colder fridge slows fermentation, so you get slightly more yeast for the same result at the same time (about +30% at 0–2°C); a warmer fridge or door shelf gives slightly less. The default 2–4°C is a correctly set fridge and changes no numbers. Applies to long-ferment, poolish, biga and evening dough; Mania poolish is a fixed published recipe and is not adjusted. Unsure of the temperature? Measure with a thermometer — the 1–5 dials differ between brands."
+    ]
+  },
+  {
     "v": "0.721",
     "d": "august 2026",
     "d_en": "August 2026",

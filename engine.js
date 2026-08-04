@@ -29,8 +29,19 @@ const CALIBRATION={
   // romtemperatur-poolish (som uansett ikke er trygg utover ~16t).
   poolishCold:[[12,1.2],[16,1.0],[24,0.85],[36,0.65],[48,0.5]],
   // Forspill-gjær, biga (18t = 1,0-referanse).
-  biga:[[16,1.15],[18,1.0],[20,0.92],[22,0.85],[24,0.8]]
+  biga:[[16,1.15],[18,1.0],[20,0.92],[22,0.85],[24,0.8]],
+  // F13: gjærkompensasjon for kjøleskapstemperatur. Referansen er et riktig
+  // innstilt kjøleskap (Mattilsynet: 0–4°C) — sone 2–4°C ≈ 3°C = 1,0×, som er
+  // det kurvene over alltid implisitt har antatt, så standardvalget endrer
+  // ingen tall. Kaldere skap bremser gjæren → litt mer gjær for samme resultat
+  // til samme tid (~+30% ved 0–2°C); varmere skap/dørhylle → mindre (~−20% ved
+  // 4–6°C, ~−35% ved 6–8°C). Midtpunkter per sone; fornuftige antagelser i
+  // samme ånd som KOPTS-kurven, ikke kilde-eksakte tall.
+  fridgeMult:[[1,1.3],[3,1.0],[5,0.8],[7,0.65]]
 };
+// F13: leses av R() (standard/poolish/biga) og recipeFor sin kveld-gren.
+// Mania er bevisst unntatt — det er en fast, publisert oppskrift fra kilden.
+function fridgeYeastMult(){ return interpLin(CALIBRATION.fridgeMult,(S.fridgeC==null?3:S.fridgeC)); }
 function prefermentYeastMult(){
   if(S.method==='poolish'){
     return interpLin(S.poolishCold?CALIBRATION.poolishCold:CALIBRATION.poolishRoom,S.poolishH);
@@ -60,7 +71,7 @@ function tf(){ return interpLin(CALIBRATION.tempFactor,S.temp,2); }
 function rtM(b){return Math.round(b*tf());}
 
 function R(){
-  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:coldMultForHours(S.cold)*prefermentYeastMult())*100)/100,yf=Math.round(yd*3*10)/10;
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:coldMultForHours(S.cold)*prefermentYeastMult()*fridgeYeastMult())*100)/100,yf=Math.round(yd*3*10)/10;
   const ns=window._lang==='en'
     ?{napoletana:'Neapolitan pizza',newyork:'New York pizza',langpanne:'Sheet-pan pizza',chicago:'Chicago deep dish',ingenelting:'No-knead pizza'}
     :{napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
@@ -109,7 +120,7 @@ function recipeFor(){
     const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3], f=S.mel/500;
     rec.yDry=Math.round(o.yp*f*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
   }else if(S.method==='kveld'){
-    const mult=KCOLDMULT[S.kveldH]||2.0;
+    const mult=(KCOLDMULT[S.kveldH]||2.0)*fridgeYeastMult(); // F13: kveld kaldhever også
     rec.yDry=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
   }else if(S.method==='mania'){
     const rm=maniaRecipe();
@@ -147,15 +158,19 @@ function pc(){
 // coldSlider: metoden bruker den justerbare kjøleskapshevings-slideren (S.cold).
 // smartPlan: metoden deltar i Smart-plan-kandidatlista og Deiger-filteret.
 const METHODS={
-  standard:{no:'Langtidsdeig',en:'Long-ferment dough',noShort:'Langtidsdeig',enShort:'Long-ferment',coldSlider:true, smartPlan:true},
-  poolish: {no:'Poolish',     en:'Poolish',           noShort:'Poolish',     enShort:'Poolish',     coldSlider:true, smartPlan:true},
-  biga:    {no:'Biga',        en:'Biga',              noShort:'Biga',        enShort:'Biga',        coldSlider:true, smartPlan:true},
-  mania:   {no:'Mania-poolish',en:'Mania poolish',    noShort:'Mania',       enShort:'Mania',       coldSlider:false,smartPlan:true},
-  hurtig:  {no:'Hurtigdeig',  en:'Quick dough',       noShort:'Hurtigdeig',  enShort:'Quick',       coldSlider:false,smartPlan:true},
-  kveld:   {no:'Kveldsdeig',  en:'Evening dough',     noShort:'Kveldsdeig',  enShort:'Evening',     coldSlider:false,smartPlan:true},
-  ingenelting:{no:'Ingen elting',en:'No-knead',       noShort:'Ingen elting',enShort:'No-knead',    coldSlider:false,smartPlan:false}
+  // fridgeTemp (F13): metoden kaldhever med app-beregnet gjær → kjøleskaps-
+  // temperatur-valget vises og kompenserer gjæren. Mania: false med vilje —
+  // fast, publisert oppskrift fra kilden, gjæren skal ikke justeres.
+  standard:{no:'Langtidsdeig',en:'Long-ferment dough',noShort:'Langtidsdeig',enShort:'Long-ferment',coldSlider:true, smartPlan:true, fridgeTemp:true},
+  poolish: {no:'Poolish',     en:'Poolish',           noShort:'Poolish',     enShort:'Poolish',     coldSlider:true, smartPlan:true, fridgeTemp:true},
+  biga:    {no:'Biga',        en:'Biga',              noShort:'Biga',        enShort:'Biga',        coldSlider:true, smartPlan:true, fridgeTemp:true},
+  mania:   {no:'Mania-poolish',en:'Mania poolish',    noShort:'Mania',       enShort:'Mania',       coldSlider:false,smartPlan:true, fridgeTemp:false},
+  hurtig:  {no:'Hurtigdeig',  en:'Quick dough',       noShort:'Hurtigdeig',  enShort:'Quick',       coldSlider:false,smartPlan:true, fridgeTemp:false},
+  kveld:   {no:'Kveldsdeig',  en:'Evening dough',     noShort:'Kveldsdeig',  enShort:'Evening',     coldSlider:false,smartPlan:true, fridgeTemp:true},
+  ingenelting:{no:'Ingen elting',en:'No-knead',       noShort:'Ingen elting',enShort:'No-knead',    coldSlider:false,smartPlan:false,fridgeTemp:false}
 };
 function methodShowsColdSlider(m){const d=METHODS[m];return !!(d&&d.coldSlider);}
+function methodUsesFridge(m){const d=METHODS[m];return !!(d&&d.fridgeTemp);}
 function mN(m){const d=METHODS[m];return d?(window._lang==='en'?d.en:d.no):m;}
 
 // F17: gjæretiketten leses nå fra recipeFor() — samme kilde som alt annet.

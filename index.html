@@ -951,7 +951,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="engine.js"></script>
 <script src="guide.js"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -1538,6 +1538,7 @@ function applyMobTypeUI(){
   const g=id=>document.getElementById(id);
   const gmw=g('mob-gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
   const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||!methodShowsColdSlider(S.method))?'none':'block';
+  const fjg=g('mob-gfridge-group');if(fjg)fjg.style.display=(isIE||!methodUsesFridge(S.method))?'none':'block';
   const gkw=g('mob-gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
   const gow=g('mob-govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
@@ -2477,9 +2478,10 @@ function hurtigSteps(anchor){
 }
 
 function kveldSteps(anchor){
-  const kh=S.kveldH, mult=KCOLDMULT[kh]||2.0, r=R(), ie=S.mode==='end';
-  const yd=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100, yf=Math.round(yd*3*10)/10;
-  const ya=S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
+  const kh=S.kveldH, r=R(), ie=S.mode==='end';
+  // F13/F17: gjæren leses fra recipeFor() (KCOLDMULT × fridgeYeastMult) i stedet
+  // for en lokal duplikat-utregning — samme kilde som oppskriftsfanen og kopien.
+  const ya=yLabelFor(recipeFor());
   const MIX_DUR=15, FORM_DUR=15, KVELD_MIN=kh*60, TEMPER_MIN=kh<=15?90:120;
   const total=MIX_DUR+FORM_DUR+KVELD_MIN+TEMPER_MIN;
   const t0=ie?sM(anchor,total):anchor;
@@ -5598,6 +5600,15 @@ function syncMobControls(){
   syncMobMeltypeSelect();
   updatePcountDisp(); // v6.34: init også Finjuster-antallet
   mobPillGroup('mob-govn','oven');
+  // F13: kjøleskapstemperatur-velgeren — kun for metoder som kaldhever med
+  // app-beregnet gjær (METHODS.fridgeTemp; mania er fast oppskrift, unntatt).
+  mobPillGroup('mob-gfridge','fridgeC');
+  const _fjLbl=document.getElementById('mob-gfridge-lbl');
+  if(_fjLbl)_fjLbl.textContent=L('Kjøleskapstemperatur','Fridge temperature');
+  const _fjNote=document.getElementById('mob-gfridge-note');
+  if(_fjNote)_fjNote.textContent=L('Gjærmengden kompenseres automatisk: kaldere skap → litt mer gjær for samme resultat til samme tid. Usikker? Mål med termometer — 1–5-skalaene er ikke like mellom merker. Riktig innstilt kjøleskap er 0–4°C (Mattilsynet).','The yeast amount is compensated automatically: a colder fridge → slightly more yeast for the same result at the same time. Unsure? Measure with a thermometer — the 1–5 dials differ between brands. A correctly set fridge is 0–4°C.');
+  const _fjGrp=document.getElementById('mob-gfridge-group');
+  if(_fjGrp)_fjGrp.style.display=(S.type!=='ingenelting'&&methodUsesFridge(S.method))?'block':'none';
   const now=new Date();
   const later=new Date(now.getTime()+S.cold*3600000+14400000);
   s('mob-ed',fd(later));
@@ -5630,7 +5641,11 @@ function mobPillGroup(id,key){
     type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'},{v:'ingenelting',t:'Ingen elting'}],
     gjaer:[{v:'torr',t:'Tørrgjær',e:'Dry yeast'},{v:'fersk',t:'Fersk gjær',e:'Fresh yeast'}],
     kjokkenmaskin:[{v:'ankarsrum',t:'Ankarsrum',e:'Ankarsrum'},{v:'manuell',t:'Manuell elting',e:'Manual kneading'},{v:'annen',t:'Annen maskin',e:'Other machine'}],
-    oven:[{v:'pizza',t:'Pizzaovn',e:'Pizza oven'},{v:'vanlig',t:'Vanlig ovn',e:'Regular oven'}]
+    oven:[{v:'pizza',t:'Pizzaovn',e:'Pizza oven'},{v:'vanlig',t:'Vanlig ovn',e:'Regular oven'}],
+    // F13: soner forankret i Mattilsynets 0–4°C for riktig innstilt kjøleskap;
+    // 2–4°C er referansen (ingen tallendring). v = sonemidtpunkt, matcher
+    // CALIBRATION.fridgeMult-kurven i engine.js.
+    fridgeC:[{v:1,t:'0–2°C (kaldest)',e:'0–2°C (coldest)'},{v:3,t:'2–4°C (standard)',e:'2–4°C (default)'},{v:5,t:'4–6°C',e:'4–6°C'},{v:7,t:'6–8°C (dørhylle)',e:'6–8°C (door shelf)'}]
   }[key]||[];
   const isSeg = key==='gjaer' || key==='kjokkenmaskin' || key==='oven';
   wrap.classList.toggle('mob-segctrl', isSeg);
@@ -5732,6 +5747,8 @@ function mobMethodCards(){
       document.getElementById('mob-ssub').style.display=v==='standard'?'block':'none';
       if(v==='standard') mobBuildSrows();
       document.getElementById('mob-cwrap').style.display=methodShowsColdSlider(v)?'block':'none';
+      const fjg=document.getElementById('mob-gfridge-group');
+      if(fjg)fjg.style.display=(S.type!=='ingenelting'&&methodUsesFridge(v))?'block':'none';
       mobGen();
       if(v==='poolish'){ showEarlyPlanningHint('mob-p-early-hint'); }
       if(v==='biga'){ showEarlyPlanningHint('mob-b-early-hint'); }
@@ -7545,6 +7562,13 @@ document.addEventListener('change', firstInteractionCheck, true);
       <button onclick="stepMobSlider('mob-tsl',-2,mobUTemp)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">−</button>
       <input type="range" id="mob-tsl" min="18" max="28" step="2" value="22" oninput="mobUTemp(this.value)" style="flex:1;min-width:0">
       <button onclick="stepMobSlider('mob-tsl',2,mobUTemp)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:16px;color:var(--forno-text-muted);flex-shrink:0">+</button>
+    </div>
+
+    <div id="mob-gfridge-group">
+    <div class="mob-section-lbl" id="mob-gfridge-lbl">Kjøleskapstemperatur</div>
+    <div id="mob-gfridge-hint" style="display:none;font-size:10.5px;color:#854F0B;padding:0 1rem 4px;margin-top:-4px">Velg én</div>
+    <div class="mob-pill-wrap" id="mob-gfridge"></div>
+    <div id="mob-gfridge-note" style="font-size:10.5px;color:var(--forno-text-faint);padding:0 1rem .5rem;line-height:1.4"></div>
     </div>
 
     <div id="mob-ggj-group">

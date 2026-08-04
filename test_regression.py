@@ -3560,6 +3560,51 @@ def run_behavioral_tests(page):
     ok99 = all(r99.get(k) for k in ['std22Has17','pl22Has17','bg22Has17','std26Has9','annenHas9','hurtigUnchanged','ingeneltingQualitative'])
     results.append(('mix_steps_recommend_concrete_water_temp_c_std_poolish_biga', ok99, r99))
 
+    # v0.722 (F13): kjøleskapstemperatur som inndata (Finjuster) med automatisk
+    # gjærkompensasjon via CALIBRATION.fridgeMult. Referansesone 2–4°C (midtpunkt
+    # 3) = 1,0× — standardvalget endrer INGEN tall (baseline urørt). Kaldere skap
+    # → mer gjær (0–2°C: 1,3×), varmere → mindre (4–6°C: 0,8×). Gjelder
+    # standard/poolish/biga (R()) og kveld (recipeFor); mania er fast oppskrift
+    # og hurtig kaldhever ikke — begge bevisst upåvirket.
+    r100 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,fridgeC:S.fridgeC,cold:S.cold,kveldH:S.kveldH};
+      S.type='napoletana'; S.cold=48; S.kveldH=10;
+      const ydAt=(method,fc)=>{S.method=method;S.fridgeC=fc;return recipeFor().yDry;};
+      const stdRef=ydAt('standard',3), stdCold=ydAt('standard',1), stdWarm=ydAt('standard',5);
+      const kvRef=ydAt('kveld',3), kvCold=ydAt('kveld',1);
+      const maniaRef=ydAt('mania',3), maniaCold=ydAt('mania',1);
+      const huRef=ydAt('hurtig',3), huCold=ydAt('hurtig',1);
+      // referanse = eksakt de gamle tallene (mult 1,0):
+      S.method='standard'; S.fridgeC=3;
+      const baseStd=Math.round(S.mel*BYEAST[S.type]/100*coldMultForHours(48)*100)/100;
+      // UI: pillegruppa finnes og synlighet følger metoden
+      const gridEl=document.getElementById('mob-gfridge');
+      const grpEl=document.getElementById('mob-gfridge-group');
+      let uiPills=false, hiddenForHurtig=false, shownForStandard=false;
+      if(gridEl&&grpEl){
+        S.method='standard'; try{ syncMobControls(); }catch(e){ try{ mobPillGroup('mob-gfridge','fridgeC'); }catch(e2){} }
+        uiPills=gridEl.querySelectorAll('.pill').length===4;
+        shownForStandard=grpEl.style.display!=='none';
+        S.method='hurtig'; try{ applyMobTypeUI(); }catch(e){}
+        hiddenForHurtig=grpEl.style.display==='none';
+      }
+      S.method=saved.method;S.type=saved.type;S.fridgeC=saved.fridgeC;S.cold=saved.cold;S.kveldH=saved.kveldH;
+      try{ applyMobTypeUI(); }catch(e){}
+      return {
+        defaultUnchanged: stdRef===baseStd,
+        colderMoreYeast: stdCold>stdRef && Math.abs(stdCold-Math.round(S.mel*BYEAST['napoletana']/100*coldMultForHours(48)*1.3*100)/100)<0.011,
+        warmerLessYeast: stdWarm<stdRef,
+        kveldCompensates: kvCold>kvRef,
+        maniaUntouched: maniaRef===maniaCold,
+        hurtigUntouched: huRef===huCold,
+        fridgeMultFn: fridgeYeastMult && (S.fridgeC=1, fridgeYeastMult()===1.3) && (S.fridgeC=3, fridgeYeastMult()===1.0) && (S.fridgeC=saved.fridgeC, true),
+        uiPills, shownForStandard, hiddenForHurtig,
+        stdRef, stdCold, stdWarm, kvRef, kvCold
+      };
+    }""")
+    ok100 = all(r100.get(k) for k in ['defaultUnchanged','colderMoreYeast','warmerLessYeast','kveldCompensates','maniaUntouched','hurtigUntouched','fridgeMultFn','uiPills','shownForStandard','hiddenForHurtig'])
+    results.append(('fridge_temp_input_compensates_yeast_default_unchanged', ok100, r100))
+
     return results
 
 
