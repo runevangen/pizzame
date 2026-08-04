@@ -591,7 +591,23 @@ rekkefølgen. F17 er det klart mest verdifulle.
   mønster som MELTYPER + `recomputeColdMax`, som allerede gjør dette riktig).
 - Liten jobb, null adferdsendring. Ikke [baseline].
 
-### F19. Deklarative fasespesifikasjoner + én planlegger (frem OG tilbake)
+### F19. Deklarative fasespesifikasjoner + én planlegger (frem OG tilbake) ✅ BYGGET (v0.717, pragmatisk omfang)
+> ✅ **Bygget — den strukturelle kjernen.** Alle metoder planlegger nå i ÉN
+> retning: bakover-modus er kun «trekk totalen fra ankeret», deretter regnes alt
+> fremover (ingenelting/hurtig/kveld hadde mønsteret; standard/poolish/biga/mania
+> er skrevet om — Manias to håndskrevne speilkjeder er borte). Manias fase-
+> varigheter hoistet til `MANIA_T`, lest av både stegbyggeren og
+> `totalFermentHours()` — skygge-håndsummen «720/60 + …» er død. Tester:
+> `mania_schedule_span_and_ferment_hours_from_same_constants` låser at spennet i
+> faktisk tidsplan == sum(MANIA_T) og gjæringstimer == samme sum − deling;
+> v0.714-invarianten vokter frem==tilbake. Alle tidspunkter bit-identiske
+> (frosne ISO-baselines urørt).
+>
+> **Bevisst IKKE gjort:** full id-nøklet tekst/fase-separasjon (steg-tekstene
+> ligger fortsatt inline i generatorene). Korrekthet-gevinsten er allerede tatt
+> av én-retnings-planleggingen + invariant-testene; tekst-separasjonen ville
+> vært stor flytting med liten sikkerhetsgevinst. Kan tas senere om behovet
+> (gjenbruk av tekster på tvers av metoder) faktisk oppstår.
 - **I klartekst:** Hver metode bygger stegkjeden sin to ganger for hånd — én
   fremover-gren og én baklengs-gren med minus-fortegn (`rawSteps` `2160`,
   mania-grenen `2410`, `hurtigSteps` `2506`, `kveldSteps` `2569`). Hvert nye steg

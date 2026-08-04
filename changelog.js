@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.717",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Under panseret: tidsplan-motoren regner nå alltid i én retning. «Planlagt steketid»-modus trekker bare totaltiden fra steketiden og bygger så planen fremover — tidligere fantes det to håndskrevne kjeder per metode (én fremover, én baklengs) som måtte holdes i takt manuelt. Mania-poolish sine fasevarigheter ligger nå i én konstantblokk som både tidsplanen og gjæringsvarslene leser, så de to kan aldri mer vise ulike totaltider. Alle tidspunkter er verifisert identiske med før."
+    ],
+    "changes_en": [
+      "Under the hood: the schedule engine now always computes in one direction. \"Planned bake time\" mode simply subtracts the total time from the bake time and then builds the plan forward — previously each method had two hand-written chains (one forward, one backward) that had to be kept in sync manually. Mania poolish's phase durations now live in one constant block read by both the schedule and the fermentation warnings, so the two can never again show different totals. All timestamps verified identical to before."
+    ]
+  },
+  {
     "v": "0.716",
     "d": "august 2026",
     "d_en": "August 2026",
