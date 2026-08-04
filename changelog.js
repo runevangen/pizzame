@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.705",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan-resultatet viser nå en liten sammenligningstabell: det anbefalte forslaget øverst, pluss inntil to alternativer — med gjæringstid (mer smak) og hva konflikten deres faktisk er. For hvert alternativ ser du HVILKET steg som kolliderer, NÅR, og HVOR MYE arbeid det er: et grønt «kort håndgrep»-merke betyr et passivt/kjapt håndgrep (som å ta bollen ut av kjøleskapet — noe du fint kan gjøre hjemmefra), mens et oransje merke betyr ekte hands-on-arbeid (elte, forme). Da kan du selv velge et lengre, mer smaksrikt alternativ når du ser at «ulempen» bare er et minutts arbeid. Trykk raden for å bruke den. Vinneren rangeres fortsatt på færrest konflikter — tabellen bare synliggjør avveiningen så valget er ditt."
+    ],
+    "changes_en": [
+      "The Smart plan result now shows a small comparison table: the recommended option at the top, plus up to two alternatives — with fermentation time (more flavor) and what their conflict actually is. For each alternative you see WHICH step conflicts, WHEN, and HOW MUCH work it is: a green “quick handling” badge means a passive/quick touch (like taking the bowl out of the fridge — something you can easily do from home), while an orange badge means real hands-on work (kneading, shaping). That lets you choose a longer, more flavorful option yourself when you can see the “downside” is just a minute of work. Tap a row to use it. The winner is still ranked by fewest conflicts — the table just surfaces the trade-off so the choice is yours."
+    ]
+  },
+  {
     "v": "0.704",
     "d": "august 2026",
     "d_en": "August 2026",
