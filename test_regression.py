@@ -2985,6 +2985,27 @@ def run_behavioral_tests(page):
     ok82 = all(r82.get(k) for k in ['pizzaNo45','pizzaMentionsFastPreheat','regHas45'])
     results.append(('bake_preheat_tip_oven_aware_pizza_vs_regular', ok82, r82))
 
+    # v0.711 (oppskriftsgjennomgang): steg 2 (standard/Ankarsrum) motsa seg selv om
+    # salt-tidspunktet — desc «elt i 3 min. Tilsett deretter salt» og substeps «2–3 min»,
+    # men «Hvorfor» (whySg) sa «etter ca. 5 min elting». Harmonisert til ~3 min: nå
+    # samsvarer desc og why, og why nevner ikke lenger 5 min.
+    r83b = page.evaluate("""() => {
+      const orig={method:S.method,km:S.kjokkenmaskin,type:S.type,cold:S.cold};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='standard'; S.kjokkenmaskin='ankarsrum'; S.mode='start'; S.cold=24; mobGen();
+      const s=(window._steps||[]).find(x=>/Tilsett gjær og salt/i.test(x.title));
+      const desc=s?s.desc:''; const why=s?s.why:'';
+      S.method=orig.method;S.kjokkenmaskin=orig.km;S.type=orig.type;S.cold=orig.cold; mobGen();
+      return {
+        hadStep:!!s,
+        descSalt3:/elt i 3 min\\. Tilsett deretter/.test(desc),
+        whySalt3:/etter ca\\. 3 min elting/.test(why),
+        whyNot5:!/5 min elting/.test(why)
+      };
+    }""")
+    ok83b = all(r83b.get(k) for k in ['hadStep','descSalt3','whySalt3','whyNot5'])
+    results.append(('standard_mix_step_salt_timing_consistent_desc_and_why', ok83b, r83b))
+
     # v0.700 (oppskriftsgjennomgang): poolish-blandesteget er satt av 20 min, men
     # teksten sier «Elt totalt 10–12 min» — planens «20 min» og eltetiden kunne
     # virke motstridende. La til presisering (mixWorkNote) om at 20 min er samlet

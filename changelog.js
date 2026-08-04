@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.711",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet en intern selvmotsigelse i standarddeigens steg 2 (Ankarsrum): selve instruksjonen og understegene sier at saltet skal i etter ca. 3 minutter elting, men «Hvorfor»-teksten sa «etter ca. 5 min». Harmonisert til ~3 minutter, så alle tre er enige."
+    ],
+    "changes_en": [
+      "Fixed an internal contradiction in the standard dough's step 2 (Ankarsrum): the instruction and the sub-steps say the salt goes in after about 3 minutes of kneading, but the “Why” text said “after about 5 min”. Harmonized to ~3 minutes, so all three agree."
+    ]
+  },
+  {
     "v": "0.710",
     "d": "august 2026",
     "d_en": "August 2026",
