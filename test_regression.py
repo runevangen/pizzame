@@ -3197,6 +3197,50 @@ def run_behavioral_tests(page):
     ok88 = all(r88.get(k) for k in ['noErr','threeCards','perCardUseButtons','bigTimeProminent','confUnderMethod','altBtnOutline','conflictLabelled','flavOnOwnLine','hrsHasNoFlav','winnerFits','altQuickPill','altShowsStep','noOldBottomBtn','quickForDur0','activeForDur20','quickForPassive'])
     results.append(('smartplan_result_comparison_table_shows_conflict_effort', ok88, r88))
 
+    # v0.713: Mania-poolish har sin egen komplette oppskrift (maniaRecipe: 64%
+    # hydrering, 3% salt, 0,85g gjær). «Kopier oppskrift» brukte tidligere R()
+    # (65%/14g/1,13g) for ingredienslista og overskriften, mens selve Tidsplan-
+    # stegene brukte maniaRecipe — så tallene spriket (vann 320 vs 325, salt 15 vs
+    # 14, gjær 0,85 vs 1,13). Nå leser copyP maniaRecipe for Mania, så kopi = steg.
+    # Samtidig: de to nedkjølingsstegene («Poolish kjøles ned» + «Nedkjøling») var
+    # et duplikat på samme tidspunkt med motstridende minstetid (1t vs 2t) — nå ett
+    # steg. Og steg 5 sa «resten av vannet» om to ulike mengder — nå entydig.
+    r89 = page.evaluate("""() => {
+      const savedS={method:S.method,type:S.type,mode:S.mode,mel:S.mel,hydro:S.hydro,gjaer:S.gjaer};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='mania'; S.mode='start'; S.mel=500; S.hydro=65; S.gjaer='torr';
+      mobShowTab('plan'); mobGen();
+      const rm=maniaRecipe();
+      const totWater=rm.poolishVann+rm.vann1+rm.vann2; // 320
+      let captured='', orig=null;
+      try{
+        if(!navigator.clipboard){ Object.defineProperty(navigator,'clipboard',{value:{},configurable:true}); }
+        orig=navigator.clipboard.writeText;
+        navigator.clipboard.writeText=(t)=>{ captured=t; return Promise.resolve(); };
+      }catch(e){}
+      try{ copyP(window._steps||[]); }catch(e){ captured='ERR:'+e; }
+      try{ if(orig) navigator.clipboard.writeText=orig; }catch(e){}
+      const steps=window._steps||[];
+      const titles=steps.map(s=>s.title);
+      const mix=steps.find(s=>s.title==='Bland hoveddeig');
+      const mixDesc=mix?mix.desc:'';
+      S.method=savedS.method;S.type=savedS.type;S.mode=savedS.mode;S.mel=savedS.mel;S.hydro=savedS.hydro;S.gjaer=savedS.gjaer; mobGen();
+      return {
+        // ingredienslista = maniaRecipe, ikke R()
+        waterMatches: captured.includes('Vann: '+totWater+'g') && totWater===320 && !captured.includes('Vann: 325g'),
+        saltMatches: captured.includes('Salt: '+rm.salt+'g') && rm.salt===15 && !captured.includes('Salt: 14g'),
+        yeastMatches: captured.includes('Gjær: '+rm.totalYd+'g tørrgjær') && rm.totalYd===0.85 && !captured.includes('1.13g'),
+        hydroMatches: captured.includes('Hydrering: 64%') && !captured.includes('Hydrering: 65%'),
+        // duplikatsteget slått sammen: «Poolish kjøles ned» finnes, «Nedkjøling» borte
+        chillMerged: titles.includes('Poolish kjøles ned') && !titles.includes('Nedkjøling'),
+        // steg 5 sier ikke «resten av vannet» to ganger
+        waterWordingClear: (mixDesc.match(/resten av vannet/g)||[]).length===0,
+        noErr: !captured.startsWith('ERR:')
+      };
+    }""")
+    ok89 = all(r89.get(k) for k in ['waterMatches','saltMatches','yeastMatches','hydroMatches','chillMerged','waterWordingClear','noErr'])
+    results.append(('mania_copy_recipe_matches_maniarecipe_and_no_duplicate_chill_step', ok89, r89))
+
     return results
 
 

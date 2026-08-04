@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.713",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Mania-poolish: rettet at «Kopier oppskrift» viste andre ingrediensmengder enn selve tidsplanen. Kopien brukte den generelle oppskriften (325g vann, 14g salt, 1,13g gjær, 65% hydrering), mens stegene bruker Manias egen oppskrift (320g vann, 15g salt, 0,85g gjær, 64% hydrering). Kopien viser nå samme tall som stegene og Oppskrift-fanen.",
+      "Mania-poolish: slo sammen to nedkjølingssteg som lå på samme tidspunkt og motsa hverandre om minstetiden («minimum 1 time» vs. «minst 2 timer»). Nå ett tydelig steg: kjøl poolishen i minst 2 timer (fleksibelt opp til 3–4 timer).",
+      "Mania-poolish: ryddet i blande-steget for hoveddeigen, som brukte «resten av vannet» om to ulike mengder. Nå entydig: tilsett del 2 av vannet i dråper, hold igjen siste skvett til saltet.",
+      "Mania-poolish: kjøleskapstipset for den udelte deigen sa «emnene skal vokse» — men deigen er ikke delt i emner ennå på det stadiet. Sier nå «deigen». Poolish-gjæringen er også presisert til 18–21°C (samme som blande-steget), og starter etter blandingen i stedet for på samme klokkeslett."
+    ],
+    "changes_en": [
+      "Mania poolish: fixed “Copy recipe” showing different ingredient amounts than the schedule itself. The copy used the general recipe (325g water, 14g salt, 1.13g yeast, 65% hydration), while the steps use Mania's own recipe (320g water, 15g salt, 0.85g yeast, 64% hydration). The copy now shows the same numbers as the steps and the Recipe tab.",
+      "Mania poolish: merged two cooling steps that sat at the same time and contradicted each other on the minimum time (“minimum 1 hour” vs. “at least 2 hours”). Now one clear step: cool the poolish for at least 2 hours (flexible up to 3–4 hours).",
+      "Mania poolish: cleaned up the main-dough mixing step, which used “the rest of the water” for two different amounts. Now unambiguous: add water part 2 in drops, hold back the last splash for the salt.",
+      "Mania poolish: the fridge tip for the undivided dough said “the balls should grow” — but the dough isn't divided into balls yet at that stage. It now says “the dough”. The poolish fermentation is also specified as 18–21°C (matching the mixing step), and now starts after mixing instead of at the same clock time."
+    ]
+  },
+  {
     "v": "0.712",
     "d": "august 2026",
     "d_en": "August 2026",
