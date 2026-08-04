@@ -3320,6 +3320,71 @@ def run_behavioral_tests(page):
     ok91 = r91.get('withinTolerance') and r91.get('saltOk')
     results.append(('invariant_mania_water_parts_sum_to_hydration_and_salt_3pct', ok91, r91))
 
+    # v0.715 (F17): recipeFor() er nå den ENE ingredienskilden. Denne invarianten
+    # sjekker for HVER metode at «Kopier oppskrift» viser nøyaktig recipeFor sine
+    # tall (mel, vann, salt, gjær, hydrering). En ny metode dekkes automatisk ved
+    # å legge den i lista. (Erstatter behovet for én test per sprik-feil — v0.713-
+    # Mania-feilen og hurtig/kveld-gjærfeilen var begge av denne klassen.)
+    r92 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,mel:S.mel,hydro:S.hydro,gjaer:S.gjaer};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.mode='start'; S.mel=500; S.hydro=65; S.gjaer='torr';
+      const methods=['standard','poolish','biga','mania','hurtig','kveld'];
+      const out={};
+      let orig=null;
+      try{
+        if(!navigator.clipboard){ Object.defineProperty(navigator,'clipboard',{value:{},configurable:true}); }
+        orig=navigator.clipboard.writeText;
+      }catch(e){}
+      for(const m of methods){
+        S.method=m; mobShowTab('plan'); mobGen();
+        const rec=recipeFor();
+        let captured='';
+        try{ navigator.clipboard.writeText=(t)=>{captured=t;return Promise.resolve();}; }catch(e){}
+        try{ copyP(window._steps||[]); }catch(e){ captured='ERR:'+e; }
+        out[m]={
+          flour: captured.includes('Mel: '+rec.flour+'g'),
+          water: captured.includes('Vann: '+rec.water+'g'),
+          salt: captured.includes('Salt: '+rec.salt+'g'),
+          yeast: captured.includes('Gjær: '+rec.yDry+'g tørrgjær'),
+          hydro: captured.includes('Hydrering: '+rec.hydro+'%')
+        };
+        out[m].ok = out[m].flour&&out[m].water&&out[m].salt&&out[m].yeast&&out[m].hydro;
+      }
+      try{ if(orig) navigator.clipboard.writeText=orig; }catch(e){}
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.mel=saved.mel;S.hydro=saved.hydro;S.gjaer=saved.gjaer;
+      mobGen();
+      return out;
+    }""")
+    ok92 = all(isinstance(v, dict) and v.get('ok') for v in r92.values())
+    results.append(('invariant_copy_recipe_matches_recipefor_all_methods', ok92, r92))
+
+    # v0.715 (F17): PC-oppskriftsfanen for Mania viste R()-tall (325g vann/14g
+    # salt/1,13g gjær/65%) og en «Kjøleskapsheving: S.cold timer»-rad som ikke
+    # gjelder Manias faste struktur. Nå leser gen() recipeFor(): 320/15/0,85/64%
+    # og en fast-struktur-rad i stedet for S.cold.
+    r93 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,mel:S.mel,hydro:S.hydro,gjaer:S.gjaer,cold:S.cold};
+      S.type='napoletana'; S.method='mania'; S.mode='start'; S.mel=500; S.hydro=65; S.gjaer='torr'; S.cold=48;
+      try{ setLayout('pc'); }catch(e){}
+      const h=(document.getElementById('p-recipe')||{innerHTML:''}).innerHTML;
+      const rec=recipeFor();
+      const res={
+        water: h.includes(rec.water+'g ('+rec.hydro+'%)') && !h.includes('325g'),
+        salt: h.includes('>'+rec.salt+'g<'),
+        yeast: h.includes(rec.yDry+'g tørrgjær') && !h.includes('1.13g'),
+        noScoldRow: !h.includes(coldTimeLabel(48)),
+        fixedColdRow: h.includes('10t udelt')
+      };
+      res.ok = res.water&&res.salt&&res.yeast&&res.noScoldRow&&res.fixedColdRow;
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.mel=saved.mel;S.hydro=saved.hydro;S.gjaer=saved.gjaer;S.cold=saved.cold;
+      try{ setLayout('mob'); }catch(e){}
+      mobGen();
+      return res;
+    }""")
+    ok93 = r93.get('ok')
+    results.append(('pc_recipe_tab_mania_uses_maniarecipe_not_r', ok93, r93))
+
     return results
 
 

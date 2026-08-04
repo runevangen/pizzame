@@ -553,7 +553,14 @@ duplikatsteg, skygge-konstanter i utakt.
 Punktene er en trapp — hvert trinn kan shippes alene med grønne tester, i denne
 rekkefølgen. F17 er det klart mest verdifulle.
 
-### F17. Én oppskriftskilde: `recipeFor(state)` for ALLE metoder og flater
+### F17. Én oppskriftskilde: `recipeFor(state)` for ALLE metoder og flater ✅ BYGGET (v0.715)
+> ✅ **Bygget.** `recipeFor()` returnerer hele sannheten (mel/vann/salt/fett/gjær/
+> hydrering/forspill) for alle metoder; `currentYeastAmount` er nå et tynt lag over
+> den, og copyP, PC-gen(), mobGen (mania + generisk gren) leser den. Fant og fikset
+> to latente feil underveis: PC-oppskriftsfanen viste R()-tall for Mania (325/14/
+> 1,13/65% + S.cold-rad), og mobGen's mania-gren manglet ingenelting-vakten.
+> Invariant-test: `invariant_copy_recipe_matches_recipefor_all_methods` (alle 6
+> metoder) + `pc_recipe_tab_mania_uses_maniarecipe_not_r`.
 - **I klartekst:** Gjær-sannheten bor i dag på fire steder: `R()` med
   `BYEAST`×`coldMultForHours`×`prefermentYeastMult` (`index.html:1919`),
   `HOPTS.yp` for hurtig (`1283`), `KCOLDMULT` for kveld (`1337`) og

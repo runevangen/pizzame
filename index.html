@@ -1946,6 +1946,33 @@ function maniaRecipe(){
   };
 }
 function yA(r){return S.gjaer==='torr'?L(`${r.yDry}g tørrgjær`,`${r.yDry}g dry yeast`):L(`${r.yFresh}g fersk gjær`,`${r.yFresh}g fresh yeast`);}
+// F17: ÉN kilde til ingredienssannheten, uansett metode. Gjæren bodde tidligere
+// på fire steder (R() m/multiplikatorer, HOPTS.yp, KCOLDMULT, maniaRecipe), og
+// hver visningsflate (steg, oppskriftsfane, kopier, kalender) måtte kjenne alle
+// fire — glemte én flate ett tilfelle, spriket tallene (v0.713-Mania-feilen,
+// currentYeastAmount-plasteret). Nå leser alle flater denne. Ingenelting-typen
+// overstyrer metode (fast prosess), derfor type-vaktene på metodegrenene.
+function recipeFor(){
+  const r=R();
+  const rec={name:r.name,flour:r.flour,water:r.water,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,hydro:S.hydro,yDry:r.yDry,yFresh:r.yFresh,preferment:null};
+  if(S.type==='ingenelting') return rec;
+  if(S.method==='hurtig'){
+    const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3], f=S.mel/500;
+    rec.yDry=Math.round(o.yp*f*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
+  }else if(S.method==='kveld'){
+    const mult=KCOLDMULT[S.kveldH]||2.0;
+    rec.yDry=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
+  }else if(S.method==='mania'){
+    const rm=maniaRecipe();
+    rec.water=rm.poolishVann+rm.vann1+rm.vann2;
+    rec.salt=rm.salt; rec.oil=0; rec.butter=0; rec.sugar=0;
+    rec.hydro=Math.round(rec.water/rec.flour*100);
+    rec.yDry=rm.totalYd; rec.yFresh=rm.totalYf;
+    rec.preferment=rm;
+  }
+  return rec;
+}
+function yLabelFor(rec){return S.gjaer==='torr'?L(`${rec.yDry}g tørrgjær`,`${rec.yDry}g dry yeast`):L(`${rec.yFresh}g fersk gjær`,`${rec.yFresh}g fresh yeast`);}
 function pc(){
   // Langpanne/IngenElting: 0,7g deig per cm² formflate (standard focaccia-tommelfingerregel),
   // 30×40cm langpanne = 1200cm² => ca. 840g fyller én panne godt.
@@ -3041,36 +3068,15 @@ function toggleHelpFromPlan(){
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
 }
 
-// Hurtigdeig og Kveldsdeig bruker egne gjærkurver (HOPTS/KCOLDMULT), ikke R() sin
-// generelle BYEAST-basert beregning. copyP() må bruke samme kilde som selve
-// stegene faktisk viser, ellers stemmer ikke ingredienslisten med Tidsplan.
-function currentYeastAmount(){
-  if(S.method==='hurtig'){
-    const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3];
-    const f=S.mel/500;
-    const yd=Math.round(o.yp*f*100)/100, yf=Math.round(yd*3*10)/10;
-    return S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
-  }
-  if(S.method==='kveld'){
-    const mult=KCOLDMULT[S.kveldH]||2.0;
-    const yd=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100, yf=Math.round(yd*3*10)/10;
-    return S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
-  }
-  return yA(R());
-}
+// F17: gjæretiketten leses nå fra recipeFor() — samme kilde som alt annet.
+// (Tidligere dupliserte denne HOPTS/KCOLDMULT-beregningene lokalt, og manglet
+// attpåtil ingenelting-vakten, så ingen elting + hurtig valgt viste feil gjær.)
+function currentYeastAmount(){ return yLabelFor(recipeFor()); }
 function copyP(steps){
-  const r=R(),p=pc();
-  // Mania har sin egen komplette oppskrift (maniaRecipe, 64% hydrering, 3% salt),
-  // uavhengig av R() sine BSALT/BYEAST/S.hydro. Kopier-oppskriften MÅ vise samme
-  // tall som Tidsplan-stegene og Oppskrift-fanen faktisk bruker — ellers spriker
-  // ingredienslista (vann 320 vs 325, salt 15 vs 14, gjær 0,85 vs 1,13) mot stegene.
-  const _mania=S.method==='mania';
-  const _rm=_mania?maniaRecipe():null;
-  const _flour=_mania?_rm.totalMel:r.flour;
-  const _water=_mania?(_rm.poolishVann+_rm.vann1+_rm.vann2):r.water;
-  const _salt=_mania?_rm.salt:r.salt;
-  const _hydro=_mania?Math.round(_water/_flour*100):S.hydro;
-  const _yeast=_mania?(S.gjaer==='torr'?L(`${_rm.totalYd}g tørrgjær`,`${_rm.totalYd}g dry yeast`):L(`${_rm.totalYf}g fersk gjær`,`${_rm.totalYf}g fresh yeast`)):currentYeastAmount();
+  // F17: hele ingredienssannheten leses fra recipeFor() — samme kilde som
+  // Tidsplan-stegene og Oppskrift-fanene. Kopien KAN ikke lenger sprike.
+  const rec=recipeFor(),p=pc();
+  const _flour=rec.flour,_water=rec.water,_salt=rec.salt,_hydro=rec.hydro,_yeast=yLabelFor(rec);
   // Faktisk total tid fra første steg til steking (bakover fra selve tidsplanen),
   // ikke S.cold — «Total heving: 24 timer» var misvisende siden S.cold bare er
   // den kalde halen (form→stek), mens den reelle totalen inkluderer poolish/biga-
@@ -3089,7 +3095,7 @@ function copyP(steps){
   // versjon og når planen ble hentet ut.
   const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
   const _now=new Date();
-  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${r.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(r.oil?[L(`Olivenolje: ${r.oil}g`,`Olive oil: ${r.oil}g`)]:[]),...(r.butter?[L(`Smør: ${r.butter}g`,`Butter: ${r.butter}g`)]:[]),...(r.sugar?[L(`Sukker: ${r.sugar}g`,`Sugar: ${r.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
+  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
   steps.forEach((s,i)=>{
     const locMap=L({kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'},{kjol:'❄️ Fridge',rom:'🏠 Room temperature',ovn:'🔥 Oven',benk:'🔧 Counter'});
     const loc=locMap[s.loc]||s.loc;
@@ -4881,8 +4887,12 @@ function gen(){
   if(S.type!=='ingenelting' && S.method==='hurtig'){hurtigRes();return;}
   if(S.type!=='ingenelting' && S.method==='kveld'){kveldRes();return;}
   const a=anc(S.mode==='end'?'e':'s');
-  const rs=rawSteps(a),steps=rs,r=R();
-  const rr=[...baseIngredientRows({mel:r.flour,vann:r.water,hydro:S.hydro,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,gjaer:yA(r)}),...(S.type==='ingenelting'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
+  // F17: ingredienstall fra recipeFor() — for standard/poolish/biga identisk med
+  // R(), men for Mania er dette fiksen: PC-fanen viste R()-tall (325g vann/14g
+  // salt/1,13g gjær/65%) mens stegene bruker Manias egne (320/15/0,85/64%), og en
+  // «Kjøleskapsheving: S.cold»-rad som ikke gjelder Manias faste struktur.
+  const rs=rawSteps(a),steps=rs,r=recipeFor();
+  const rr=[...baseIngredientRows({mel:r.flour,vann:r.water,hydro:r.hydro,salt:r.salt,oil:r.oil,butter:r.butter,sugar:r.sugar,gjaer:yLabelFor(r)}),...(S.type==='ingenelting'||S.method==='mania'?[]:[{k:'Kjøleskapsheving',v:coldTimeLabel(S.cold)}]),...(S.method==='mania'?[{k:'Kjøleskapsheving',v:L('10t udelt + 10t i emner (fast)','10h undivided + 10h in balls (fixed)')}]:[]),{k:'Romtemperatur',v:`${S.temp}°C — heving ca. ${rtM(60)} min`},{k:'Ovntype',v:S.type==='ingenelting'?'Vanlig ovn, 250°C':oN()}];
   window._steps=steps;
   document.getElementById('main').innerHTML=`
     ${startHintHTML()}
@@ -4891,7 +4901,7 @@ function gen(){
     ${hurtigWarmRoomWarningHTML()}
     <div class="topnav"><div class="tab on" onclick="showTab('plan',this)">${L('Steg for steg','Step by step')}</div><div class="tab" onclick="showTab('recipe',this)">${L('Oppskrift','Recipe')}</div><div class="tab" onclick="showTab('notes',this)">${L('Notater','Notes')}</div></div>
     <h2>${r.name}${S.type==='ingenelting'?'':` <span style="color:#e8590c;font-weight:500">· ${mN(S.method).toLowerCase()}</span>`}${savedDeigSuffix()}${methodFlashHTML()}</h2>
-    <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${S.hydro}% · ${S.temp}°C</span></div>
+    <div class="sub"><span class="badge" style="background:#fbe4d4;color:#c2410c;font-weight:600">${pcCountBadge()}</span><span class="badge bg">${methodMetaLabel()}</span><span class="badge bc">${oN()}</span><span class="badge bw">${r.flour}g · ${r.hydro}% · ${S.temp}°C</span></div>
     ${actionGroupHTML()}
     <div id="p-plan">${stepH(steps)}</div>
     <div id="p-recipe" style="display:none"><div class="rec">${recipeRowsHTML(rr)}</div></div>
@@ -6742,20 +6752,23 @@ function mobGen(){
     return;
   }
 
-  if(S.method==='mania'){
+  // Ingenelting-vakt (F17): som hurtig/kveld-grenene over. Uten den viste
+  // «Ingen elting»-typen med mania valgt mania-oppskriftsfane mens tidsplanen
+  // viste ingenelting-steg (rawSteps sjekker type først) — to ulike oppskrifter.
+  if(S.type!=='ingenelting' && S.method==='mania'){
     const steps=rawSteps(anchor);
     window._steps=steps;
     document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}${planBottomActionsHTML()}</div>`;
-    const rm=maniaRecipe(),p=pc();
+    const _rec=recipeFor(),rm=_rec.preferment,p=pc();
     const rrPoolish=[{k:'Mel',v:`${rm.poolishMel}g`},{k:'Vann',v:`${rm.poolishVann}g`},{k:'Gjær',v:S.gjaer==='torr'?L(`${rm.poolishYd}g tørrgjær`,`${rm.poolishYd}g dry yeast`):L(`${rm.poolishYf}g fersk gjær`,`${rm.poolishYf}g fresh yeast`)}];
     const rrHoved=[{k:'Poolish',v:L('Hele poolishen over','The whole poolish, poured in')},{k:'Mel',v:`${rm.hovedMel}g`},{k:'Vann del 1',v:`${rm.vann1}g`},{k:'Vann del 2',v:`${rm.vann2}g`},{k:'Gjær',v:S.gjaer==='torr'?L(`${rm.hovedYd}g tørrgjær`,`${rm.hovedYd}g dry yeast`):L(`${rm.hovedYf}g fersk gjær`,`${rm.hovedYf}g fresh yeast`)},{k:'Salt',v:`${rm.salt}g`}];
-    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${L('Antall','Count')} ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">${L('stk','pcs')}</div></div><div class="mob-pcc"><div class="pl">${L('Hydrering','Hydration')}</div><div class="pv">64%</div><div class="ps">${L('total','total')}</div></div></div><div class="mob-section-lbl">Poolish</div><div class="mob-rec">${recipeRowsHTML(rrPoolish, true)}</div><div class="mob-section-lbl">${L('Hoveddeig','Main dough')}</div><div class="mob-rec">${recipeRowsHTML(rrHoved, true)}</div><div class="mob-swhy"><b>Mania-poolish:</b> ${L('To-trinns metode fra Pizzamania — poolish gjæres for seg i 12t, kjøles ned, blandes så inn i hoveddeigen. Hele deigen kjøleskapheves udelt i 10t før den deles i emner.','Two-stage method from Pizzamania — the poolish ferments on its own for 12h, is cooled down, then mixed into the main dough. The whole dough is cold-proofed undivided for 10h before being divided into balls.')}</div></div>`;
+    document.getElementById('mob-recipe-content').innerHTML=`<div class="mob-content"><div class="mob-pcbar"><div class="mob-pcc"><div class="pl">${L('Antall','Count')} ${pcUnitLabel(true)}</div><div class="pv">${p.count}</div><div class="ps">${L('stk','pcs')}</div></div><div class="mob-pcc"><div class="pl">${L('Hydrering','Hydration')}</div><div class="pv">${_rec.hydro}%</div><div class="ps">${L('total','total')}</div></div></div><div class="mob-section-lbl">Poolish</div><div class="mob-rec">${recipeRowsHTML(rrPoolish, true)}</div><div class="mob-section-lbl">${L('Hoveddeig','Main dough')}</div><div class="mob-rec">${recipeRowsHTML(rrHoved, true)}</div><div class="mob-swhy"><b>Mania-poolish:</b> ${L('To-trinns metode fra Pizzamania — poolish gjæres for seg i 12t, kjøles ned, blandes så inn i hoveddeigen. Hele deigen kjøleskapheves udelt i 10t før den deles i emner.','Two-stage method from Pizzamania — the poolish ferments on its own for 12h, is cooled down, then mixed into the main dough. The whole dough is cold-proofed undivided for 10h before being divided into balls.')}</div></div>`;
     return;
   }
 
   const rs=rawSteps(anchor),steps=rs;
   window._steps=steps;
-  const r=R();
+  const r=recipeFor(); // F17: identisk med R() for standard/poolish/biga/ingenelting
   const p=pc();
   document.getElementById('mob-plan-content').innerHTML=`${startHintHTML()}${meltypeWarningHTML()}${methodTimeWarningHTML()}${pastStartWarningHTML()}${hurtigWarmRoomWarningHTML()}<div class="mob-content">${activeDeigBar(true)}${deigStatusBarHTML(steps,true)}${mobStepH(steps)}${planBottomActionsHTML()}</div>`;
   // recipe tab
