@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.710",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Finn oppskriften»-knappen i Smart-plan lyser nå opp så snart du endrer ETT av feltene — enten klokkeslettet eller datoen. Før krevde den at du tok begge (klokke, så dato) i rekkefølge, så endret du bare datoen forble knappen dempet og virket inaktiv. Og ✓-haka som dukket opp på feltene er fjernet — den forvirret mer enn den hjalp."
+    ],
+    "changes_en": [
+      "The “Find the recipe” button in Smart plan now lights up as soon as you change EITHER field — the time or the date. Previously it required you to touch both (time, then date) in sequence, so changing only the date left the button dimmed and looking inactive. And the ✓ checkmark that appeared on the fields has been removed — it confused more than it helped."
+    ]
+  },
+  {
     "v": "0.709",
     "d": "august 2026",
     "d_en": "August 2026",
