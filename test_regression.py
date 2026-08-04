@@ -3414,6 +3414,28 @@ def run_behavioral_tests(page):
     ok94 = r94.get('ok')
     results.append(('calibration_curves_unified_interpolator_identical_values', ok94, r94))
 
+    # v0.717 (F19): skygge-konstanten er død — totalFermentHours() for Mania leser
+    # nå samme MANIA_T som stegbyggeren (var en frittstående håndsum «720/60 +
+    # 120/60 + …» som måtte huskes oppdatert). Testen låser at (a) den faktiske
+    # tidsplanens spenn (første→siste steg) er nøyaktig summen av MANIA_T-fasene,
+    # og (b) gjæringstimene er samme sum minus delesteget — endres et fasetall
+    # uten at begge følger med, feiler dette.
+    r95 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode};
+      S.method='mania'; S.type='napoletana'; S.mode='start';
+      const steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      const span=(steps[steps.length-1].at-steps[0].at)/60000;
+      const T=MANIA_T;
+      const TOTAL=T.POOLISH+T.CHILL+T.MIX+T.RISE1+T.ROOM1+T.COLDBULK+T.FINAL;
+      const fermMin=Math.round(totalFermentHours()*60);
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;
+      return { spanMatchesConstants: span===TOTAL,
+               fermFromSameConstants: fermMin===TOTAL-T.DIVIDE,
+               span, TOTAL, fermMin };
+    }""")
+    ok95 = r95.get('spanMatchesConstants') and r95.get('fermFromSameConstants')
+    results.append(('mania_schedule_span_and_ferment_hours_from_same_constants', ok95, r95))
+
     return results
 
 

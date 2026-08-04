@@ -1918,6 +1918,12 @@ function R(){
 // prosenter fra kilden, uavhengig av S.type sine BSALT/BYEAST-tabeller — boka
 // spesifiserer sin egen, komplette oppskrift (64% hydrering, poolish = 50% av
 // mel/vann i 1:1-forhold), ikke en variant av appens øvrige pizzatyper.
+// F19: Manias faste fasevarigheter (minutter) — ETT sted, lest av BÅDE
+// stegbyggeren (rawSteps) og totalFermentHours(). Tidligere håndsummerte
+// totalFermentHours de samme tallene som en frittstående formel («720/60 +
+// 120/60 + …») som måtte huskes oppdatert hver gang et steg ble endret —
+// en skygge-konstant som kunne lyve stille til Smart-plan og melvarslene.
+const MANIA_T={POOLISH_MIX:8,POOLISH:720,CHILL:120,MIX:25,RISE1:30,ROOM1:75,COLDBULK:600,FINAL:600,DIVIDE:15};
 function maniaRecipe(){
   const m=S.mel;
   const poolishMel=Math.round(m*0.5);
@@ -2282,8 +2288,10 @@ function rawSteps(a){
     ];
   }
   if(S.method==='standard'){
-    // Fremover: t0 gitt. Bakover: form = stek - cM2, og regn bakover derfra.
-    const t0=ie?sM(sM(sM(a,cM2),rt),45):a;
+    // F19: bakover-modus er kun «trekk totalen fra ankeret» — deretter regnes
+    // alt alltid fremover fra t0 (45 min prep + romheving + kald hale til stek).
+    const TOTAL_STD=45+rt+cM2;
+    const t0=ie?sM(a,TOTAL_STD):a;
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland og autolyse':S.kjokkenmaskin==='manuell'?'Bland for hånd og autolyse':'Kjøkkenmaskin — bland og autolyse',loc:'benk',at:t0,dur:30,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(60+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(60+rt)} of uninterrupted time — the next three steps are done in one go.`),
@@ -2343,8 +2351,10 @@ function rawSteps(a){
     // alt nedstrøms med pauseMin, mens middagen holdes fast. Bakover-modus flytter
     // poolish-starten tilsvarende tidligere, slik at forover/bakover matcher.
     const pauseMin=(S.poolishPauseH||0)*60;
-    // Fremover: poolish starter ved a. Bakover: form = stek - cM2, deigmiks = form - (20+rt) - pauseMin, poolish = miks - S.poolishH timer.
-    const pa=ie?sM(sM(sM(sM(a,cM2),20+rt),pauseMin),S.poolishH*60):a;
+    // F19: bakover = trekk totalen (poolish-timer + ev. pause + 20 min miks +
+    // romheving + kald hale) fra ankeret; alt regnes deretter fremover fra pa.
+    const TOTAL_PL=S.poolishH*60+pauseMin+20+rt+cM2;
+    const pa=ie?sM(a,TOTAL_PL):a;
     const rdy=aM(pa,S.poolishH*60);
     const mixAt=aM(rdy,pauseMin);
     return[
@@ -2393,7 +2403,9 @@ function rawSteps(a){
   }
   if(S.method==='biga'){
     const r3=R(),bm=Math.round(r3.flour*0.6),bv=Math.round(bm*0.44),rtB=Math.round(rt*1.5);
-    const ba2=ie?sM(sM(sM(a,cM2),20+rtB),S.bigaH*60):a;
+    // F19: samme mønster — bakover = trekk totalen fra ankeret, regn så fremover.
+    const TOTAL_BG=S.bigaH*60+20+rtB+cM2;
+    const ba2=ie?sM(a,TOTAL_BG):a;
     const rdy=aM(ba2,S.bigaH*60);
     return[
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
@@ -2427,29 +2439,21 @@ function rawSteps(a){
   }
   if(S.method==='mania'){
     const rm=maniaRecipe();
-    const CHILL=120, MIX_DUR=25, RISE1=30, ROOMTEMP1=75, COLDBULK=600, FINAL_PROOF=600;
-    let poolishAt,chillAt,mixAt,shapeAt,coldBulkStart,divideAt,bakeAt;
-    if(ie){
-      bakeAt=a;
-      divideAt=sM(bakeAt,FINAL_PROOF);
-      coldBulkStart=sM(divideAt,COLDBULK);
-      shapeAt=sM(coldBulkStart,ROOMTEMP1);
-      const restStart=sM(shapeAt,RISE1);
-      mixAt=sM(restStart,MIX_DUR);
-      chillAt=sM(mixAt,CHILL);
-      poolishAt=sM(chillAt,720);
-    }else{
-      poolishAt=a;
-      chillAt=aM(poolishAt,720);
-      mixAt=aM(chillAt,CHILL);
-      const restStart=aM(mixAt,MIX_DUR);
-      shapeAt=aM(restStart,RISE1);
-      coldBulkStart=aM(shapeAt,ROOMTEMP1);
-      divideAt=aM(coldBulkStart,COLDBULK);
-      bakeAt=aM(divideAt,FINAL_PROOF);
-    }
+    const {POOLISH,CHILL,MIX:MIX_DUR,RISE1,ROOM1:ROOMTEMP1,COLDBULK,FINAL:FINAL_PROOF}=MANIA_T;
+    // F19: ÉN retning. Bakover-modus trekker bare totalen fra ankeret; alle
+    // veipunkter regnes deretter alltid FREMOVER fra poolishAt. Tidligere fantes
+    // to håndskrevne speilkjeder (aM-kjede og sM-kjede) som måtte holdes i takt
+    // manuelt — invariant-testen (v0.714) vokter at totalen matcher kjeden.
+    const TOTAL=POOLISH+CHILL+MIX_DUR+RISE1+ROOMTEMP1+COLDBULK+FINAL_PROOF;
+    const poolishAt=ie?sM(a,TOTAL):a;
+    const chillAt=aM(poolishAt,POOLISH);
+    const mixAt=aM(chillAt,CHILL);
+    const shapeAt=aM(aM(mixAt,MIX_DUR),RISE1);
+    const coldBulkStart=aM(shapeAt,ROOMTEMP1);
+    const divideAt=aM(coldBulkStart,COLDBULK);
+    const bakeAt=aM(divideAt,FINAL_PROOF);
     return[
-      {title:'Bland poolish',loc:'benk',at:poolishAt,dur:8,
+      {title:'Bland poolish',loc:'benk',at:poolishAt,dur:MANIA_T.POOLISH_MIX,
         desc:L(`Rør ut ${rm.poolishYd}g tørrgjær i ${rm.poolishVann}g vann (18–21°C). Tilsett ${rm.poolishMel}g mel, rør til en tykk grøt. Dekk til med lokk eller plastfolie.`,`Stir ${rm.poolishYd}g dry yeast into ${rm.poolishVann}g water (18–21°C). Add ${rm.poolishMel}g flour, stir to a thick batter. Cover with a lid or plastic wrap.`),
         needs:[L(`🫙 ${rm.poolishYd}g tørrgjær`,`🫙 ${rm.poolishYd}g dry yeast`), L(`💧 ${rm.poolishVann}g vann`,`💧 ${rm.poolishVann}g water`), L(`🌾 ${rm.poolishMel}g mel`,`🌾 ${rm.poolishMel}g flour`)],
         substeps:[
@@ -2459,7 +2463,7 @@ function rawSteps(a){
         ],
         why:L('Halvparten av oppskriftens mel og vann fermenterer for seg selv i mange timer før resten av deigen i det hele tatt blandes — poolishen bygger opp mesteparten av smaken.',`Half the recipe's flour and water ferment on their own for many hours before the rest of the dough is even mixed — the poolish builds up most of the flavor.`),
         tip:L('La stå ved 18–21°C.',`Let sit at 18–21°C.`)},
-      {title:'Poolish gjærer',loc:'rom',at:aM(poolishAt,8),dur:712,passive:true,desc:L('La stå urørt ved 18–21°C i ca. 12 timer.',`Let sit undisturbed at 18–21°C for about 12 hours.`),substeps:[L('La stå urørt ved 18–21°C i ca. 12 timer',`Let sit undisturbed at 18–21°C for about 12 hours`)],why:WHY.pl,tip:TIP.poolishFerment},
+      {title:'Poolish gjærer',loc:'rom',at:aM(poolishAt,MANIA_T.POOLISH_MIX),dur:MANIA_T.POOLISH-MANIA_T.POOLISH_MIX,passive:true,desc:L('La stå urørt ved 18–21°C i ca. 12 timer.',`Let sit undisturbed at 18–21°C for about 12 hours.`),substeps:[L('La stå urørt ved 18–21°C i ca. 12 timer',`Let sit undisturbed at 18–21°C for about 12 hours`)],why:WHY.pl,tip:TIP.poolishFerment},
       {title:'Poolish kjøles ned',loc:'kjol',at:chillAt,dur:CHILL,passive:true,
         desc:L('Sett poolishen i kjøleskapet og la den stå kaldt i minst 2 timer.',`Put the poolish in the fridge and let it sit cold for at least 2 hours.`),
         substeps:[L('Sett poolishen i kjøleskapet, la stå kaldt i minst 2 timer',`Put the poolish in the fridge, let it sit cold for at least 2 hours`)],
@@ -2495,7 +2499,7 @@ function rawSteps(a){
         substeps:[L('La hele deigen stå samlet, udelt, i kjøleskapet',`Let the whole dough sit together, undivided, in the fridge`)],
         why:L('Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.',`Cold fermentation of the whole dough together (instead of divided into balls) is the structural core of this method — gives even, controlled maturation.`),
         tip:L('Sjekk gjennom lokket uten å åpne: deigen skal vokse til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.','Check through the lid without opening: the dough should grow to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.')},
-      {title:'Del i emner',loc:'benk',at:divideAt,dur:15,
+      {title:'Del i emner',loc:'benk',at:divideAt,dur:MANIA_T.DIVIDE,
         desc:L('Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.',`Divide into balls of the desired weight (weigh them for equal size). Shape balls and place each in its own oiled container or deep bowl, cover with a lid or plastic wrap.`),
         needs:[L('📦 boks/skål per emne',`📦 container/bowl per ball`), L('🫒 litt olje',`🫒 a little oil`)],
         substeps:[
@@ -3847,7 +3851,9 @@ function totalFermentHours(){
   if(S.type==='ingenelting') return 15;
   if(S.method==='hurtig') return S.hurtigH;
   if(S.method==='kveld') return S.kveldH;
-  if(S.method==='mania') return 720/60 + 120/60 + 25/60 + 30/60 + 75/60 + 600/60 + (600-15)/60; // fast struktur, ~36,6t
+  // F19: leser samme MANIA_T som stegbyggeren — kan ikke lenger drifte fra
+  // tidsplanen. (Gjæringstimer = alle faser unntatt selve delingen på slutten.)
+  if(S.method==='mania') return (MANIA_T.POOLISH+MANIA_T.CHILL+MANIA_T.MIX+MANIA_T.RISE1+MANIA_T.ROOM1+MANIA_T.COLDBULK+(MANIA_T.FINAL-MANIA_T.DIVIDE))/60;
   return fixedFermOverheadHours()+S.cold;
 }
 // v5.81: Finjuster nås fra varslene i stedet for fra stegrekken. Hvert varsel
