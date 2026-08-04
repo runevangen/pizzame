@@ -3006,6 +3006,24 @@ def run_behavioral_tests(page):
     ok83b = all(r83b.get(k) for k in ['hadStep','descSalt3','whySalt3','whyNot5'])
     results.append(('standard_mix_step_salt_timing_consistent_desc_and_why', ok83b, r83b))
 
+    # v0.712 (F16): temperer-stegets tips (TIP.benchTemper) sa «gi dem mer tid før du
+    # former» / «form og stek» — men emnene formes FØR kjøleskapet; etter temperering
+    # strekker/åpner du bare og steker. Byttet til strekke-språk. Deles av standard-
+    # halens «Ta ut av kjøleskap» og Kveldsdeigs «Ta ut og temperer».
+    r83c = page.evaluate("""() => {
+      const orig={method:S.method,type:S.type,cold:S.cold,kh:S.kveldH};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='standard'; S.mode='start'; S.cold=24; mobGen();
+      const std=(window._steps||[]).find(x=>/Ta ut av kjøleskap/i.test(x.title));
+      S.method='kveld'; S.kveldH=10; mobGen();
+      const kv=(window._steps||[]).find(x=>/Ta ut og temperer/i.test(x.title));
+      S.method=orig.method;S.type=orig.type;S.cold=orig.cold;S.kveldH=orig.kh; mobGen();
+      const good=t=>!!t && /strekker og steker/.test(t) && /strekk og stek/.test(t) && !/før du former/.test(t) && !/form og stek/.test(t);
+      return { hadStd:!!std, hadKv:!!kv, stdOk:good(std&&std.tip), kvOk:good(kv&&kv.tip) };
+    }""")
+    ok83c = all(r83c.get(k) for k in ['hadStd','hadKv','stdOk','kvOk'])
+    results.append(('temper_tip_uses_stretch_not_form_after_chilling', ok83c, r83c))
+
     # v0.700 (oppskriftsgjennomgang): poolish-blandesteget er satt av 20 min, men
     # teksten sier «Elt totalt 10–12 min» — planens «20 min» og eltetiden kunne
     # virke motstridende. La til presisering (mixWorkNote) om at 20 min er samlet

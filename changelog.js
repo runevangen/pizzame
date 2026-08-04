@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.712",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet en forvirrende formulering i temperer-tipset (steget «Ta ut av kjøleskap»). Det sa «gi dem mer tid før du former» og «form og stek uten å vente lenger» — men emnene er allerede formet til boller før kjøleskapet. Etter temperering strekker/åpner du bare emnet og steker; du former det ikke på nytt. Teksten sier nå «før du strekker og steker» / «strekk og stek uten å vente lenger». Gjelder alle metoder som kjølehever (standard/poolish/biga og Kveldsdeig)."
+    ],
+    "changes_en": [
+      "Fixed a confusing phrasing in the bench-rest tip (the “Take out of the fridge” step). It said “give them more time before you shape” and “shape and bake without waiting longer” — but the balls are already shaped before the fridge. After tempering you only stretch/open the ball and bake; you don't re-shape it. The text now says “before you stretch and bake” / “stretch and bake without waiting longer”. Applies to all cold-proofed methods (standard/poolish/biga and Evening dough)."
+    ]
+  },
+  {
     "v": "0.711",
     "d": "august 2026",
     "d_en": "August 2026",
