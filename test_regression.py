@@ -3436,6 +3436,38 @@ def run_behavioral_tests(page):
     ok95 = r95.get('spanMatchesConstants') and r95.get('fermFromSameConstants')
     results.append(('mania_schedule_span_and_ferment_hours_from_same_constants', ok95, r95))
 
+    # v0.718 (F21): METHODS-registeret — metodenavn (mN) og UI-flagg leses fra ett
+    # sted; BETA_METHOD_DEFS og Deiger-filteret avledes. Testen vokter også fiksen
+    # den avdekket: PC-sidens applyTypeUI manglet mania i kald-slider-lista, så PC
+    # viste den justerbare kjøletid-slideren for en metode med fast struktur
+    # (mobil skjulte den — PC/mobil-desync).
+    r96 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,lang:window._lang};
+      const out={};
+      out.registry7 = typeof METHODS==='object' && Object.keys(METHODS).length===7;
+      window._lang='no'; out.mnNo = mN('mania')==='Mania-poolish' && mN('standard')==='Langtidsdeig';
+      window._lang='en'; out.mnEn = mN('mania')==='Mania poolish' && mN('kveld')==='Evening dough';
+      window._lang=saved.lang;
+      out.betaDerived = Array.isArray(BETA_METHOD_DEFS) && BETA_METHOD_DEFS.length===6
+        && BETA_METHOD_DEFS.some(([v])=>v==='mania') && !BETA_METHOD_DEFS.some(([v])=>v==='ingenelting');
+      // PC kald-slider: mania skal skjule den (fast struktur), standard vise den.
+      S.type='napoletana';
+      S.method='mania'; applyTypeUI();
+      const cw=document.getElementById('cwrap');
+      out.pcManiaHidden = !!cw && cw.style.display==='none';
+      S.method='standard'; applyTypeUI();
+      out.pcStandardShown = !!cw && cw.style.display==='block';
+      // Mobil samme flagg:
+      out.flagFn = methodShowsColdSlider('standard')===true && methodShowsColdSlider('mania')===false
+        && methodShowsColdSlider('hurtig')===false && methodShowsColdSlider('kveld')===false
+        && methodShowsColdSlider('poolish')===true && methodShowsColdSlider('biga')===true;
+      S.method=saved.method; S.type=saved.type; applyTypeUI();
+      out.ok = out.registry7&&out.mnNo&&out.mnEn&&out.betaDerived&&out.pcManiaHidden&&out.pcStandardShown&&out.flagFn;
+      return out;
+    }""")
+    ok96 = r96.get('ok')
+    results.append(('methods_registry_drives_names_flags_and_pc_cold_slider_fix', ok96, r96))
+
     return results
 
 

@@ -644,7 +644,15 @@ rekkefølgen. F17 er det klart mest verdifulle.
 - Kan bygges FØR F17/F19 og fungere som sikkerhetsnett under refaktoreringen.
   Middels jobb. Ikke [baseline].
 
-### F21. Metode-register: ett `METHODS`-objekt i stedet for spredt dispatch
+### F21. Metode-register: ett `METHODS`-objekt i stedet for spredt dispatch ✅ BYGGET (v0.718, pragmatisk omfang)
+> ✅ **Bygget.** `METHODS` (7 metoder: no/en/noShort/enShort + coldSlider/
+> smartPlan-flagg) driver nå mN(), BETA_METHOD_DEFS (avledet), Deiger-filterets
+> metodeliste (avledet) og kald-slider-synligheten på alle tre stedene via
+> `methodShowsColdSlider()`. Avdekket og fikset PC/mobil-desync: applyTypeUI
+> manglet mania i kald-slider-lista, så PC viste justerbar kjøletid for en
+> fast-struktur-metode. Test: `methods_registry_drives_names_flags_and_pc_cold_
+> slider_fix`. De gjenværende `S.method==='…'`-treffene er ekte logikkgrener
+> (inne i generatorer/varsler), ikke lister — de hører hjemme der de er.
 - **I klartekst:** 71 steder spør `S.method==='…'` og 21 spør `S.type==='…'`,
   inkludert hardkodede lister som `(v==='hurtig'||v==='kveld'||v==='mania')?'none'`
   for kald-slideren (`1597`, `5854`) og metode-lister i Smart-plan/filter
