@@ -42,6 +42,12 @@ const CALIBRATION={
 // F13: leses av R() (standard/poolish/biga) og recipeFor sin kveld-gren.
 // Mania er bevisst unntatt — det er en fast, publisert oppskrift fra kilden.
 function fridgeYeastMult(){ return interpLin(CALIBRATION.fridgeMult,(S.fridgeC==null?3:S.fridgeC)); }
+// v0.724: sukkeret i NY-stilen er der for å gi farge i vanlig ovn (6–9 min
+// steketid). I pizzaovn på 400°C+ brenner det seg før skorpa er ferdig — da
+// droppes det (klassisk NY-råd: «skip sugar if baking with open flame»).
+// Per i dag er newyork eneste type med sukker, så dette er i praksis en
+// NY+pizzaovn-regel — men den er skrevet generelt via BSUGAR-tabellen.
+function effSugarPct(){ return S.oven==='pizza' ? 0 : (BSUGAR[S.type]||0); }
 function prefermentYeastMult(){
   if(S.method==='poolish'){
     return interpLin(S.poolishCold?CALIBRATION.poolishCold:CALIBRATION.poolishRoom,S.poolishH);
@@ -71,7 +77,7 @@ function tf(){ return interpLin(CALIBRATION.tempFactor,S.temp,2); }
 function rtM(b){return Math.round(b*tf());}
 
 function R(){
-  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*(BSUGAR[S.type]||0)/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:coldMultForHours(S.cold)*prefermentYeastMult()*fridgeYeastMult())*100)/100,yf=Math.round(yd*3*10)/10;
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*effSugarPct()/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:coldMultForHours(S.cold)*prefermentYeastMult()*fridgeYeastMult())*100)/100,yf=Math.round(yd*3*10)/10;
   const ns=window._lang==='en'
     ?{napoletana:'Neapolitan pizza',newyork:'New York pizza',langpanne:'Sheet-pan pizza',chicago:'Chicago deep dish',ingenelting:'No-knead pizza'}
     :{napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
@@ -199,6 +205,6 @@ function totalFermentHours(){
 
 function flourForCount(n){
   const eg=S.type==='napoletana'?270:S.type==='newyork'?300:(S.type==='langpanne'||S.type==='ingenelting')?840:500;
-  const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+(BSUGAR[S.type]||0)/100;
+  const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+effSugarPct()/100;
   return Math.max(200,Math.round(n*eg/frac/10)*10);
 }
