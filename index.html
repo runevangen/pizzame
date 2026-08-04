@@ -1573,7 +1573,7 @@ function mCards(){
 function applyTypeUI(){
   const isIE = S.type==='ingenelting';
   const gmw=document.getElementById('gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
-  const cw=document.getElementById('cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig'||S.method==='kveld')?'none':'block';
+  const cw=document.getElementById('cwrap');if(cw)cw.style.display=(isIE||!methodShowsColdSlider(S.method))?'none':'block'; // F21: manglet mania — PC viste kald-slider for fast-struktur-metode
   const gkw=document.getElementById('gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
   const gow=document.getElementById('govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
@@ -1585,7 +1585,7 @@ function applyMobTypeUI(){
   const isIE = S.type==='ingenelting';
   const g=id=>document.getElementById(id);
   const gmw=g('mob-gmet-wrap');if(gmw)gmw.style.display=isIE?'none':'block';
-  const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||S.method==='hurtig'||S.method==='kveld'||S.method==='mania')?'none':'block';
+  const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||!methodShowsColdSlider(S.method))?'none':'block';
   const gkw=g('mob-gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
   const gow=g('mob-govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
   const hsub=g('mob-hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
@@ -2043,9 +2043,25 @@ function bakeSubsteps(type){
     : (p?L('Stek 20–25 min','Bake 20–25 min'):L('Stek 28–35 min','Bake 28–35 min'));
   return [warm, shape, top, bakeLine];
 }
-function mN(m){return (window._lang==='en'
-  ?{standard:'Long-ferment dough',poolish:'Poolish',biga:'Biga',hurtig:'Quick dough',ingenelting:'No-knead',kveld:'Evening dough',mania:'Mania poolish'}
-  :{standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',ingenelting:'Ingen elting',kveld:'Kveldsdeig',mania:'Mania-poolish'})[m]||m;}
+// F21: metode-registeret — navn og UI-flagg per metode på ETT sted. Tidligere lå
+// dette spredt som hardkodede lister (mN sine to språkmaps, BETA_METHOD_DEFS,
+// kald-slider-synlighet på TRE steder, Deiger-filterets metodeliste) som hver
+// måtte finnes og utvides for hver ny metode — og de var alt i utakt: PC-sidens
+// applyTypeUI manglet mania i kald-slider-lista, så PC viste justerbar kjøletid
+// for en metode med fast struktur mens mobil skjulte den.
+// coldSlider: metoden bruker den justerbare kjøleskapshevings-slideren (S.cold).
+// smartPlan: metoden deltar i Smart-plan-kandidatlista og Deiger-filteret.
+const METHODS={
+  standard:{no:'Langtidsdeig',en:'Long-ferment dough',noShort:'Langtidsdeig',enShort:'Long-ferment',coldSlider:true, smartPlan:true},
+  poolish: {no:'Poolish',     en:'Poolish',           noShort:'Poolish',     enShort:'Poolish',     coldSlider:true, smartPlan:true},
+  biga:    {no:'Biga',        en:'Biga',              noShort:'Biga',        enShort:'Biga',        coldSlider:true, smartPlan:true},
+  mania:   {no:'Mania-poolish',en:'Mania poolish',    noShort:'Mania',       enShort:'Mania',       coldSlider:false,smartPlan:true},
+  hurtig:  {no:'Hurtigdeig',  en:'Quick dough',       noShort:'Hurtigdeig',  enShort:'Quick',       coldSlider:false,smartPlan:true},
+  kveld:   {no:'Kveldsdeig',  en:'Evening dough',     noShort:'Kveldsdeig',  enShort:'Evening',     coldSlider:false,smartPlan:true},
+  ingenelting:{no:'Ingen elting',en:'No-knead',       noShort:'Ingen elting',enShort:'No-knead',    coldSlider:false,smartPlan:false}
+};
+function methodShowsColdSlider(m){const d=METHODS[m];return !!(d&&d.coldSlider);}
+function mN(m){const d=METHODS[m];return d?(window._lang==='en'?d.en:d.no):m;}
 
 const LOC_NO={
   kjol:'<span class="sloc k">❄️ Kjøleskap</span>',
@@ -3392,7 +3408,9 @@ function flourMatchesForHours(hrs){
 // ===== Smart-plan: metode-filter (hvilke metoder du blir tilbudt) =====
 // Kun for FORSLAG i Smart-plan — den manuelle metodevelgeren er uberørt.
 // Persisteres i localStorage (som tema/enheter), standard: alle på (opt-out).
-const BETA_METHOD_DEFS=[['standard','Langtidsdeig','Long-ferment dough'],['poolish','Poolish','Poolish'],['biga','Biga','Biga'],['mania','Mania-poolish','Mania poolish'],['hurtig','Hurtigdeig','Quick dough'],['kveld','Kveldsdeig','Evening dough']];
+// F21: avledet fra METHODS-registeret — en ny metode med smartPlan:true dukker
+// opp her (og i Deiger-filteret) av seg selv.
+const BETA_METHOD_DEFS=Object.entries(METHODS).filter(([,d])=>d.smartPlan).map(([v,d])=>[v,d.no,d.en]);
 let _betaMethods=null;
 function loadBetaMethods(){
   if(_betaMethods) return _betaMethods;
@@ -5868,7 +5886,7 @@ function mobMethodCards(){
       document.getElementById('mob-bsub').style.display=v==='biga'?'block':'none';
       document.getElementById('mob-ssub').style.display=v==='standard'?'block':'none';
       if(v==='standard') mobBuildSrows();
-      document.getElementById('mob-cwrap').style.display=(v==='hurtig'||v==='kveld'||v==='mania')?'none':'block';
+      document.getElementById('mob-cwrap').style.display=methodShowsColdSlider(v)?'block':'none';
       mobGen();
       if(v==='poolish'){ showEarlyPlanningHint('mob-p-early-hint'); }
       if(v==='biga'){ showEarlyPlanningHint('mob-b-early-hint'); }
@@ -6944,7 +6962,7 @@ async function renderBaksterPanel(targetId){
 window._deigFilter = window._deigFilter || {q:'',method:'',sort:'newest'};
 function bakeFilterControlsHTML(targetId){
   const f = window._deigFilter;
-  const methods=[['','Alle metoder','All methods'],['standard','Langtidsdeig','Long-ferment'],['poolish','Poolish','Poolish'],['biga','Biga','Biga'],['hurtig','Hurtigdeig','Quick'],['kveld','Kveldsdeig','Evening'],['mania','Mania','Mania']];
+  const methods=[['','Alle metoder','All methods'],...Object.entries(METHODS).filter(([,d])=>d.smartPlan).map(([v,d])=>[v,d.noShort,d.enShort])]; // F21: fra registeret
   const sorts=[['newest','Nyest først','Newest first'],['oldest','Eldst først','Oldest first'],['rating','Best vurdert','Highest rated']];
   const opt=(arr,cur)=>arr.map(o=>`<option value="${o[0]}"${o[0]===cur?' selected':''}>${L(o[1],o[2])}</option>`).join('');
   const inputStyle='padding:7px 9px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-surface);color:var(--dyn-text);font-size:12px';

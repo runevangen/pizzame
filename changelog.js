@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.718",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet at PC-visningen viste den justerbare «Kjøleskapsheving»-slideren for Mania-poolish — metoden har fast struktur, og mobilvisningen skjulte den allerede riktig. Årsaken var at metode-egenskaper lå spredt i flere hardkodede lister som var kommet i utakt; alle metodenavn og -egenskaper leses nå fra ett felles register (også Smart-plan-lista og Deiger-filteret), så en slik utakt ikke kan oppstå igjen."
+    ],
+    "changes_en": [
+      "Fixed the desktop view showing the adjustable “Cold proof” slider for Mania poolish — the method has a fixed structure, and the mobile view already hid it correctly. The cause was method properties living in several hardcoded lists that had drifted apart; all method names and properties are now read from one shared registry (including the Smart-plan list and the Doughs filter), so that kind of drift can no longer happen."
+    ]
+  },
+  {
     "v": "0.717",
     "d": "august 2026",
     "d_en": "August 2026",
