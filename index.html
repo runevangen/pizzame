@@ -117,7 +117,6 @@ input[type=date]:focus,input[type=time]:focus{border-color:#e8590c;outline:2px s
 /* Guidet flyt: kortet du skal ta neste gang lyser opp med en pulserende oransje
    ramme; et ferdig-tatt kort får ✓ og roer seg. «Finn oppskriften» lyser opp
    først når begge er tatt. Se betaUpdateGuide(). */
-.beta-done{position:absolute;top:9px;right:11px;width:20px;height:20px;border-radius:50%;background:var(--forno-accent);color:#fff;font-size:12px;font-weight:800;display:none;align-items:center;justify-content:center;pointer-events:none}
 .beta-field.is-active{border-color:var(--forno-accent);border-width:2px;animation:betaGlow 2.4s ease-in-out infinite}
 /* Myk glød: et varmt halo som puster rolig inn og ut (ikke en skarp ring). */
 @keyframes betaGlow{
@@ -126,8 +125,6 @@ input[type=date]:focus,input[type=time]:focus{border-color:#e8590c;outline:2px s
 }
 /* Respekter «redusert bevegelse»: fall tilbake til en rolig, statisk glød. */
 @media (prefers-reduced-motion:reduce){.beta-field.is-active{animation:none;box-shadow:0 0 0 3px rgba(232,89,12,.16),0 0 12px 2px rgba(232,89,12,.20)}}
-.beta-field.is-done .beta-done{display:flex}
-.beta-field.is-done .beta-field-val{color:var(--forno-text-muted)}
 .hint{font-size:11px;color:#8E8E93;line-height:1.4;margin-top:3px}
 .sr{display:flex;align-items:center;gap:8px}
 .sr input[type=range]{flex:1;min-width:0;accent-color:#e8590c}
@@ -3480,13 +3477,15 @@ function betaUpdateGuide(){
   const df=document.getElementById('mob-beta-ed-field');
   const btn=document.getElementById('mob-beta-search-btn');
   const T=window._betaTouched||{};
-  const step = !T.time ? 'time' : (!T.date ? 'date' : 'ready');
-  if(tf){ tf.classList.toggle('is-active', step==='time'); tf.classList.toggle('is-done', !!T.time); }
-  if(df){ df.classList.toggle('is-active', step==='date'); df.classList.toggle('is-done', !!T.date); }
+  // v0.710: det holder at ETT av feltene (tid ELLER dato) er endret — ikke begge.
+  // Feltene har gyldige standarder, så knappen er uansett trykkbar; fargen er bare
+  // et hint om at du har satt opp «når». Fjernet ✓-haka (is-done) — den forvirret.
+  const anyTouched = !!(T.time || T.date);
+  // Et lite «start her»-glød på tid-feltet til du har rørt ett av feltene; så ro.
+  if(tf){ tf.classList.toggle('is-active', !anyTouched); tf.classList.remove('is-done'); }
+  if(df){ df.classList.remove('is-active'); df.classList.remove('is-done'); }
   if(btn){
-    const ready = step==='ready';
-    // Knappen er alltid trykkbar (feltene har fornuftige standarder) — dempingen
-    // er bare et hint om at du ikke har vært gjennom stegene ennå.
+    const ready = anyTouched;
     btn.style.background = ready ? 'var(--forno-accent)' : 'var(--forno-border)';
     btn.style.color = ready ? '#1a1512' : 'var(--forno-text-faint)';
     btn.style.boxShadow = ready ? '0 4px 14px rgba(232,89,12,.30)' : 'none';
@@ -7808,12 +7807,10 @@ document.addEventListener('change', firstInteractionCheck, true);
              (format vi styrer selv); en gjennomsiktig native-velger ligger oppå. -->
         <div class="beta-field" id="mob-beta-et-field" style="margin-bottom:8px">
           <span class="beta-field-val" id="mob-beta-et-disp">18:00</span>
-          <span class="beta-done" aria-hidden="true">✓</span>
           <input type="time" id="mob-beta-et" class="beta-field-input" value="18:00" onchange="betaSyncFieldLabels();betaTouch('time')" onblur="betaTouch('time')" aria-label="Klokkeslett">
         </div>
         <div class="beta-field" id="mob-beta-ed-field" style="margin-bottom:10px">
           <span class="beta-field-val" id="mob-beta-ed-disp">—</span>
-          <span class="beta-done" aria-hidden="true">✓</span>
           <input type="date" id="mob-beta-ed" class="beta-field-input" onchange="betaEnsureDate();betaSyncFieldLabels();betaTouch('date')" onblur="betaTouch('date')" aria-label="Dato">
         </div>
         <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
