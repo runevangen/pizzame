@@ -539,7 +539,7 @@ kompensasjonen hører hjemme i F13 under i stedet for som fast prosatall.
   presiseringen som ble gjort i v0.700).
 - **[baseline]** hvis tallet vises i frosne render-tester.
 
-### F16. Temperer-tipset (`TIP.benchTemper`) sier «form» etter kjøling — men forming skjer FØR
+### F16. Temperer-tipset (`TIP.benchTemper`) sier «form» etter kjøling — men forming skjer FØR ✅ FIKSET (v0.712)
 - **I klartekst:** Tipset på «Ta ut av kjøleskap / temperer»-steget sier «gi dem mer
   tid **før du former**» og «**form og stek** uten å vente lenger». Men i alle
   metodene (standard/poolish/biga og Kveldsdeig) formes emnene til boller FØR
