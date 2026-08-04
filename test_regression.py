@@ -3488,6 +3488,46 @@ def run_behavioral_tests(page):
     ok97 = r97.get('ok')
     results.append(('engine_extracted_to_engine_js_and_functional', ok97, r97))
 
+    # v0.720 (F14): benketida («Ta ut av kjøleskap» → stek) var hardkodet 240 min
+    # uansett romtemperatur, mens steg-teksten selv sa at tiden avhenger av hvor
+    # varmt rommet er. Nå skaleres den med tf() (22°C = 240 som før → baseline
+    # urørt; 18°C = 384; 26°C = 156), bundet så kald tid aldri går under 60 min.
+    # Steketid/middag flyttes ikke; kald tid + benketid + 15 min forming = S.cold.
+    # Poolish-forspillet (brukervalgt timetall) skal IKKE temp-skaleres.
+    r98 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,cold:S.cold,pP:S.poolishPauseH,pC:S.poolishCold,pH:S.poolishH};
+      S.method='standard'; S.type='napoletana'; S.mode='end'; S.cold=48;
+      const anchor=new Date(2027,2,10,18,0);
+      const probe=()=>{
+        const st=stepsForAnchor(anchor);
+        const taUt=st.find(s=>s.title==='Ta ut av kjøleskap');
+        const kold=st.find(s=>s.title==='Kjøleskapsheving');
+        const bake=st[st.length-1];
+        return {temper:(bake.at-taUt.at)/60000, cold:kold.dur, bakeMs:bake.at.getTime()};
+      };
+      S.temp=18; const p18=probe();
+      S.temp=22; const p22=probe();
+      S.temp=26; const p26=probe();
+      S.method='poolish'; S.mode='start'; S.poolishPauseH=0; S.poolishCold=false;
+      const gapAt=t=>{S.temp=t; const st=stepsForAnchor(anchor); return (st[1].at-st[0].at)/60000;};
+      const g18=gapAt(18), g26=gapAt(26), pH=S.poolishH;
+      S.method='standard'; S.mode='start'; S.temp=18; S.cold=6;
+      const koldB=stepsForAnchor(anchor).find(s=>s.title==='Kjøleskapsheving');
+      const boundedCold=koldB.dur>=60;
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.temp=saved.temp;S.cold=saved.cold;
+      S.poolishPauseH=saved.pP;S.poolishCold=saved.pC;S.poolishH=saved.pH;
+      return {
+        t18:p18.temper, t22:p22.temper, t26:p26.temper,
+        scales: p18.temper===384 && p22.temper===240 && p26.temper===156,
+        sums: [p18,p22,p26].every(p=>p.temper+p.cold+15===48*60),
+        dinnerFixed: p18.bakeMs===p22.bakeMs && p22.bakeMs===p26.bakeMs,
+        poolishUntouched: g18===g26 && g18===pH*60,
+        boundedCold
+      };
+    }""")
+    ok98 = all(r98.get(k) for k in ['scales','sums','dinnerFixed','poolishUntouched','boundedCold'])
+    results.append(('bench_temper_scales_with_room_temp_dinner_fixed', ok98, r98))
+
     return results
 
 
