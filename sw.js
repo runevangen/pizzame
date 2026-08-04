@@ -9,9 +9,14 @@
    - Statiske ressurser (ikoner, manifest): cache-først, oppdateres i bakgrunnen.
    - API-kall (/api/* og /.netlify/*): røres ALDRI — alltid rett til nett. */
 
-const CACHE = 'ultimatepizza-shell-v1'; // bumpet ved navnebytte (v6.27) så cachet manifest/shell hentes på nytt
+// v0.723: bumpet til v2 OG engine.js/guide.js lagt til som KODE. De lå i
+// cache-først-grenen, så en fersk index.html (nettverk-først) kunne lastes
+// sammen med en UTDATERT engine.js fra cachen — index kalte da funksjoner som
+// ikke fantes i den gamle motorfila → ReferenceError ved oppstart. Alle
+// script-filer index.html laster MÅ stå i både SHELL og isCode-regexen.
+const CACHE = 'ultimatepizza-shell-v2';
 const SHELL = [
-  './', './index.html', './changelog.js', './manifest.json',
+  './', './index.html', './changelog.js', './engine.js', './guide.js', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
   './icons/apple-touch-icon.png', './icons/favicon-32.png'
 ];
@@ -41,7 +46,7 @@ self.addEventListener('fetch', e => {
 
   const isCode = req.mode === 'navigate'
     || url.pathname === '/'
-    || /\/(index\.html|changelog\.js)$/.test(url.pathname);
+    || /\/(index\.html|changelog\.js|engine\.js|guide\.js)$/.test(url.pathname);
 
   if (isCode) {
     e.respondWith(
@@ -51,7 +56,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(req.mode === 'navigate' ? './index.html' : req, copy));
           return r;
         })
-        .catch(() => caches.match(req).then(m => m || caches.match('./index.html')))
+        .catch(() => caches.match(req, {ignoreSearch:true}).then(m => m || caches.match('./index.html')))
     );
     return;
   }

@@ -3473,7 +3473,7 @@ def run_behavioral_tests(page):
     # finnes og at kjernefunksjonene faktisk er definert og virker fra den delte
     # globale konteksten — resten av suiten beviser at oppførselen er uendret.
     r97 = page.evaluate("""() => {
-      const tag=!!document.querySelector('script[src="engine.js"]');
+      const tag=!!document.querySelector('script[src^="engine.js"]'); // ^= pga. ?v=-cache-buster (v0.723)
       const fns=['recipeFor','maniaRecipe','pc','interpLin','coldMultForHours','tf','rtM',
                  'mN','methodShowsColdSlider','totalFermentHours','fixedFermOverheadHours',
                  'currentYeastAmount','yLabelFor','flourForCount'];
@@ -3604,6 +3604,30 @@ def run_behavioral_tests(page):
     }""")
     ok100 = all(r100.get(k) for k in ['defaultUnchanged','colderMoreYeast','warmerLessYeast','kveldCompensates','maniaUntouched','hurtigUntouched','fridgeMultFn','uiPills','shownForStandard','hiddenForHurtig'])
     results.append(('fridge_temp_input_compensates_yeast_default_unchanged', ok100, r100))
+
+    # v0.723: service worker-kontrakten. Produksjonskrasj etter v0.722: sw.js
+    # behandlet bare index.html/changelog.js som kode (nettverk-først), så en
+    # FERSK index.html kunne lastes med en UTDATERT cache-først-servert engine.js
+    # — index kalte funksjoner som ikke fantes i den gamle motorfila →
+    # ReferenceError ved oppstart. Denne testen leser sw.js og krever at HVER
+    # script-fil index.html laster står i både isCode-regexen og SHELL-lista,
+    # så en fremtidig ny scriptfil ikke kan gjeninnføre feilklassen.
+    import re as _re2
+    _root = os.path.dirname(os.path.abspath(__file__))
+    _idx = open(os.path.join(_root, 'index.html'), encoding='utf-8').read()
+    _sw = open(os.path.join(_root, 'sw.js'), encoding='utf-8').read()
+    _srcs = [_re2.sub(r'\?.*$', '', m) for m in _re2.findall(r'<script src="([^"]+)"', _idx)]
+    _regex_m = _re2.search(r'\|\| /\\/\(([^)]+)\)\$/', _sw)
+    _regex_files = set((_regex_m.group(1) if _regex_m else '').replace('\\.', '.').split('|'))
+    _shell_m = _re2.search(r'const SHELL = \[(.*?)\];', _sw, _re2.S)
+    _shell_files = set(_re2.findall(r"'\./([^']+)'", _shell_m.group(1) if _shell_m else ''))
+    _missing_code = [s for s in _srcs if s not in _regex_files]
+    _missing_shell = [s for s in _srcs if s not in _shell_files]
+    _cache_bumped = 'ultimatepizza-shell-v1' not in _sw
+    r101 = {'scripts': _srcs, 'missing_from_isCode': _missing_code,
+            'missing_from_SHELL': _missing_shell, 'cache_bumped': _cache_bumped}
+    ok101 = not _missing_code and not _missing_shell and _cache_bumped and len(_srcs) >= 3
+    results.append(('sw_treats_every_index_script_as_network_first_code', ok101, r101))
 
     return results
 

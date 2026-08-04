@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.723",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet at appen kunne krasje ved oppstart etter forrige oppdatering. Offline-mekanismen (service workeren) hentet alltid fersk hovedside, men serverte motorfila (engine.js, ny i v0.719) fra en gammel lokal kopi — den ferske siden kalte da funksjoner som ikke fantes i den gamle fila. Nå behandles alle kodefiler likt (fersk kopi vinner alltid når du er på nett), gamle mellomlagre ryddes automatisk, og allerede rammede brukere repareres ved første innlasting. En ny automatisk sjekk hindrer at feilen kan gjeninnføres for fremtidige filer."
+    ],
+    "changes_en": [
+      "Fixed the app potentially crashing at startup after the previous update. The offline mechanism (service worker) always fetched a fresh main page but served the engine file (engine.js, new in v0.719) from an old local copy — the fresh page then called functions that didn't exist in the old file. All code files are now treated the same (a fresh copy always wins when online), old caches are cleaned up automatically, and already-affected users are repaired on first load. A new automatic check prevents the bug from being reintroduced for future files."
+    ]
+  },
+  {
     "v": "0.722",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -948,8 +948,12 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 </div>
 
 <script src="changelog.js"></script>
-<script src="engine.js"></script>
-<script src="guide.js"></script>
+<!-- ?v=1: engangs cache-buster (v0.723). Den GAMLE service workeren (pre-v2)
+     serverte engine.js/guide.js cache-FØRST — en ny query-streng gir cache-miss
+     i den gamle SW-en, så allerede rammede brukere får fersk motorfil ved
+     første innlasting, før den nye SW-en har rukket å ta over. -->
+<script src="engine.js?v=1"></script>
+<script src="guide.js?v=1"></script>
 <script>
 const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,showHelp:true,showSubsteps:false};
 
