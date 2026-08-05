@@ -3722,6 +3722,62 @@ def run_behavioral_tests(page):
     ok103 = all(r103.get(k) for k in ['kveldBest','hurtigBest','standardNoFit','ranked','startOk','winnerRenderedFirst','showsShortfall','modeStaysEnd','applied','winCleared'])
     results.append(('window_mode_picks_max_fermentation_that_fits', ok103, r103))
 
+    # v0.726: to reelle feil rapportert fra produksjon i «Fra–til».
+    # (a) Steketid-feltene var kun koblet til mobGen, ikke til kandidatlista, så
+    #     lista ble stående mot en GAMMEL steketid («Vindu: 47t» der feltene sa
+    #     23t, og en oppstart et døgn feil).
+    # (b) ensureFeasibleBakeTime() skjøv steketiden et døgn fram ved inngang til
+    #     Fra–til — den regner «tidligst mulig» fra NÅ med GJELDENDE metode, men
+    #     her skal appen velge metoden og nedre grense er brukerens oppstart.
+    # Testen låser den observerbare kontrakten: vinduet og hver kandidats
+    # oppstart skal alltid stemme med det feltene faktisk viser.
+    r104 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,win:S.winStart,
+                   hurtigH:S.hurtigH,kveldH:S.kveldH,cold:S.cold};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.temp=22; S.method='standard'; S.cold=24;
+      mobShowTab('settings'); wizGoto(1);
+      const wd=document.getElementById('mob-wd'), wt=document.getElementById('mob-wt');
+      const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+      // Sett en steketid som ligger FØR det ensureFeasibleBakeTime ville krevd
+      // (i morgen kl. 18 med 24t kaldheving fra nå) — nettopp tilfellet som før
+      // ble dyttet et døgn fram.
+      const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+      const yyyy=tomorrow.getFullYear(), mm=String(tomorrow.getMonth()+1).padStart(2,'0'), dd=String(tomorrow.getDate()).padStart(2,'0');
+      ed.value=`${yyyy}-${mm}-${dd}`; et.value='18:00';
+      mobSetMode('window');
+      const dateKept = ed.value===`${yyyy}-${mm}-${dd}`;   // (b) ikke skjøvet
+      const today=new Date();
+      wd.value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      wt.value='19:00';
+      renderWindowPicker();
+      const bakeAt=new Date(ed.value+'T'+et.value), startAt=new Date(wd.value+'T'+wt.value);
+      const expectedWin=Math.round((bakeAt-startAt)/60000);
+      const h1=document.getElementById('mob-winres').innerHTML;
+      const winShown=(h1.match(/Vindu: ([^·<]+)/)||[])[1];
+      const winCorrect = winShown && winShown.trim()===fmtSessionDur(expectedWin);
+      // (a) endre steketiden via feltets egen change-hendelse → lista må følge med
+      et.value='21:00';
+      et.dispatchEvent(new Event('change'));
+      const h2=document.getElementById('mob-winres').innerHTML;
+      const bake2=new Date(ed.value+'T21:00');
+      const win2=Math.round((bake2-startAt)/60000);
+      const winShown2=(h2.match(/Vindu: ([^·<]+)/)||[])[1];
+      const reRendered = winShown2 && winShown2.trim()===fmtSessionDur(win2) && h1!==h2;
+      // hver kandidats oppstart = steketid − brukt tid, og aldri før tidligste start
+      const cands=windowCandidates(bake2,win2).filter(c=>c.best);
+      const startsSane=cands.every(c=>{
+        const st=new Date(bake2.getTime()-c.best.span*60000);
+        return st.getTime()>=startAt.getTime() && st.getTime()<bake2.getTime();
+      });
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.temp=saved.temp;S.winStart=saved.win;
+      S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;
+      try{ mobSetMode(uiMode()); }catch(e){}
+      return {dateKept, winCorrect, reRendered, startsSane, winShown, winShown2, nCands:cands.length};
+    }""")
+    ok104 = all(r104.get(k) for k in ['dateKept','winCorrect','reRendered','startsSane']) and r104.get('nCands',0) > 0
+    results.append(('window_mode_stays_in_sync_with_fields_and_keeps_bake_date', ok104, r104))
+
     return results
 
 

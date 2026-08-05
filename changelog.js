@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.726",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet to feil i den nye «Fra–til»-modusen som gjorde at forslagene kunne regne mot feil steketid. Endret du steketiden, oppdaterte ikke forslagslista seg — den ble stående mot den forrige tiden, så vinduet kunne vise f.eks. «47 timer» der feltene sa 23, og oppstarten lå et døgn feil. I tillegg flyttet appen steketiden automatisk et døgn fram når du gikk inn i Fra–til, fordi den sjekket om tiden var mulig for metoden som tilfeldigvis var valgt — men i Fra–til er det jo appen som skal finne metoden, og grensen er når du kan starte. Nå står steketiden du oppgir, og passer ingen av metodene, sier lista det ærlig.",
+      "Ryddet i forslagskortene: overskriften brøt over to linjer for Langtidsdeig («42 t kaldheving»). Tiden står nå kort i overskriften, og hva slags gjæring det er, står i linja under."
+    ],
+    "changes_en": [
+      "Fixed two bugs in the new “From–to” mode that could make the suggestions compute against the wrong bake time. If you changed the bake time, the suggestion list didn't refresh — it stayed on the previous time, so the window could read e.g. “47 hours” where the fields said 23, and the start time was a day off. On top of that the app automatically pushed the bake time a day forward when you entered From–to, because it checked whether the time was feasible for whichever method happened to be selected — but in From–to it's the app that picks the method, and the bound is when you can start. Now the bake time you enter stays put, and if nothing fits, the list says so honestly.",
+      "Tidied the suggestion cards: the heading wrapped onto two lines for long-ferment dough (“42 h cold proof”). The duration is now short in the heading, with the kind of fermentation on the line below."
+    ]
+  },
+  {
     "v": "0.725",
     "d": "august 2026",
     "d_en": "August 2026",
