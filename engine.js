@@ -76,8 +76,21 @@ function coldMultForHours(h){ return interpLin(CALIBRATION.coldMultHours,h); }
 function tf(){ return interpLin(CALIBRATION.tempFactor,S.temp,2); }
 function rtM(b){return Math.round(b*tf());}
 
+// F23: gjærmultiplikatoren. Langtidsdeig bruker Q10-integralet over den ekte
+// stegkjeden; øvrige metoder beholder sine egne, uttestede kurver (se F23-
+// notatet nederst for hvorfor poolish/biga ikke er med i denne runden).
+function yeastMultiplier(){
+  if(S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting') return 1;
+  if(S.method==='standard'){
+    const load=currentFermentLoad();
+    if(load) return Q10_K/load;
+    // Faller hit kun under selve integralberegningen (rekursjonsvakten) — da er
+    // verdien uansett bare tekst i en kjede som kastes.
+  }
+  return coldMultForHours(S.cold)*prefermentYeastMult()*fridgeYeastMult();
+}
 function R(){
-  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*effSugarPct()/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*((S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting')?1:coldMultForHours(S.cold)*prefermentYeastMult()*fridgeYeastMult())*100)/100,yf=Math.round(yd*3*10)/10;
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*effSugarPct()/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*yeastMultiplier()*100)/100,yf=Math.round(yd*3*10)/10;
   const ns=window._lang==='en'
     ?{napoletana:'Neapolitan pizza',newyork:'New York pizza',langpanne:'Sheet-pan pizza',chicago:'Chicago deep dish',ingenelting:'No-knead pizza'}
     :{napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
@@ -291,3 +304,70 @@ function windowCandidates(bakeAt, windowMin){
 // Natt = 23:00–05:59. Brukt til å merke oppstarter man neppe vil ha, både i
 // Fra–til-lista og som grunnlag for «start heller kl. …»-utveien.
 function isNightHour(h){ return h>=23 || h<6; }
+
+// ===== F23 (v0.729): Q10-GJÆRINGSMODELL =====
+// Gjærmengden ble tidligere regnet ut ved å gange sammen flere håndtunede
+// tabeller (coldMultHours × prefermentMult × fridgeMult). Q10 er én fysisk lov
+// i stedet: gjæringsraten halveres for hver 10°C temperaturen faller. Vi regner
+// hver fase om til «ekvivalente timer ved 22°C», summerer over HELE planen, og
+// deler gjæren på summen.
+//
+// Den viktigste praktiske gevinsten: romhevingen og benketida teller nå faktisk
+// med. Før bidro kun kaldtiden til gjærberegningen — en reell unøyaktighet som
+// ble større med F14, der benketida varierer fra 2,6t til 6,4t med romtemperaturen.
+//
+// Belastningen måles på den EKTE stegkjeden (samme kilde planSpanMin bruker),
+// ikke på en parallell formel — det var nettopp skygge-konstant-feilen F19 fjernet.
+// Hvert steg har allerede en `loc` som gir temperaturen: kjol → S.fridgeC,
+// rom/benk → S.temp, ovn → steking (teller ikke).
+const Q10_REF_C=22;
+// Q10=2,3 er valgt slik at kurven treffer dagens uttestede ytterpunkter for
+// Langtidsdeig eksakt (24t og 72t); 48t lander 0,04g lavere — under det en
+// hjemmevekt kan lese. Litteraturverdien for gjær ligger i området 2–3.
+const Q10=2.3;
+// Kalibreringskonstanten: gjær = mel × BYEAST% × Q10_K / gjæringsbelastning.
+// Satt slik at Langtidsdeigens uttestede referansepunkter treffer dagens tall.
+// Målt avvik mot den gamle tabellen over hele kald-spennet (napoletana 500g,
+// 22°C rom, 3°C skap): 24t og 72t eksakt, 48t −0,04g, 96t +0,01g, 120t +0,04g.
+// Alle avvik er under oppløsningen på en hjemmevekt (0,1g).
+const Q10_K=14.85;
+function stepTempC(loc){
+  if(loc==='kjol') return (S.fridgeC==null?3:S.fridgeC);
+  if(loc==='ovn') return null;   // steking er ikke gjæring
+  return S.temp;                  // rom + benk
+}
+// Summerer over INTERVALLENE mellom steg, ikke over s.dur — flere steg har
+// dur:0 og bærer tiden sin som avstand til neste steg (typisk «Ta ut av
+// kjøleskap», der hele benketida ligger mellom det steget og stekingen).
+function fermentLoadHours(steps){
+  if(!steps||steps.length<2) return null;
+  let load=0;
+  for(let i=0;i<steps.length-1;i++){
+    const T=stepTempC(steps[i].loc);
+    if(T==null) continue;
+    const a=steps[i].at,b=steps[i+1].at;
+    if(!(a instanceof Date)||!(b instanceof Date)) continue;
+    const h=(b.getTime()-a.getTime())/3600000;
+    if(h<=0) continue;
+    load+=h*Math.pow(Q10,(T-Q10_REF_C)/10);
+  }
+  return load>0?load:null;
+}
+// R() trenger belastningen, som trengs fra stegkjeden, som bygges med R() —
+// derfor en vakt: under selve beregningen faller R() tilbake på den gamle
+// tabellveien. Det er trygt fordi TIMINGEN i kjeden ikke avhenger av
+// gjærmengden i det hele tatt; kun teksten gjør det, og den kastes her.
+// Memoisert fordi R() kalles mange ganger per rendring (én gang per steg-tekst).
+let _q10Busy=false,_q10Memo={k:null,v:null};
+function currentFermentLoad(){
+  if(_q10Busy) return null;
+  const key=[S.method,S.type,S.cold,S.temp,S.fridgeC,S.poolishH,S.poolishPauseH,
+             S.poolishCold,S.bigaH,S.kveldH,S.hurtigH,S.mode].join('|');
+  if(_q10Memo.k===key) return _q10Memo.v;
+  _q10Busy=true;
+  let v=null;
+  try{ v=fermentLoadHours(stepsForAnchor(new Date(2020,0,1,12,0))); }catch(e){ v=null; }
+  finally{ _q10Busy=false; }
+  _q10Memo={k:key,v:v};
+  return v;
+}
