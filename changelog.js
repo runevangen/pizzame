@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.728",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Sivilisert oppstart i Fra–til. Fyller man vinduet bakfra, havner det beste alternativet ofte midt på natta — nettopp fordi det er det lengste (kan du starte 23:30 og vil steke 18:00, krever full gjæring oppstart 01:30). Slike forslag er nå merket «🌙 midt på natten», og de får en straff i rangeringen så et alternativ med menneskelig oppstart vinner når det ikke er stort dårligere.",
+      "Nytt: når selv det beste alternativet starter om natta, tilbyr appen «Start heller kl. …» — samme metode og samme gjæringstid, men du starter når du faktisk sa du var ledig. Til gjengjeld er pizzaen klar litt før ønsket steketid, og appen sier tydelig når (f.eks. «Klar 16:30 i stedet for 18:00»). Steketiden i planen flyttes tilsvarende, så alt henger sammen.",
+      "Rettet at «Bruk denne» kunne overskrive steketiden du selv hadde satt: den kjørte en full oppfriskning av innstillingene, som nullstiller steketid-feltet til en standardverdi. Planen du landet på gjaldt da et annet tidspunkt enn det du ba om. Nå oppdateres kun de kontrollene valget faktisk endrer."
+    ],
+    "changes_en": [
+      "Civilized start times in From–to. When the window is filled from the end, the best option often lands in the middle of the night — precisely because it's the longest (if you can start at 23:30 and want to bake at 18:00, full fermentation demands a 01:30 start). Such suggestions are now marked “🌙 middle of the night”, and they take a penalty in the ranking so an option with a human start time wins when it isn't much worse.",
+      "New: when even the best option starts at night, the app offers “Start at … instead” — same method and same fermentation time, but you start when you actually said you were free. In exchange the pizza is ready a little before your target bake time, and the app says clearly when (e.g. “Ready 16:30 instead of 18:00”). The bake time in the plan moves accordingly, so everything stays consistent.",
+      "Fixed “Use this” potentially overwriting the bake time you had set: it ran a full settings refresh, which resets the bake-time field to a default value. The plan you landed on then applied to a different time than the one you asked for. Now only the controls the choice actually changes are updated."
+    ]
+  },
+  {
     "v": "0.727",
     "d": "august 2026",
     "d_en": "August 2026",

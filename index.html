@@ -6207,10 +6207,14 @@ function renderWindowPicker(){
       <div style="height:7px;border-radius:4px;background:var(--forno-bg-sunken,#e8dcc4);margin-top:6px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;border-radius:4px;background:${isWin?'var(--forno-accent)':'#c9b48a'}"></i></div>
       <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:5px;line-height:1.45">
         ${L('Oppstart','Start')}: <b>${fDT(startsAt)}</b>${lbl?` · ${lbl}`:''}
-        ${isWin?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab;margin-left:4px">${L('✓ maks smak','✓ most flavor')}</span>`
-               :(ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'')}
+        ${c.night?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e8e2f5;color:#5b4a8a;border:1px solid #c9bde6;margin-left:4px">${L('🌙 midt på natten','🌙 middle of the night')}</span>`:''}
+        ${isWin&&!c.night?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab;margin-left:4px">${L('✓ maks smak','✓ most flavor')}</span>`
+               :(!isWin&&ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'')}
       </div>
       <div onclick="applyWindowCandidate('${c.method}','${c.key}',${c.best.val})" style="margin-top:7px;height:34px;border-radius:8px;background:${isWin?'var(--forno-accent)':'transparent'};border:${isWin?'none':'1.5px solid var(--forno-accent)'};color:${isWin?'#fff':'var(--forno-accent-text)'};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer">${L('Bruk denne','Use this')}</div>
+      ${c.night&&ubrukt>0?`<div onclick="applyWindowCandidateEarly('${c.method}','${c.key}',${c.best.val},${span})" style="margin-top:6px;padding:7px 9px;border-radius:8px;background:var(--forno-bg-raised);border:1px dashed var(--forno-accent);font-size:10.5px;color:var(--forno-text-muted);line-height:1.45;cursor:pointer">
+        <b style="color:var(--forno-accent-text)">${L(`Start heller ${fT(startAt)}`,`Start at ${fT(startAt)} instead`)}</b> — ${L(`samme gjæring, men du slipper å stå opp. Klar <b>${fT(new Date(startAt.getTime()+span*60000))}</b> i stedet for ${fT(bakeAt)}.`,`same fermentation, but you don't have to get up. Ready at <b>${fT(new Date(startAt.getTime()+span*60000))}</b> instead of ${fT(bakeAt)}.`)}
+      </div>`:''}
     </div>`;
   });
   host.innerHTML=html;
@@ -6227,11 +6231,34 @@ function applyWindowCandidate(method,key,val){
   try{ mobMethodCards(); }catch(e){}
   try{ mobBuildHrows(); }catch(e){}
   try{ mobBuildKrows(); }catch(e){}
+  try{ mobBuildSrows(); }catch(e){}
+  // v0.728: IKKE syncMobControls() her. Den nullstiller steketid-feltet til en
+  // standardverdi (nå + kjøletid + 4t) — så «Bruk denne» overskrev tiden du
+  // nettopp hadde bedt om, og planen du landet på gjaldt et annet tidspunkt.
+  // Vi oppdaterer i stedet kun kontrollene valget faktisk endrer.
+  try{
+    const csl=document.getElementById('mob-csl'); if(csl) csl.value=S.cold;
+    const clbl=document.getElementById('mob-clbl'); if(clbl) clbl.textContent=coldTimeLabel(S.cold);
+  }catch(e){}
   try{ applyMobTypeUI(); }catch(e){}
-  try{ syncMobControls(); }catch(e){}
   renderWindowPicker();
   mobGen();
   try{ mobShowTab('plan'); }catch(e){}
+}
+// v0.728: utveien når selv det beste alternativet starter midt på natta — fyll
+// vinduet FORFRA i stedet for bakfra. Samme metode og gjæringstid, men du
+// starter når du faktisk sa du var ledig; til gjengjeld er pizzaen ferdig litt
+// før ønsket steketid. Steketid-feltet flyttes tilsvarende, så planen og
+// feltene fortsatt stemmer overens.
+function applyWindowCandidateEarly(method,key,val,spanMin){
+  const startAt=S.winStart?new Date(S.winStart):null;
+  if(startAt&&!isNaN(startAt.getTime())){
+    const newBake=new Date(startAt.getTime()+spanMin*60000);
+    const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+    if(dEl) dEl.value=fd(newBake);
+    if(tEl) tEl.value=String(newBake.getHours()).padStart(2,'0')+':'+String(newBake.getMinutes()).padStart(2,'0');
+  }
+  applyWindowCandidate(method,key,val);
 }
 
 // ===== WIZARD-FLYT FOR MOBIL INNSTILLINGER =====
