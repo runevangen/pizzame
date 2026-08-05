@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.725",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny «Fra–til»-modus: oppgi når du tidligst kan starte og når du vil steke, så finner appen metoden og gjæringstiden som gir MEST smak innenfor det vinduet. Eksempel: starter du kl. 20 i kveld og vil steke kl. 18 i morgen (22 timer), foreslår den Kveldsdeig med 18 timer kaldheving — den fyller 20 av 22 timer, mens Hurtigdeig ville kastet bort nesten 6 timer og Langtidsdeig ikke får plass i det hele tatt.",
+      "Alle alternativene vises med hvor mye av vinduet de bruker, når du da må starte, og hva de heter på appens egen smaksskala («Lang kveld», «Utmerket», «Full smak»). Metoder som ikke får plass sier ærlig hvor mye tid de mangler. Ingenting endres automatisk — du trykker «Bruk denne» selv.",
+      "Steketiden er den harde betingelsen: pizzaen blir ferdig når du faktisk vil spise, ikke et par timer for tidlig. Oppstarten er kun en nedre grense, så et forslag starter aldri før du er tilgjengelig. Førsteutgaven dekker Hurtigdeig, Kveldsdeig og Langtidsdeig — Poolish og Biga har lengre, sammensatte vinduer og kommer eventuelt senere."
+    ],
+    "changes_en": [
+      "New “From–to” mode: enter when you can start at the earliest and when you want to bake, and the app finds the method and fermentation time that gives the MOST flavor within that window. Example: start at 8pm tonight and bake at 6pm tomorrow (22 hours) and it suggests evening dough with an 18-hour cold proof — it fills 20 of the 22 hours, while quick dough would waste nearly 6 hours and long-ferment dough doesn't fit at all.",
+      "Every option shows how much of the window it uses, when you'd then have to start, and what it's called on the app's own flavor scale (“Long evening”, “Excellent”, “Full flavor”). Methods that don't fit say honestly how much time they're short. Nothing changes automatically — you tap “Use this” yourself.",
+      "The bake time is the hard constraint: the pizza is ready when you actually want to eat, not a couple of hours early. The start time is only a lower bound, so a suggestion never starts before you're available. The first release covers quick, evening and long-ferment dough — poolish and biga have longer, compound windows and may follow later."
+    ]
+  },
+  {
     "v": "0.724",
     "d": "august 2026",
     "d_en": "August 2026",

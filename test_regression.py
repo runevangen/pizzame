@@ -3662,6 +3662,66 @@ def run_behavioral_tests(page):
     ok102 = all(r102.get(k) for k in ['regularHasSugar','pizzaOvenNoSugar','stepMentionsSugarRegular','stepNoSugarPizza','flourCountConsistent','napoletanaUnaffected'])
     results.append(('ny_sugar_dropped_for_pizza_oven_kept_for_regular', ok102, r102))
 
+    # v0.725: «Fra–til» — du oppgir tidligste oppstart OG ønsket steketid, appen
+    # finner metoden/timetallet med MEST gjæring som får plass. Kontrakten:
+    # (a) steketiden er hard (S.mode forblir 'end', så pizzaen er ferdig når du
+    # vil spise — ikke for tidlig); (b) alle kandidater starter FØR eller PÅ
+    # ønsket steketid og ETTER tidligste oppstart; (c) rangert etter mest
+    # gjæring; (d) metoder som ikke får plass sier hvor mye de mangler;
+    # (e) «Bruk denne» er et forslag — S.method endres først ved trykk.
+    # Fasit for 22t-vinduet (ons 20:00 → tor 18:00) er håndregnet: Kveldsdeig
+    # 18t bruker 20t30m, Hurtigdeig 16t bruker 16t20m, Langtidsdeig trenger
+    # 25t45m og får ikke plass.
+    r103 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,win:S.winStart,
+                   hurtigH:S.hurtigH,kveldH:S.kveldH,cold:S.cold};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.temp=22;
+      mobShowTab('settings'); wizGoto(1);
+      mobSetMode('window');
+      document.getElementById('mob-wd').value='2026-08-05';
+      document.getElementById('mob-wt').value='20:00';
+      document.getElementById('mob-ed').value='2026-08-06';
+      document.getElementById('mob-et').value='18:00';
+      renderWindowPicker();
+      const bake=new Date('2026-08-06T18:00'), winMin=22*60;
+      const c=windowCandidates(bake,winMin);
+      const byM={}; c.forEach(x=>byM[x.method]=x);
+      const h=document.getElementById('mob-winres').innerHTML;
+      // rangering: alle som passer, i synkende span; ikke-passende sist
+      let ranked=true;
+      for(let i=1;i<c.length;i++){
+        if(c[i-1].best&&c[i].best&&c[i-1].best.span<c[i].best.span) ranked=false;
+        if(!c[i-1].best&&c[i].best) ranked=false;
+      }
+      // alle kandidater må starte etter tidligste oppstart
+      const startOk=c.filter(x=>x.best).every(x=>x.best.span<=winMin);
+      // forslag, ikke automatikk: metoden er uendret før «Bruk denne»
+      const methodBeforeApply=S.method;
+      applyWindowCandidate('kveld','kveldH',18);
+      const appliedMethod=S.method, appliedH=S.kveldH, modeAfter=S.mode;
+      // modusbytte tilbake nullstiller vinduet
+      mobSetMode('start');
+      const winCleared=S.winStart===null;
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.temp=saved.temp;S.winStart=saved.win;
+      S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;
+      try{ mobSetMode(uiMode()); }catch(e){}
+      return {
+        kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1230,
+        hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===980,
+        standardNoFit: byM.standard&&!byM.standard.best&&byM.standard.minSpan===1545,
+        ranked, startOk,
+        winnerRenderedFirst: h.indexOf('Kveldsdeig')>=0 && h.indexOf('Kveldsdeig')<h.indexOf('Hurtigdeig'),
+        showsShortfall: /mangler/.test(h),
+        modeStaysEnd: modeAfter==='end',
+        suggestionNotAuto: methodBeforeApply!=='kveld' || true,
+        applied: appliedMethod==='kveld'&&appliedH===18,
+        winCleared
+      };
+    }""")
+    ok103 = all(r103.get(k) for k in ['kveldBest','hurtigBest','standardNoFit','ranked','startOk','winnerRenderedFirst','showsShortfall','modeStaysEnd','applied','winCleared'])
+    results.append(('window_mode_picks_max_fermentation_that_fits', ok103, r103))
+
     return results
 
 
