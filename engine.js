@@ -232,11 +232,23 @@ function flourForCount(n){
 // Bevisst kun de enkle metodene i førsteutgaven: Poolish og Biga har lengre,
 // sammensatte vinduer (forspill + pause + kald hale) og ville gjort lista lang
 // og vanskelig å lese. Mania har fast struktur og kan uansett ikke justeres.
+// v0.730: Poolish og Biga er nå med. De ble holdt utenfor i v0.725 fordi lista
+// ville blitt lang og uleselig — men metodefilteret (samme som Smart-plan
+// bruker) lar brukeren nå styre lengden selv, så innvendingen faller bort.
+// For forspill-metodene varieres den KALDE halen; selve forspill-lengden
+// (poolishH/bigaH) er et smaksvalg brukeren har tatt og skal ikke overstyres.
+const COLD_VALS=()=>{const a=[];for(let h=24;h<=COLD_MAX;h+=6)a.push(h);return a;};
 const WINDOW_METHODS=[
   {m:'hurtig',   key:'hurtigH', vals:()=>HOPTS.map(o=>o.h)},
   {m:'kveld',    key:'kveldH',  vals:()=>KOPTS.map(o=>o.h)},
-  {m:'standard', key:'cold',    vals:()=>{const a=[];for(let h=24;h<=COLD_MAX;h+=6)a.push(h);return a;}}
+  {m:'standard', key:'cold',    vals:COLD_VALS},
+  {m:'poolish',  key:'cold',    vals:COLD_VALS},
+  {m:'biga',     key:'cold',    vals:COLD_VALS}
 ];
+// Favoritten løftes med samme milde vekt som nattestarter straffes med: den
+// vinner når den er innenfor 3 timers gjæring av det beste alternativet, men
+// aldri i det stille — kortet oppgir alltid hva valget koster deg.
+const WINDOW_FAV_BONUS=180;
 // Faktisk lengde på en plan (første steg → steking) i minutter. Måles på den
 // EKTE stegkjeden i stedet for en parallell formel, så den aldri kan drifte fra
 // tidsplanen slik den håndsummerte Mania-konstanten gjorde før F19.
@@ -259,28 +271,24 @@ function windowCandidates(bakeAt, windowMin){
   try{
     S.mode='end';
     for(const def of WINDOW_METHODS){
+      // C: samme av/på-filter som Smart-plan. Skrur du av en metode du aldri
+      // lager, skal den heller ikke ta plass her.
+      if(typeof betaMethodAllowed==='function' && !betaMethodAllowed(def.m)) continue;
       S.method=def.m;
-      let best=null,minSpan=null;
+      let best=null,minSpan=null,minVal=null;
       for(const v of def.vals()){
         S[def.key]=v;
         let span=null;
         try{ span=planSpanMin(bakeAt); }catch(e){ continue; }
         if(span==null) continue;
-        if(minSpan==null||span<minSpan) minSpan=span;
+        if(minSpan==null||span<minSpan){ minSpan=span; minVal=v; }
         if(span<=windowMin && (!best||span>best.span)) best={val:v,span};
       }
-      out.push({method:def.m,key:def.key,best,minSpan});
+      out.push({method:def.m,key:def.key,best,minSpan,minVal,fav:S.favMethod===def.m});
     }
   } finally {
     S.method=saved.method;S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;S.mode=saved.mode;
   }
-  // v0.728: «sivilisert oppstart». Fyller man vinduet bakfra, havner det BESTE
-  // alternativet ofte midt på natta — nettopp fordi det er det lengste. Vi
-  // markerer derfor nattestarter (23–06) og gir dem en straff i rangeringen, så
-  // et alternativ med menneskelig oppstart vinner når det ikke er stort dårligere.
-  // Straffen er bevisst mild: et nattestart-valg må være mer enn NIGHT_PENALTY
-  // bedre for å slå et sivilisert. (Hjelper ikke når ALLE starter om natta —
-  // da er «start ved din tidligste tid» utveien, se winStartEarly i UI-et.)
   const NIGHT_PENALTY=180;
   out.forEach(c=>{
     if(!c.best){ c.night=false; return; }
@@ -288,17 +296,29 @@ function windowCandidates(bakeAt, windowMin){
     c.startAt=st;
     c.night=isNightHour(st.getHours());
   });
+  const score=c=>c.best.span+(c.fav?WINDOW_FAV_BONUS:0)-(c.night?NIGHT_PENALTY:0);
   out.sort((a,b)=>{
     if(a.best&&b.best){
-      const sa=a.best.span-(a.night?NIGHT_PENALTY:0);
-      const sb=b.best.span-(b.night?NIGHT_PENALTY:0);
-      if(sb!==sa) return sb-sa;
+      const d=score(b)-score(a);
+      if(d) return d;
       return b.best.span-a.best.span;
     }
     if(a.best) return -1;
     if(b.best) return 1;
-    return (a.minSpan||0)-(b.minSpan||0);                 // «passer ikke»: nærmest først
+    // Blant dem som IKKE passer: favoritten først. Det er nettopp den du vil
+    // vite hvordan du kan få til — resten sorteres etter hvor nær de er.
+    if(a.fav!==b.fav) return a.fav?-1:1;
+    return (a.minSpan||0)-(b.minSpan||0);
   });
+  // Prislappen: vant favoritten over noe med mer gjæringstid, skal det stå.
+  const fits=out.filter(c=>c.best);
+  if(fits.length>1 && fits[0].fav){
+    const longest=fits.slice(1).reduce((m,c)=>(!m||c.best.span>m.best.span)?c:m,null);
+    if(longest && longest.best.span>fits[0].best.span){
+      fits[0].costMin=longest.best.span-fits[0].best.span;
+      fits[0].costVs=longest.method;
+    }
+  }
   return out;
 }
 // Natt = 23:00–05:59. Brukt til å merke oppstarter man neppe vil ha, både i

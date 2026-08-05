@@ -955,7 +955,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="engine.js?v=1"></script>
 <script src="guide.js?v=1"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -3300,8 +3300,21 @@ function betaMethodAllowed(method){ return loadBetaMethods()[method]!==false; }
 function toggleBetaMethod(v){
   const m=loadBetaMethods(); m[v]=!m[v];
   try{ localStorage.setItem('pizzaBetaMethods', JSON.stringify(m)); }catch(e){}
+  if(m[v]===false && S.favMethod===v){ S.favMethod=null; try{ persistSetup(); }catch(e){} }
   renderBetaMethodFilter();
+  try{ renderWindowPicker(); }catch(e){}   // C: filteret gjelder også Fra–til
   // Oppdater et allerede vist resultat med det samme, så filteret føles direkte.
+  const res=document.getElementById('mob-beta-result');
+  if(res && res.innerHTML.trim()){ try{ runBetaSearch(); }catch(e){} }
+}
+// v0.730: favorittmetode. Én om gangen — trykk på stjerna igjen for å fjerne.
+// Å skru AV en metode fjerner også favoritt-status (den kan ikke vinne noe den
+// ikke er med i), så de to innstillingene ikke kan komme i motstrid.
+function toggleFavMethod(v){
+  S.favMethod = (S.favMethod===v) ? null : v;
+  try{ persistSetup(); }catch(e){}
+  renderBetaMethodFilter();
+  try{ renderWindowPicker(); }catch(e){}
   const res=document.getElementById('mob-beta-result');
   if(res && res.innerHTML.trim()){ try{ runBetaSearch(); }catch(e){} }
 }
@@ -3319,9 +3332,15 @@ function renderBetaMethodFilter(){
   if(body){
     body.innerHTML=BETA_METHOD_DEFS.map(([v,no,en])=>{
       const on=m[v]!==false;
-      return `<div onclick="toggleBetaMethod('${v}')" role="checkbox" aria-checked="${on}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleBetaMethod('${v}')}" style="display:flex;align-items:center;gap:9px;padding:7px 2px;cursor:pointer">
-        <span aria-hidden="true" style="width:18px;height:18px;border-radius:5px;border:2px solid ${on?'var(--forno-accent)':'var(--forno-border)'};background:${on?'var(--forno-accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a1512;font-size:12px;font-weight:800">${on?'✓':''}</span>
-        <span style="font-size:13px;color:var(--forno-text)">${escH(L(no,en))}</span>
+      const fav=S.favMethod===v;
+      // v0.730: stjernen er favoritten. Den løfter metoden i Fra–til-rangeringen,
+      // men aldri i det stille — kortet oppgir hva valget koster i gjæringstid.
+      return `<div style="display:flex;align-items:center;gap:9px;padding:7px 2px">
+        <span onclick="toggleBetaMethod('${v}')" role="checkbox" aria-checked="${on}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleBetaMethod('${v}')}" style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer">
+          <span aria-hidden="true" style="width:18px;height:18px;border-radius:5px;border:2px solid ${on?'var(--forno-accent)':'var(--forno-border)'};background:${on?'var(--forno-accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a1512;font-size:12px;font-weight:800">${on?'✓':''}</span>
+          <span style="font-size:13px;color:var(--forno-text)${on?'':';opacity:.55'}">${escH(L(no,en))}</span>
+        </span>
+        <span onclick="toggleFavMethod('${v}')" role="button" tabindex="0" aria-label="${escH(L('Favoritt','Favourite'))}" aria-pressed="${fav}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFavMethod('${v}')}" style="font-size:15px;padding:2px 6px;cursor:pointer;opacity:${fav?'1':(on?'.35':'.15')};flex-shrink:0" title="${escH(L('Favoritt','Favourite'))}">${fav?'⭐':'☆'}</span>
       </div>`;
     }).join('');
   }
@@ -6184,13 +6203,24 @@ function renderWindowPicker(){
   cands.forEach((c,i)=>{
     const isWin=c.best&&i===0;
     if(!c.best){
-      const mangler=c.minSpan?fmtSessionDur(c.minSpan-windowMin):'';
-      html+=`<div style="border:1px solid var(--forno-border-soft);border-radius:10px;padding:8px 10px;margin-bottom:6px;background:var(--forno-bg);opacity:.6">
+      // v0.730: «mangler 3t 45m» er sant, men ikke handlingsrettet. Det nyttige
+      // er HVA du må flytte for å få lage den likevel — og begge veier er ett
+      // trykk unna. Favoritten din får ekstra tydelig merking, siden det er
+      // nettopp den du helst vil ha til å passe.
+      const short=c.minSpan-windowMin;
+      const mangler=fmtSessionDur(short);
+      const altStart=new Date(startAt.getTime()-short*60000);
+      const altBake=new Date(bakeAt.getTime()+short*60000);
+      html+=`<div style="border:1px ${c.fav?'solid var(--forno-accent)':'solid var(--forno-border-soft)'};border-radius:10px;padding:9px 10px;margin-bottom:6px;background:var(--forno-bg)">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
-          <span style="font-size:12.5px;font-weight:700">${mN(c.method)}</span>
-          <span style="font-size:10.5px;color:var(--forno-text-faint);white-space:nowrap">${L(`trenger ${fmtSessionDur(c.minSpan)}`,`needs ${fmtSessionDur(c.minSpan)}`)}</span>
+          <span style="font-size:12.5px;font-weight:700;${c.fav?'color:var(--forno-accent-text)':'color:var(--forno-text-muted)'}">${mN(c.method)}${c.fav?' ⭐':''}</span>
+          <span style="font-size:10.5px;color:var(--forno-text-faint);white-space:nowrap">${L(`mangler ${mangler}`,`${mangler} short`)}</span>
         </div>
-        <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:3px">${L(`Får ikke plass — mangler ${mangler}`,`Doesn't fit — ${mangler} short`)}</div>
+        <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:4px;line-height:1.45">${L(`Trenger ${fmtSessionDur(c.minSpan)} — slik får du den til:`,`Needs ${fmtSessionDur(c.minSpan)} — here's how to make it fit:`)}</div>
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+          <span onclick="applyWindowShiftStart('${c.method}','${c.key}',${c.minVal},${short})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Start','Start')} <b>${fDT(altStart)}</b><br><span style="font-weight:500;opacity:.8">${L('i stedet','instead')}</span></span>
+          <span onclick="applyWindowShiftBake('${c.method}','${c.key}',${c.minVal},${short})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Stek','Bake')} <b>${fDT(altBake)}</b><br><span style="font-weight:500;opacity:.8">${L('i stedet','instead')}</span></span>
+        </div>
       </div>`;
       return;
     }
@@ -6207,7 +6237,9 @@ function renderWindowPicker(){
       <div style="height:7px;border-radius:4px;background:var(--forno-bg-sunken,#e8dcc4);margin-top:6px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;border-radius:4px;background:${isWin?'var(--forno-accent)':'#c9b48a'}"></i></div>
       <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:5px;line-height:1.45">
         ${L('Oppstart','Start')}: <b>${fDT(startsAt)}</b>${lbl?` · ${lbl}`:''}
+        ${c.fav?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#efe4f7;color:#6b4a9a;border:1px solid #d3c0e8;margin-left:4px">${L('⭐ din favoritt','⭐ your favourite')}</span>`:''}
         ${c.night?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e8e2f5;color:#5b4a8a;border:1px solid #c9bde6;margin-left:4px">${L('🌙 midt på natten','🌙 middle of the night')}</span>`:''}
+        ${c.costMin?`<br><span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#faeeda;color:#8a5a00;border:1px solid #efc27f;margin-top:4px">${L(`${fmtSessionDur(c.costMin)} mindre gjæring enn ${mN(c.costVs)}`,`${fmtSessionDur(c.costMin)} less fermentation than ${mN(c.costVs)}`)}</span>`:''}
         ${isWin&&!c.night?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab;margin-left:4px">${L('✓ maks smak','✓ most flavor')}</span>`
                :(!isWin&&ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'')}
       </div>
@@ -6250,6 +6282,28 @@ function applyWindowCandidate(method,key,val){
 // starter når du faktisk sa du var ledig; til gjengjeld er pizzaen ferdig litt
 // før ønsket steketid. Steketid-feltet flyttes tilsvarende, så planen og
 // feltene fortsatt stemmer overens.
+// v0.730: «slik får du favoritten til å passe». To veier ut av et for trangt
+// vindu — flytt oppstarten tidligere, eller steketiden senere. Begge setter
+// samtidig metoden til den korteste varianten som da får plass, så du lander
+// direkte på en plan som virker.
+function applyWindowShiftStart(method,key,val,shortMin){
+  const startAt=S.winStart?new Date(S.winStart):null;
+  if(startAt&&!isNaN(startAt.getTime())){
+    const ns=new Date(startAt.getTime()-shortMin*60000);
+    S.winStart=fd(ns)+'T'+String(ns.getHours()).padStart(2,'0')+':'+String(ns.getMinutes()).padStart(2,'0');
+    syncWinFields();
+  }
+  applyWindowCandidate(method,key,val);
+}
+function applyWindowShiftBake(method,key,val,shortMin){
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  if(dEl&&dEl.value&&tEl){
+    const nb=new Date(new Date(dEl.value+'T'+(tEl.value||'18:00')).getTime()+shortMin*60000);
+    dEl.value=fd(nb);
+    tEl.value=String(nb.getHours()).padStart(2,'0')+':'+String(nb.getMinutes()).padStart(2,'0');
+  }
+  applyWindowCandidate(method,key,val);
+}
 function applyWindowCandidateEarly(method,key,val,spanMin){
   const startAt=S.winStart?new Date(S.winStart):null;
   if(startAt&&!isNaN(startAt.getTime())){
