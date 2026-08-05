@@ -3700,6 +3700,11 @@ def run_behavioral_tests(page):
       const methodBeforeApply=S.method;
       applyWindowCandidate('kveld','kveldH',18);
       const appliedMethod=S.method, appliedH=S.kveldH, modeAfter=S.mode;
+      // v0.727: «Bruk denne» skal lande på Tidsplan (som i Smart-plan), og
+      // Fra–til-valgene skal overleve så man kan ombestemme seg.
+      const planEl=document.getElementById('mob-plan');
+      const landedOnPlan = !!planEl && planEl.classList.contains('active');
+      const winKeptAfterApply = S.winStart!==null;
       // modusbytte tilbake nullstiller vinduet
       mobSetMode('start');
       const winCleared=S.winStart===null;
@@ -3716,10 +3721,12 @@ def run_behavioral_tests(page):
         modeStaysEnd: modeAfter==='end',
         suggestionNotAuto: methodBeforeApply!=='kveld' || true,
         applied: appliedMethod==='kveld'&&appliedH===18,
+        landedOnPlan, winKeptAfterApply,
+        headerWording: /mest fermenteringstid/.test(h),
         winCleared
       };
     }""")
-    ok103 = all(r103.get(k) for k in ['kveldBest','hurtigBest','standardNoFit','ranked','startOk','winnerRenderedFirst','showsShortfall','modeStaysEnd','applied','winCleared'])
+    ok103 = all(r103.get(k) for k in ['kveldBest','hurtigBest','standardNoFit','ranked','startOk','winnerRenderedFirst','showsShortfall','modeStaysEnd','applied','landedOnPlan','winKeptAfterApply','headerWording','winCleared'])
     results.append(('window_mode_picks_max_fermentation_that_fits', ok103, r103))
 
     # v0.726: to reelle feil rapportert fra produksjon i «Fra–til».

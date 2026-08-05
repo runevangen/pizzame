@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.727",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Bruk denne» i Fra–til tar deg nå rett til Tidsplan-fanen, slik «Bruk denne» i Smart-plan alltid har gjort — før ble valget lagret uten at du så resultatet. Tidspunktene du fylte inn beholdes, så du kan gå tilbake og ombestemme deg uten å skrive dem på nytt.",
+      "Endret overskriften i Fra–til fra «mest gjæring som får plass» til «mest fermenteringstid» — kortere og mer presist."
+    ],
+    "changes_en": [
+      "“Use this” in From–to now takes you straight to the Schedule tab, the way “Use this” in Smart-plan always has — previously the choice was applied without showing you the result. The times you entered are kept, so you can go back and change your mind without retyping them.",
+      "Changed the From–to heading from “most fermentation that fits” to “most fermentation time” — shorter and more precise."
+    ]
+  },
+  {
     "v": "0.726",
     "d": "august 2026",
     "d_en": "August 2026",
