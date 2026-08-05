@@ -3921,6 +3921,83 @@ def run_behavioral_tests(page):
     ok106 = all(r106.get(k) for k in ['calibrated','monotone','fridgeDir','fridgeGentler','tempCompensated','memoStable','poolishUnchanged','bigaUnchanged','kveldUnchanged'])
     results.append(('q10_model_calibrated_for_standard_others_unchanged', ok106, r106))
 
+    # v0.730: preferanse i Fra–til, tre deler.
+    # (C) metodefilteret fra Smart-plan gjelder nå også her — skrur du av en
+    #     metode du aldri lager, forsvinner den fra lista. Det gjorde det
+    #     samtidig trygt å ta inn Poolish og Biga (holdt utenfor i v0.725 fordi
+    #     lista ville blitt lang — nå styrer brukeren lengden selv).
+    # (B) favoritten løftes med samme milde vekt som nattestraffen (3t), men
+    #     ALDRI i det stille: vinner den over noe med mer gjæringstid, står
+    #     prislappen på kortet. Er den klart dårligere, vinner den ikke.
+    # (3) Passer favoritten ikke, er det nyttigste svaret hva du må FLYTTE —
+    #     favoritten sorteres først blant de som ikke passer, og begge utveier
+    #     (start tidligere / stek senere) er ett trykk unna.
+    r107 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,win:S.winStart,fav:S.favMethod,
+                   cold:S.cold,hurtigH:S.hurtigH,kveldH:S.kveldH,poolishH:S.poolishH,bigaH:S.bigaH};
+      const savedFilter={}; BETA_METHOD_DEFS.forEach(([k])=>savedFilter[k]=betaMethodAllowed(k));
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.temp=22; S.favMethod=null;
+      mobShowTab('settings'); wizGoto(1);
+      document.getElementById('mob-ed').value='2026-08-08';
+      document.getElementById('mob-et').value='18:00';
+      mobSetMode('window');
+      document.getElementById('mob-wd').value='2026-08-06';
+      document.getElementById('mob-wt').value='16:00';
+      renderWindowPicker();
+      const bake=new Date('2026-08-08T18:00'), win=50*60;
+      const names=c=>c.map(x=>x.method);
+      // (C) poolish/biga er med, og filteret virker
+      const all=windowCandidates(bake,win);
+      const hasPreferments = names(all).includes('poolish') && names(all).includes('biga');
+      toggleBetaMethod('hurtig');
+      const filtered=names(windowCandidates(bake,win));
+      const filterWorks = !filtered.includes('hurtig') && filtered.length===all.length-1;
+      toggleBetaMethod('hurtig');
+      // (B) favoritt vinner når den er nær — og prislappen regnes ut
+      S.favMethod='standard';
+      const favWin=windowCandidates(bake,win);
+      const favIsTop = favWin[0].method==='standard' && favWin[0].fav===true;
+      const costShown = typeof favWin[0].costMin==='number' && favWin[0].costMin>0 && !!favWin[0].costVs;
+      renderWindowPicker();
+      const hFav=document.getElementById('mob-winres').innerHTML;
+      const badgeInUI = /din favoritt/.test(hFav) && /mindre gjæring enn/.test(hFav);
+      // favoritt vinner IKKE når den er klart dårligere (hurtig ligger >3t bak)
+      S.favMethod='hurtig';
+      const weakFav=windowCandidates(bake,win);
+      const weakFavNotTop = weakFav[0].method!=='hurtig';
+      // (3) trangt vindu: favoritten passer ikke -> først blant dem, med utveier
+      S.favMethod='biga';
+      document.getElementById('mob-ed').value='2026-08-07';
+      document.getElementById('mob-wt').value='10:00';
+      renderWindowPicker();
+      const tight=windowCandidates(new Date('2026-08-07T18:00'),32*60);
+      const noFit=tight.filter(c=>!c.best);
+      const favFirstAmongNoFit = noFit.length>1 && noFit[0].method==='biga';
+      const hasMinVal = noFit.every(c=>typeof c.minVal==='number');
+      const h=document.getElementById('mob-winres').innerHTML;
+      const firstShift=(h.match(/applyWindowShiftBake\\('(\\w+)','(\\w+)',(\\d+),(\\d+)\\)/)||[]);
+      const btnIsFav = firstShift[1]==='biga';
+      const actionable = /slik får du den til/.test(h) && /applyWindowShiftStart/.test(h);
+      // trykk «stek senere» -> metoden settes og steketiden flyttes
+      const bakeBefore=document.getElementById('mob-ed').value+' '+document.getElementById('mob-et').value;
+      applyWindowShiftBake(firstShift[1],firstShift[2],parseInt(firstShift[3]),parseInt(firstShift[4]));
+      const shiftApplied = S.method==='biga' &&
+        (document.getElementById('mob-ed').value+' '+document.getElementById('mob-et').value)!==bakeBefore;
+      // å skru AV favorittmetoden skal fjerne favoritt-status
+      S.favMethod='biga'; toggleBetaMethod('biga');
+      const favClearedOnDisable = S.favMethod===null;
+      toggleBetaMethod('biga');
+      BETA_METHOD_DEFS.forEach(([k])=>{ if(betaMethodAllowed(k)!==savedFilter[k]) toggleBetaMethod(k); });
+      Object.assign(S,saved);
+      try{ mobShowTab('settings'); mobSetMode(uiMode()); }catch(e){}
+      return {hasPreferments, filterWorks, favIsTop, costShown, badgeInUI, weakFavNotTop,
+              favFirstAmongNoFit, hasMinVal, btnIsFav, actionable, shiftApplied, favClearedOnDisable,
+              order:names(all), cost:favWin[0].costMin, costVs:favWin[0].costVs};
+    }""")
+    ok107 = all(r107.get(k) for k in ['hasPreferments','filterWorks','favIsTop','costShown','badgeInUI','weakFavNotTop','favFirstAmongNoFit','hasMinVal','btnIsFav','actionable','shiftApplied','favClearedOnDisable'])
+    results.append(('window_favourite_weighting_filter_and_actionable_shortfall', ok107, r107))
+
     return results
 
 

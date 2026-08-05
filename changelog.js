@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.730",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Du kan nå velge en favorittmetode (stjerna i «Metoder du blir tilbudt»). Favoritten løftes i Fra–til-rangeringen, men aldri i det stille: vinner den over et alternativ med mer gjæringstid, står prislappen på kortet — «2t 30m mindre gjæring enn Biga». Er favoritten klart dårligere enn beste alternativ, vinner den ikke; da er det viktigere at du får vite det.",
+      "Metodefilteret gjelder nå også Fra–til. Skrur du av en metode du aldri lager, tar den ikke lenger plass i lista. Tidligere gjaldt filteret bare Smart-plan, så de to stedene kunne mene ulike ting om hva du bryr deg om.",
+      "Poolish og Biga er nå med i Fra–til. De ble holdt utenfor da modusen kom, fordi lista ville blitt lang — men nå styrer du lengden selv med filteret.",
+      "Passer ikke en metode inn i tiden du har, sier appen nå hva du må gjøre for å få den til likevel — ikke bare hvor mye som mangler. Du får to knapper: «Start ons 22:10 i stedet» eller «Stek lør 05:50 i stedet», og ett trykk setter både metoden og den nye tiden. Favoritten din legges øverst blant dem som ikke passer, siden det er den du helst vil få til."
+    ],
+    "changes_en": [
+      "You can now pick a favourite method (the star in “Methods you are offered”). The favourite is lifted in the From–to ranking, but never silently: if it beats an option with more fermentation time, the price is stated on the card — “2h 30m less fermentation than biga”. If the favourite is clearly worse than the best option, it doesn't win; knowing that matters more.",
+      "The method filter now applies to From–to as well. Turn off a method you never make and it no longer takes up space in the list. Previously the filter only applied to Smart-plan, so the two places could disagree about what you care about.",
+      "Poolish and biga are now included in From–to. They were left out when the mode launched because the list would have got long — but now you control the length yourself with the filter.",
+      "When a method doesn't fit the time you have, the app now tells you what to do about it rather than just how much is missing. You get two buttons: “Start Wed 22:10 instead” or “Bake Sat 05:50 instead”, and one tap sets both the method and the new time. Your favourite is listed first among those that don't fit, since that's the one you most want to make work."
+    ]
+  },
+  {
     "v": "0.729",
     "d": "august 2026",
     "d_en": "August 2026",
