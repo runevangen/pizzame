@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.729",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Langtidsdeigen regner nå gjærmengden med én fysisk lov i stedet for tre sammenganget tabeller: gjæringsraten halveres for hver 10°C temperaturen faller (Q10). Appen summerer hvor mye gjæring hvert steg i din faktiske tidsplan bidrar med — kjøleskapet, romhevingen og benketida — og fordeler gjæren etter det. Tallene er kalibrert mot de uttestede punktene: 24 og 72 timer gir nøyaktig samme gjærmengde som før, 48 timer 0,04 g mindre, altså mindre enn en kjøkkenvekt kan vise.",
+      "Kjøleskapstemperaturen (lagt til i forrige uke) virker nå gjennom den samme fysikken i stedet for en anslått kurve. Utslaget ble mildere enn anslaget: et kaldt skap på 0–2°C gir nå ca. 11% mer gjær, ikke 30%.",
+      "Poolish, Biga, Hurtigdeig, Kveldsdeig og Mania er bevisst uendret og beholder sine egne kurver. For Poolish ville den nye modellen halvert gjærmengden — muligens riktig, men en så stor endring skal bakes og smakes før den slippes, ikke bare regnes ut."
+    ],
+    "changes_en": [
+      "Long-ferment dough now computes yeast from a single physical law instead of three multiplied tables: the fermentation rate halves for every 10°C drop in temperature (Q10). The app sums how much fermentation each step in your actual schedule contributes — the fridge, the room rise and the bench rest — and sets the yeast from that. The numbers are calibrated against the tested reference points: 24 and 72 hours give exactly the same yeast as before, 48 hours 0.04 g less, which is below what a kitchen scale can show.",
+      "The fridge temperature (added last week) now works through the same physics instead of an estimated curve. The effect turned out gentler than the estimate: a cold 0–2°C fridge now gives about 11% more yeast, not 30%.",
+      "Poolish, biga, quick dough, evening dough and Mania are deliberately unchanged and keep their own curves. For poolish the new model would have halved the yeast — possibly correct, but a change that large should be baked and tasted before it ships, not just calculated."
+    ]
+  },
+  {
     "v": "0.728",
     "d": "august 2026",
     "d_en": "August 2026",

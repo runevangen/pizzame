@@ -705,7 +705,62 @@ rekkefølgen. F17 er det klart mest verdifulle.
   caser), og index.html krymper. Forutsetter F17+F19; ellers flytter man bare
   spaghettien. Liten jobb når trappen ellers er tatt.
 
-### F23. Q10-modell: én gjæringslov i stedet for fem multipliserte tabeller
+### F23. Q10-modell: én gjæringslov i stedet for fem multipliserte tabeller ✅ BYGGET (v0.729, Langtidsdeig)
+> ✅ **Bygget for Langtidsdeig.** `fermentLoadHours()` summerer over INTERVALLENE
+> i den ekte stegkjeden (ikke `s.dur` — flere steg har `dur:0` og bærer tiden som
+> avstand til neste steg, typisk hele benketida), med temperatur fra hvert stegs
+> `loc`. `Q10=2,3`, `Q10_K=14,85`. Rekursjon (R→steg→R) løst med en vakt som
+> faller tilbake på tabellveien under selve integralberegningen — trygt fordi
+> TIMINGEN ikke avhenger av gjærmengden — pluss memoisering, siden `R()` kalles
+> én gang per steg-tekst. Test: `q10_model_calibrated_for_standard_others_unchanged`.
+>
+> **Kalibrering (napoletana 500 g, 22 °C, 3 °C skap):** 24 t og 72 t treffer
+> dagens tall eksakt; 48 t −0,04 g, 96 t +0,01 g, 120 t +0,04 g. Alle avvik under
+> oppløsningen på en hjemmevekt. Baseline oppdatert kirurgisk — verifisert at
+> KUN gjærverdien endret seg (0,79 → 0,75 i standard-scenarioene).
+>
+> **⚠️ Funnet som endret konklusjonen:** påstanden om at «romheving og benketid
+> nå teller med» stemmer teknisk, men gir i praksis **ingen** endring —
+> belastningen varierer bare 0,6 % fra 18 °C til 26 °C. Årsaken er at `tf()`
+> allerede forlenger romfasene når det er kaldt, så gjæringsmengden holder seg
+> konstant. Q10 **bekreftet** altså den eksisterende tidsskaleringen i stedet for
+> å korrigere den. Testen låser dette (`tempCompensated`, spredning < 2 %), så
+> bryter noen tf()-kompenseringen senere, faller den.
+>
+> **Reell gevinst ble derfor:** (1) én lov i stedet for tre multipliserte tabeller
+> for denne metoden; (2) kjøleskapstemperatur virker nå gjennom fysikk i stedet
+> for `fridgeMult`, som var en innrømmet gjetning (F13) — og gir et mildere
+> utslag (1 °C: ×1,11 mot gjetningens ×1,3); (3) ærlig ekstrapolering utenfor
+> tabellenes spenn.
+>
+> **Bevisst IKKE med: Poolish og Biga.** Q10-integralet ville kuttet
+> poolish-gjæren med ~2,4× (fra 1,13 g til ~0,47 g for 14 t romtemperatur-
+> poolish), fordi et 14-timers forspill ved 22 °C bærer enorm gjæringsbelastning.
+> Det *kan* være riktig — 0,45 % gjær av poolish-melet er høyt mot vanlig praksis
+> på 0,1–0,3 % — men en så stor endring må valideres mot ekte bakst før den
+> shippes. **Eget backlog-punkt: F24.** Hurtigdeig (egen HOPTS-kurve med
+> UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
+> kurver.
+
+### F24. Vurder Q10 også for Poolish og Biga — krever validering mot ekte bakst
+- **I klartekst:** F23 innførte Q10 for Langtidsdeig. Utvider vi den til Poolish,
+  faller gjærmengden fra 1,13 g til ca. 0,47 g for standardvalget (14 t
+  romtemperatur-poolish + 24 t kaldt) — en reduksjon på ~58 %. Modellen mener
+  altså at dagens poolish er kraftig overdosert, og det er ikke åpenbart feil:
+  1,13 g tørrgjær med alt i poolishen tilsvarer ~0,45 % av poolish-melet, mens
+  vanlig praksis for en 12–16 t romtemperatur-poolish er 0,1–0,3 %.
+- **Hvorfor det ikke ble gjort i F23:** en halvering av gjæren er den største
+  enkeltendringen appen ville gjort mot en eksisterende bruker. Den må bakes,
+  ikke bare regnes. Vi har allerede infrastrukturen for å teste det: Deiger-fanen
+  lagrer terningkast, notat og bilde per deig (F9), så to bakst med gammel og ny
+  gjærmengde kan sammenlignes direkte.
+- **Merk også:** `prefermentYeastMult` (v0.697) trakk bevisst NED gjæren i den
+  lange enden (15–16 t) fordi «all gjæren ligger i poolishen og den topper og
+  faller lett». Q10-integralet gjør delvis det samme automatisk (lengre forspill
+  → større belastning → mindre gjær), så kurven kan trolig fjernes ved et bytte —
+  men sjekk at den lange enden ikke blir for aggressiv.
+- **[baseline]** — vil flytte poolish- og biga-tallene betydelig.
+- Middels. Avhenger av reell baketesting, ikke av kode.
 - **I klartekst:** Gjærmengden regnes i dag ut ved å gange sammen fem separate,
   håndtunede oppslagstabeller — `tempFactor` (romheving), `coldMultHours`
   (kaldheving), `fridgeMult` (skaptemperatur), pluss egne kurver for poolish og

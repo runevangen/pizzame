@@ -3574,9 +3574,15 @@ def run_behavioral_tests(page):
       const kvRef=ydAt('kveld',3), kvCold=ydAt('kveld',1);
       const maniaRef=ydAt('mania',3), maniaCold=ydAt('mania',1);
       const huRef=ydAt('hurtig',3), huCold=ydAt('hurtig',1);
-      // referanse = eksakt de gamle tallene (mult 1,0):
+      // v0.729 (F23): Langtidsdeig regnes nå med Q10-integralet, ikke tabellene,
+      // så fasiten er integralet — ikke lenger coldMultForHours. Kveldsdeig står
+      // fortsatt på KCOLDMULT × fridgeMult og beholder den eksakte tabell-fasiten.
       S.method='standard'; S.fridgeC=3;
-      const baseStd=Math.round(S.mel*BYEAST[S.type]/100*coldMultForHours(48)*100)/100;
+      const loadStd=currentFermentLoad();
+      const baseStd=Math.round(S.mel*BYEAST[S.type]/100*(Q10_K/loadStd)*100)/100;
+      S.method='kveld'; S.fridgeC=3;
+      const baseKveld=Math.round(S.mel*BYEAST[S.type]/100*(KCOLDMULT[S.kveldH]||2.0)*1.0*100)/100;
+      const baseKveldCold=Math.round(S.mel*BYEAST[S.type]/100*(KCOLDMULT[S.kveldH]||2.0)*1.3*100)/100;
       // UI: pillegruppa finnes og synlighet følger metoden
       const gridEl=document.getElementById('mob-gfridge');
       const grpEl=document.getElementById('mob-gfridge-group');
@@ -3592,8 +3598,12 @@ def run_behavioral_tests(page):
       try{ applyMobTypeUI(); }catch(e){}
       return {
         defaultUnchanged: stdRef===baseStd,
-        colderMoreYeast: stdCold>stdRef && Math.abs(stdCold-Math.round(S.mel*BYEAST['napoletana']/100*coldMultForHours(48)*1.3*100)/100)<0.011,
+        // Langtidsdeig: kun retning (Q10 bestemmer størrelsen, integralet er fasit over)
+        colderMoreYeast: stdCold>stdRef,
         warmerLessYeast: stdWarm<stdRef,
+        // Kveldsdeig: fortsatt eksakt tabellfasit (KCOLDMULT × fridgeMult)
+        kveldRefExact: kvRef===baseKveld,
+        kveldColdExact: kvCold===baseKveldCold,
         kveldCompensates: kvCold>kvRef,
         maniaUntouched: maniaRef===maniaCold,
         hurtigUntouched: huRef===huCold,
@@ -3602,7 +3612,7 @@ def run_behavioral_tests(page):
         stdRef, stdCold, stdWarm, kvRef, kvCold
       };
     }""")
-    ok100 = all(r100.get(k) for k in ['defaultUnchanged','colderMoreYeast','warmerLessYeast','kveldCompensates','maniaUntouched','hurtigUntouched','fridgeMultFn','uiPills','shownForStandard','hiddenForHurtig'])
+    ok100 = all(r100.get(k) for k in ['defaultUnchanged','colderMoreYeast','warmerLessYeast','kveldRefExact','kveldColdExact','kveldCompensates','maniaUntouched','hurtigUntouched','fridgeMultFn','uiPills','shownForStandard','hiddenForHurtig'])
     results.append(('fridge_temp_input_compensates_yeast_default_unchanged', ok100, r100))
 
     # v0.723: service worker-kontrakten. Produksjonskrasj etter v0.722: sw.js
@@ -3850,6 +3860,66 @@ def run_behavioral_tests(page):
     }""")
     ok105 = all(r105.get(k) for k in ['nightBounds','allNight','flaggedInUI','earlyOffered','startAtOk','earlyMovesBake','bakeKept','topIsDay','noBadgeOnTop'])
     results.append(('window_mode_flags_night_starts_and_offers_earlier_start', ok105, r105))
+
+    # v0.729 (F23): Q10-modellen for Langtidsdeig. Gjæringsbelastningen summeres
+    # over INTERVALLENE i den ekte stegkjeden (ikke s.dur — flere steg har dur:0
+    # og bærer tiden som avstand til neste steg), med temperatur fra hvert stegs
+    # `loc`. Denne testen låser fire ting:
+    # (a) kalibreringen — 24t og 72t treffer eksakt det tabellene ga før byttet,
+    #     og hele kald-spennet er monotont synkende;
+    # (b) kjøleskapstemperatur virker nå gjennom fysikken i stedet for den
+    #     gjettede fridgeMult-kurven (F13), og gir et mildere utslag;
+    # (c) romtemperatur gir tilnærmet ingen endring i belastning — ikke fordi
+    #     romfasene ignoreres, men fordi tf() allerede forlenger dem når det er
+    #     kaldt. Modellen BEKREFTER altså tidsskaleringen. Denne assertionen er
+    #     verdifull: bryter noen tf()-kompenseringen, spriker belastningen.
+    # (d) øvrige metoder er urørt og bruker fortsatt sine egne tabeller.
+    r106 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,mel:S.mel,hydro:S.hydro,
+                   cold:S.cold,temp:S.temp,fridgeC:S.fridgeC,kveldH:S.kveldH,
+                   poolishH:S.poolishH,poolishCold:S.poolishCold,bigaH:S.bigaH};
+      S.type='napoletana'; S.mode='start'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+      const fresh=()=>{ _q10Memo={k:null,v:null}; };
+      // (a) kalibrering + monotoni
+      S.method='standard';
+      const cold={};
+      for(const c of [24,48,72,96,120]){ S.cold=c; fresh(); cold[c]=R().yDry; }
+      const calibrated = cold[24]===1.13 && cold[72]===0.56;   // eksakt som før F23
+      let monotone=true;
+      const ks=[24,48,72,96,120];
+      for(let i=1;i<ks.length;i++) if(cold[ks[i]]>=cold[ks[i-1]]) monotone=false;
+      // (b) kjøleskapstemperatur
+      S.cold=48; const fr={};
+      for(const f of [1,3,5,7]){ S.fridgeC=f; fresh(); fr[f]=R().yDry; }
+      const fridgeDir = fr[1]>fr[3] && fr[3]>fr[5] && fr[5]>fr[7];
+      const fridgeGentler = (fr[1]/fr[3]) < 1.3;   // mildere enn den gamle 1,3×-gjetningen
+      S.fridgeC=3;
+      // (c) romtemperatur: belastningen skal være tilnærmet uendret
+      const loads={};
+      for(const t of [18,22,26]){ S.temp=t; fresh(); loads[t]=currentFermentLoad(); }
+      const spread=Math.abs(loads[26]-loads[18])/loads[22];
+      const tempCompensated = spread<0.02;
+      S.temp=22; fresh();
+      // memo + rekursjonsvakt: to like kall, og ingen krasj under beregning
+      const l1=currentFermentLoad(), l2=currentFermentLoad();
+      const memoStable = l1===l2 && typeof l1==='number' && l1>0;
+      // (d) øvrige metoder urørt — fortsatt tabellproduktet
+      S.method='poolish'; S.poolishCold=false; S.poolishH=14; S.cold=24; fresh();
+      const plExpect=Math.round(S.mel*BYEAST[S.type]/100*coldMultForHours(24)*prefermentYeastMult()*fridgeYeastMult()*100)/100;
+      const poolishUnchanged=R().yDry===plExpect;
+      S.method='biga'; S.bigaH=18; S.cold=48; fresh();
+      const bgExpect=Math.round(S.mel*BYEAST[S.type]/100*coldMultForHours(48)*prefermentYeastMult()*fridgeYeastMult()*100)/100;
+      const bigaUnchanged=R().yDry===bgExpect;
+      S.method='kveld'; S.kveldH=10; fresh();
+      const kvExpect=Math.round(S.mel*BYEAST[S.type]/100*(KCOLDMULT[10]||2.0)*fridgeYeastMult()*100)/100;
+      const kveldUnchanged=recipeFor().yDry===kvExpect;
+      Object.assign(S,saved); fresh();
+      return {calibrated, monotone, fridgeDir, fridgeGentler, tempCompensated, memoStable,
+              poolishUnchanged, bigaUnchanged, kveldUnchanged,
+              cold, fridge:fr, spread:Math.round(spread*10000)/10000};
+    }""")
+    ok106 = all(r106.get(k) for k in ['calibrated','monotone','fridgeDir','fridgeGentler','tempCompensated','memoStable','poolishUnchanged','bigaUnchanged','kveldUnchanged'])
+    results.append(('q10_model_calibrated_for_standard_others_unchanged', ok106, r106))
 
     return results
 
