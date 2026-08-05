@@ -955,7 +955,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="engine.js?v=1"></script>
 <script src="guide.js?v=1"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -1145,8 +1145,12 @@ function syncStaticI18nUI(){
   st('wiz-s1-reset','Start ny','Start over');
   st('wiz-s1-q1','Pizzatype','Pizza type');
   st('wiz-s1-q2','Antall pizzaer','Number of pizzas');
-  st('mob-me','🍕 Planlagt steketid','🍕 Planned baking time');
-  st('mob-ms','▶ Jeg begynner nå','▶ I start now');
+  // v0.725: tredelt modusrad — korte etiketter i egne spans, så «Fra–til» får plass.
+  st('mob-me-lbl','Steketid','Bake time');
+  st('mob-mw-lbl','Fra–til','From–to');
+  st('mob-ms-lbl','Nå','Now');
+  st('mob-bw-lbl','Jeg kan tidligst starte','I can start at the earliest');
+  st('mob-be-lbl','Jeg vil steke','I want to bake');
   st('mob-bs-hint','Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.','The dough is planned from now. The baking time is calculated automatically and shown in the status bar once you have chosen a method.');
   st('wiz-s1-next','Neste →','Next →');
   // Wizard step 2
@@ -5547,7 +5551,7 @@ async function loadConfigThenStart(){
     setLayout(targetLayout);
     if(restored){
       // Speil oppsettet inn i piller/glidebrytere/modus — samme sync openBake bruker.
-      if(targetLayout==='mob'){ syncMobControls(); mobSetMode(S.mode); }
+      if(targetLayout==='mob'){ syncMobControls(); mobSetMode(uiMode()); }
       else { syncDesktopControls(); setMode(S.mode); }
     }
     // Innstillinger-fanen er allerede markert aktiv i selve HTML-en fra start (statisk klasse),
@@ -5625,7 +5629,7 @@ function syncMobControls(){
   setPoolishCold(S.poolishCold);
   mobBuildBrows();
   applyMobTypeUI();
-  mobSetMode(S.mode);
+  mobSetMode(uiMode());
   const mobStamp=g('mob-stamp');
   if(mobStamp)mobStamp.textContent=_dateStr;
   const mnv=g('mob-name-version');if(mnv)mnv.textContent='v'+CHANGELOG[0].v;
@@ -6064,23 +6068,151 @@ function ensureFeasibleBakeTime(){
   while(bake.getTime() < eb.getTime() && guard++ < 21){ bake.setDate(bake.getDate()+1); }
   dEl.value=fd(bake);
 }
+// v0.725: «Fra–til» er en tredje UI-modus, men IKKE en tredje motor-modus.
+// Steketiden er den harde betingelsen (planen regnes fortsatt bakover fra den,
+// S.mode='end'); oppstarten er kun en nedre grense som avgjør hvilket
+// alternativ som får plass. Dermed slipper vi å røre de ~40 stedene som spør
+// «S.mode==='end'?», og pizzaen blir ferdig når du faktisk vil spise.
+// S.winStart (ISO-lokal 'YYYY-MM-DDTHH:MM' eller null) er UI-flagget.
+function uiMode(){ return S.winStart ? 'window' : S.mode; }
 function mobSetMode(m){
-  S.mode=m;
-  if(m==='end') ensureFeasibleBakeTime();
-  const ms=document.getElementById('mob-ms'),me=document.getElementById('mob-me');
-  if(ms&&me){
-    ms.style.border=m==='start'?'2px solid var(--forno-accent)':'1px solid var(--forno-border)';
-    ms.style.background=m==='start'?'var(--forno-accent-soft)':'var(--forno-bg)';
-    ms.style.color=m==='start'?'var(--forno-accent-text)':'var(--forno-text-faint)';
-    ms.style.fontWeight=m==='start'?'600':'400';
-    me.style.border=m==='end'?'2px solid var(--forno-accent)':'1px solid var(--forno-border)';
-    me.style.background=m==='end'?'var(--forno-accent-soft)':'var(--forno-bg)';
-    me.style.color=m==='end'?'var(--forno-accent-text)':'var(--forno-text-faint)';
-    me.style.fontWeight=m==='end'?'600':'400';
+  if(m==='window'){
+    S.mode='end';
+    if(!S.winStart) S.winStart=defaultWinStart();
+  }else{
+    S.mode=m;
+    S.winStart=null;
   }
-  document.getElementById('mob-bs').style.display=m==='start'?'block':'none';
+  if(S.mode==='end') ensureFeasibleBakeTime();
+  const um=uiMode();
+  const ms=document.getElementById('mob-ms'),me=document.getElementById('mob-me'),mw=document.getElementById('mob-mw');
+  const paint=(el,on)=>{ if(!el)return;
+    el.style.border=on?'2px solid var(--forno-accent)':'1px solid var(--forno-border)';
+    el.style.background=on?'var(--forno-accent-soft)':'var(--forno-bg)';
+    el.style.color=on?'var(--forno-accent-text)':'var(--forno-text-faint)';
+    el.style.fontWeight=on?'600':'400';
+  };
+  paint(ms,um==='start'); paint(me,um==='end'); paint(mw,um==='window');
+  document.getElementById('mob-bs').style.display=um==='start'?'block':'none';
   try{ wizStep1Refresh(); }catch(e){}
-  document.getElementById('mob-be').style.display=m==='end'?'block':'none';
+  document.getElementById('mob-be').style.display=(um==='end'||um==='window')?'block':'none';
+  const bw=document.getElementById('mob-bw'); if(bw) bw.style.display=um==='window'?'block':'none';
+  const bel=document.getElementById('mob-be-lbl'); if(bel) bel.style.display=um==='window'?'block':'none';
+  if(um==='window'){ syncWinFields(); renderWindowPicker(); }
+  else { const wr=document.getElementById('mob-winres'); if(wr){ wr.style.display='none'; wr.innerHTML=''; } }
+  mobGen();
+}
+// Standard tidligste oppstart: nå, rundet opp til neste kvarter (et klokkeslett
+// man faktisk sier høyt), men aldri etter steketiden.
+function defaultWinStart(){
+  const d=new Date();
+  d.setMinutes(Math.ceil(d.getMinutes()/15)*15,0,0);
+  return fd(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function syncWinFields(){
+  if(!S.winStart) return;
+  const [d,t]=S.winStart.split('T');
+  const dEl=document.getElementById('mob-wd'), tEl=document.getElementById('mob-wt');
+  if(dEl&&d) dEl.value=d;
+  if(tEl&&t) tEl.value=t;
+}
+function readWinStart(){
+  const dEl=document.getElementById('mob-wd'), tEl=document.getElementById('mob-wt');
+  if(!dEl||!dEl.value) return null;
+  return dEl.value+'T'+((tEl&&tEl.value)||'20:00');
+}
+// Etikett for et kandidatvalg — gjenbruker appens egne smaksstiger, så
+// rangeringen forklares med ord brukeren har sett før («Utmerket», «Lang kveld»).
+function winOptLabel(method,val){
+  if(method==='hurtig'){ const o=HOPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):''; }
+  if(method==='kveld'){ const o=KOPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):''; }
+  const o=COLD_OPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):'';
+}
+function winValText(method,val){
+  if(method==='standard') return L(`${val} t kaldheving`,`${val} h cold proof`);
+  return L(`${val} timer`,`${val} hours`);
+}
+function renderWindowPicker(){
+  const host=document.getElementById('mob-winres');
+  if(!host) return;
+  if(uiMode()!=='window'){ host.style.display='none'; host.innerHTML=''; return; }
+  host.style.display='block';
+  S.winStart=readWinStart()||S.winStart;
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  const bakeAt = (dEl&&dEl.value) ? new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')) : null;
+  const startAt = S.winStart ? new Date(S.winStart) : null;
+  const box=(inner,tone)=>`<div style="border:1px solid ${tone||'var(--forno-border-soft)'};background:var(--forno-bg);border-radius:9px;padding:8px 10px;font-size:11.5px;color:var(--forno-text-muted);line-height:1.5">${inner}</div>`;
+  if(!bakeAt||isNaN(bakeAt.getTime())||!startAt||isNaN(startAt.getTime())){
+    host.innerHTML=box(L('Fyll inn både når du tidligst kan starte og når du vil steke.','Fill in both when you can start at the earliest and when you want to bake.'));
+    return;
+  }
+  if(S.type==='ingenelting'){
+    host.innerHTML=box(L('«Ingen elting» har en fast prosess på ca. 15 timer og justeres ikke.','“No-knead” has a fixed ~15-hour process and is not adjusted.'));
+    return;
+  }
+  const windowMin=Math.round((bakeAt.getTime()-startAt.getTime())/60000);
+  if(windowMin<=0){
+    host.innerHTML=box(L('Steketiden må være etter tidspunktet du kan starte.','The bake time must be after the time you can start.'),'var(--forno-accent)');
+    return;
+  }
+  let cands=[];
+  try{ cands=windowCandidates(bakeAt,windowMin); }catch(e){ cands=[]; }
+  const fits=cands.filter(c=>c.best);
+  const winTxt=fmtSessionDur(windowMin);
+  let html=`<div style="font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 6px">${L(`Vindu: ${winTxt} · mest gjæring som får plass`,`Window: ${winTxt} · most fermentation that fits`)}</div>`;
+  if(!fits.length){
+    const near=cands[0];
+    const mangler=near&&near.minSpan?fmtSessionDur(near.minSpan-windowMin):null;
+    html+=box(L(`Ingen av de enkle metodene får plass i ${winTxt}. ${near?`Nærmest er ${mN(near.method)}, som trenger ${mangler} mer.`:''} Prøv en senere steketid eller en tidligere oppstart.`,
+                `None of the simple methods fit in ${winTxt}. ${near?`Closest is ${mN(near.method)}, which needs ${mangler} more.`:''} Try a later bake time or an earlier start.`),'var(--forno-accent)');
+    host.innerHTML=html;
+    return;
+  }
+  cands.forEach((c,i)=>{
+    const isWin=c.best&&i===0;
+    if(!c.best){
+      const mangler=c.minSpan?fmtSessionDur(c.minSpan-windowMin):'';
+      html+=`<div style="border:1px solid var(--forno-border-soft);border-radius:10px;padding:8px 10px;margin-bottom:6px;background:var(--forno-bg);opacity:.6">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+          <span style="font-size:12.5px;font-weight:700">${mN(c.method)}</span>
+          <span style="font-size:10.5px;color:var(--forno-text-faint);white-space:nowrap">${L(`trenger ${fmtSessionDur(c.minSpan)}`,`needs ${fmtSessionDur(c.minSpan)}`)}</span>
+        </div>
+        <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:3px">${L(`Får ikke plass — mangler ${mangler}`,`Doesn't fit — ${mangler} short`)}</div>
+      </div>`;
+      return;
+    }
+    const span=c.best.span;
+    const pct=Math.max(6,Math.min(100,Math.round(span/windowMin*100)));
+    const startsAt=new Date(bakeAt.getTime()-span*60000);
+    const ubrukt=windowMin-span;
+    const lbl=winOptLabel(c.method,c.best.val);
+    html+=`<div style="border:${isWin?'1.5px solid var(--forno-accent)':'1px solid var(--forno-border-soft)'};border-radius:10px;padding:9px 10px;margin-bottom:6px;background:${isWin?'var(--forno-accent-soft)':'var(--forno-bg)'}">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+        <span style="font-size:13px;font-weight:800;${isWin?'color:var(--forno-accent-text)':''}">${mN(c.method)} · ${winValText(c.method,c.best.val)}</span>
+        <span style="font-size:10.5px;color:var(--forno-text-faint);font-weight:700;white-space:nowrap">${L(`bruker ${fmtSessionDur(span)}`,`uses ${fmtSessionDur(span)}`)}</span>
+      </div>
+      <div style="height:7px;border-radius:4px;background:var(--forno-bg-sunken,#e8dcc4);margin-top:6px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;border-radius:4px;background:${isWin?'var(--forno-accent)':'#c9b48a'}"></i></div>
+      <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:5px;line-height:1.45">
+        ${L('Oppstart','Start')}: <b>${fDT(startsAt)}</b>${lbl?` · ${lbl}`:''}
+        ${isWin?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab;margin-left:4px">${L('✓ maks smak','✓ most flavor')}</span>`
+               :(ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'')}
+      </div>
+      <div onclick="applyWindowCandidate('${c.method}','${c.key}',${c.best.val})" style="margin-top:7px;height:34px;border-radius:8px;background:${isWin?'var(--forno-accent)':'transparent'};border:${isWin?'none':'1.5px solid var(--forno-accent)'};color:${isWin?'#fff':'var(--forno-accent-text)'};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer">${L('Bruk denne','Use this')}</div>
+    </div>`;
+  });
+  host.innerHTML=html;
+}
+// Forslag, ikke automatikk: metoden byttes først når du trykker «Bruk denne».
+function applyWindowCandidate(method,key,val){
+  const changed = S.method!==method;
+  S.method=method; S[key]=val;
+  if(changed) clearStepProgress();
+  try{ mobMethodCards(); }catch(e){}
+  try{ mobBuildHrows(); }catch(e){}
+  try{ mobBuildKrows(); }catch(e){}
+  try{ applyMobTypeUI(); }catch(e){}
+  try{ syncMobControls(); }catch(e){}
+  renderWindowPicker();
   mobGen();
 }
 
@@ -7167,7 +7299,7 @@ function openBake(id){
     const dEl=document.getElementById('mob-'+p+'d'), tEl=document.getElementById('mob-'+p+'t');
     if(dEl)dEl.value=ds; if(tEl)tEl.value=ts;
     syncMobControls();
-    mobSetMode(S.mode);
+    mobSetMode(uiMode());
     mobShowTab('plan');
     mobGen();
   }else{
@@ -7401,18 +7533,28 @@ document.addEventListener('change', firstInteractionCheck, true);
 
       <div class="wiz-qhead"><div class="wiz-qnum">3</div><div class="wiz-qlbl" id="wiz-step1-when-lbl">Når vil du spise?</div></div>
       <div id="mob-anchor-toggle" style="display:flex;gap:6px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">🍕 Planlagt steketid</div>
-        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">▶ Jeg begynner nå</div>
+        <div id="mob-me" onclick="mobSetMode('end')" style="flex:1;padding:9px 4px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:11px;line-height:1.25;text-align:center;cursor:pointer">🍕 <span id="mob-me-lbl">Steketid</span></div>
+        <div id="mob-mw" onclick="mobSetMode('window')" style="flex:1;padding:9px 4px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:11px;line-height:1.25;text-align:center;cursor:pointer">↔ <span id="mob-mw-lbl">Fra–til</span></div>
+        <div id="mob-ms" onclick="mobSetMode('start')" style="flex:1;padding:9px 4px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:11px;line-height:1.25;text-align:center;cursor:pointer">▶ <span id="mob-ms-lbl">Nå</span></div>
       </div>
       <div id="mob-bs" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-bs-hint" style="font-size:11px;color:var(--forno-text-faint);line-height:1.5">Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.</div>
       </div>
+      <div id="mob-bw" style="display:none;padding:.5rem 1rem .1rem;background:var(--forno-bg-raised)">
+        <div id="mob-bw-lbl" style="font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Jeg kan tidligst starte</div>
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
+          <input type="date" id="mob-wd" onchange="renderWindowPicker()">
+          <input type="time" id="mob-wt" value="20:00" onchange="renderWindowPicker()">
+        </div>
+      </div>
       <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
+        <div id="mob-be-lbl" style="display:none;font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Jeg vil steke</div>
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
           <input type="date" id="mob-ed">
           <input type="time" id="mob-et" value="18:00">
         </div>
       </div>
+      <div id="mob-winres" style="display:none;padding:.2rem 1rem .7rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)"></div>
       <div id="mob-settings-conflict" style="padding:.5rem 1rem;display:none"></div>
 
       <div style="padding:.8rem 1rem"><button id="wiz-s1-next" onclick="wizNext()" style="width:100%;height:44px;border:none;border-radius:10px;background:#BA5A1E;color:#fff;font-size:14px;font-weight:600;cursor:pointer">Neste →</button></div>

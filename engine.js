@@ -208,3 +208,64 @@ function flourForCount(n){
   const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+effSugarPct()/100;
   return Math.max(200,Math.round(n*eg/frac/10)*10);
 }
+
+// ===== «FRA–TIL»: MAKS GJÆRING I ET KJENT VINDU (v0.725) =====
+// Du vet når du TIDLIGST kan starte, og når du VIL steke. Steketiden er den
+// harde betingelsen (planen regnes fortsatt bakover fra den, S.mode='end');
+// oppstarten er en nedre grense. Oppgaven blir da: finn det alternativet med
+// mest gjæring der planens totale lengde får plass i vinduet — altså den som
+// starter senest mulig, men fortsatt etter at du er tilgjengelig.
+//
+// Bevisst kun de enkle metodene i førsteutgaven: Poolish og Biga har lengre,
+// sammensatte vinduer (forspill + pause + kald hale) og ville gjort lista lang
+// og vanskelig å lese. Mania har fast struktur og kan uansett ikke justeres.
+const WINDOW_METHODS=[
+  {m:'hurtig',   key:'hurtigH', vals:()=>HOPTS.map(o=>o.h)},
+  {m:'kveld',    key:'kveldH',  vals:()=>KOPTS.map(o=>o.h)},
+  {m:'standard', key:'cold',    vals:()=>{const a=[];for(let h=24;h<=COLD_MAX;h+=6)a.push(h);return a;}}
+];
+// Faktisk lengde på en plan (første steg → steking) i minutter. Måles på den
+// EKTE stegkjeden i stedet for en parallell formel, så den aldri kan drifte fra
+// tidsplanen slik den håndsummerte Mania-konstanten gjorde før F19.
+function planSpanMin(anchor){
+  const st=stepsForAnchor(anchor);
+  if(!st||!st.length) return null;
+  const a=st[0].at, b=st[st.length-1].at;
+  if(!(a instanceof Date)||!(b instanceof Date)) return null;
+  const n=Math.round((b.getTime()-a.getTime())/60000);
+  return isNaN(n)?null:n;
+}
+// Rangerte kandidater for vinduet. Rangering = lengst plan som får plass, som
+// er nøyaktig «mest gjæring» — og samtidig «fyller vinduet best».
+// Returnerer også minSpan per metode, så metoder som IKKE får plass kan vise
+// ærlig hvor mye tid de mangler i stedet for bare å forsvinne.
+function windowCandidates(bakeAt, windowMin){
+  if(S.type==='ingenelting') return [];
+  const saved={method:S.method,hurtigH:S.hurtigH,kveldH:S.kveldH,cold:S.cold,mode:S.mode};
+  const out=[];
+  try{
+    S.mode='end';
+    for(const def of WINDOW_METHODS){
+      S.method=def.m;
+      let best=null,minSpan=null;
+      for(const v of def.vals()){
+        S[def.key]=v;
+        let span=null;
+        try{ span=planSpanMin(bakeAt); }catch(e){ continue; }
+        if(span==null) continue;
+        if(minSpan==null||span<minSpan) minSpan=span;
+        if(span<=windowMin && (!best||span>best.span)) best={val:v,span};
+      }
+      out.push({method:def.m,key:def.key,best,minSpan});
+    }
+  } finally {
+    S.method=saved.method;S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;S.mode=saved.mode;
+  }
+  out.sort((a,b)=>{
+    if(a.best&&b.best) return b.best.span-a.best.span;   // mest gjæring først
+    if(a.best) return -1;
+    if(b.best) return 1;
+    return (a.minSpan||0)-(b.minSpan||0);                 // «passer ikke»: nærmest først
+  });
+  return out;
+}
