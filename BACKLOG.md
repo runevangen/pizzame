@@ -1,6 +1,6 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 04.08.2026 · motor-/arkitekturtrappen F17–F22 lagt til (gjelder index.html rundt v0.713).
+Sist oppdatert: 05.08.2026 · F23 (Q10-gjæringsmodell) lagt til etter konkurrentgjennomgang (gjelder v0.728).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -704,6 +704,50 @@ rekkefølgen. F17 er det klart mest verdifulle.
   egen fil. Da kan mattetestene kjøre uten Playwright/nettleser (raskere, flere
   caser), og index.html krymper. Forutsetter F17+F19; ellers flytter man bare
   spaghettien. Liten jobb når trappen ellers er tatt.
+
+### F23. Q10-modell: én gjæringslov i stedet for fem multipliserte tabeller
+- **I klartekst:** Gjærmengden regnes i dag ut ved å gange sammen fem separate,
+  håndtunede oppslagstabeller — `tempFactor` (romheving), `coldMultHours`
+  (kaldheving), `fridgeMult` (skaptemperatur), pluss egne kurver for poolish og
+  biga (alle i `CALIBRATION`, `engine.js`). Alternativet er én fysisk lov: Q10 —
+  gjæringsraten halveres for hver 10 °C temperaturen faller. Da regner man hver
+  fase om til «ekvivalente timer ved 22 °C», summerer over hele planen, og løser
+  for gjær ÉN gang. Konkurrenten Pandough bruker denne modellen.
+- **Fire ting vi vinner:**
+  1. **Konsistens gratis.** Tabellene er tunet uavhengig, så ingenting garanterer
+     at 18 °C rom × 48 t kaldt × 1 °C skap henger sammen med 26 °C × 24 t × 5 °C.
+     Én lov kan ikke motsi seg selv.
+  2. **Ærlig ekstrapolering.** Kurvene våre klamrer utenfor 18–28 °C og
+     24–144 t — en gjetning forkledd som en verdi. Q10 gir et begrunnet svar.
+  3. **Romheving og benketid teller faktisk med.** I dag bidrar de ikke til
+     gjærberegningen i det hele tatt; kun kaldtiden gjør det. Det er en reell
+     unøyaktighet, ikke bare et arkitekturpoeng — og den ble større med F14, som
+     lot benketida variere fra 2,6 t til 6,4 t med romtemperaturen.
+  4. **Bedre provenienś.** Q10 ≈ 2–3 er en litteraturverdi. Våre ~30 tall har
+     blandet opphav; `fridgeMult` (v0.722) er eksplisitt en kvalifisert gjetning,
+     og det står i kodekommentaren.
+- **Hvorfor dette er mulig nå (og ikke før):** F19 ga hvert steg en varighet, og
+  hvert steg har allerede en `loc` (`kjol`/`rom`/`benk`/`ovn`) — altså en
+  temperatur: `kjol` → `S.fridgeC`, `rom`/`benk` → `S.temp`. Integralet kan
+  derfor regnes rett ut av den EKTE stegkjeden (samme kilde `planSpanMin()`
+  bruker), uten en parallell modell som kan drifte. F17 samlet gjæren ett sted,
+  så byttet skjer i `R()` og treffer alle flater samtidig.
+- **Skisse:**
+  `fermentLoadHours(steps) = Σ dur/60 × Q10^((T(loc) − 22)/10)`, deretter
+  `yDry = mel × BYEAST[type] × k / load` med én kalibreringskonstant `k`.
+  `Q10` og `k` i `CALIBRATION`, som eneste tall å tune.
+- **Kritisk krav — [baseline]:** dette FLYTTER gjærtall. `k` må kalibreres slik
+  at standardoppsettene (napoletana 24/48/72 t ved 22 °C og 3 °C skap) lander på
+  dagens verdier, ellers endres oppskriften til alle eksisterende brukere. Samme
+  disiplin som F13, der referansesonen 2–4 °C ble satt til 1,0× nettopp for at
+  standardvalget ikke skulle endre noe. Forvent at avvik gjenstår i utkantene —
+  det er poenget med å bytte modell, men det bør være et bevisst, dokumentert
+  avvik per metode, ikke en overraskelse.
+- **Test:** utvid `F20`-invariantene med en kurve-kontrakt (yDry synker monotont
+  med lengre/varmere gjæring, aldri ≤ 0), og frys de kalibrerte referansepunktene
+  slik `calibration_curves_unified_interpolator_identical_values` gjør i dag.
+- Middels–stor. Forutsetter F17+F19 (levert). Kom ut av en konkurrentgjennomgang
+  aug 2026 — se posisjoneringsnotatet: vi vinner på beslutningsstøtte, ikke kjemi.
 
 ---
 
