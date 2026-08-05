@@ -6172,7 +6172,7 @@ function renderWindowPicker(){
   try{ cands=windowCandidates(bakeAt,windowMin); }catch(e){ cands=[]; }
   const fits=cands.filter(c=>c.best);
   const winTxt=fmtSessionDur(windowMin);
-  let html=`<div style="font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 6px">${L(`Vindu: ${winTxt} · mest gjæring som får plass`,`Window: ${winTxt} · most fermentation that fits`)}</div>`;
+  let html=`<div style="font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 6px">${L(`Vindu: ${winTxt} · mest fermenteringstid`,`Window: ${winTxt} · most fermentation time`)}</div>`;
   if(!fits.length){
     const near=cands[0];
     const mangler=near&&near.minSpan?fmtSessionDur(near.minSpan-windowMin):null;
@@ -6216,10 +6216,14 @@ function renderWindowPicker(){
   host.innerHTML=html;
 }
 // Forslag, ikke automatikk: metoden byttes først når du trykker «Bruk denne».
+// v0.727: og da skal du også SE resultatet — som i Smart-plan lander «Bruk
+// denne» på Tidsplan-fanen. Fra–til-valgene beholdes, så du kan gå tilbake og
+// ombestemme deg uten å fylle inn tidspunktene på nytt.
 function applyWindowCandidate(method,key,val){
   const changed = S.method!==method;
   S.method=method; S[key]=val;
   if(changed) clearStepProgress();
+  window._planChosen=true;
   try{ mobMethodCards(); }catch(e){}
   try{ mobBuildHrows(); }catch(e){}
   try{ mobBuildKrows(); }catch(e){}
@@ -6227,6 +6231,7 @@ function applyWindowCandidate(method,key,val){
   try{ syncMobControls(); }catch(e){}
   renderWindowPicker();
   mobGen();
+  try{ mobShowTab('plan'); }catch(e){}
 }
 
 // ===== WIZARD-FLYT FOR MOBIL INNSTILLINGER =====
