@@ -261,11 +261,33 @@ function windowCandidates(bakeAt, windowMin){
   } finally {
     S.method=saved.method;S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;S.mode=saved.mode;
   }
+  // v0.728: «sivilisert oppstart». Fyller man vinduet bakfra, havner det BESTE
+  // alternativet ofte midt på natta — nettopp fordi det er det lengste. Vi
+  // markerer derfor nattestarter (23–06) og gir dem en straff i rangeringen, så
+  // et alternativ med menneskelig oppstart vinner når det ikke er stort dårligere.
+  // Straffen er bevisst mild: et nattestart-valg må være mer enn NIGHT_PENALTY
+  // bedre for å slå et sivilisert. (Hjelper ikke når ALLE starter om natta —
+  // da er «start ved din tidligste tid» utveien, se winStartEarly i UI-et.)
+  const NIGHT_PENALTY=180;
+  out.forEach(c=>{
+    if(!c.best){ c.night=false; return; }
+    const st=new Date(bakeAt.getTime()-c.best.span*60000);
+    c.startAt=st;
+    c.night=isNightHour(st.getHours());
+  });
   out.sort((a,b)=>{
-    if(a.best&&b.best) return b.best.span-a.best.span;   // mest gjæring først
+    if(a.best&&b.best){
+      const sa=a.best.span-(a.night?NIGHT_PENALTY:0);
+      const sb=b.best.span-(b.night?NIGHT_PENALTY:0);
+      if(sb!==sa) return sb-sa;
+      return b.best.span-a.best.span;
+    }
     if(a.best) return -1;
     if(b.best) return 1;
     return (a.minSpan||0)-(b.minSpan||0);                 // «passer ikke»: nærmest først
   });
   return out;
 }
+// Natt = 23:00–05:59. Brukt til å merke oppstarter man neppe vil ha, både i
+// Fra–til-lista og som grunnlag for «start heller kl. …»-utveien.
+function isNightHour(h){ return h>=23 || h<6; }

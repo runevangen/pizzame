@@ -3785,6 +3785,72 @@ def run_behavioral_tests(page):
     ok104 = all(r104.get(k) for k in ['dateKept','winCorrect','reRendered','startsSane']) and r104.get('nCands',0) > 0
     results.append(('window_mode_stays_in_sync_with_fields_and_keeps_bake_date', ok104, r104))
 
+    # v0.728: «sivilisert oppstart». Fylles vinduet bakfra, havner det BESTE
+    # alternativet ofte midt på natta — nettopp fordi det er det lengste
+    # (23:30→18:00 gir kveldsdeig 15t med oppstart 01:30). Tre grep:
+    # (a) nattestarter (23:00–05:59) merkes i lista; (b) de får en straff i
+    # rangeringen så et sivilisert alternativ vinner når det ikke er stort
+    # dårligere; (c) utveien når ALT starter om natta — «Start heller kl. …»
+    # fyller vinduet FORFRA: samme metode og gjæringstid, oppstart når du sa du
+    # var ledig, og steketiden flyttes tilsvarende tidligere.
+    r105 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,win:S.winStart,
+                   hurtigH:S.hurtigH,kveldH:S.kveldH,cold:S.cold};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.temp=22; S.method='standard';
+      mobShowTab('settings'); wizGoto(1);
+      const setUp=(startISO,bakeD,bakeT)=>{
+        document.getElementById('mob-ed').value=bakeD;
+        document.getElementById('mob-et').value=bakeT;
+        mobSetMode('window');
+        const [d,t]=startISO.split('T');
+        document.getElementById('mob-wd').value=d;
+        document.getElementById('mob-wt').value=t;
+        renderWindowPicker();
+      };
+      const nightBounds = isNightHour(23)&&isNightHour(2)&&isNightHour(5)
+                       && !isNightHour(22)&&!isNightHour(6)&&!isNightHour(12);
+      // (a)+(c) nattetilfellet fra rapporten: 23:30 → 18:00 (18t30m)
+      setUp('2026-08-05T23:30','2026-08-06','18:00');
+      const cNight=windowCandidates(new Date('2026-08-06T18:00'),18*60+30).filter(x=>x.best);
+      const hNight=document.getElementById('mob-winres').innerHTML;
+      const allNight=cNight.length>1 && cNight.every(x=>x.night);
+      const flaggedInUI=/midt på natten/.test(hNight);
+      const earlyOffered=/Start heller 23:30/.test(hNight);
+      // hver kandidat bærer riktig startAt (steketid − brukt tid)
+      const startAtOk=cNight.every(x=>Math.abs(x.startAt.getTime()-(new Date('2026-08-06T18:00').getTime()-x.best.span*60000))<1000);
+      // (c) «Start heller» flytter steketiden til oppstart + brukt tid
+      const win=cNight[0];
+      applyWindowCandidateEarly(win.method,win.key,win.best.val,win.best.span);
+      const newBake=new Date(document.getElementById('mob-ed').value+'T'+document.getElementById('mob-et').value);
+      const expBake=new Date(new Date('2026-08-05T23:30').getTime()+win.best.span*60000);
+      const earlyMovesBake=Math.abs(newBake.getTime()-expBake.getTime())<60000;
+      // «Bruk denne» (uten «start heller») skal LA steketiden stå. Feilen var at
+      // applyWindowCandidate kalte syncMobControls(), som nullstiller feltet til
+      // nå+kjøletid+4t — planen gjaldt da et helt annet tidspunkt enn du ba om.
+      setUp('2026-08-05T23:30','2026-08-06','18:00');
+      const cKeep=windowCandidates(new Date('2026-08-06T18:00'),18*60+30).filter(x=>x.best)[0];
+      applyWindowCandidate(cKeep.method,cKeep.key,cKeep.best.val);
+      const bakeKept=document.getElementById('mob-ed').value==='2026-08-06'
+                  && document.getElementById('mob-et').value==='18:00';
+      // sivilisert tilfelle: 21:00 → 18:00 (21t) gir kveldsdeig 18t (20t30m
+      // inkl. 30 min elting/forming) med oppstart 21:30 — utenfor natta.
+      setUp('2026-08-05T21:00','2026-08-06','18:00');
+      const cDay=windowCandidates(new Date('2026-08-06T18:00'),21*60).filter(x=>x.best);
+      const hDay=document.getElementById('mob-winres').innerHTML;
+      const topIsDay=cDay.length&&!cDay[0].night;
+      const noBadgeOnTop=topIsDay && hDay.indexOf('maks smak')>=0;
+      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.temp=saved.temp;S.winStart=saved.win;
+      S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;
+      try{ mobShowTab('settings'); mobSetMode(uiMode()); }catch(e){}
+      return {nightBounds, allNight, flaggedInUI, earlyOffered, startAtOk, earlyMovesBake,
+              bakeKept, topIsDay, noBadgeOnTop,
+              nightList:cNight.map(x=>x.method+':'+x.best.val+(x.night?'/natt':'')),
+              dayTop:cDay.length?cDay[0].method+':'+cDay[0].best.val+(cDay[0].night?'/natt':''):null};
+    }""")
+    ok105 = all(r105.get(k) for k in ['nightBounds','allNight','flaggedInUI','earlyOffered','startAtOk','earlyMovesBake','bakeKept','topIsDay','noBadgeOnTop'])
+    results.append(('window_mode_flags_night_starts_and_offers_earlier_start', ok105, r105))
+
     return results
 
 
