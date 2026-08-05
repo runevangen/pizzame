@@ -5634,9 +5634,14 @@ function syncMobControls(){
   if(mobStamp)mobStamp.textContent=_dateStr;
   const mnv=g('mob-name-version');if(mnv)mnv.textContent='v'+CHANGELOG[0].v;
   const mfv=g('mob-footer-version');if(mfv)mfv.textContent='v'+CHANGELOG[0].v;
+  // v0.726: steketid-feltene må også oppdatere «Fra–til»-lista. Uten dette ble
+  // kandidatene stående mot en gammel steketid når man endret dato/klokkeslett
+  // — lista viste da et vindu (og en oppstart) som ikke stemte med feltene.
+  // renderWindowPicker() no-op-er selv utenfor Fra–til-modus.
+  const _onWhenChange=()=>{ mobGen(); try{ renderWindowPicker(); }catch(e){} };
   ['mob-ed','mob-et'].forEach(id=>{
     const el=g(id);
-    if(el&&!el.dataset.lst){el.addEventListener('input',mobGen);el.addEventListener('change',mobGen);el.dataset.lst='1';}
+    if(el&&!el.dataset.lst){el.addEventListener('input',_onWhenChange);el.addEventListener('change',_onWhenChange);el.dataset.lst='1';}
   });
   updatePcountDisp();
   syncHelpUI();
@@ -6083,8 +6088,14 @@ function mobSetMode(m){
     S.mode=m;
     S.winStart=null;
   }
-  if(S.mode==='end') ensureFeasibleBakeTime();
   const um=uiMode();
+  // v0.726: ensureFeasibleBakeTime() skyver steketiden framover til den er
+  // mulig for DEN VALGTE metoden regnet fra NÅ. I «Fra–til» er begge premissene
+  // feil: appen skal selv finne metoden som passer, og nedre grense er DIN
+  // oppstart — ikke nå. Kjørte den her, flyttet den steketiden et døgn fram
+  // bak ryggen på brukeren, og vinduet ble et døgn for langt. Passer ingenting,
+  // sier kandidatlista det ærlig i stedet.
+  if(um==='end') ensureFeasibleBakeTime();
   const ms=document.getElementById('mob-ms'),me=document.getElementById('mob-me'),mw=document.getElementById('mob-mw');
   const paint=(el,on)=>{ if(!el)return;
     el.style.border=on?'2px solid var(--forno-accent)':'1px solid var(--forno-border)';
@@ -6126,12 +6137,14 @@ function readWinStart(){
 function winOptLabel(method,val){
   if(method==='hurtig'){ const o=HOPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):''; }
   if(method==='kveld'){ const o=KOPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):''; }
-  const o=COLD_OPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):'';
+  // Langtidsdeig: slideren går i 6-timers steg, mens smaksstigen kun har
+  // merkelapper på 24/48/72 — for mellomverdier sier vi hva tiden ER i stedet.
+  const o=COLD_OPTS.find(x=>x.h===val);
+  return o?(window._lang==='en'?o.bEn:o.b):L('kaldheving','cold proof');
 }
-function winValText(method,val){
-  if(method==='standard') return L(`${val} t kaldheving`,`${val} h cold proof`);
-  return L(`${val} timer`,`${val} hours`);
-}
+// Kort tittel-tekst: metodenavnet sier allerede hva slags gjæring det er, så
+// «42 t» holder — «42 t kaldheving» brøt tittelen over to linjer på mobil.
+function winValText(method,val){ return L(`${val} timer`,`${val} hours`); }
 function renderWindowPicker(){
   const host=document.getElementById('mob-winres');
   if(!host) return;
