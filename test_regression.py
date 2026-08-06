@@ -4263,6 +4263,43 @@ def run_behavioral_tests(page):
                                       'locIsRoom','dispIsOven','loadUnchanged','mentionsStone'])
     results.append(('plan_schedules_oven_preheat_without_moving_yeast', ok113, r113))
 
+    # v0.738: formesteget sto merket «❄️ Kjøleskap», men de 15 minuttene med
+    # deling, veiing og runding skjer på benken — kjøleskapet er først der på
+    # slutten. Rettet med dispLoc, IKKE med loc: `loc` mater temperaturmodellen,
+    # og å flytte den ville endret gjærmengden for alle (se F26 i backloggen).
+    # Testen låser begge sider av det valget — riktig merkelapp OG urørt gjær —
+    # slik at ingen senere «rydder bort» dispLoc i den tro at loc er nok.
+    r114 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mel:S.mel,hydro:S.hydro,cold:S.cold,lang:window._lang};
+      let labelIsBench=true, locStillFridge=true, yeastUnchanged=true, enToo=true;
+      const detail={};
+      for(const m of ['standard','poolish','biga']){
+        S.method=m; S.type='napoletana'; S.mel=500; S.hydro=65; S.cold=48;
+        const yBefore=recipeFor(S).yDry;
+        const st=stepsForAnchor(new Date(2020,0,1,18,0));
+        const s=st.find(x=>/Form emner|Del i langpanner/.test(x.title));
+        if(!s){ labelIsBench=false; continue; }
+        // Merkelappen brukeren ser skal si benk, på begge språk.
+        window._lang='no';
+        if(!/Kj\u00f8kkenbenk/.test(LOC[stepLoc(s)]||'')) { labelIsBench=false; detail[m]=LOC[stepLoc(s)]; }
+        window._lang='en';
+        if(!/Counter/.test(LOC[stepLoc(s)]||'')) enToo=false;
+        window._lang='no';
+        // Men fysikken skal være urørt — ellers flytter gjæren seg.
+        if(s.loc!=='kjol') locStillFridge=false;
+        if(recipeFor(S).yDry!==yBefore) yeastUnchanged=false;
+      }
+      // Ankerpunktene fra F23 må fortsatt stemme eksakt.
+      S.method='standard'; S.type='napoletana'; S.mel=500; S.hydro=65;
+      S.cold=24; _q10Memo={k:null,v:null}; const y24=R().yDry;
+      S.cold=72; _q10Memo={k:null,v:null}; const y72=R().yDry;
+      Object.assign(S,saved); window._lang=saved.lang; _q10Memo={k:null,v:null};
+      return {labelIsBench,locStillFridge,yeastUnchanged,enToo,
+              anchorsHold:(y24===1.13&&y72===0.56), y24, y72, ...detail};
+    }""")
+    ok114 = all(r114.get(k) for k in ['labelIsBench','locStillFridge','yeastUnchanged','enToo','anchorsHold'])
+    results.append(('forming_step_labelled_counter_but_yeast_untouched', ok114, r114))
+
     return results
 
 

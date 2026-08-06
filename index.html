@@ -2172,7 +2172,14 @@ function rawSteps(a){
     const coldDur=cM2-temper-15;
     const bake=aM(formAt,cM2),taUt=sM(bake,temper);
     return[
-      {title:S.type==='langpanne'?'Del i langpanner → kjøleskap':'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:15,
+      // v0.738: steget sto merket «❄️ Kjøleskap» fordi tittelen ender i
+      // «→ kjøleskap», men i disse 15 minuttene deler, veier og runder du emnene
+      // PÅ BENKEN — kjøleskapet er først der på slutten. dispLoc retter
+      // merkelappen uten å røre `loc`, som mater temperaturmodellen: å flytte den
+      // til 'benk' ville vært fysisk riktigere, men endrer gjærmengden for alle
+      // (24 t: 1,13 → 1,11 g) og bryter kalibreringsankeret fra F23. Den delen er
+      // parkert som F26, til neste gang kalibreringen uansett skal åpnes.
+      {title:S.type==='langpanne'?'Del i langpanner → kjøleskap':'Form emner → kjøleskap',loc:'kjol',dispLoc:'benk',at:formAt,dur:15,
         desc:S.type==='langpanne'
           ?L(`Del deigen i ${pc().count} del${pc().count>1?'er':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per langpanne). Rund ${pc().count>1?'hver del':'delen'} løst sammen — du strekker den ut i formen senere. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap.`,`Divide the dough into ${pc().count} piece${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (${pc().melPer}g flour per sheet pan). Loosely round ${pc().count>1?'each piece':'the piece'} — you stretch it out in the pan later. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge.`)
           :S.type==='chicago'

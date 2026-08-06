@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.738",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Steget «Form emner → kjøleskap» sto merket «❄️ Kjøleskap». Men i disse 15 minuttene deler, veier og runder du emnene på kjøkkenbenken — kjøleskapet er først der på slutten. Merkelappen sier nå «🔧 Kjøkkenbenk», som er der du faktisk står.",
+      "Gjærmengden er uendret. Det er med vilje: den samme feilmerkingen gjør at gjæringsberegningen regner disse minuttene som kalde, og å rette det ville flyttet gjæren i alle oppskrifter med under to prosent. Den delen venter til gjærkalibreringen uansett skal åpnes."
+    ],
+    "changes_en": [
+      "The step “Shape balls → fridge” was labelled “❄️ Fridge”. But during those 15 minutes you divide, weigh and round the balls on the kitchen counter — the fridge only comes in at the end. The label now reads “🔧 Counter”, which is where you actually stand.",
+      "The amount of yeast is unchanged. That is deliberate: the same mislabelling makes the fermentation calculation treat those minutes as cold, and correcting it would shift the yeast in every recipe by less than two percent. That part waits until the yeast calibration is due to be opened anyway."
+    ]
+  },
+  {
     "v": "0.737",
     "d": "august 2026",
     "d_en": "August 2026",
