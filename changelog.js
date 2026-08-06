@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.740",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Se bort fra ledig tid» varte bare ut dagen. Er du hjemme hele uka — ferie, fri, permisjon — måtte du slå den på igjen hver morgen. Nå kan pausen vare ut uka, til og med søndag.",
+      "Valget står i Pizzatid-panelet som tre trinn: På · Av ut dagen · Av ut uka. Lenka på konfliktkortet er uendret — der vil du bare videre, og den gir deg fortsatt ett trykk for resten av dagen.",
+      "Merkelappen sier nå hvor lenge pausen varer, ikke bare at den er på. Det er viktigere jo lengre den gjelder: en glemt ukespause er sju dager med anbefalinger som ikke tar hensyn til timeplanen din i det hele tatt.",
+      "Trykker du «ut uka» på en søndag, varer den ut kvelden — det er det uka har igjen. Da vises heller ikke knappen, siden den ville gjort nøyaktig det samme som «ut dagen»."
+    ],
+    "changes_en": [
+      "“Ignore free time” only lasted for the rest of the day. If you were home all week — holiday, time off, leave — you had to turn it on again every morning. The pause can now last the week, through Sunday.",
+      "The choice sits in the Pizzatid panel as three steps: On · Off for today · Off this week. The link on the conflict card is unchanged — there you just want to move on, and it still gives you one tap for the rest of the day.",
+      "The label now says how long the pause lasts, not just that it is on. That matters more the longer it runs: a forgotten week-long pause is seven days of recommendations that take no account of your schedule at all.",
+      "Tap “this week” on a Sunday and it lasts through the evening — that is what the week has left. The button is hidden then, since it would do exactly what “off for today” does."
+    ]
+  },
+  {
     "v": "0.739",
     "d": "august 2026",
     "d_en": "August 2026",

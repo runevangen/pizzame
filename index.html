@@ -3219,10 +3219,45 @@ function pizzatidOffUntil(){
 function pizzatidIsOff(){ return pizzatidOffUntil()!==null; }
 // «Ut dagen» = til midnatt, ikke 24 timer fram. Trykker du kl. 22, varer pausen
 // to timer — det er det «ut dagen» betyr, og alternativet ville overrasket.
-function pizzatidEndOfToday(){ const d=new Date(); d.setHours(24,0,0,0); return d.getTime(); }
+// `now` er kun for testing (så alle ukedager kan sjekkes uten å vente på dem).
+function pizzatidEndOfToday(now){ const d=now?new Date(now):new Date(); d.setHours(24,0,0,0); return d.getTime(); }
+// v0.740 (F25): «ut uka» = til og med søndag, samme logikk ett hakk opp. Uka går
+// mandag–søndag, så pausen varer til midnatt natt til mandag. Trykker du den på
+// en fredag, gjelder den tre dager; trykker du den på en søndag, gjelder den ut
+// kvelden — akkurat som «ut dagen» sier «til midnatt» og ikke «24 timer».
+// Det er nettopp derfor UI-et ikke tilbyr «ut uka» på en søndag: det ville vært
+// en knapp som gjorde nøyaktig det samme som knappen ved siden av.
+function pizzatidEndOfWeek(now){
+  const d=now?new Date(now):new Date();
+  const tilSøndag=(7-d.getDay())%7;   // getDay(): 0=søn … 6=lør; søndag → 0
+  d.setHours(24,0,0,0);                // midnatt i natt
+  d.setDate(d.getDate()+tilSøndag);
+  return d.getTime();
+}
 function setPizzatidOffToday(){
   try{ localStorage.setItem(PIZZATID_OFF_KEY, String(pizzatidEndOfToday())); }catch(e){}
   pizzatidOffChanged();
+}
+function setPizzatidOffWeek(){
+  try{ localStorage.setItem(PIZZATID_OFF_KEY, String(pizzatidEndOfWeek())); }catch(e){}
+  pizzatidOffChanged();
+}
+// v0.740 (F25): merkelappen LESES ut av tidsstempelet i stedet for å bli satt
+// sammen med knappen som skrudde pausen på. Det er hele poenget: jo lengre
+// pausen varer, jo dyrere er det om teksten lyver — og en tekst som er avledet
+// fra den ekte verdien KAN ikke drifte fra den. (Før v0.740 sto «til midnatt»
+// hardkodet i banneret; med en ukespause ville den vært direkte feil.)
+// Tidsstempelet er alltid en midnatt-grense, så pausen varer ut dagen FØR det.
+function pizzatidOffLabel(ts,now){
+  const t=(ts===undefined)?pizzatidOffUntil():ts;
+  if(!t) return '';
+  const sisteDag=new Date(t-1); sisteDag.setHours(0,0,0,0);
+  const iDag=now?new Date(now):new Date(); iDag.setHours(0,0,0,0);
+  if(sisteDag.getTime()===iDag.getTime()) return L('til midnatt','until midnight');
+  const no=['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag'];
+  const en=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const d=new Date(t-1).getDay();
+  return L(`ut ${no[d]}`,`through ${en[d]}`);
 }
 function clearPizzatidOff(){
   try{ localStorage.removeItem(PIZZATID_OFF_KEY); }catch(e){}
@@ -3655,7 +3690,9 @@ function renderPizzatidDays(){
   const lbl='font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--forno-text-faint)';
   // v0.735: er ledig tid satt på pause, sier vi det HER også — dette er stedet
   // man går til når man lurer på hvorfor appen svarer som den gjør.
-  el.innerHTML=pizzatidOffBannerHTML()+PIZZATID_DAY_LABELS.map(([key,label])=>{
+  // v0.740 (F25): banneret er byttet mot trekontrollen, som viser samme tilstand
+  // OG lar deg velge varighet. Banneret står fortsatt over Smart-plan-resultatet.
+  el.innerHTML=pizzatidOffControlHTML()+PIZZATID_DAY_LABELS.map(([key,label])=>{
     label = L(label, PIZZATID_DAY_LABELS_EN[key]||label);
     let periods=Array.isArray(sched[key])?sched[key]:[];
     // Vis alltid minst én rad å fylle i, selv om dagen er tom.
@@ -3744,8 +3781,38 @@ function betaWhenRow(conflicts, offerPause){
 function pizzatidOffBannerHTML(){
   if(!pizzatidIsOff()) return '';
   return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;padding:7px 10px;margin-bottom:6px">
-    <span style="font-size:11px;font-weight:700;color:var(--forno-accent-text)">🔕 ${L('Ledig tid telles ikke med','Free time is not counted')}<span style="display:block;font-weight:600;opacity:.85;margin-top:1px">${L('til midnatt','until midnight')}</span></span>
+    <span style="font-size:11px;font-weight:700;color:var(--forno-accent-text)">🔕 ${L('Ledig tid telles ikke med','Free time is not counted')}<span style="display:block;font-weight:600;opacity:.85;margin-top:1px">${pizzatidOffLabel()}</span></span>
     <button type="button" onclick="clearPizzatidOff()" style="flex:0 0 auto;border:1px solid var(--forno-accent);border-radius:999px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-family:inherit;font-size:11px;font-weight:700;padding:4px 11px;cursor:pointer;white-space:nowrap">${L('Slå på igjen','Turn back on')}</button>
+  </div>`;
+}
+// v0.740 (F25): tre trinn i stedet for én av/på. Dette står i Pizzatid-panelet —
+// stedet du går til når du VELGER hvor lenge, i motsetning til lenka på
+// konfliktkortet, som er ett trykk i det øyeblikket irritasjonen oppstår og
+// derfor fortsatt bare tilbyr «ut dagen».
+// Kontrollen ERSTATTER banneret her: den viser samme tilstand, men har med veien
+// ut («På») og de to varighetene i samme rad. Banneret står fortsatt over
+// Smart-plan-resultatet, der det ikke finnes noen kontroll å vise i stedet.
+function pizzatidOffControlHTML(){
+  const ts=pizzatidOffUntil();
+  const iDag=pizzatidEndOfToday(), uke=pizzatidEndOfWeek();
+  // Søndag: «ut uka» og «ut dagen» er samme tidspunkt. Da viser vi ikke to
+  // knapper som gjør nøyaktig det samme — det ville bare fått brukeren til å
+  // lure på hva forskjellen er.
+  const visUke = uke!==iDag;
+  const aktiv = ts===null ? 'pa' : (visUke && ts===uke ? 'uke' : 'dag');
+  const lbl='font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--forno-text-faint)';
+  const base='flex:1;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-family:inherit;font-size:11px;font-weight:700;padding:6px 4px;cursor:pointer';
+  const valgt='border-color:var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text)';
+  const knapp=(k,fn,txt,radius)=>`<button type="button" onclick="${fn}" aria-pressed="${aktiv===k}" style="${base};${radius};${aktiv===k?valgt:''}">${txt}</button>`;
+  const høyre = visUke ? '' : 'border-radius:0 7px 7px 0';
+  return `<div style="margin-bottom:8px;padding:9px 13px 11px;background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:8px">
+    <div style="${lbl}">${L('Ledig tid','Free time')}</div>
+    <div style="display:flex;gap:0;margin-top:5px">
+      ${knapp('pa','clearPizzatidOff()',L('På','On'),'border-radius:7px 0 0 7px')}
+      ${knapp('dag','setPizzatidOffToday()',L('Av ut dagen','Off for today'),'margin-left:-1px;'+høyre)}
+      ${visUke?knapp('uke','setPizzatidOffWeek()',L('Av ut uka','Off this week'),'margin-left:-1px;border-radius:0 7px 7px 0'):''}
+    </div>
+    ${ts===null?'':`<div style="margin-top:6px;font-size:11px;font-weight:700;color:var(--forno-accent-text)">🔕 ${L('Telles ikke med','Not counted')} ${pizzatidOffLabel()}</div>`}
   </div>`;
 }
 function renderResultBlock(containerId, label, anchorIso){

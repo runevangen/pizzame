@@ -1,6 +1,6 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 06.08.2026 · F27 (invariant-lag 1) og F28 (språkmodell-lag 3) bygget; F29 (lag 2) gjenstår.
+Sist oppdatert: 06.08.2026 · F27, F28 og F25 bygget. Gjenstår: F29 (lag 2), F24+F26 (gjærkalibrering, venter på bakst), F12 og T-i18n2 (parkert).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -824,7 +824,29 @@ rekkefølgen. F17 er det klart mest verdifulle.
 
 ---
 
-### F25. «Ledig tid av» med lengre varighet enn ut dagen (ferieuke)
+### F25. «Ledig tid av» med lengre varighet enn ut dagen (ferieuke) ✅ BYGGET (v0.740)
+> ✅ **Bygget.** `pizzatidEndOfWeek()` + `setPizzatidOffWeek()` — samme motor,
+> bare en annen utløpsdato, akkurat som skissen sa. Valget står som tre trinn i
+> Pizzatid-panelet (`pizzatidOffControlHTML`): **På · Av ut dagen · Av ut uka**.
+> `inPizzatidWindow`, `outsidePizzatid` og `scorePizzatidWindows` er urørt — de
+> leser bare tidsstempelet, som forutsatt.
+>
+> **To valg verdt å notere.** (1) Merkelappen avledes nå av tidsstempelet
+> (`pizzatidOffLabel`) i stedet for å bli satt sammen med knappen som ble trykket.
+> Banneret hardkodet «til midnatt», som ville vært direkte feil for en ukespause —
+> og en tekst som er utledet av den ekte verdien KAN ikke drifte fra den. Dette er
+> samme grep som F17/F18/F21: én kilde i stedet for to som må holdes i takt.
+> (2) Lenka på konfliktkortet er bevisst UENDRET — ett trykk, ut dagen. Der vil du
+> bare videre; et valg med tre alternativer hører hjemme i panelet, ikke i det
+> øyeblikket irritasjonen oppstår.
+>
+> **Søndag:** «ut uka» og «ut dagen» faller sammen, så knappen vises ikke. Samme
+> logikk som v0.735 sitt «ut dagen = til midnatt, ikke 24 timer fram».
+>
+> Testet av `pizzatid_pause_can_last_the_week_and_says_so`: grensen over alle sju
+> ukedager, begge sommertid-overgangene, at merkelappen følger tidsstempelet, og
+> at semantikken er uendret (ukespausen frigjør de samme timene og rører fortsatt
+> ikke natten). Mutasjonstestet.
 - **Bakgrunn:** v0.735 leverte pausen med én varighet — ut dagen, til midnatt.
   Det opprinnelige ønsket var bredere: «fri hele dagen f.eks. pga feriedag eller
   den uka du er i», med automatisk retur til opptatt etter en uke. Vi valgte

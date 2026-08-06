@@ -4181,6 +4181,98 @@ def run_behavioral_tests(page):
         'bannerShowsWayOut','bannerHiddenWhenOn'])
     results.append(('pizzatid_pause_frees_day_but_not_night', ok111, r111))
 
+    # v0.740 (F25): pausen kan nå vare ut UKA, ikke bare ut dagen. Tre ting må
+    # holde, og alle tre er steder en lengre pause kan gjøre skade:
+    #  1) grensen — «ut uka» er midnatt natt til mandag, uansett hvilken ukedag
+    #     du trykker den, og den må tåle begge sommertid-overgangene (setDate over
+    #     en klokkeomstilling er den klassiske måten å bomme med én time på).
+    #  2) merkelappen — den LESES ut av tidsstempelet, ikke ut av knappen som ble
+    #     trykket. En pause som varer en uke og sier «til midnatt» er en stille
+    #     feil: appen slutter å ta hensyn til timeplanen, og du vet ikke hvorfor.
+    #  3) semantikken — en ukespause må frigjøre de samme timene som en dagspause,
+    #     og fortsatt IKKE røre natten. Lengre varighet skal ikke endre hva pausen
+    #     betyr, bare hvor lenge den gjelder.
+    r118 = page.evaluate("""() => {
+      const KEY='pizzatidOffUntil';
+      const saved=localStorage.getItem(KEY);
+      const savedSched=window._pizzatidSchedule;
+      window._pizzatidSchedule=defaultPizzatidSchedule();
+
+      // 1) Grensen, over en hel uke. 2027-03-01 er en mandag.
+      const uker=[], likeDager=[];
+      for(let i=0;i<7;i++){
+        const n=new Date(2027,2,1+i,14,30,0);
+        const u=new Date(pizzatidEndOfWeek(n));
+        // Alltid midnatt natt til mandag (getDay()===1, klokka 00:00 lokalt).
+        uker.push(u.getDay()===1 && u.getHours()===0 && u.getMinutes()===0);
+        likeDager.push(pizzatidEndOfWeek(n)===pizzatidEndOfToday(n));
+      }
+      const alltidSøndagKveld = uker.every(Boolean);
+      // Kun søndag (indeks 6 i løkka over) sammenfaller med «ut dagen».
+      const kunSøndagLik = likeDager.filter(Boolean).length===1 && likeDager[6]===true;
+
+      // Sommertid: vår (28.03.2027 fram) og høst (31.10.2027 tilbake).
+      const vår=new Date(pizzatidEndOfWeek(new Date(2027,2,22,14,0,0)));
+      const høst=new Date(pizzatidEndOfWeek(new Date(2027,9,25,14,0,0)));
+      const dstHolder = vår.getHours()===0 && vår.getMinutes()===0
+                     && høst.getHours()===0 && høst.getMinutes()===0;
+
+      // 2) Merkelappen avledes av tidsstempelet.
+      const ons=new Date(2027,2,3,14,0,0);
+      const søn=new Date(2027,2,7,14,0,0);
+      const merkeDag  = pizzatidOffLabel(pizzatidEndOfToday(ons),ons);
+      const merkeUke  = pizzatidOffLabel(pizzatidEndOfWeek(ons),ons);
+      const merkeSøn  = pizzatidOffLabel(pizzatidEndOfWeek(søn),søn);
+      const merkelappStemmer = merkeDag==='til midnatt'
+                            && merkeUke==='ut søndag'
+                            && merkeSøn==='til midnatt';   // søndag: uke === dag
+
+      // Banneret må vise den ekte varigheten, ikke en hardkodet «til midnatt».
+      localStorage.setItem(KEY, String(pizzatidEndOfWeek()));
+      const bannerUke = pizzatidOffBannerHTML();
+      const ukeErLenger = pizzatidEndOfWeek()!==pizzatidEndOfToday();
+      const bannerLyverIkke = !ukeErLenger || !/til midnatt|until midnight/.test(bannerUke);
+
+      // 3) Semantikken er uendret: opptatt blir ledig, natt er fortsatt natt.
+      const WED=3;
+      const ukeFrigjør = inPizzatidWindow(11,0,WED) && !outsidePizzatid(11,0,WED);
+      const ukeRørerIkkeNatt = !inPizzatidWindow(3,0,WED);
+
+      // Kontrollen: nøyaktig ett valgt segment i hver tilstand, og «ut uka» vises
+      // bare når den faktisk betyr noe annet enn «ut dagen» (dvs. ikke på søndag).
+      const trykt=h=>(h.match(/aria-pressed="true"/g)||[]).length;
+      const knapper=h=>(h.match(/<button/g)||[]).length;
+      localStorage.setItem(KEY, String(pizzatidEndOfWeek()));
+      const cUke=pizzatidOffControlHTML();
+      localStorage.setItem(KEY, String(pizzatidEndOfToday()));
+      const cDag=pizzatidOffControlHTML();
+      localStorage.removeItem(KEY);
+      const cPå=pizzatidOffControlHTML();
+      const éttValgt = trykt(cUke)===1 && trykt(cDag)===1 && trykt(cPå)===1;
+      const riktigAntall = knapper(cPå)===(ukeErLenger?3:2);
+      const ukeknappStyrt = /setPizzatidOffWeek/.test(cPå)===ukeErLenger;
+      // Kontrollen må ha veien ut, ellers er den en blindvei.
+      const harVeiUt = /clearPizzatidOff/.test(cUke);
+
+      // Lenka på konfliktkortet er UENDRET — ett trykk, ut dagen. Den skal ikke
+      // ha vokst til et valg i det øyeblikket du bare vil videre.
+      const d=new Date(); d.setHours(11,0,0,0);
+      const dayConf=[{title:'Elte deigen',atIso:d.toISOString(),dur:20,passive:false}];
+      const rad=betaWhenRow(dayConf,true);
+      const lenkaUendret = /Se bort fra ledig tid/.test(rad) && !/setPizzatidOffWeek/.test(rad);
+
+      if(saved===null) localStorage.removeItem(KEY); else localStorage.setItem(KEY,saved);
+      window._pizzatidSchedule=savedSched;
+      return {alltidSøndagKveld,kunSøndagLik,dstHolder,merkelappStemmer,bannerLyverIkke,
+              ukeFrigjør,ukeRørerIkkeNatt,éttValgt,riktigAntall,ukeknappStyrt,harVeiUt,
+              lenkaUendret,merkeDag,merkeUke,merkeSøn};
+    }""")
+    ok118 = all(r118.get(k) for k in [
+        'alltidSøndagKveld', 'kunSøndagLik', 'dstHolder', 'merkelappStemmer', 'bannerLyverIkke',
+        'ukeFrigjør', 'ukeRørerIkkeNatt', 'éttValgt', 'riktigAntall', 'ukeknappStyrt',
+        'harVeiUt', 'lenkaUendret'])
+    results.append(('pizzatid_pause_can_last_the_week_and_says_so', ok118, r118))
+
     # v0.736: Langtidsdeigen ba deg helle ALT vannet i melet under autolysen, og
     # steget etter ba deg løse gjæren «i litt vann». Det vannet fantes ikke — og
     # hentet du nytt fra springen, sprakk både deigvekten og hydreringen.
