@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.734",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fokus-knappen sa \u00abett steg om gangen\u00bb \u2014 det beskriver en begrensning, ikke det du faktisk f\u00e5r. N\u00e5 st\u00e5r det \u00abFokus\u00bb med \u00abstor tekst \u00b7 skjermen sovner ikke\u00bb i mindre skrift under. Det er nemlig hele poenget: n\u00e5r telefonen ligger p\u00e5 kj\u00f8kkenbenken og du har deig p\u00e5 hendene, skal skjermen holde seg v\u00e5ken og teksten v\u00e6re lesbar p\u00e5 avstand. Hjelpeteksten n\u00e5r du holder inne forteller ogs\u00e5 at du kan bla mellom stegene inne i Fokus."
+    ],
+    "changes_en": [
+      "The Focus button said \u201cone step at a time\u201d \u2014 which describes a limitation, not what you actually get. It now reads \u201cFocus\u201d with \u201clarge text \u00b7 screen stays awake\u201d in smaller type below. That is the whole point: when the phone is on the kitchen counter and your hands are covered in dough, the screen should stay awake and the text readable from a distance. The tooltip also mentions that you can move between steps inside Focus."
+    ]
+  },
+  {
     "v": "0.733",
     "d": "august 2026",
     "d_en": "August 2026",
