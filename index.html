@@ -312,6 +312,14 @@ body.mob-mode .mob-step.now .mob-sn{background:var(--forno-accent);color:#1a1512
 body.mob-mode .mob-stepchk{width:24px;height:24px;border-radius:7px;border-color:var(--forno-text-faint);background:transparent;font-size:14px;margin-top:1px}
 .mob-stepchk.on{background:#e8590c;border-color:#e8590c}
 body.mob-mode .mob-stepchk.on{background:var(--forno-accent);border-color:var(--forno-accent);color:#1a1512}
+/* v0.733: stegnummeret bor nå INNE i haken — den viser nummeret til du haker av,
+   og ✓ etterpå. Det frigjorde ~30px i venstre marg, som ved store tekst-
+   størrelser var nøyaktig det som manglet for at tidspunktet fikk plass
+   (målt: 43px for kuttet ved «Større tekst»). «Nå»-steget beholder sin
+   aksentmarkering, så signalet fra den gamle nummersirkelen ikke går tapt. */
+.stepchk.num,.mob-stepchk.num{color:#6E6E73;background:transparent}
+body.mob-mode .mob-stepchk.num{color:var(--forno-text-muted);font-family:var(--forno-font-mono);font-size:12px}
+body.mob-mode .mob-step.now .mob-stepchk.num{border-color:var(--forno-accent);color:var(--forno-accent-text);background:var(--forno-accent-soft)}
 .mob-sn.d{background:#EDEDED;color:#6E6E73;border:1px solid #E5E5EA}
 body.mob-mode .mob-sn.d{background:transparent;color:var(--forno-text-faint);border-color:var(--forno-border)}
 .mob-stit{font-size:13px;font-weight:600;color:var(--dyn-text);line-height:1.3}
@@ -2737,12 +2745,11 @@ function renderSteps(steps, mode='desktop'){
     html += `<div class="${C.step} ${i===curIdx ? C.now : ''} ${(isDimmed && !isNext) ? C.dim : ''} ${done ? 'step-done' : ''} ${missed ? 'step-missed' : ''} ${isNext ? 'step-next' : ''}">
       <div class="${C.body}">
         <div class="${C.head}" role="checkbox" aria-checked="${done?'true':'false'}" tabindex="0" onclick="toggleStepDone(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStepDone(${i});}" title="${done ? 'Fjern avhaking' : 'Marker som ferdig'}">
-          <div class="${C.chk} ${done ? 'on' : ''}">${done ? '✓' : ''}</div>
-          <div class="${C.num} ${i===curIdx ? '' : C.numDim}">${i+1}</div>
+          <div class="${C.chk} ${done ? 'on' : 'num'}">${done ? '✓' : (i+1)}</div>
           <div style="flex:1;min-width:0">
             <div class="${C.title}">${dispTitle(s.title)}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}${conflictFlag}</div>
             <div class="${C.meta}">
-              <div class="${C.time}">${fDT(s.at)}${s.dur ? ' · ' + (s.passive ? (window._lang==='en'?durEn(fmtDur(s.dur))+' waiting':fmtDur(s.dur)+' venting') : s.dur+(isMob ? ' min' : L(' min aktivt',' min active'))) : ''}</div>
+              <div class="${C.time}">${fDT(s.at)}</div>${s.dur ? `<div class="${C.time}">· ${s.passive ? (window._lang==='en'?durEn(fmtDur(s.dur))+' waiting':fmtDur(s.dur)+' venting') : s.dur+(isMob ? ' min' : L(' min aktivt',' min active'))}</div>` : ''}
               ${locHtml}
             </div>
           </div>
