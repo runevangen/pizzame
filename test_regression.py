@@ -4011,20 +4011,22 @@ def run_behavioral_tests(page):
       for(const m of ['standard','poolish','biga','mania','hurtig','kveld']){
         S.method=m; mobShowTab('plan'); mobGen();
         const h=document.getElementById('mob-plan-content').innerHTML;
-        const line=(h.match(/🧾 <b[^>]*>([^<]+)</)||[])[1]||'';
         const rec=recipeFor(), p=pc();
-        // må stemme med den ENE ingredienskilden
+        // v0.732: ikon og fet skrift fjernet — linja finnes på innholdet sitt.
+        const line=(h.match(new RegExp('>('+p.count+' stk · [^<]+)<'))||[])[1]||'';
+        // må stemme med den ENE ingredienskilden, nå inkl. hydrering
         const ok = line.includes(p.count+' stk') && line.includes(rec.flour+'g mel')
-                && line.includes(rec.yDry+'g tørrgjær');
+                && line.includes(rec.hydro+'%') && line.includes(rec.yDry+'g tørrgjær');
         if(!ok) allMatch=false;
-        // ingen vann-ledd: fire ledd brøt over to linjer på mobil
-        if(/vann/.test(line)) allOneLine=false;
+        // vann/salt/olje/sukker holdes ute — de brøt linja og er utledbare
+        if(/vann|salt|olje|sukker/.test(line)) allOneLine=false;
+        if(/🧾/.test(line)) allOneLine=false;
         out[m]=line;
       }
       // fersk gjær skal følge med
       S.method='standard'; S.gjaer='fersk'; mobGen();
       const hF=document.getElementById('mob-plan-content').innerHTML;
-      const freshLine=(hF.match(/🧾 <b[^>]*>([^<]+)</)||[])[1]||'';
+      const freshLine=(hF.match(new RegExp('>('+pc().count+' stk · [^<]+)<'))||[])[1]||'';
       const freshOk=freshLine.includes(recipeFor().yFresh+'g fersk gjær');
       // Mania har egne tall — linja skal IKKE vise standardens
       const maniaDiffers = out.mania!==out.standard;
