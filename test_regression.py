@@ -4115,6 +4115,67 @@ def run_behavioral_tests(page):
     ok110 = all(r110.get(k) for k in ['hasButton','keepsName','mentionsWakeLock','mentionsLargeText','noLimitWording','hasSmallerSub','titleExplains'])
     results.append(('focus_button_states_benefit_not_limitation', ok110, r110))
 
+    # v0.735: midlertidig pause i «ledig tid» (fridag/ferie). To ting må holde,
+    # og de trekker i hver sin retning:
+    #  1) pausen må slå ut ALLE oppslag — både inPizzatidWindow og outsidePizzatid,
+    #     inkludert 08–16-fallbacket som gjelder før timeplanen er lastet;
+    #  2) den må IKKE røre natten. Natt er en egen regel i tidsplanen, og hvis
+    #     Smart-plan sluttet å advare om elting kl. 03 mens tidsplanen fortsatt
+    #     gjorde det, ville de to skjermene motsagt hverandre.
+    # Utløpet testes på verdien, ikke med en timer: et passert tidsstempel må lese
+    # som «på igjen» uten at noe har kjørt i mellomtiden.
+    r111 = page.evaluate("""() => {
+      const KEY='pizzatidOffUntil';
+      const saved=localStorage.getItem(KEY);
+      const savedSched=window._pizzatidSchedule;
+      window._pizzatidSchedule=defaultPizzatidSchedule();
+      // Onsdag i standardmalen: ledig 16:00–23:30 og 06:30–08:00 → 11:00 er opptatt.
+      const WED=3;
+      const offNormally = !inPizzatidWindow(11,0,WED) && outsidePizzatid(11,0,WED);
+      const nightNormally = !inPizzatidWindow(3,0,WED);
+
+      localStorage.setItem(KEY, String(Date.now()+3600e3));
+      const isOff = pizzatidIsOff();
+      const busyNowFree = inPizzatidWindow(11,0,WED) && !outsidePizzatid(11,0,WED);
+      const nightStillNight = !inPizzatidWindow(3,0,WED);
+      // Fallbacket (timeplan ikke lastet) må også vike for pausen.
+      window._pizzatidSchedule=null;
+      const fallbackYields = !outsidePizzatid(11,0,WED);
+      window._pizzatidSchedule=defaultPizzatidSchedule();
+      const bannerOn = pizzatidOffBannerHTML();
+
+      // Utløpt tidsstempel = på igjen, uten opprydding.
+      localStorage.setItem(KEY, String(Date.now()-1000));
+      const expiredIsOn = !pizzatidIsOff() && outsidePizzatid(11,0,WED);
+      const bannerOff = pizzatidOffBannerHTML();
+
+      // «Ut dagen» = midnatt i natt, ikke 24 timer fram.
+      const mid=new Date(); mid.setHours(24,0,0,0);
+      const endsAtMidnight = pizzatidEndOfToday()===mid.getTime();
+
+      // Lenka tilbys bare på det anbefalte kortet, og aldri på en nattkonflikt —
+      // pausen løser ikke natt, så knappen ville lovet noe den ikke holder.
+      const d=new Date(); d.setHours(11,0,0,0);
+      const n=new Date(); n.setHours(3,0,0,0);
+      const dayConf=[{title:'Elte deigen',atIso:d.toISOString(),dur:20,passive:false}];
+      const nightConf=[{title:'Elte deigen',atIso:n.toISOString(),dur:20,passive:false}];
+      const re=/Se bort fra ledig tid/;
+      const onWinner = re.test(betaWhenRow(dayConf,true));
+      const notOnAlts = !re.test(betaWhenRow(dayConf,false));
+      const notOnNight = !re.test(betaWhenRow(nightConf,true));
+
+      if(saved===null) localStorage.removeItem(KEY); else localStorage.setItem(KEY,saved);
+      window._pizzatidSchedule=savedSched;
+      return {offNormally,nightNormally,isOff,busyNowFree,nightStillNight,fallbackYields,
+              expiredIsOn,endsAtMidnight,onWinner,notOnAlts,notOnNight,
+              bannerShowsWayOut:/Slå på igjen/.test(bannerOn), bannerHiddenWhenOn:bannerOff===''};
+    }""")
+    ok111 = all(r111.get(k) for k in [
+        'offNormally','nightNormally','isOff','busyNowFree','nightStillNight','fallbackYields',
+        'expiredIsOn','endsAtMidnight','onWinner','notOnAlts','notOnNight',
+        'bannerShowsWayOut','bannerHiddenWhenOn'])
+    results.append(('pizzatid_pause_frees_day_but_not_night', ok111, r111))
+
     return results
 
 
