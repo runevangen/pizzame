@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.731",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Statuslinja \u00f8verst i Tidsplan viser n\u00e5 ogs\u00e5 mengdene: \u00ab3 stk \u00b7 500g mel \u00b7 0,75g t\u00f8rrgj\u00e6r\u00bb. Da ser du HVA du skal blande samtidig med N\u00c5R \u2014 f\u00f8r m\u00e5tte du bytte til Oppskrift-fanen for \u00e5 sjekke. Tallene leses fra samme kilde som oppskriften og kopier-funksjonen, s\u00e5 de kan ikke sprike, og de f\u00f8lger metoden du har valgt (Mania-poolish viser sine egne 0,85g, ikke standardens)."
+    ],
+    "changes_en": [
+      "The status bar at the top of the Schedule now also shows the amounts: \u201c3 pcs \u00b7 500g flour \u00b7 0.75g dry yeast\u201d. So you see WHAT to mix at the same time as WHEN \u2014 previously you had to switch to the Recipe tab to check. The numbers come from the same source as the recipe and the copy function, so they cannot disagree, and they follow your chosen method (Mania poolish shows its own 0.85g, not the standard one\u2019s)."
+    ]
+  },
+  {
     "v": "0.730",
     "d": "august 2026",
     "d_en": "August 2026",
