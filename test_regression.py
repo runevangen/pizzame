@@ -4215,6 +4215,54 @@ def run_behavioral_tests(page):
     ok112 = all(r112.get(k) for k in ['allSum','allNoVague','allWhyOk','allInNeeds'])
     results.append(('autolyse_holds_back_water_for_the_yeast', ok112, r112))
 
+    # v0.737: stekesteget har alltid sagt at ovnen trenger 15–20 min (pizzaovn)
+    # eller minst 45 min (vanlig ovn med stein), men tidsplanen gikk rett fra
+    # «ferdig temperert» til «stek». Kravet dukket altså opp i det øyeblikket det
+    # var for sent å innfri. Kritisk her: steget må IKKE flytte gjærmengden.
+    # `loc` mater temperaturmodellen (stepTempC), så et steg med loc:'ovn' ville
+    # slettet forvarmingsminuttene fra romtemperaturlasten og dermed endret
+    # gjæren for alle. loc:'rom' + dispLoc:'ovn' deler intervallet i to like
+    # varme deler — testen låser at lasten er BIT FOR BIT den samme.
+    r113 = page.evaluate("""() => {
+      const saved={method:S.method,oven:S.oven,type:S.type,mel:S.mel,hydro:S.hydro,cold:S.cold};
+      const A=new Date(2020,0,1,18,0);
+      const cases=[
+        ['standard','vanlig','napoletana',45],['standard','pizza','napoletana',20],
+        ['standard','vanlig','newyork',45],   ['standard','vanlig','langpanne',20],
+        ['poolish','vanlig','napoletana',45], ['biga','pizza','napoletana',20]
+      ];
+      let present=true, rightGap=true, beforeBake=true, afterTakeout=true,
+          locIsRoom=true, dispIsOven=true, loadUnchanged=true, mentionsStone=true;
+      const detail={};
+      for(const [m,oven,type,want] of cases){
+        S.method=m; S.oven=oven; S.type=type; S.mel=500; S.hydro=65; S.cold=48;
+        const st=stepsForAnchor(A);
+        const i=st.findIndex(s=>/Sett på ovnen/.test(s.title));
+        if(i<0){ present=false; detail[m+'_'+oven+'_'+type]='mangler'; continue; }
+        const s=st[i], bake=st[st.length-1];
+        const gap=Math.round((bake.at-s.at)/60000);
+        if(gap!==want){ rightGap=false; detail[m+'_'+oven+'_'+type]=[gap,want]; }
+        if(i!==st.length-2) beforeBake=false;
+        const tu=st.findIndex(x=>/Ta ut av kj/.test(x.title));
+        if(!(tu>=0 && s.at>st[tu].at)) afterTakeout=false;
+        if(s.loc!=='rom') locIsRoom=false;
+        if(s.dispLoc!=='ovn') dispIsOven=false;
+        // Selve kravet: gjærmodellen skal ikke merke at steget er der.
+        const without=st.filter(x=>!/Sett på ovnen/.test(x.title));
+        const a=fermentLoadHours(st), b=fermentLoadHours(without);
+        if(a===null||b===null||Math.abs(a-b)>1e-9) loadUnchanged=false;
+        // Vanlig ovn + stein er hele grunnen til at 45 min ikke er 20.
+        const wantsStone = oven!=='pizza' && (type==='napoletana'||type==='newyork');
+        if(wantsStone !== /stein/.test(s.desc)) mentionsStone=false;
+      }
+      Object.assign(S,saved);
+      return {present,rightGap,beforeBake,afterTakeout,locIsRoom,dispIsOven,
+              loadUnchanged,mentionsStone,...detail};
+    }""")
+    ok113 = all(r113.get(k) for k in ['present','rightGap','beforeBake','afterTakeout',
+                                      'locIsRoom','dispIsOven','loadUnchanged','mentionsStone'])
+    results.append(('plan_schedules_oven_preheat_without_moving_yeast', ok113, r113))
+
     return results
 
 

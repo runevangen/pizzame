@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.737",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Tidsplanen for Langtidsdeig, Poolish og Biga gikk rett fra «ferdig temperert» til «strekk og stek», mens tipset på stekesteget sa at ovnen trenger 15–20 minutter (pizzaovn) eller minst 45 minutter (vanlig ovn med stein). Kravet dukket altså opp i det øyeblikket det var for sent å innfri.",
+      "Nå står «Sett på ovnen 🔥» som et eget steg på riktig tidspunkt — 20 min før steking med pizzaovn, 45 min med vanlig ovn og pizzastein. Hurtigdeig og Kveldsdeig har hatt et slikt steg hele tiden; det var bare disse tre som manglet det.",
+      "Steget forklarer også hvorfor steinen må inn med en gang: luften i ovnen blir varm lenge før steinen er det, og det er steinen som gir bunnen.",
+      "Gjærmengden er uendret. Steget står oppført på benken (der deigen faktisk er) selv om du selv går til ovnen, nettopp for at gjæringsberegningen ikke skulle merke at det kom et nytt steg."
+    ],
+    "changes_en": [
+      "The schedule for Long-rise, Poolish and Biga went straight from “done warming up” to “stretch and bake”, while the tip on the baking step said the oven needs 15–20 minutes (pizza oven) or at least 45 minutes (regular oven with a stone). The requirement showed up at the exact moment it was too late to meet.",
+      "“Turn on the oven 🔥” is now its own step at the right time — 20 min before baking with a pizza oven, 45 min with a regular oven and a pizza stone. Quick dough and Evening dough have always had such a step; only these three were missing it.",
+      "The step also explains why the stone must go in right away: the air in the oven gets hot long before the stone does, and it is the stone that makes the base.",
+      "The amount of yeast is unchanged. The step is listed as being at the counter (where the dough actually is) even though you yourself walk over to the oven — precisely so the fermentation calculation would not notice that a new step had appeared."
+    ]
+  },
+  {
     "v": "0.736",
     "d": "august 2026",
     "d_en": "August 2026",
