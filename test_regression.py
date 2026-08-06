@@ -3998,6 +3998,42 @@ def run_behavioral_tests(page):
     ok107 = all(r107.get(k) for k in ['hasPreferments','filterWorks','favIsTop','costShown','badgeInUI','weakFavNotTop','favFirstAmongNoFit','hasMinVal','btnIsFav','actionable','shiftApplied','favClearedOnDisable'])
     results.append(('window_favourite_weighting_filter_and_actionable_shortfall', ok107, r107))
 
+    # v0.731: mengdelinja i statuslinja (antall · mel · gjær) — du ser HVA du
+    # skal blande samtidig med NÅR. Den leses fra recipeFor()/pc(), samme kilde
+    # som Oppskrift-fanen og Kopier (F17), så testen sjekker nettopp at den ikke
+    # kan sprike: linja må matche recipeFor for HVER metode — inkludert Mania,
+    # som har sine egne tall (0,85g mot standardens BYEAST-baserte).
+    r108 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode,mel:S.mel,gjaer:S.gjaer};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.mel=500; S.mode='start'; S.gjaer='torr';
+      const out={}; let allMatch=true, allOneLine=true;
+      for(const m of ['standard','poolish','biga','mania','hurtig','kveld']){
+        S.method=m; mobShowTab('plan'); mobGen();
+        const h=document.getElementById('mob-plan-content').innerHTML;
+        const line=(h.match(/🧾 <b[^>]*>([^<]+)</)||[])[1]||'';
+        const rec=recipeFor(), p=pc();
+        // må stemme med den ENE ingredienskilden
+        const ok = line.includes(p.count+' stk') && line.includes(rec.flour+'g mel')
+                && line.includes(rec.yDry+'g tørrgjær');
+        if(!ok) allMatch=false;
+        // ingen vann-ledd: fire ledd brøt over to linjer på mobil
+        if(/vann/.test(line)) allOneLine=false;
+        out[m]=line;
+      }
+      // fersk gjær skal følge med
+      S.method='standard'; S.gjaer='fersk'; mobGen();
+      const hF=document.getElementById('mob-plan-content').innerHTML;
+      const freshLine=(hF.match(/🧾 <b[^>]*>([^<]+)</)||[])[1]||'';
+      const freshOk=freshLine.includes(recipeFor().yFresh+'g fersk gjær');
+      // Mania har egne tall — linja skal IKKE vise standardens
+      const maniaDiffers = out.mania!==out.standard;
+      Object.assign(S,saved); mobGen();
+      return {allMatch, allOneLine, freshOk, maniaDiffers, lines:out, freshLine};
+    }""")
+    ok108 = all(r108.get(k) for k in ['allMatch','allOneLine','freshOk','maniaDiffers'])
+    results.append(('status_bar_amount_line_matches_recipefor_all_methods', ok108, r108))
+
     return results
 
 

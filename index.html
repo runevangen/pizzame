@@ -7212,6 +7212,21 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   let startMs=null;
   try{ if(firstActive){ let at=firstActive.at; if(!(at instanceof Date)) at=new Date(at); if(!isNaN(at.getTime())) startMs=at.getTime(); } }catch(e){}
   const deltaHTML = showDelta ? startDeltaChipHTML(startMs) : '';
+  // v0.731: mengdelinje i statuslinja — antall, mel, vann og gjær samlet, så du
+  // ser HVA du skal blande samtidig med NÅR. Leses fra recipeFor()/pc(), altså
+  // samme kilde som Oppskrift-fanen og Kopier (F17), så tallene kan ikke sprike.
+  // Alle inndataene har standardverdier fra oppstart, så linja er alltid
+  // tilgjengelig — den trenger ingen valg for å kunne vises.
+  let amountTxt='';
+  try{
+    const _rec=recipeFor(), _p=pc();
+    // Antall, mel og gjær — bevisst uten vann: med fire ledd brøt linja over to
+    // linjer på mobil, og hydreringen er uansett ett trykk unna på Oppskrift.
+    amountTxt = `${_p.count} ${L('stk','pcs')} · ${_rec.flour}g ${L('mel','flour')} · ${yLabelFor(_rec)}`;
+  }catch(e){}
+  const amountHTML = amountTxt
+    ? `<div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px;overflow-wrap:anywhere">🧾 <b style="color:var(--forno-text,#222)">${escH(amountTxt)}</b></div>`
+    : '';
   // v0.689: Kopier/Kalender/Lagre er flyttet fra statuslinja (topp) til BUNNEN av
   // tidsplanen (planBottomActionsHTML) — de brukes sjelden og er «etter at planen
   // er lest»-handlinger, så de tar ikke lenger toppplass fra selve stegene.
@@ -7237,6 +7252,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:3px">${L('🚀 Oppstart:','🚀 Start:')} <b style="color:var(--forno-text,#222)">${escH(startTxt)}</b>${deltaHTML}</div>
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🍕 Steketid:','🍕 Baking time:')} <b style="color:var(--forno-text,#222)">${escH(bakeTxt)}</b></div>
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🌾 Mel:','🌾 Flour:')} <b style="color:var(--forno-text,#222)">${escH(mtName(MELTYPER.find(m=>m.v===S.meltype)))}</b></div>
+    ${amountHTML}
     ${actionsHTML}
     ${showActions ? `<button onclick="openFocus()" title="${L('Vis det aktive steget stort i fullskjerm — for telefonen på benken','Show the active step large in full screen — for the phone on the counter')}" style="width:100%;margin-top:8px;padding:11px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(232,89,12,.28)">🔎 ${L('Fokus','Focus')} — ${L('ett steg om gangen','one step at a time')}</button>` : ''}
   </div>`;
