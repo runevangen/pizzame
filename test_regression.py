@@ -18,7 +18,7 @@ Scenarioene dekker: Standard, Poolish (romtemperatur + kjøleskap-variant),
 Biga, Mania-poolish, Hurtigdeig, Kveldsdeig, og én ikke-napoletansk type
 (Chicago) for å fange opp feil i type-spesifikke tabeller også.
 """
-import sys, os, json, subprocess, time, http.server, threading, socketserver
+import sys, os, re, json, subprocess, time, http.server, threading, socketserver
 from playwright.sync_api import sync_playwright
 
 ANCHOR = "2026-08-01T18:00:00"  # fast, deterministisk ankertidspunkt (mode='start')
@@ -1264,8 +1264,13 @@ def run_behavioral_tests(page):
       window._openSub=new Set(); mobGen();
       return result;
     }""")
+    # v0.739: testen krevde tidligere nøyaktig 5 steg. Det gjorde den til en
+    # skjult stegteller — den røk da Kveldsdeig med rette fikk forvarmingssteget
+    # sitt. Poenget er DEKNINGEN: hvert steg, uansett hvor mange de er, har
+    # understeg, og når de åpnes erstatter de stegteksten. Antallet er frosset i
+    # `kveld`-baselinen, som er stedet det hører hjemme.
     ok27 = (
-      r27['n'] == 5 and r27['descsBefore'] == 5 and r27['substepLists'] == 5 and
+      r27['n'] >= 5 and r27['descsBefore'] == r27['n'] and r27['substepLists'] == r27['n'] and
       r27['descsAfter'] == 0 and r27['firstItems'] == 4
     )
     results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
@@ -4299,6 +4304,126 @@ def run_behavioral_tests(page):
     }""")
     ok114 = all(r114.get(k) for k in ['labelIsBench','locStillFridge','yeastUnchanged','enToo','anchorsHold'])
     results.append(('forming_step_labelled_counter_but_yeast_untouched', ok114, r114))
+
+    # ===== LAG 1 (v0.739): MASKINELT TESTBARE INVARIANTER OVER HELE MATRISEN =====
+    # De tre foregående funnene (vann brukt to ganger i v0.736, forvarming uten
+    # tidsluke i v0.737, feil lokasjonsmerkelapp i v0.738) ble alle oppdaget ved å
+    # lese planen manuelt. Hver av dem tilhører en KLASSE som kan sjekkes med kode.
+    # Testene under sveiper metode × type × ovnstype (60 konfigurasjoner) og
+    # håndhever tre egenskaper som må holde for alle:
+    #   A  massebalanse — det stegene ber deg måle opp, summerer til oppskriften
+    #   B  vaghetslint  — ingen mengdeord uten tall for en ingrediens i oppskriften
+    #   C  forvarming   — tidsplanen setter faktisk av tiden ovnen krever
+    # De fant to reelle feil ved første kjøring; begge er fikset i samme versjon
+    # (se `MATRIX_SWEEP`-funnene i changelog for v0.739).
+    MATRIX_SWEEP = """() => {
+      const saved={method:S.method,type:S.type,oven:S.oven,mode:S.mode,mel:S.mel,
+                   hydro:S.hydro,cold:S.cold,temp:S.temp,fridgeC:S.fridgeC,gjaer:S.gjaer,
+                   hurtigH:S.hurtigH,kveldH:S.kveldH,poolishH:S.poolishH,bigaH:S.bigaH};
+      const out=[];
+      for(const m of ['standard','poolish','biga','mania','hurtig','kveld'])
+      for(const t of ['napoletana','newyork','langpanne','chicago','ingenelting'])
+      for(const o of ['vanlig','pizza']){
+        S.method=m; S.type=t; S.oven=o; S.mode='start';
+        S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.fridgeC=3; S.gjaer='torr';
+        S.hurtigH=4; S.kveldH=10; S.poolishH=14; S.bigaH=18;
+        let steps=null;
+        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ out.push({m,t,o,err:''+e}); continue; }
+        if(!steps||!steps.length){ out.push({m,t,o,err:'ingen steg'}); continue; }
+        const bake=steps[steps.length-1];
+        // Siste steg før steking som handler om ovnen — enten merket dit du går
+        // (dispLoc) eller navngitt som forvarming (Hurtigdeig/Ingen elting folder
+        // forvarmingen inn i etterhevingssteget sitt).
+        let gap=null, phTitle=null;
+        for(let i=steps.length-2;i>=0;i--){
+          if(steps[i].dispLoc==='ovn' || /forvarm|ovnen/i.test(steps[i].title)){
+            gap=Math.round((bake.at-steps[i].at)/60000); phTitle=steps[i].title; break;
+          }
+        }
+        out.push({m,t,o, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
+                  needs:steps.map(s=>s.needs||[]).reduce((a,b)=>a.concat(b),[])});
+      }
+      Object.assign(S,saved);
+      return out;
+    }"""
+    sweep = page.evaluate(MATRIX_SWEEP)
+
+    # Ordet i teksten, ikke emojien, bestemmer ingrediensen: 🍯 brukes både til
+    # oppskriftens sukker og til honningen som vekker gjæren i Hurtigdeig, og de
+    # to skal ikke summeres i samme bøtte.
+    ING_WORDS = [("mel", "flour"), ("vann", "water"), ("salt", "salt"),
+                 ("gjær", "yDry"), ("olje", "oil"), ("smør", "butter"), ("sukker", "sugar")]
+    # v0.736-lærdommen: et vagt mengdeord er ikke bare upresist språk — det er
+    # stedet en motsigelse kan gjemme seg, fordi det ikke kan summeres og dermed
+    # er usynlig for massebalansen. Disse to er bevisste og gjelder mengder som
+    # IKKE er en del av oppskriften; alt annet vagt skal feile testen.
+    VAGUE_OK = {
+        "🫒 litt olje": "smøring av hevebokser — ikke oppskriftens olje",
+        "🍯 1 ts honning": "gjærens kickstart i Hurtigdeig — ikke oppskriftens sukker",
+    }
+    NUM = re.compile(r"^([\d]+(?:[.,]\d+)?)\s*g\b")
+
+    def ing_of(entry):
+        """Hvilken oppskrifts-ingrediens en needs-linje gjelder, eller None (utstyr o.l.)."""
+        body = entry[1:].strip() if entry and not entry[0].isalnum() else entry
+        for word, key in ING_WORDS:
+            if word in body.lower():
+                return key, body
+        return None, body
+
+    # --- A: massebalanse ---
+    balance_bad, sweep_errs = [], [d for d in sweep if d.get("err")]
+    for d in sweep:
+        if d.get("err"):
+            continue
+        got = {}
+        for entry in d["needs"]:
+            key, body = ing_of(entry)
+            if key is None:
+                continue
+            mnum = NUM.match(body)
+            if mnum:
+                got[key] = round(got.get(key, 0.0) + float(mnum.group(1).replace(",", ".")), 2)
+        for key in ("flour", "water", "salt", "yDry", "oil", "butter", "sugar"):
+            want = d["recipe"].get(key) or 0
+            have = got.get(key, 0.0)
+            if abs(have - want) > 0.011 and (have or want):
+                balance_bad.append(f"{d['m']}/{d['t']}/{d['o']} {key}: steg={have} oppskrift={want}")
+    r115 = {"konfigurasjoner": len(sweep), "sveipefeil": sweep_errs, "avvik": balance_bad[:12],
+            "avvikTotalt": len(balance_bad)}
+    ok115 = not balance_bad and not sweep_errs
+    results.append(('invariant_step_amounts_sum_to_recipe_all_configs', ok115, r115))
+
+    # --- B: vaghetslint ---
+    vague_bad = set()
+    for d in sweep:
+        for entry in d.get("needs", []):
+            key, body = ing_of(entry)
+            if key is None or NUM.match(body) or entry in VAGUE_OK:
+                continue
+            vague_bad.add(f"{d['m']}/{d['t']}/{d['o']}: {entry!r}")
+    r116 = {"nyeVageOppføringer": sorted(vague_bad)[:12], "antall": len(vague_bad),
+            "kjentOgTillatt": VAGUE_OK}
+    ok116 = not vague_bad
+    results.append(('invariant_no_vague_amounts_for_recipe_ingredients', ok116, r116))
+
+    # --- C: forvarming i prosa vs. tid i tidsplanen ---
+    # Stekesteget har alltid oppgitt hvor lenge ovnen må varmes. Invarianten er at
+    # tidsplanen faktisk setter av den tiden — kravet skal ikke dukke opp i det
+    # øyeblikket det er for sent å innfri. Fant Mania og Kveldsdeig, som v0.737
+    # antok alt hadde steget.
+    preheat_bad = []
+    for d in sweep:
+        if d.get("err"):
+            continue
+        if d["gap"] is None:
+            preheat_bad.append(f"{d['m']}/{d['t']}/{d['o']}: ingen forvarmingssteg (krever {d['preheatMin']} min)")
+        elif d["gap"] < d["preheatMin"]:
+            preheat_bad.append(f"{d['m']}/{d['t']}/{d['o']}: {d['gap']} min satt av, {d['preheatMin']} min kreves")
+    r117 = {"avvik": preheat_bad[:12], "avvikTotalt": len(preheat_bad),
+            "dekning": len([d for d in sweep if d.get("gap") is not None])}
+    ok117 = not preheat_bad
+    results.append(('invariant_schedule_allows_the_preheat_it_demands', ok117, r117))
 
     return results
 

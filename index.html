@@ -1914,6 +1914,33 @@ function preheatMin(){
   if(S.oven==='pizza') return 20;
   return (S.type==='napoletana'||S.type==='newyork') ? 45 : 20;
 }
+// v0.739: selve forvarmingssteget, ETT sted. v0.737 la det inn som en inline-blokk
+// i tailSteps og antok at Kveldsdeig og Mania alt hadde et — det stemte kun for
+// Hurtigdeig. Invariant-testen (lag 1, regel C) fant de to: prosaen på stekesteget
+// krevde 45 min forvarming mens tidsplanen satte av null. Nå bygger alle metoder
+// steget herfra, så en ny metode arver det i stedet for å måtte huske det.
+// roomMin = hvor mange minutter deigen uansett står i romtemperatur rett før
+// steking; steget klemmes innenfor det (−5 min) så det aldri kan havne foran
+// steget som slipper deigen ut på benken.
+function preheatSteps(bakeAt, roomMin, type){
+  const tp=type||S.type;
+  const ph=Math.min(preheatMin(), Math.max(0,roomMin-5));
+  if(ph<5) return [];
+  const t=S.oven==='pizza'?L('pizzaovnen','the pizza oven'):L('ovnen','the oven');
+  const stone=S.oven!=='pizza'&&(tp==='napoletana'||tp==='newyork');
+  // loc:'rom' fordi DEIGEN fortsatt står på benken — det holder Q10-modellen
+  // uendret (romtemperaturintervallet deles i to like varme deler i stedet for
+  // å bli borte). dispLoc:'ovn' fordi det er dit DU går.
+  return [{title:'Sett på ovnen 🔥',loc:'rom',dispLoc:'ovn',at:sM(bakeAt,ph),dur:0,
+    desc:L(`Sett på ${t} nå — den trenger ca. ${fmtDur(ph)} før den er varm nok. ${stone?'Sett pizzastein/-stål inn med en gang: luften i ovnen blir varm lenge før steinen er det, og det er steinen som gir bunnen.':'Deigen står trygt på benken mens ovnen varmes.'}`,`Turn on ${t} now — it needs about ${durEn(fmtDur(ph))} before it is hot enough. ${stone?'Put the pizza stone/steel in right away: the air in the oven gets hot long before the stone does, and it is the stone that makes the base.':'The dough sits safely on the counter while the oven heats.'}`),
+    substeps:[
+      L(`Sett på ${t} — ca. ${fmtDur(ph)} til den er klar`,`Turn on ${t} — about ${durEn(fmtDur(ph))} until it is ready`),
+      ...(stone?[L('Sett pizzastein/-stål inn med en gang','Put the pizza stone/steel in right away')]:[]),
+      L('La deigemnene stå videre på benken','Leave the dough balls on the counter')
+    ],
+    why:L('Ovnen er det eneste i planen som ikke kan hastes. En pizzastein som ikke er gjennomvarm gir blek, seig bunn uansett hvor god deigen er — og du merker det ikke før pizzaen er inne.','The oven is the one thing in the plan that cannot be rushed. A stone that is not heated through gives a pale, chewy base no matter how good the dough is — and you will not notice until the pizza is already in.'),
+    tip:oT(tp)}];
+}
 // v5.99: understeg for det delte stekestegetet — samme gren-logikk (type ×
 // ovnstype) som oD()/oT(), brutt opp i egne linjer i stedet for ett avsnitt.
 // Brukt av tailSteps (Standard/Poolish/Biga), kveldSteps og hurtigSteps sine
@@ -2214,25 +2241,11 @@ function rawSteps(a){
       // v0.737: stekesteget har alltid sagt at ovnen må forvarmes 15–20 min
       // (pizzaovn) eller minst 45 min (vanlig ovn med stein/stål), men tidsplanen
       // gikk rett fra «ferdig temperert» til «stek» — så du oppdaget kravet i det
-      // øyeblikket det var for sent. Hurtigdeig og Kveldsdeig har hatt et eget
-      // forvarmingssteg hele tiden; her manglet det bare.
-      // loc:'rom' fordi DEIGEN fortsatt står på benken — det holder Q10-modellen
-      // uendret (romtemperaturintervallet deles i to like varme deler i stedet for
-      // å bli borte). dispLoc:'ovn' fordi det er dit DU går.
-      // Klemt mot benketida så steget aldri kan havne før «Ta ut av kjøleskap»,
-      // selv om noen senere skulle senke gulvet på temper (i dag ≥ 60 min).
-      ...(()=>{ const ph=Math.min(preheatMin(), Math.max(0,temper-5)); if(ph<5) return [];
-        const t=S.oven==='pizza'?L('pizzaovnen','the pizza oven'):L('ovnen','the oven');
-        const stone=S.oven!=='pizza'&&(tp==='napoletana'||tp==='newyork');
-        return [{title:'Sett på ovnen 🔥',loc:'rom',dispLoc:'ovn',at:sM(bake,ph),dur:0,
-          desc:L(`Sett på ${t} nå — den trenger ca. ${fmtDur(ph)} før den er varm nok. ${stone?'Sett pizzastein/-stål inn med en gang: luften i ovnen blir varm lenge før steinen er det, og det er steinen som gir bunnen.':'Deigen står trygt på benken mens ovnen varmes.'}`,`Turn on ${t} now — it needs about ${durEn(fmtDur(ph))} before it is hot enough. ${stone?'Put the pizza stone/steel in right away: the air in the oven gets hot long before the stone does, and it is the stone that makes the base.':'The dough sits safely on the counter while the oven heats.'}`),
-          substeps:[
-            L(`Sett på ${t} — ca. ${fmtDur(ph)} til den er klar`,`Turn on ${t} — about ${durEn(fmtDur(ph))} until it is ready`),
-            ...(stone?[L('Sett pizzastein/-stål inn med en gang','Put the pizza stone/steel in right away')]:[]),
-            L('La deigemnene stå videre på benken','Leave the dough balls on the counter')
-          ],
-          why:L('Ovnen er det eneste i planen som ikke kan hastes. En pizzastein som ikke er gjennomvarm gir blek, seig bunn uansett hvor god deigen er — og du merker det ikke før pizzaen er inne.','The oven is the one thing in the plan that cannot be rushed. A stone that is not heated through gives a pale, chewy base no matter how good the dough is — and you will not notice until the pizza is already in.'),
-          tip:oT(tp)}]; })(),
+      // øyeblikket det var for sent.
+      // v0.739: selve steget bygges nå av preheatSteps(), som Mania og Kveldsdeig
+      // også kaller. Klemt mot benketida så det aldri kan havne før «Ta ut av
+      // kjøleskap», selv om noen senere skulle senke gulvet på temper (i dag ≥ 60 min).
+      ...preheatSteps(bake, temper, tp),
       {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:oT(tp)}
     ];
   }
@@ -2339,14 +2352,14 @@ function rawSteps(a){
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:mixAt,dur:20,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(35+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(35+rt)} of uninterrupted time — the next three steps are done in one go.`),
         desc:(S.kjokkenmaskin==='ankarsrum'
-          ?L(`Sett deigrulle og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`,`Put the dough roller and scraper back in the bowl. Add ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start on speed 1. Add ${Math.round(r2.flour/2)}g flour gradually in 3–4 batches${r2.oil?` and ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}. Increase to speed 2–3. Add ${r2.salt}g salt after 5 min — no extra yeast needed, the poolish has everything you need. Increase to speed 3–4. Knead 10–12 min total.`)
+          ?L(`Sett deigrulle og skraper tilbake i bollen. Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${Math.round(r2.flour/2)}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`,`Put the dough roller and scraper back in the bowl. Add ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()}. Start on speed 1. Add ${Math.round(r2.flour/2)}g flour gradually in 3–4 batches${r2.oil?` and ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}. Increase to speed 2–3. Add ${r2.salt}g salt after 5 min — no extra yeast needed, the poolish has everything you need. Increase to speed 3–4. Knead 10–12 min total.`)
           :S.kjokkenmaskin==='manuell'
-          ?L(`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`,`Add ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} to the bowl with the poolish. Mix in ${Math.round(r2.flour/2)}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}, ${r2.salt}g salt — no extra yeast needed, the poolish has everything you need. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) since the dough is wet: lift, stretch out, slap down, repeat for 10–15 min.':'press, fold, turn for 8–12 min until smooth and supple.'}`)
-          :L(`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,`Add ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} to the bowl with the poolish. Run the dough hook on low speed while you add ${Math.round(r2.flour/2)}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}. Add ${r2.salt}g salt after 2–3 min — no extra yeast needed, the poolish has everything you need. Increase to medium-low speed. Knead 6–9 min total.`))+mixWorkNote(),
-        needs:[L(`💧 ${Math.round(r2.water-Math.round(r2.flour/2))}g vann`,`💧 ${Math.round(r2.water-Math.round(r2.flour/2))}g water`), L(`🌾 ${Math.round(r2.flour/2)}g mel`,`🌾 ${Math.round(r2.flour/2)}g flour`), `🧂 ${r2.salt}g salt`, ...(r2.oil?[L(`🫒 ${r2.oil}g olje`,`🫒 ${r2.oil}g oil`)]:[]), ...(r2.butter?[L(`🧈 ${r2.butter}g smør`,`🧈 ${r2.butter}g butter`)]:[])],
+          ?L(`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`,`Add ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} to the bowl with the poolish. Mix in ${Math.round(r2.flour/2)}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}, ${r2.salt}g salt — no extra yeast needed, the poolish has everything you need. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) since the dough is wet: lift, stretch out, slap down, repeat for 10–15 min.':'press, fold, turn for 8–12 min until smooth and supple.'}`)
+          :L(`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,`Add ${Math.round(r2.water-Math.round(r2.flour/2))}g ${waterTempPhrase()} to the bowl with the poolish. Run the dough hook on low speed while you add ${Math.round(r2.flour/2)}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}. Add ${r2.salt}g salt after 2–3 min — no extra yeast needed, the poolish has everything you need. Increase to medium-low speed. Knead 6–9 min total.`))+mixWorkNote(),
+        needs:[L(`💧 ${Math.round(r2.water-Math.round(r2.flour/2))}g vann`,`💧 ${Math.round(r2.water-Math.round(r2.flour/2))}g water`), L(`🌾 ${Math.round(r2.flour/2)}g mel`,`🌾 ${Math.round(r2.flour/2)}g flour`), `🧂 ${r2.salt}g salt`, ...(r2.oil?[L(`🫒 ${r2.oil}g olje`,`🫒 ${r2.oil}g oil`)]:[]), ...(r2.butter?[L(`🧈 ${r2.butter}g smør`,`🧈 ${r2.butter}g butter`)]:[]), ...(r2.sugar?[L(`🍯 ${r2.sugar}g sukker`,`🍯 ${r2.sugar}g sugar`)]:[])],
         substeps:[
           L(`Tilsett ${Math.round(r2.water-Math.round(r2.flour/2))}g vann i bollen med poolishen`,`Add ${Math.round(r2.water-Math.round(r2.flour/2))}g water to the bowl with the poolish`),
-          L(`Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}`,`Mix in ${Math.round(r2.flour/2)}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}`),
+          L(`Bland inn ${Math.round(r2.flour/2)}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}`,`Mix in ${Math.round(r2.flour/2)}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}`),
           L(`Tilsett ${r2.salt}g salt — ingen ekstra gjær trengs`,`Add ${r2.salt}g salt — no extra yeast needed`),
           L(`Elt til deigen er glatt og smidig`,`Knead until the dough is smooth and supple`)
         ],
@@ -2375,14 +2388,14 @@ function rawSteps(a){
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(35+rtB)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(35+rtB)} of uninterrupted time — the next three steps are done in one go.`),
         desc:S.kjokkenmaskin==='ankarsrum'
-          ?L(`Legg bigaen i Ankarsrum-bollen. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Start trinn 1–2. Tilsett ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?` og ${r3.oil}g olje etter halvparten av melet`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}. Tilsett ${r3.salt}g salt etter 5 min. Øk til trinn 3–4. Elt totalt 12–15 min til deigen er smidig og slipper bollen.`,`Put the biga in the Ankarsrum bowl. Add ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Start on speed 1–2. Add ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?` and ${r3.oil}g oil after half the flour`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}. Add ${r3.salt}g salt after 5 min. Increase to speed 3–4. Knead 12–15 min total until the dough is supple and releases from the bowl.`)
+          ?L(`Legg bigaen i Ankarsrum-bollen. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Start trinn 1–2. Tilsett ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?` og ${r3.oil}g olje etter halvparten av melet`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}${r3.sugar?` + ${r3.sugar}g sukker`:''}. Tilsett ${r3.salt}g salt etter 5 min. Øk til trinn 3–4. Elt totalt 12–15 min til deigen er smidig og slipper bollen.`,`Put the biga in the Ankarsrum bowl. Add ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Start on speed 1–2. Add ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?` and ${r3.oil}g oil after half the flour`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}${r3.sugar?` + ${r3.sugar}g sugar`:''}. Add ${r3.salt}g salt after 5 min. Increase to speed 3–4. Knead 12–15 min total until the dough is supple and releases from the bowl.`)
           :S.kjokkenmaskin==='manuell'
-          ?L(`Legg bigaen i en bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()} og bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''} og ${r3.salt}g salt. Vend ut på benk. Bigaen er stiv i starten — bruk «press, brett, drei»-teknikk og regn med at det tar litt lengre tid enn vanlig håndelting, 12–15 min, før den løsner og blir smidig.`,`Put the biga in a bowl. Add ${Math.round(r3.water-bv)}g ${waterTempPhrase()} and mix in ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''} and ${r3.salt}g salt. Turn out onto the counter. The biga is stiff at first — use the "press, fold, turn" technique and expect it to take a little longer than regular hand kneading, 12–15 min, before it loosens and becomes supple.`)
-          :L(`Legg bigaen i kjøkkenmaskinens bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}. Tilsett ${r3.salt}g salt etter 2–3 min. Øk til middels lav hastighet. Elt 8–10 min — bigaen er stiv og kan belaste maskinen, så gå ned i hastighet om den strever.`,`Put the biga in the stand mixer bowl. Add ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Run the dough hook on low speed while you add ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}. Add ${r3.salt}g salt after 2–3 min. Increase to medium-low speed. Knead 8–10 min — the biga is stiff and can strain the machine, so lower the speed if it struggles.`),
-        needs:[L(`💧 ${Math.round(r3.water-bv)}g vann`,`💧 ${Math.round(r3.water-bv)}g water`), L(`🌾 ${Math.round(r3.flour*0.4)}g mel`,`🌾 ${Math.round(r3.flour*0.4)}g flour`), `🧂 ${r3.salt}g salt`, ...(r3.oil?[L(`🫒 ${r3.oil}g olje`,`🫒 ${r3.oil}g oil`)]:[]), ...(r3.butter?[L(`🧈 ${r3.butter}g smør`,`🧈 ${r3.butter}g butter`)]:[])],
+          ?L(`Legg bigaen i en bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()} og bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}${r3.sugar?` + ${r3.sugar}g sukker`:''} og ${r3.salt}g salt. Vend ut på benk. Bigaen er stiv i starten — bruk «press, brett, drei»-teknikk og regn med at det tar litt lengre tid enn vanlig håndelting, 12–15 min, før den løsner og blir smidig.`,`Put the biga in a bowl. Add ${Math.round(r3.water-bv)}g ${waterTempPhrase()} and mix in ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}${r3.sugar?` + ${r3.sugar}g sugar`:''} and ${r3.salt}g salt. Turn out onto the counter. The biga is stiff at first — use the "press, fold, turn" technique and expect it to take a little longer than regular hand kneading, 12–15 min, before it loosens and becomes supple.`)
+          :L(`Legg bigaen i kjøkkenmaskinens bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}${r3.sugar?` + ${r3.sugar}g sukker`:''}. Tilsett ${r3.salt}g salt etter 2–3 min. Øk til middels lav hastighet. Elt 8–10 min — bigaen er stiv og kan belaste maskinen, så gå ned i hastighet om den strever.`,`Put the biga in the stand mixer bowl. Add ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Run the dough hook on low speed while you add ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}${r3.sugar?` + ${r3.sugar}g sugar`:''}. Add ${r3.salt}g salt after 2–3 min. Increase to medium-low speed. Knead 8–10 min — the biga is stiff and can strain the machine, so lower the speed if it struggles.`),
+        needs:[L(`💧 ${Math.round(r3.water-bv)}g vann`,`💧 ${Math.round(r3.water-bv)}g water`), L(`🌾 ${Math.round(r3.flour*0.4)}g mel`,`🌾 ${Math.round(r3.flour*0.4)}g flour`), `🧂 ${r3.salt}g salt`, ...(r3.oil?[L(`🫒 ${r3.oil}g olje`,`🫒 ${r3.oil}g oil`)]:[]), ...(r3.butter?[L(`🧈 ${r3.butter}g smør`,`🧈 ${r3.butter}g butter`)]:[]), ...(r3.sugar?[L(`🍯 ${r3.sugar}g sukker`,`🍯 ${r3.sugar}g sugar`)]:[])],
         substeps:[
           L(`Legg bigaen i bollen, tilsett ${Math.round(r3.water-bv)}g vann`,`Put the biga in the bowl, add ${Math.round(r3.water-bv)}g water`),
-          L(`Bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}`,`Mix in ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}`),
+          L(`Bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}${r3.sugar?` + ${r3.sugar}g sukker`:''}`,`Mix in ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}${r3.sugar?` + ${r3.sugar}g sugar`:''}`),
           L(`Tilsett ${r3.salt}g salt`,`Add ${r3.salt}g salt`),
           L(`Elt til bigaen løsner og blir smidig`,`Knead until the biga loosens and becomes supple`)
         ],
@@ -2469,6 +2482,9 @@ function rawSteps(a){
         substeps:[L(`La emnene heve i romtemperatur ved ${S.temp}°C`,`Let the balls rise at room temperature at ${S.temp}°C`)],
         why:L('Emnene tar til seg romvarme og hever ferdig, så de blir luftige og strekkbare når du skal steke.',`The balls take on room warmth and finish rising, so they become airy and stretchable by the time you bake.`),
         tip:L('Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.',`After this they can also stand up to 4 hours extra at room temperature as a buffer, if you're not ready right then.`)},
+      // v0.739: Mania manglet forvarmingssteget helt — stekesteget krevde 45 min
+      // (vanlig ovn med stein) mens tidsplanen gikk rett fra romhevingen til steking.
+      ...preheatSteps(bakeAt, FINAL_PROOF-15, S.type),
       {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
         desc:oN()+'.',
         substeps:bakeSubsteps(S.type),
@@ -2597,6 +2613,9 @@ function kveldSteps(anchor){
       ];})(),
       why:L('Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.','Cold dough is stiff — a short temper makes it stretchable again without tearing. Shorter than the standard method\'s 4 hours since the balls haven\'t been cold as long.'),
       tip:TIP.benchTemper},
+    // v0.739: Kveldsdeig manglet forvarmingssteget. v0.737 antok at metoden alt
+    // hadde et — det gjaldt kun Hurtigdeig, som bygger sitt inn i etterhevingen.
+    ...preheatSteps(bakeAt, TEMPER_MIN, S.type),
     {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),substeps:bakeSubsteps(S.type),why:WHY.st,tip:oT(S.type)}
   ];
   return {ya,steps};

@@ -1,6 +1,6 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 05.08.2026 · F23 (Q10-gjæringsmodell) lagt til etter konkurrentgjennomgang (gjelder v0.728).
+Sist oppdatert: 06.08.2026 · F27 (invariant-lag 1) bygget, F28/F29 (lag 3 og 2) lagt til (gjelder v0.739).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -873,3 +873,48 @@ rekkefølgen. F17 er det klart mest verdifulle.
   uansett, og da er det billigere å flytte begge ankerpunktene én gang enn to.
 - Liten i kode, men **[baseline]**. Funnet i ekstern gjennomgang av en generert
   Langtidsdeig-plan, aug 2026.
+
+### F27. Lag 1: maskinelt testbare invarianter over hele matrisen ✅ BYGGET (v0.739)
+> ✅ **Bygget.** Tre invarianter i `test_regression.py` som sveiper metode × type ×
+> ovnstype (60 konfigurasjoner) fra én felles `MATRIX_SWEEP`:
+> (a) `invariant_step_amounts_sum_to_recipe_all_configs` — summen av det stegene
+> ber deg måle opp er lik `recipeFor()` for hver ingrediens;
+> (b) `invariant_no_vague_amounts_for_recipe_ingredients` — ingen mengdeord uten
+> tall for en ingrediens som finnes i oppskriften (to bevisste unntak i
+> `VAGUE_OK`: boksesmøring og gjærens honning, begge utenfor oppskriften);
+> (c) `invariant_schedule_allows_the_preheat_it_demands` — tidsplanen setter av
+> minst `preheatMin()` før steking.
+> **Fant to reelle feil ved første kjøring**, begge fikset i samme versjon: sukkeret
+> forsvant fra Poolish og Biga (NY-stil i vanlig ovn), og Mania + Kveldsdeig manglet
+> forvarmingssteget helt. Alle tre er mutasjonstestet — gjeninnføres feilen, blir de røde.
+- **I klartekst:** de fire funnene fra den manuelle gjennomgangen (v0.736–v0.738)
+  tilhørte hver sin *klasse* av motsigelse. Tre av de fire klassene kan sjekkes med
+  kode i stedet for med øyne. Denne testen gjør det, for alle konfigurasjoner samtidig.
+- **Verdt å merke:** massebalansen alene ville IKKE ha funnet v0.736-vannfeilen —
+  der sto hele vannmengden i steg 1 og steg 2 ba vagt om «vannet», så summen var
+  korrekt. Det er vaghetslinten som fanger den klassen. Vaghet er ikke bare upresist
+  språk; det er stedet en motsigelse kan gjemme seg, fordi et vagt tall ikke kan
+  motsi et annet tall.
+- **Gjenstår:** den fjerde klassen — semantiske motsigelser der ingen tall er gale
+  («gjæren løses i vannet på forhånd» mot en tidsplan som sier noe annet). Den kan
+  ikke regnes på. Se F28.
+
+### F28. Lag 3: språkmodell-gjennomgang av hele matrisen
+- **I klartekst:** `copyP()` sender allerede med en sjekk-instruksjon, så halve
+  jobben finnes. Det som mangler er å kjøre den systematisk over alle metoder ×
+  typer × ovnstyper i stedet for den ene planen brukeren tilfeldigvis kopierte.
+- Skal være et skript du kjører på forespørsel, **ikke** en del av testrunden:
+  det er ikke-deterministisk og kan derfor ikke blokkere en commit.
+- Fanger klassen F27 ikke kan nå: påstander om rekkefølge, årsak og teknikk som
+  motsier hverandre uten at et eneste tall er feil.
+- Ikke [baseline]. Middels jobb.
+
+### F29. Lag 2: `uses:{vann:305}` per steg — gjør klassen strukturelt umulig
+- **I klartekst:** i dag er mengdene skrevet inn i prosaen, og `needs`-lista er en
+  parallell håndskrevet oppsummering av den. F27 tester at de to stemmer; F29 ville
+  gjort det umulig at de ikke gjør det, ved å la hvert steg deklarere `uses:{vann:305}`
+  og generere både prosa og `needs` fra samme felt.
+- Samme grep som F17 (`recipeFor`), F18 (`CALIBRATION`) og F21 (`METHODS`): hver av
+  dem fjernet en hel klasse motsigelser i stedet for å teste seg til dem.
+- Største jobben av de tre lagene — alle stegtekstene må røres. Ta den neste gang
+  stegtekstene uansett skal åpnes. **[baseline]** (rendringslaget flytter seg).

@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.739",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "New York-pizza i vanlig ovn har 7,5g sukker i oppskriften — det er sukkeret som gir skorpa farge når ovnen ikke blir varmere enn 250°C. Med Poolish og Biga nevnte ingen av stegene det. Ingredienslista ba deg veie opp sukker, og så fikk du aldri beskjed om å ha det i. Nå står det i blandesteget, som hos de andre metodene.",
+      "Mania-poolish og Kveldsdeig manglet steget «Sett på ovnen 🔥». Stekesteget krevde 45 minutters forvarming med pizzastein, mens tidsplanen gikk rett fra siste heving til steking — samme feil som ble rettet for tre andre metoder i v0.737, der vi trodde disse to alt hadde steget. Alle metoder bygger nå steget fra samme sted, så en ny metode arver det i stedet for å måtte huske det.",
+      "Begge feilene ble funnet av tre nye tester som sjekker hele matrisen av metoder, pizzatyper og ovnstyper på én gang: at det stegene ber deg måle opp summerer til oppskriften, at ingen mengde står uten tall, og at tidsplanen setter av den forvarmingen den selv krever.",
+      "Gjærmengden er uendret i alle oppskrifter."
+    ],
+    "changes_en": [
+      "New York pizza in a regular oven has 7.5g sugar in the recipe — that sugar is what gives the crust its colour when the oven cannot go above 250°C. With Poolish and Biga, none of the steps mentioned it. The ingredient list told you to weigh out sugar, and then you were never told to add it. It is now in the mixing step, as with the other methods.",
+      "Mania poolish and Evening dough were missing the step “Turn on the oven 🔥”. The baking step demanded 45 minutes of preheating with a pizza stone, while the schedule went straight from the last rise to baking — the same fault fixed for three other methods in v0.737, where we believed these two already had the step. Every method now builds the step from one place, so a new method inherits it instead of having to remember it.",
+      "Both faults were found by three new tests that check the whole matrix of methods, pizza types and oven types at once: that what the steps ask you to measure out adds up to the recipe, that no amount is stated without a number, and that the schedule sets aside the preheating it demands itself.",
+      "The amount of yeast is unchanged in every recipe."
+    ]
+  },
+  {
     "v": "0.738",
     "d": "august 2026",
     "d_en": "August 2026",

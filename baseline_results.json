@@ -151,7 +151,7 @@
       "title": "Strekk og stek 🔥",
       "iso": "2026-08-03T04:10:00.000Z"
     },
-    "stepCount": 10,
+    "stepCount": 11,
     "stepTitles": [
       "Bland poolish",
       "Poolish gjærer",
@@ -162,6 +162,7 @@
       "Kjøleskapsheving (udelt)",
       "Del i emner",
       "Romtemperaturheving (delt)",
+      "Sett på ovnen 🔥",
       "Strekk og stek 🔥"
     ]
   },
@@ -215,12 +216,13 @@
       "title": "Strekk og stek 🔥",
       "iso": "2026-08-02T04:00:00.000Z"
     },
-    "stepCount": 5,
+    "stepCount": 6,
     "stepTitles": [
       "Ankarsrum — bland deig",
       "Form emner → kjøleskap",
       "Kjøleskapsheving (10t)",
       "Ta ut og temperer",
+      "Sett på ovnen 🔥",
       "Strekk og stek 🔥"
     ]
   },
