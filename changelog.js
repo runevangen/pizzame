@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.732",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Mengdelinja i statuslinja viser n\u00e5 ogs\u00e5 hydrering: \u00ab3 stk \u00b7 500g mel \u00b7 65% \u00b7 0,75g t\u00f8rrgj\u00e6r\u00bb. Hydreringen er tatt med fordi den sier noe om hva slags deig du lager \u2014 ikke bare hvor mye. Mania-poolish viser sine egne 64%.",
+      "Ikonet og den fete skriften p\u00e5 linja er fjernet. Det var ikke bare kosmetikk: begge deler frigjorde nettopp bredden hydreringen trengte, s\u00e5 linja n\u00e5 holder seg p\u00e5 \u00e9n linje ogs\u00e5 p\u00e5 smale telefoner og med fersk gj\u00e6r (som er lengre \u00e5 skrive). Samtidig leser den n\u00e5 tydeligere som referanse \u2014 det er tidspunktene som skal v\u00e6re overskriften.",
+      "Vann, salt, olje og sukker holdes fortsatt utenfor. Vannet kan du regne ut av mel og hydrering, saltet er nesten konstant, og alle st\u00e5r uansett i selve steget n\u00e5r du trenger dem \u2014 der med mer nytte, som anbefalt vanntemperatur. Hele lista finnes p\u00e5 Oppskrift-fanen ett trykk unna."
+    ],
+    "changes_en": [
+      "The amount line in the status bar now also shows hydration: \u201c3 pcs \u00b7 500g flour \u00b7 65% \u00b7 0.75g dry yeast\u201d. Hydration is included because it says something about what kind of dough you are making \u2014 not just how much. Mania poolish shows its own 64%.",
+      "The icon and bold text on the line have been removed. That was not just cosmetic: both freed exactly the width hydration needed, so the line now stays on one line on narrow phones and with fresh yeast (which is longer to write). It also reads more clearly as reference now \u2014 the times should be the headline.",
+      "Water, salt, oil and sugar are still left out. You can work out the water from flour and hydration, the salt is nearly constant, and all of them appear in the step itself when you need them \u2014 there with more use, such as the recommended water temperature. The full list is one tap away on the Recipe tab."
+    ]
+  },
+  {
     "v": "0.731",
     "d": "august 2026",
     "d_en": "August 2026",

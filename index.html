@@ -7220,12 +7220,21 @@ function deigStatusBarHTML(steps, showActions, showDelta){
   let amountTxt='';
   try{
     const _rec=recipeFor(), _p=pc();
-    // Antall, mel og gjær — bevisst uten vann: med fire ledd brøt linja over to
-    // linjer på mobil, og hydreringen er uansett ett trykk unna på Oppskrift.
-    amountTxt = `${_p.count} ${L('stk','pcs')} · ${_rec.flour}g ${L('mel','flour')} · ${yLabelFor(_rec)}`;
+    // v0.732: antall · mel · HYDRERING · gjær. Hydreringen er med fordi den er
+    // deigens identitet, ikke en mengde — «65%» sier mer om hva du lager enn
+    // «325g vann» gjør, og koster like mange tegn. Vann, salt, olje og sukker er
+    // fortsatt ute: de er enten utledbare (vann = mel × hydrering) eller nesten
+    // konstante (salt), de står i selve steget når du trenger dem — med mer
+    // kontekst enn en badge kan gi, som anbefalt vanntemperatur — og hele lista
+    // finnes komplett på Oppskrift-fanen ett trykk unna.
+    amountTxt = `${_p.count} ${L('stk','pcs')} · ${_rec.flour}g ${L('mel','flour')} · ${_rec.hydro}% · ${yLabelFor(_rec)}`;
   }catch(e){}
+  // Uten ikon og uten fet skrift. Begge frigjorde nettopp bredden hydreringen
+  // trengte — målt på ekte element: med ikon OG fet brøt linja over to linjer på
+  // 360px-skjermer med fersk gjær. Og linja SKAL lese som referanse: det er
+  // tidene over som er overskriften her, ikke mengdene.
   const amountHTML = amountTxt
-    ? `<div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px;overflow-wrap:anywhere">🧾 <b style="color:var(--forno-text,#222)">${escH(amountTxt)}</b></div>`
+    ? `<div style="font-size:11px;color:var(--forno-text-muted,#555);margin-top:3px;overflow-wrap:anywhere">${escH(amountTxt)}</div>`
     : '';
   // v0.689: Kopier/Kalender/Lagre er flyttet fra statuslinja (topp) til BUNNEN av
   // tidsplanen (planBottomActionsHTML) — de brukes sjelden og er «etter at planen
