@@ -1,6 +1,6 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 06.08.2026 · F27 (invariant-lag 1) bygget, F28/F29 (lag 3 og 2) lagt til (gjelder v0.739).
+Sist oppdatert: 06.08.2026 · F27 (invariant-lag 1) og F28 (språkmodell-lag 3) bygget; F29 (lag 2) gjenstår.
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -899,15 +899,40 @@ rekkefølgen. F17 er det klart mest verdifulle.
   («gjæren løses i vannet på forhånd» mot en tidsplan som sier noe annet). Den kan
   ikke regnes på. Se F28.
 
-### F28. Lag 3: språkmodell-gjennomgang av hele matrisen
-- **I klartekst:** `copyP()` sender allerede med en sjekk-instruksjon, så halve
-  jobben finnes. Det som mangler er å kjøre den systematisk over alle metoder ×
+### F28. Lag 3: språkmodell-gjennomgang av hele matrisen ✅ BYGGET (`review_plans.py`)
+> ✅ **Bygget.** `review_plans.py` — et frittstående skript, bevisst **utenfor**
+> `test_regression.py`. Henter planteksten for hver konfigurasjon via `copyP()`
+> (så gjennomgangen ser nøyaktig det brukeren limer inn), og kjører to trinn:
+> **(1) gjennomgang** — én modell leter etter interne motsigelser, med krav om
+> ordrett sitat fra begge sidene; **(2) verifisering** — en uavhengig skeptiker
+> forsøker å *motbevise* hvert funn, og de som faller havner i en egen bolk
+> nederst i rapporten i stedet for å bli presentert som ekte.
+> Rapporten er markdown, sortert etter alvorlighet.
+> ```
+> python3 review_plans.py                      # hele matrisen, med verifisering
+> python3 review_plans.py --grense 3           # rask prøvekjøring
+> python3 review_plans.py --uten-verifisering  # halv kostnad, mer støy
+> python3 review_plans.py --tørrkjøring        # ingen API-kall, viser prompten
+> ```
+> Krever `ANTHROPIC_API_KEY` (eller `ant auth login`) og `pip install anthropic`.
+> Hele matrisen med verifisering koster typisk noen få dollar.
+- **I klartekst:** `copyP()` sendte allerede med en sjekk-instruksjon, så halve
+  jobben fantes. Det som manglet var å kjøre den systematisk over alle metoder ×
   typer × ovnstyper i stedet for den ene planen brukeren tilfeldigvis kopierte.
-- Skal være et skript du kjører på forespørsel, **ikke** en del av testrunden:
-  det er ikke-deterministisk og kan derfor ikke blokkere en commit.
+- **Hvorfor verifiseringsleddet er obligatorisk, ikke pynt:** en språkmodell som
+  bes finne motsigelser vil finne dem, også der det ikke er noen. Uten skeptikeren
+  drukner de reelle funnene i plausible påstander — og et verktøy som rapporterer
+  støy blir slått av etter andre kjøring. Kravet om ordrett sitat fra begge sidene
+  gjør dessuten at et menneske kan avvise et falskt funn på ti sekunder.
+- **Ikke i testrunden, med vilje:** ikke-deterministisk, så to kjøringer på samme
+  kode kan gi ulike funn. Den kan derfor ikke blokkere en commit, og skriptet
+  returnerer alltid exit 0 — et funn er ikke en feil før et menneske har sett på det.
 - Fanger klassen F27 ikke kan nå: påstander om rekkefølge, årsak og teknikk som
   motsier hverandre uten at et eneste tall er feil.
-- Ikke [baseline]. Middels jobb.
+- **Testdekning:** alt utenom selve API-svaret er dekket av stubbtester —
+  planuttrekk, rensing, feilhåndtering (avslag, avkortning, ugyldig JSON),
+  rapportinndeling og forespørselsformatet mot SDK-et. Selve modellsvaret er
+  per natur ikke testbart.
 
 ### F29. Lag 2: `uses:{vann:305}` per steg — gjør klassen strukturelt umulig
 - **I klartekst:** i dag er mengdene skrevet inn i prosaen, og `needs`-lista er en
