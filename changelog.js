@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.733",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet at tidspunktet i steg-kortene ble kuttet av h\u00f8yre kant n\u00e5r man bruker st\u00f8rre tekst. Ved \u00abSt\u00f8rre tekst\u00bb forsvant 43 piksler ut av skjermen, ved \u00abSt\u00f8rst\u00bb 88 \u2014 s\u00e5 «kl. 21:30 \u00b7 30 min» ble stumpet midt i.",
+      "L\u00f8sningen var \u00e5 rydde i venstre marg: stegnummeret bor n\u00e5 INNE i avhukingsboksen. Den viser nummeret til du haker av steget, og \u2713 etterp\u00e5. F\u00f8r brukte to kontroller ved siden av hverandre plassen til \u00e9n funksjon \u2014 nummeret var uansett bare pynt, uten egen handling. Det gir ogs\u00e5 mer plass til selve steg-tittelen, som f\u00f8r brakk over to linjer.",
+      "Varigheten (\u00ab\u00b7 30 min\u00bb) kan n\u00e5 flytte ned p\u00e5 egen linje n\u00e5r plassen er trang, mens selve datoen fortsatt holdes samlet \u2014 den skal aldri brekke midt i, slik den gjorde f\u00f8r v0.694."
+    ],
+    "changes_en": [
+      "Fixed the time in the step cards being cut off at the right edge when using larger text. At \u201cLarger text\u201d 43 pixels disappeared off screen, at \u201cLargest\u201d 88 \u2014 so \u201c21:30 \u00b7 30 min\u201d was chopped mid-way.",
+      "The fix was to tidy the left margin: the step number now lives INSIDE the checkbox. It shows the number until you check the step off, and \u2713 afterwards. Previously two controls side by side used the space of one function \u2014 the number was decorative anyway, with no action of its own. It also gives the step title more room, which used to wrap onto two lines.",
+      "The duration (\u201c\u00b7 30 min\u201d) can now move to its own line when space is tight, while the date itself is still kept together \u2014 it must never break mid-way, as it did before v0.694."
+    ]
+  },
+  {
     "v": "0.732",
     "d": "august 2026",
     "d_en": "August 2026",

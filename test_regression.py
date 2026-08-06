@@ -4036,6 +4036,53 @@ def run_behavioral_tests(page):
     ok108 = all(r108.get(k) for k in ['allMatch','allOneLine','freshOk','maniaDiffers'])
     results.append(('status_bar_amount_line_matches_recipefor_all_methods', ok108, r108))
 
+    # v0.733: rapportert fra produksjon ved «Større tekst» — tidspunktet i
+    # steg-kortet ble kuttet av høyre kant (målt 43px ved fs-xlarge, 88px ved
+    # fs-xxlarge). Årsaken var at .mob-stim har white-space:nowrap (bevisst, fra
+    # v0.694, så datoen ikke brekker midt i) mens venstre marg brukte to
+    # kontroller — hake OG nummer — på én funksjon.
+    # Fikset ved å (a) flytte nummeret INN i haken (frigjør ~30px) og (b) skille
+    # varigheten ut som egen enhet, så den kan brytes ned uten å splitte datoen.
+    # Denne testen er den generelle invarianten som manglet: tidsteksten skal
+    # ALDRI stikke utenfor kortet, ved noen tekststørrelse.
+    r109 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,mode:S.mode};
+      const savedFs=['fs-large','fs-xlarge','fs-xxlarge'].filter(c=>document.body.classList.contains(c));
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.method='standard'; S.mode='start';
+      const out={overflow:{}, nowrapKept:true};
+      for(const cls of ['','fs-large','fs-xlarge','fs-xxlarge']){
+        document.body.classList.remove('fs-large','fs-xlarge','fs-xxlarge');
+        if(cls) document.body.classList.add(cls);
+        mobShowTab('plan'); mobGen();
+        const step=document.querySelector('#mob-plan-content .mob-step');
+        if(!step){ out.overflow[cls||'std']=null; continue; }
+        const sr=step.getBoundingClientRect();
+        const tims=[...step.querySelectorAll('.mob-stim')];
+        // v0.694-kontrakten består: hver tidsenhet er fortsatt nowrap
+        tims.forEach(t=>{ if(getComputedStyle(t).whiteSpace!=='nowrap') out.nowrapKept=false; });
+        out.overflow[cls||'std']=Math.max(...tims.map(t=>Math.round(t.getBoundingClientRect().right-sr.right)));
+      }
+      document.body.classList.remove('fs-large','fs-xlarge','fs-xxlarge');
+      savedFs.forEach(c=>document.body.classList.add(c));
+      mobGen();
+      // haken bærer nummeret, og ✓ når den er avhaket
+      const chkBefore=document.querySelector('#mob-plan-content .mob-stepchk');
+      const showsNumber = chkBefore && chkBefore.textContent.trim()==='1' && chkBefore.classList.contains('num');
+      toggleStepDone(0);
+      const chkAfter=document.querySelector('#mob-plan-content .mob-stepchk');
+      const showsCheck = chkAfter && chkAfter.textContent.trim()==='✓' && chkAfter.classList.contains('on');
+      toggleStepDone(0);
+      // den gamle separate nummer-sirkelen skal være borte (én kontroll, ikke to)
+      const noSeparateNum = !document.querySelector('#mob-plan-content .mob-sn');
+      Object.assign(S,saved); mobGen();
+      out.fitsEverywhere = Object.values(out.overflow).every(v=>v===null||v<=0);
+      out.showsNumber=showsNumber; out.showsCheck=showsCheck; out.noSeparateNum=noSeparateNum;
+      return out;
+    }""")
+    ok109 = all(r109.get(k) for k in ['fitsEverywhere','nowrapKept','showsNumber','showsCheck','noSeparateNum'])
+    results.append(('step_time_never_overflows_at_any_font_size', ok109, r109))
+
     return results
 
 
