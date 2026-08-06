@@ -4083,6 +4083,38 @@ def run_behavioral_tests(page):
     ok109 = all(r109.get(k) for k in ['fitsEverywhere','nowrapKept','showsNumber','showsCheck','noSeparateNum'])
     results.append(('step_time_never_overflows_at_any_font_size', ok109, r109))
 
+    # v0.734: Fokus-knappen sa «ett steg om gangen» — det beskriver en
+    # BEGRENSNING, mens modusen faktisk gir to gevinster: stor tekst og at
+    # skjermen ikke sovner (wake lock). Etiketten sier nå gevinsten, med navnet
+    # stort og forklaringen i mindre skrift under (bevisst to linjer, ikke et
+    # uhell — dagens ettlinjes tekst brakk uansett ved større tekststørrelser).
+    # Testen låser at wake lock nevnes: det er hele grunnen til at Fokus er en
+    # egen modus og ikke bare en scrollbar liste.
+    r110 = page.evaluate("""() => {
+      const saved={method:S.method,mode:S.mode};
+      window._planChosen=true; setLayout('mob'); S.method='standard'; S.mode='start';
+      mobShowTab('plan'); mobGen();
+      const btn=[...document.querySelectorAll('#mob-plan-content button')].find(b=>/Fokus/.test(b.textContent));
+      const sub=btn?btn.querySelector('span'):null;
+      const txt=btn?btn.textContent:'';
+      const title=btn?(btn.getAttribute('title')||''):'';
+      // NB: må måles FØR restore-render — mobGen() bygger DOM på nytt, og
+      // getComputedStyle på en frakoblet node gir tomme verdier.
+      const subSmaller = !!sub && parseFloat(getComputedStyle(sub).fontSize) < parseFloat(getComputedStyle(btn).fontSize);
+      Object.assign(S,saved); mobGen();
+      return {
+        hasButton:!!btn,
+        keepsName:/Fokus/.test(txt),
+        mentionsWakeLock:/sovner ikke/i.test(txt),
+        mentionsLargeText:/stor tekst/i.test(txt),
+        noLimitWording:!/ett steg om gangen/i.test(txt),
+        hasSmallerSub: subSmaller,
+        titleExplains:/våken/i.test(title)
+      };
+    }""")
+    ok110 = all(r110.get(k) for k in ['hasButton','keepsName','mentionsWakeLock','mentionsLargeText','noLimitWording','hasSmallerSub','titleExplains'])
+    results.append(('focus_button_states_benefit_not_limitation', ok110, r110))
+
     return results
 
 

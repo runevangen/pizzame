@@ -7270,7 +7270,7 @@ function deigStatusBarHTML(steps, showActions, showDelta){
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🌾 Mel:','🌾 Flour:')} <b style="color:var(--forno-text,#222)">${escH(mtName(MELTYPER.find(m=>m.v===S.meltype)))}</b></div>
     ${amountHTML}
     ${actionsHTML}
-    ${showActions ? `<button onclick="openFocus()" title="${L('Vis det aktive steget stort i fullskjerm — for telefonen på benken','Show the active step large in full screen — for the phone on the counter')}" style="width:100%;margin-top:8px;padding:11px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(232,89,12,.28)">🔎 ${L('Fokus','Focus')} — ${L('ett steg om gangen','one step at a time')}</button>` : ''}
+    ${showActions ? `<button onclick="openFocus()" title="${L('Åpner det aktive steget stort i fullskjerm, og holder skjermen våken — for telefonen på kjøkkenbenken. Du kan bla mellom stegene inne i Fokus.','Opens the active step large in full screen and keeps the screen awake — for the phone on the kitchen counter. You can move between steps inside Focus.')}" style="width:100%;margin-top:8px;padding:10px 11px;border:none;border-radius:10px;background:var(--forno-accent);color:#1a1512;font-size:14px;font-weight:700;line-height:1.25;cursor:pointer;box-shadow:0 3px 12px rgba(232,89,12,.28)">🔎 ${L('Fokus','Focus')}<span style="display:block;font-size:11px;font-weight:600;opacity:.82;margin-top:1px">${L('stor tekst · skjermen sovner ikke','large text · screen stays awake')}</span></button>` : ''}
   </div>`;
 }
 function wizOpenFinjusterFromPlan(){
