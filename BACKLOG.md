@@ -846,3 +846,30 @@ rekkefølgen. F17 er det klart mest verdifulle.
   timeplanen i det hele tatt — og rangeringen i Smart-plan endres, ikke bare
   varslene (`scorePizzatidWindows` faller bort som vekt, så lengst gjæring vinner).
 - Liten. Ingen [baseline]-risiko (rører ingen gjærtall).
+
+---
+
+### F26. Formesteget regnes ved kjøleskapstemperatur selv om deigen står på benken
+- **I klartekst:** Steget «Form emner → kjøleskap» (`tailSteps`, `index.html`) har
+  `loc:'kjol'`. I disse 15 minuttene deler, veier og runder du emnene PÅ BENKEN —
+  kjøleskapet er først der på slutten. `stepTempC()` i `engine.js` leser `loc` og
+  regner derfor minuttene ved kjøleskapstemperatur (3 °C) i stedet for
+  romtemperatur, slik at Q10-belastningen blir 0,199 timer for lav.
+- **Status (v0.738):** merkelappen er rettet med `dispLoc:'benk'`, så visningen
+  stemmer. Selve temperaturen står fortsatt feil — bevisst.
+- **Hvorfor ikke fikset:** utslaget er −0,7 % til −2,0 % på gjærmengden
+  (24 t: 1,13 → 1,11 g · 48 t: 0,75 → 0,74 g · 72 t: uendret 0,56 g · 120 t:
+  0,38 → 0,37 g). Det er under det en kjøkkenvekt oppløser, men det bryter
+  **[baseline]**-ankeret fra F23, som med vilje låser at 24 t gir 1,13 og 72 t
+  gir 0,56 — eksakt som før Q10-modellen ble innført. Målt: ingen verdi av
+  `Q10_K` kan holde begge ankerpunktene etter rettingen (holder du 24 t eksakt
+  med K=15,15, blir 72 t 0,57; holder du 72 t med K=15,0, blir 24 t 1,12).
+  Rune valgte aug 2026 å rette merkelappen alene og parkere fysikken.
+- **Fiks når den tas:** bytt `loc:'kjol'` → `loc:'benk'` og fjern `dispLoc`
+  (benk er da riktig på begge akser). Oppdater `q10_model_calibrated_for_standard_others_unchanged`
+  (`calibrated`-sjekken), `standard_napoletana` i `baseline_results.json` og de
+  frosne oppskriftsradene for standard.
+- **Ta den sammen med F24** (Q10 for poolish/biga). Den åpner kalibreringen
+  uansett, og da er det billigere å flytte begge ankerpunktene én gang enn to.
+- Liten i kode, men **[baseline]**. Funnet i ekstern gjennomgang av en generert
+  Langtidsdeig-plan, aug 2026.
