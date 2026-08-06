@@ -1904,6 +1904,16 @@ function oT(t){
   return p?L('Jernpanne gir best varmeoverføring.','A cast-iron pan gives the best heat transfer.'):L('Ost UNDER sausen — Chicago-tradisjonen.','Cheese UNDER the sauce — the Chicago tradition.');
 }
 function oN(){return S.oven==='pizza'?L('Pizzaovn','Pizza oven'):L('Vanlig ovn (maks 250°C)','Regular oven (max 250°C)');}
+// v0.737: hvor lenge ovnen må stå på FØR steking. Tallene er de samme som
+// stekestegets tips allerede oppga — de var bare aldri lagt inn i tidsplanen,
+// så planen gikk rett fra «ferdig temperert» til «stek» uten et minutt til
+// oppvarming. Pizzastein/-stål er det trege leddet i en vanlig ovn: luften er
+// varm lenge før steinen er det. Langpanne og Chicago stekes i form uten stein,
+// så der holder det å nå temperatur.
+function preheatMin(){
+  if(S.oven==='pizza') return 20;
+  return (S.type==='napoletana'||S.type==='newyork') ? 45 : 20;
+}
 // v5.99: understeg for det delte stekestegetet — samme gren-logikk (type ×
 // ovnstype) som oD()/oT(), brutt opp i egne linjer i stedet for ett avsnitt.
 // Brukt av tailSteps (Standard/Poolish/Biga), kveldSteps og hurtigSteps sine
@@ -1948,6 +1958,11 @@ const LOC_EN={
   benk:'<span class="sloc r">🔧 Counter</span>'
 };
 // Bruk en Proxy slik at eksisterende `LOC[s.loc]`-oppslag automatisk følger valgt språk.
+// v0.737: `loc` sier hvor DEIGEN er — det er den som mater temperaturmodellen
+// (stepTempC i engine.js). For de fleste steg er det også der DU er, men ikke
+// alltid: mens ovnen forvarmes står deigen fremdeles på benken. `dispLoc` er
+// derfor et rent visningsoverstyr; mangler den, brukes `loc` som før.
+function stepLoc(s){ return s.dispLoc||s.loc; }
 const LOC=new Proxy({},{get:(_,k)=>((window._lang==='en'?LOC_EN:LOC_NO)[k])});
 const WHY_NO={
   fk:'Kald fermentering (2–4°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet. Kulda er også tilgivende — siden den bremser hele prosessen, tåler en kald deig litt mer gjær enn du skulle tro før det blir et problem.',
@@ -2189,6 +2204,28 @@ function rawSteps(a){
         ],
         why:WHY.tu,
         tip:TIP.benchTemper},
+      // v0.737: stekesteget har alltid sagt at ovnen må forvarmes 15–20 min
+      // (pizzaovn) eller minst 45 min (vanlig ovn med stein/stål), men tidsplanen
+      // gikk rett fra «ferdig temperert» til «stek» — så du oppdaget kravet i det
+      // øyeblikket det var for sent. Hurtigdeig og Kveldsdeig har hatt et eget
+      // forvarmingssteg hele tiden; her manglet det bare.
+      // loc:'rom' fordi DEIGEN fortsatt står på benken — det holder Q10-modellen
+      // uendret (romtemperaturintervallet deles i to like varme deler i stedet for
+      // å bli borte). dispLoc:'ovn' fordi det er dit DU går.
+      // Klemt mot benketida så steget aldri kan havne før «Ta ut av kjøleskap»,
+      // selv om noen senere skulle senke gulvet på temper (i dag ≥ 60 min).
+      ...(()=>{ const ph=Math.min(preheatMin(), Math.max(0,temper-5)); if(ph<5) return [];
+        const t=S.oven==='pizza'?L('pizzaovnen','the pizza oven'):L('ovnen','the oven');
+        const stone=S.oven!=='pizza'&&(tp==='napoletana'||tp==='newyork');
+        return [{title:'Sett på ovnen 🔥',loc:'rom',dispLoc:'ovn',at:sM(bake,ph),dur:0,
+          desc:L(`Sett på ${t} nå — den trenger ca. ${fmtDur(ph)} før den er varm nok. ${stone?'Sett pizzastein/-stål inn med en gang: luften i ovnen blir varm lenge før steinen er det, og det er steinen som gir bunnen.':'Deigen står trygt på benken mens ovnen varmes.'}`,`Turn on ${t} now — it needs about ${durEn(fmtDur(ph))} before it is hot enough. ${stone?'Put the pizza stone/steel in right away: the air in the oven gets hot long before the stone does, and it is the stone that makes the base.':'The dough sits safely on the counter while the oven heats.'}`),
+          substeps:[
+            L(`Sett på ${t} — ca. ${fmtDur(ph)} til den er klar`,`Turn on ${t} — about ${durEn(fmtDur(ph))} until it is ready`),
+            ...(stone?[L('Sett pizzastein/-stål inn med en gang','Put the pizza stone/steel in right away')]:[]),
+            L('La deigemnene stå videre på benken','Leave the dough balls on the counter')
+          ],
+          why:L('Ovnen er det eneste i planen som ikke kan hastes. En pizzastein som ikke er gjennomvarm gir blek, seig bunn uansett hvor god deigen er — og du merker det ikke før pizzaen er inne.','The oven is the one thing in the plan that cannot be rushed. A stone that is not heated through gives a pale, chewy base no matter how good the dough is — and you will not notice until the pizza is already in.'),
+          tip:oT(tp)}]; })(),
       {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:oT(tp)}
     ];
   }
@@ -2679,7 +2716,7 @@ function renderSteps(steps, mode='desktop'){
         .replace(/class="swait-val"/g, 'class="mob-swait-val"');
     }
 
-    const locHtml = isMob ? (LOC[s.loc] || '').replace(C.locReplaceFrom, C.locReplaceTo) : (LOC[s.loc] || '');
+    const locHtml = isMob ? (LOC[stepLoc(s)] || '').replace(C.locReplaceFrom, C.locReplaceTo) : (LOC[stepLoc(s)] || '');
 
     const done = stepChecked(s, i);
     const missed = i < curIdx && !done;
@@ -3000,7 +3037,7 @@ function copyP(steps){
   const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
   steps.forEach((s,i)=>{
     const locMap=L({kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'},{kjol:'❄️ Fridge',rom:'🏠 Room temperature',ovn:'🔥 Oven',benk:'🔧 Counter'});
-    const loc=locMap[s.loc]||s.loc;
+    const loc=locMap[stepLoc(s)]||stepLoc(s);
     lines.push('');
     lines.push(`${i+1}. ${dispTitle(s.title)}`);
     lines.push(`   ${L('Tid','Time')}: ${fDT(s.at)}${s.dur?' · '+L('Varighet','Duration')+': '+s.dur+' min':''}${loc?' · '+L('Lokasjon','Location')+': '+loc:''}`);
@@ -3050,7 +3087,7 @@ function downloadIcs(steps){
     lines.push('DTEND:'+icsStamp(end));
     lines.push('SUMMARY:🍕 '+icsEsc(title));
     if(descVal.trim()) lines.push('DESCRIPTION:'+icsEsc(descVal));
-    if(s.loc&&locName[s.loc]) lines.push('LOCATION:'+icsEsc(locName[s.loc]));
+    if(stepLoc(s)&&locName[stepLoc(s)]) lines.push('LOCATION:'+icsEsc(locName[stepLoc(s)]));
     // Varsel kun på handlingssteg (ikke passive «heving»-venter) — så du får pling
     // når du faktisk skal gjøre noe, ikke før hver hvile.
     if(!s.passive) lines.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(title),'TRIGGER:-PT10M','END:VALARM');
