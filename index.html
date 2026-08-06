@@ -3128,7 +3128,50 @@ function pizzatidChanged(){
   else { try{ schedNow(); }catch(e){} }
 }
 function timeStrToMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+// ===== v0.735: midlertidig pause i «ledig tid» =====
+// Behovet: en fridag der ukesmalen ikke stemmer. Vi lagrer IKKE hvilke dager du
+// er ledig — appen slutter bare å bry seg, fram til et tidspunkt. Ukesmalen din
+// røres ikke, så det finnes ingen gjenoppretting som kan gå galt.
+// Omfanget måles i TID, ikke i antall søk: planen regnes om ved hver minste
+// endring (mobGen kjører på hvert kontrollbytte), så et flagg som «gjelder neste
+// utregning» ville vært brukt opp før resultatet var på skjermen.
+// Lagres lokalt, ikke på server: en pause hører hjemme på enheten du sitter ved,
+// ikke synkronisert til en PC du ikke bruker nå.
+const PIZZATID_OFF_KEY='pizzatidOffUntil';
+function pizzatidOffUntil(){
+  try{
+    const ts=Number(localStorage.getItem(PIZZATID_OFF_KEY));
+    // Utløpt = borte. Verdien leses ved hvert oppslag, så det trengs ingen timer
+    // som må rekke å kjøre: åpner du appen i morgen, er ledig tid bare på igjen.
+    if(!isFinite(ts) || !ts || ts<=Date.now()) return null;
+    return ts;
+  }catch(e){ return null; }
+}
+function pizzatidIsOff(){ return pizzatidOffUntil()!==null; }
+// «Ut dagen» = til midnatt, ikke 24 timer fram. Trykker du kl. 22, varer pausen
+// to timer — det er det «ut dagen» betyr, og alternativet ville overrasket.
+function pizzatidEndOfToday(){ const d=new Date(); d.setHours(24,0,0,0); return d.getTime(); }
+function setPizzatidOffToday(){
+  try{ localStorage.setItem(PIZZATID_OFF_KEY, String(pizzatidEndOfToday())); }catch(e){}
+  pizzatidOffChanged();
+}
+function clearPizzatidOff(){
+  try{ localStorage.removeItem(PIZZATID_OFF_KEY); }catch(e){}
+  pizzatidOffChanged();
+}
+// Pausen endrer både varslene og RANGERINGEN i Smart-plan, så begge må tegnes
+// på nytt — ellers står et resultat igjen som ble regnet ut under motsatt regel.
+function pizzatidOffChanged(){
+  try{ renderPizzatidDays(); }catch(e){}
+  const res=document.getElementById('mob-beta-result');
+  if(res && res.innerHTML.trim()){ try{ runBetaSearch(true); }catch(e){} }
+  pizzatidChanged();
+}
 function inPizzatidWindow(hh,mm,day){
+  // Pausen gjør hele døgnet ledig — bortsett fra natten. Natt er en egen regel
+  // (ACTIVE_STEP_TIME_WINDOWS i tidsplanen); uten unntaket her ville Smart-plan
+  // sluttet å advare om elting 03:15 mens tidsplanen fortsatt gjorde det.
+  if(pizzatidIsOff()) return !(hh>=23||hh<6);
   const key=PIZZATID_DAY_KEYS[day];
   const periods=(window._pizzatidSchedule||defaultPizzatidSchedule())[key]||[];
   const t=hh*60+mm;
@@ -3151,6 +3194,11 @@ function inPizzatidWindow(hh,mm,day){
 // gamle 08-16-regelen — IKKE på "alt er ledig", som ville skjult ekte konflikter
 // i det første sekundet etter oppstart.
 function outsidePizzatid(hh,mm,day){
+  // v0.735: dette predikatet mater KUN «opptatt»-vinduet i tidsplanen. Natt har
+  // sitt eget vindu ved siden av, så pausen kan slå av opptatt-varselet helt uten
+  // å røre nattadvarselen. Sjekken må stå her i tillegg til i inPizzatidWindow,
+  // fordi fallbacket under (08–16 før timeplanen er lastet) ellers ville overlevd.
+  if(pizzatidIsOff()) return false;
   if(!window._pizzatidSchedule) return (hh>=8 && hh<16 && day>=1 && day<=5);
   return !inPizzatidWindow(hh,mm,day);
 }
@@ -3536,7 +3584,9 @@ function renderPizzatidDays(){
   const sched=window._pizzatidSchedule||defaultPizzatidSchedule();
   const inp='font-size:11px;padding:4px;border-radius:6px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text)';
   const lbl='font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--forno-text-faint)';
-  el.innerHTML=PIZZATID_DAY_LABELS.map(([key,label])=>{
+  // v0.735: er ledig tid satt på pause, sier vi det HER også — dette er stedet
+  // man går til når man lurer på hvorfor appen svarer som den gjør.
+  el.innerHTML=pizzatidOffBannerHTML()+PIZZATID_DAY_LABELS.map(([key,label])=>{
     label = L(label, PIZZATID_DAY_LABELS_EN[key]||label);
     let periods=Array.isArray(sched[key])?sched[key]:[];
     // Vis alltid minst én rad å fylle i, selv om dagen er tom.
@@ -3597,7 +3647,7 @@ function saveBetaPizzatid(){
 // (stort og først — det avgjør om du kan ta den), HVA som kolliderer, og HVOR MYE
 // arbeid — grønt «raskt gjort» (passivt/dur 0, f.eks. ta ut av kjøleskap — kan
 // gjøres hjemmefra) vs. oransje «~X min aktivt». Ingen konflikt → «✓ alt passer».
-function betaWhenRow(conflicts){
+function betaWhenRow(conflicts, offerPause){
   if(!conflicts || !conflicts.length) return `<span class="beta-eff fits" style="font-size:11px;padding:2px 10px">✓ ${L('alt passer','all fits')}</span>`;
   const c=conflicts[0];
   const dy=['søn','man','tir','ons','tor','fre','lør'];
@@ -3608,9 +3658,26 @@ function betaWhenRow(conflicts){
   const more=conflicts.length>1?` <span style="color:var(--forno-text-faint,#6d5a3a);font-weight:400">+${conflicts.length-1}</span>`:'';
   // Uten en etikett måtte man gjette at «når»-boksen ER en konflikt. Si det rett ut.
   const lbl=night?L('Midt på natten','Middle of the night'):L('Utenfor ledig tid','Outside free time');
+  // v0.735: pausen tilbys bare her — i boksen der irritasjonen faktisk oppstår.
+  // Ikke på nattkonflikter: pausen rører ikke natten, så knappen ville løyet.
+  // Kun på det anbefalte kortet, ellers står samme lenke tre ganger i lista.
+  const pause=(offerPause && !night)
+    ? `<div style="margin-top:6px"><button type="button" onclick="setPizzatidOffToday()" style="border:none;background:transparent;padding:0;font-family:inherit;font-size:11px;font-weight:700;color:var(--forno-accent-text);text-decoration:underline;cursor:pointer">🔕 ${L('Se bort fra ledig tid ut dagen','Ignore free time for the rest of today')}</button></div>`
+    : '';
   return `<div class="beta-conf-lbl">⚠ ${lbl}</div>`
     +`<div class="beta-when-line"><span class="beta-when-big">${escH(when)}</span>`
-    +`<span class="beta-when-step">${escH(dispTitle(c.title))}${more}<br><span class="beta-eff ${quick?'quick':'active'}" style="margin-top:2px">${eff}</span></span></div>`;
+    +`<span class="beta-when-step">${escH(dispTitle(c.title))}${more}<br><span class="beta-eff ${quick?'quick':'active'}" style="margin-top:2px">${eff}</span></span></div>`
+    +pause;
+}
+// v0.735: merkelappen er ikke pynt. Uten den blir en glemt pause til en STILLE
+// feil: appen sier at alt passer, og du vet ikke hvorfor. Derfor står den både
+// over søkeresultatet og øverst i timeplan-redigeringen, alltid med veien ut.
+function pizzatidOffBannerHTML(){
+  if(!pizzatidIsOff()) return '';
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;padding:7px 10px;margin-bottom:6px">
+    <span style="font-size:11px;font-weight:700;color:var(--forno-accent-text)">🔕 ${L('Ledig tid telles ikke med','Free time is not counted')}<span style="display:block;font-weight:600;opacity:.85;margin-top:1px">${L('til midnatt','until midnight')}</span></span>
+    <button type="button" onclick="clearPizzatidOff()" style="flex:0 0 auto;border:1px solid var(--forno-accent);border-radius:999px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-family:inherit;font-size:11px;font-weight:700;padding:4px 11px;cursor:pointer;white-space:nowrap">${L('Slå på igjen','Turn back on')}</button>
+  </div>`;
 }
 function renderResultBlock(containerId, label, anchorIso){
   const results=searchAllMethods(new Date(anchorIso));
@@ -3642,7 +3709,7 @@ function renderResultBlock(containerId, label, anchorIso){
     return `<div class="beta-card${isWin?' beta-win':''}">
       <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">~${Math.round(c.totalHrs)}${L('t','h')}</span></div>
       ${flav?`<div class="beta-sub">${flav}</div>`:''}
-      <div class="beta-whenrow">${betaWhenRow(c.conflicts)}</div>
+      <div class="beta-whenrow">${betaWhenRow(c.conflicts, isWin)}</div>
       <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${i})">${L('Bruk denne','Use this one')}</button>
     </div>`;
   }).join('');
@@ -3665,6 +3732,7 @@ function renderResultBlock(containerId, label, anchorIso){
     ? `<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:8px;padding:7px 9px;margin-bottom:6px;font-size:11px;color:var(--forno-text-muted)">${L('Du har skrudd av alle metoder — viser alle likevel. Skru på minst én under «Metoder du blir tilbudt».','You have turned off all methods — showing all anyway. Turn on at least one under "Methods you are offered".')}</div>`
     : '';
   el.innerHTML=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:10px;margin-top:6px">
+    ${pizzatidOffBannerHTML()}
     ${relaxedNote}
     ${tooLateWarning}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
@@ -3737,7 +3805,9 @@ function useBetaShortcut(iso){
   window._betaTouched={time:true,date:true}; betaUpdateGuide(); // snarvei fyller begge
   runBetaSearch();
 }
-function runBetaSearch(){
+// noScroll: v0.735 — når pausen slås av/på tegnes resultatet på nytt der du
+// allerede står. Å scrolle da ville rykket skjermen bort under fingeren din.
+function runBetaSearch(noScroll){
   const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
   const resultEl=document.getElementById('mob-beta-result');
   if(!dEl||!dEl.value){
@@ -3752,7 +3822,7 @@ function runBetaSearch(){
   if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:var(--forno-text-faint)">${L('Søker …','Searching …')}</div>`;
   try{
     renderResultBlock('mob-beta-result', fDT(anchor), anchor.toISOString());
-    if(resultEl) resultEl.scrollIntoView({behavior:'smooth', block:'center'});
+    if(resultEl && !noScroll) resultEl.scrollIntoView({behavior:'smooth', block:'center'});
   }catch(e){
     if(resultEl) resultEl.innerHTML=`<div style="padding:8px;font-size:12px;color:#e8a06e">${L('Noe gikk galt under søket. Prøv igjen, eller si fra hvis det gjentar seg.','Something went wrong during the search. Try again, or let us know if it keeps happening.')}</div>`;
     console.error('Beta-søk feilet:', e);

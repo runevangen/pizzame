@@ -821,3 +821,28 @@ rekkefølgen. F17 er det klart mest verdifulle.
   (`2262` standard-hale, `2622` Kveldsdeig) automatisk siden de deler `TIP.benchTemper`.
   Behold NO + EN, og «vanskelig å åpne»-formuleringen (den er allerede riktig).
 - Funnet av Kveldsdeig-gjennomgang, aug 2026. Ikke [baseline] (tips-tekst, ingen frosne tall).
+
+---
+
+### F25. «Ledig tid av» med lengre varighet enn ut dagen (ferieuke)
+- **Bakgrunn:** v0.735 leverte pausen med én varighet — ut dagen, til midnatt.
+  Det opprinnelige ønsket var bredere: «fri hele dagen f.eks. pga feriedag eller
+  den uka du er i», med automatisk retur til opptatt etter en uke. Vi valgte
+  bevisst den minste versjonen først fordi den treffer det vanligste tilfellet
+  («jeg er hjemme i dag likevel») med ett flagg og null backend.
+- **Fiks (skisse):** samme motor, bare en annen utløpsdato. Bytt lenka mot tre
+  trinn i Pizzatid-panelet — «På / Av ut dagen / Av ut uka» — der «ut uka» setter
+  `pizzatidOffUntil` til midnatt førstkommende søndag. Ingenting i `inPizzatidWindow`,
+  `outsidePizzatid` eller banneret trenger å endres; de leser bare tidsstempelet.
+- **Vurdert og forkastet (aug 2026):** en datomodell (`freeDates`-liste lagret på
+  server ved siden av `schedule`, med per-dag-maskering av ukesmalen). Den er
+  mektigere — den takler «ferie om tre uker» og enkeltdager spredt utover — men
+  krever endring i `netlify/functions/pizzatid.js` (`sanitizeSchedule` stripper alt
+  ukjent), synkronisering mellom enheter, og opprydding av passerte datoer. Et
+  tidsstempel gir det samme for de realistiske tilfellene til en brøkdel av prisen.
+  Ta opp igjen kun hvis noen faktisk vil planlegge en ferie på forhånd.
+- **Merk ved bygging:** jo lengre pausen varer, jo viktigere blir merkelappen.
+  «Av ut uka» som er glemt bort er en uke med anbefalinger som ikke tar hensyn til
+  timeplanen i det hele tatt — og rangeringen i Smart-plan endres, ikke bare
+  varslene (`scorePizzatidWindows` faller bort som vekt, så lengst gjæring vinner).
+- Liten. Ingen [baseline]-risiko (rører ingen gjærtall).

@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.735",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny knapp når Smart-plan sier at et steg havner utenfor den ledige tiden din: «Se bort fra ledig tid ut dagen». Den er for fridagen — ferie, avspasering, hjemmekontor — der den vanlige uka di rett og slett ikke stemmer.",
+      "Timeplanen din røres ikke. Appen slutter bare å bry seg, og ved midnatt teller den ledige tiden med igjen helt av seg selv. Det er ingenting å huske å skru tilbake.",
+      "Natten (23–06) holdes utenfor. «Fri hele dagen» skal ikke bety at appen foreslår elting kl. 03.",
+      "Mens pausen varer står det «🔕 Ledig tid telles ikke med — til midnatt» både over søkeresultatet og øverst i timeplan-redigeringen, med «Slå på igjen» ved siden av. Uten den beskjeden ville en glemt pause blitt en stille feil: appen sier at alt passer, og du vet ikke hvorfor."
+    ],
+    "changes_en": [
+      "New button when Smart plan reports that a step falls outside your free time: “Ignore free time for the rest of today”. It is for the day off — holiday, time in lieu, working from home — where your usual week simply does not apply.",
+      "Your schedule is left untouched. The app just stops caring, and at midnight free time counts again all by itself. There is nothing to remember to switch back.",
+      "The night (23–06) stays out of it. “Free all day” must not mean the app suggests kneading at 3 am.",
+      "While the pause is on, “🔕 Free time is not counted — until midnight” appears both above the search result and at the top of the schedule editor, with “Turn back on” next to it. Without that notice a forgotten pause becomes a silent bug: the app says everything fits, and you have no idea why."
+    ]
+  },
+  {
     "v": "0.734",
     "d": "august 2026",
     "d_en": "August 2026",
