@@ -4176,6 +4176,45 @@ def run_behavioral_tests(page):
         'bannerShowsWayOut','bannerHiddenWhenOn'])
     results.append(('pizzatid_pause_frees_day_but_not_night', ok111, r111))
 
+    # v0.736: Langtidsdeigen ba deg helle ALT vannet i melet under autolysen, og
+    # steget etter ba deg løse gjæren «i litt vann». Det vannet fantes ikke — og
+    # hentet du nytt fra springen, sprakk både deigvekten og hydreringen.
+    # Testen låser at delene SUMMERER seg til totalen, ikke bare at teksten er
+    # endret: det er regnestykket som var feil, ikke ordlyden.
+    r112 = page.evaluate("""() => {
+      const saved={method:S.method,mel:S.mel,hydro:S.hydro,kjokkenmaskin:S.kjokkenmaskin,cold:S.cold};
+      const out={}; let allSum=true, allNoVague=true, allWhyOk=true, allInNeeds=true;
+      for(const km of ['ankarsrum','manuell','annen']){
+        for(const mel of [300,500,1000]){
+          S.method='standard'; S.mel=mel; S.hydro=65; S.kjokkenmaskin=km; S.cold=48;
+          const st=stepsForAnchor(new Date(2020,0,1,12,0));
+          const total=recipeFor(S).water;
+          const s1=st[0], s2=st[1];
+          // Autolysemengden og gjærvannet leses ut av selve teksten brukeren ser.
+          const m1=s1.desc.match(/Hell (\\d+)g/);
+          const m2=s2.desc.match(/i de (\\d+)g vannet du holdt av/);
+          const held=s1.desc.match(/hold av (\\d+)g vann/);
+          const sum = m1&&m2 ? (+m1[1] + +m2[1]) : -1;
+          if(sum!==total) { allSum=false; out['sum_'+km+'_'+mel]=[sum,total]; }
+          // Samme tall må stå begge steder — ellers holder du av 20g og bruker 15g.
+          if(!held || +held[1]!==(m2?+m2[1]:-1)) allSum=false;
+          // Ingen «litt vann» igjen noe sted: det var nettopp vagheten som skjulte feilen.
+          if(/i litt vann/.test(s1.desc+s2.desc+s2.substeps.join(' '))) allNoVague=false;
+          // «Hvorfor»-teksten sa at gjæren løses i vannet «på forhånd» — altså før
+          // autolysen, som er umulig når autolysen er steg 1.
+          if(/på forhånd/.test(s2.why||'')) allWhyOk=false;
+          // Det avsatte vannet må stå i «du trenger» på steget der det brukes,
+          // ellers står du med gjæren og uten vann å løse den i.
+          const n1=s1.needs.join(' '), n2=s2.needs.join(' ');
+          if(!/vann/.test(n2) || !new RegExp('\\\\b'+(total-(m2?+m2[1]:0))+'g vann').test(n1)) allInNeeds=false;
+        }
+      }
+      Object.assign(S,saved);
+      return {allSum,allNoVague,allWhyOk,allInNeeds,...out};
+    }""")
+    ok112 = all(r112.get(k) for k in ['allSum','allNoVague','allWhyOk','allInNeeds'])
+    results.append(('autolyse_holds_back_water_for_the_yeast', ok112, r112))
+
     return results
 
 

@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.736",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet en motsigelse i Langtidsdeigen som gjorde oppskriften umulig å følge bokstavelig: autolysen ba deg helle ALT vannet i melet, og steget etter ba deg løse gjæren «i litt vann». Det vannet fantes ikke — og hentet du nytt fra springen, ble deigen både tyngre og våtere enn oppskriften sa.",
+      "Nå holdes en liten del av det oppmålte vannet av til gjæren, og begge stegene oppgir mengden i gram. Delene summerer seg til totalen, så hydreringen står som før. Ved 500g mel og 65% blir det 305g i autolysen og 20g til gjæren.",
+      "«Hvorfor»-teksten sa at gjæren løses i vannet «på forhånd». Det er umulig når autolysen er første steg, og er nå rettet til at den løses i vannet du holdt av."
+    ],
+    "changes_en": [
+      "Fixed a contradiction in the Long-rise dough that made the recipe impossible to follow literally: the autolyse told you to pour ALL the water into the flour, and the next step told you to dissolve the yeast “in a little water”. That water did not exist — and if you took fresh water from the tap, the dough came out both heavier and wetter than the recipe said.",
+      "A small part of the measured water is now held back for the yeast, and both steps state the amount in grams. The parts add up to the total, so the hydration is unchanged. At 500g flour and 65% that means 305g in the autolyse and 20g for the yeast.",
+      "The “why” text said the yeast is dissolved in the water “beforehand”. That is impossible when the autolyse is step one, and it now says it is dissolved in the water you held back."
+    ]
+  },
+  {
     "v": "0.735",
     "d": "august 2026",
     "d_en": "August 2026",
