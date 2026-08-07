@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.753",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«🔍 Finn beste kombinasjon» gjorde ingenting når du trykket på den i «begynn nå»-modus. Ikke en feilmelding engang — knappen ble tegnet uten å se på hvilken modus du var i, mens funksjonen bak sa nei med en gang. Søket virker nå begge veier.",
+      "Verre var det at «Juster hevetid i Poolish» sendte deg til en glidebryter uten å si hvilken vei. På et vanlig oppsett løste bare én av fem verdier problemet: 12 til 15 timer landet alle mellom 02:58 og 05:58, bare 16 timer kom ut på 06:58. Fire av fem valg var feil, og appen visste hvilket som var riktig hele tiden.",
+      "Nå står svaret på knappen: «Flytt til 06:58 — poolish 16t». Ett trykk utfører det, kvitteringen sier hva som ble endret, og «Angre» setter det tilbake. Kjøleskapspausen beholder plassen sin ved siden av, siden den løser det på en annen måte; resten ligger under «Andre måter».",
+      "Og en utvei godtas bare hvis HELE planen blir konfliktfri. En innstilling som redder ett steg og dytter et annet inn i natta, har flyttet problemet — ikke løst det. Finner appen ingen utvei, står varselet igjen som ren informasjon, for du skal fortsatt få vite at et steg ligger kl. 04:45.",
+      "Kvitteringen øverst sier nå «Deigen er klar rundt søndag 9. august kl. 08:45. Følg stegene og du får en pizza i premie.» Den gamle sa «ingen frist å bomme på» — men man bommer på et mål, ikke på en frist, og «frist» er uansett skattekontor-språk."
+    ],
+    "changes_en": [
+      "“🔍 Find best combination” did nothing when you pressed it in “start now” mode. Not even an error — the button was drawn without looking at which mode you were in, while the function behind it refused immediately. The search now works both ways.",
+      "Worse, “Adjust rise time in Poolish” sent you to a slider without saying which way. On an ordinary setup only one of five values solved the problem: 12 to 15 hours all landed between 02:58 and 05:58, only 16 hours came out at 06:58. Four of five choices were wrong, and the app knew which one was right the whole time.",
+      "The answer is now on the button: “Move to 06:58 — poolish 16h”. One press does it, the receipt says what changed, and “Undo” puts it back. The cold pause keeps its place alongside, since it solves things a different way; the rest sits under “Other ways”.",
+      "And a way out is only accepted if the WHOLE plan comes out clear. A setting that rescues one step and pushes another into the night has moved the problem, not solved it. If the app finds no way out, the warning remains as plain information, because you should still know a step sits at 04:45.",
+      "The receipt at the top now reads “The dough is ready around Sunday 9 August at 08:45. Follow the steps and you get a pizza as your prize.”"
+    ]
+  },
+  {
     "v": "0.752",
     "d": "august 2026",
     "d_en": "August 2026",

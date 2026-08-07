@@ -5237,6 +5237,84 @@ def run_behavioral_tests(page):
                  'retningStemmer'])
     results.append(('poolish_window_follows_room_temperature', ok128, r128))
 
+    # v0.753: natt-varselet tilbød knapper som ikke løste noe.
+    #
+    # To feil i samme kode. (1) «🔍 Finn beste kombinasjon» ble tegnet når
+    # prefWorks && coldWorks — et vilkår som aldri så på modus — mens
+    # findBestWeekendCombo() åpnet med `if(S.mode!=='end') return null`. I
+    # «begynn nå» gjorde knappen derfor INGENTING. Ikke engang en feilmelding.
+    # (2) leverMovesStep() svarte på «flytter spaken steget», ikke «finnes det
+    # en verdi som får det UT». Målt på et vanlig oppsett løste bare 1 av 5
+    # poolish-verdier natt-konflikten — knappen sendte deg til en bryter der
+    # fire av fem valg var feil, uten å si hvilket.
+    #
+    # Kravene nå:
+    #  - en kandidat godtas bare hvis HELE planen blir konfliktfri. En verdi som
+    #    redder dette steget og dytter et annet inn i natta, har flyttet
+    #    problemet, ikke løst det — og da ville knappen løyet.
+    #  - hovedknappen sier hvor steget havner og hva som endres
+    #  - den UTFØRER endringen, og kvitteringen har angre
+    #  - «Finn beste kombinasjon» må svare i begge moduser
+    r129 = page.evaluate("""() => {
+      const saved={...S};
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      const sett=mode=>{ S.method='poolish'; S.type='napoletana'; S.mel=500;
+        S.hydro=65; S.cold=48; S.temp=22; S.fridgeC=3; S.oven='pizza';
+        S.gjaer='torr'; S.poolishH=14; S.poolishCold=false; S.poolishPauseH=0;
+        S.mode=mode; S.gjaertest=false; _q10Memo={k:null,v:null}; };
+
+      // (1) Den døde knappen: søket må svare i «begynn nå», ikke bare bakover.
+      sett('start');
+      const finnerIStart = findBestWeekendCombo()!==null;
+
+      // (2) Utveien må gjøre HELE planen konfliktfri, ikke bare dette steget.
+      sett('start'); mobGen();
+      const anchor=mobGetAnchor('s');
+      const steg=window._steps||[];
+      let konflikt=null;
+      for(const s of steg){
+        if(s.passive && !s.needsPresence) continue;
+        let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+        if(ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(at.getHours(),at.getMinutes(),at.getDay()))){ konflikt=s; break; }
+      }
+      const esc = konflikt ? stepEscapePlan(konflikt.title, anchor) : null;
+      let heleplanenBlirRen=false, endrerNoe=false;
+      if(esc){
+        const før=S[esc.field];
+        endrerNoe = esc.value!==før;
+        S[esc.field]=esc.value;
+        heleplanenBlirRen = !planHasConflict(stepsForAnchor(anchor));
+        S[esc.field]=før;
+      }
+
+      // En verdi som bare FLYTTER steget skal ikke godtas. Her tvinges en
+      // kandidatliste der ingen verdi rydder planen — da må svaret bli null.
+      sett('start');
+      const umuligeVerdier=leverEscape('poolishH',[S.poolishH], konflikt?konflikt.title:'x', anchor);
+      const avviserUendret = umuligeVerdier===null;
+
+      // (3) Utfør + angre.
+      sett('start'); mobGen();
+      let utførte=false, angret=false;
+      if(esc){
+        const før=S[esc.field];
+        applyStepEscape(esc.field, esc.value);
+        utførte = S[esc.field]===esc.value && /undoStepEscape\(\)/.test(escapeReceiptHTML());
+        undoStepEscape();
+        angret = S[esc.field]===før && escapeReceiptHTML()==='';
+      }
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {finnerIStart, harKonflikt:!!konflikt, harUtvei:!!esc,
+              heleplanenBlirRen, endrerNoe, avviserUendret, utførte, angret,
+              steg:konflikt?konflikt.title:null,
+              utvei:esc?{felt:esc.field, verdi:esc.value}:null};
+    }""")
+    ok129 = all(r129.get(k) for k in
+                ['finnerIStart', 'harKonflikt', 'harUtvei', 'heleplanenBlirRen',
+                 'endrerNoe', 'avviserUendret', 'utførte', 'angret'])
+    results.append(('night_warning_offers_a_fix_that_actually_works', ok129, r129))
+
     return results
 
 

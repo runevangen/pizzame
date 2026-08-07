@@ -1941,6 +1941,22 @@ function fDT(d){
   return`${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]} kl. ${tm}`;
 }
 function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+// v0.753: samme tidspunkt, skrevet helt ut. fDT() forkorter («søn 9. aug»),
+// som er riktig i en tett tidsplan der datoen står på hvert eneste steg. I
+// kvitteringen øverst er dette derimot den ENE opplysningen som betyr noe —
+// når er deigen klar — og der leses «ca. søn 9. aug» dårlig: en forkortet
+// ukedag rett bak «ca.» skurrer, og du må dekode to ledd for å finne dagen.
+function fDTLang(d){
+  const tm=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  if(window._lang==='en'){
+    const dyE=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const moE=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return`${dyE[d.getDay()]} ${moE[d.getMonth()]} ${d.getDate()}, ${tm}`;
+  }
+  const dy=['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag'];
+  const mo=['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
+  return`${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]} kl. ${tm}`;
+}
 
 function pcUnitLabel(plural){
   const isPan = S.type==='langpanne' || S.type==='ingenelting';
@@ -4528,6 +4544,72 @@ function firstStepConflict(steps){
 }
 // Setter feltet til ytterpunktene sine og ser om det aktuelle steget i det hele
 // tatt bytter tidspunkt. Rører S midlertidig, men setter alltid tilbake.
+// v0.753: hvilken verdi LØSER problemet — ikke bare hvilken som flytter steget.
+//
+// leverMovesStep() nedenfor regner ut steget ved laveste og høyeste verdi og
+// kaster så alt bortsett fra `a!==b`. Den svarer altså på «flytter spaken
+// steget», ikke på «finnes det en verdi som får det UT av natta». Derfor kunne
+// varselet tilby en knapp som ikke kunne løse noe. Målt på et helt vanlig
+// oppsett (poolish, 500g, 48t kald) løste bare ÉN av fem poolish-verdier
+// natt-konflikten: 12–15t landet alle mellom 02:58 og 05:58, bare 16t kom ut
+// på 06:58. Knappen het «Juster hevetid i Poolish» og slapp deg av på en
+// bryter der fire av fem valg var feil, uten å si hvilket.
+//
+// En kandidat godtas bare hvis HELE planen blir konfliktfri. En verdi som
+// redder dette steget og dytter et annet inn i natta, har ikke løst noe — den
+// har flyttet problemet, og da ville knappen løyet.
+function planHasConflict(steps){
+  if(!steps||!steps.length) return true;
+  for(const s of steps){
+    if(s.passive && !s.needsPresence) continue;
+    let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+    if(isNaN(at.getTime())) continue;
+    if(ACTIVE_STEP_TIME_WINDOWS.find(w=>w.test(at.getHours(),at.getMinutes(),at.getDay()))) return true;
+  }
+  return false;
+}
+function leverEscape(field, values, stepTitle, anchor){
+  const orig=S[field];
+  let best=null;
+  try{
+    for(const v of values){
+      if(v===orig) continue;
+      S[field]=v;
+      let steps=null;
+      try{ steps=stepsForAnchor(anchor); }catch(e){ continue; }
+      if(planHasConflict(steps)) continue;
+      const st=steps.find(x=>x.title===stepTitle);
+      if(!st) continue;
+      let at=st.at; if(!(at instanceof Date)) at=new Date(at);
+      if(isNaN(at.getTime())) continue;
+      // Nærmest det du allerede har stilt inn vinner — minst mulig overraskelse
+      // i planen du nettopp leste. Relativt, så 14→16 timer heving veier
+      // lettere enn 48→30 timer kjøleskap.
+      const avstand=Math.abs(v-orig)/(orig||1);
+      if(!best || avstand<best.avstand) best={field, value:v, at, avstand};
+    }
+  } finally { S[field]=orig; }
+  return best;
+}
+// Beste utvei på tvers av spakene som gjelder for metoden man står i.
+function stepEscapePlan(stepTitle, anchor){
+  const kandidater=[];
+  const prefField=S.method==='poolish'?'poolishH':(S.method==='biga'?'bigaH':null);
+  if(prefField){
+    const vals=S.method==='poolish'
+      ? (S.poolishCold?range(12,48,6):POOLISH_OPTS.map(o=>o.h))
+      : [16,18,20,22,24];
+    const e=leverEscape(prefField, vals, stepTitle, anchor);
+    if(e) kandidater.push({...e, label:S.method==='poolish'?L('poolish','poolish'):L('biga','biga')});
+  }
+  if(S.method!=='hurtig' && S.method!=='kveld' && S.type!=='ingenelting'){
+    const e=leverEscape('cold', COLD_OPTS.map(o=>o.h), stepTitle, anchor);
+    if(e) kandidater.push({...e, label:L('kjøleskap','cold proof')});
+  }
+  if(!kandidater.length) return null;
+  kandidater.sort((a,b)=>a.avstand-b.avstand);
+  return kandidater[0];
+}
 function leverMovesStep(field, lo, hi, stepTitle, anchor){
   const orig=S[field];
   const timeOf=(v)=>{
@@ -4620,6 +4702,22 @@ function activeStepTimeWarningHTML(){
     const coldWorks = (!isShort && S.type!=='ingenelting') && leverMovesStep('cold', 24, COLD_MAX, s.title, anchor);
     const shift = (S.mode==='end') ? findAnchorShift(anchor) : null;
 
+    // v0.753: hovedknappen med SVARET. Appen har allerede regnet ut hvilken
+    // verdi som får steget ut av vinduet — før kastet den det og sa bare
+    // «Juster hevetid i Poolish».
+    const esc=stepEscapePlan(s.title, anchor);
+    let escBtn='';
+    if(esc){
+      // Klokkeslettet alene er ikke nok. Ved «tid du ikke har satt av til
+      // pizza» kan utveien være samme klokkeslett en ANNEN dag — og da sto det
+      // «Flytt til 06:03» på et steg som allerede lå 06:03. Dagen må med når
+      // dagen er det som endrer seg.
+      const kl=String(esc.at.getHours()).padStart(2,'0')+':'+String(esc.at.getMinutes()).padStart(2,'0');
+      const sammeDag=esc.at.toDateString()===at.toDateString();
+      let når=kl; try{ når=sammeDag?kl:fDT(esc.at); }catch(e){}
+      escBtn=`<button onclick="applyStepEscape('${esc.field}',${esc.value})" style="${btnSolid}">${L(
+        `Flytt til ${escH(når)} — ${esc.label} ${esc.value}t`,`Move to ${escH(når)} — ${esc.label} ${esc.value}h`)}</button>`;
+    }
     let prefBtn='';
     if(prefWorks) prefBtn=`<button onclick="activeStepWarnGoTo('${S.method}')" style="${btnSolid}">${L(`Juster hevetid i ${S.method==='poolish'?'Poolish':'Biga'}`,`Adjust rise time in ${S.method==='poolish'?'Poolish':'Biga'}`)}</button>`;
     const coldBtn=coldWorks ? `<button onclick="activeStepWarnGoTo('cold')" style="${btnOutline}">${L('Juster kjøleskapstid','Adjust cold time')}</button>` : '';
@@ -4660,12 +4758,25 @@ function activeStepTimeWarningHTML(){
         <div style="margin-top:.4rem"><span onclick="unacceptStepConflict('${conflictKey}')" style="font-size:11px;color:#8a5a05;font-weight:600;text-decoration:underline;cursor:pointer">${L('Angre','Undo')}</span></div>
       </div>`);
     }
-    const row1=`${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}${pauseBtn}`;
+    // v0.753: én hovedknapp med svaret, kjøleskapspausen ved siden av — den er
+    // en annen TYPE løsning (den legger til en pause i stedet for å endre en
+    // tid du selv har valgt), så den beholder plassen sin. Alt annet under
+    // «Andre måter», der den som vil styre selv finner spakene.
+    // Finner appen ingen utvei, står de gamle knappene fram som før: da er det
+    // ingenting å folde bort, og du skal fortsatt få vite at steget ligger der.
+    const andre=`${prefBtn}${coldBtn}${findBestBtn}`;
+    const row1=esc
+      ? `${escBtn}${pauseBtn}`
+      : `${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}${pauseBtn}`;
+    const merBtn=(esc && (shiftBtn||andre))
+      ? `<details style="margin-top:6px"><summary style="font-size:12px;font-weight:600;color:#8a5a00;cursor:pointer">${L('Andre måter','Other ways')}</summary><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${shiftBtn}${andre}</div></details>`
+      : '';
     const row2=`${pizzatidBtn}${stuck?kveldBtn:''}${acceptBtn}`;
     return warningWrapHTML(`activestep|${win.id}|${s.title}|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
       <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} ${L(`Et steg havner i ${win.label}`,`A step lands in ${win.labelEn}`)}</div>
       <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`<b>${escH(dispTitle(s.title))}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.`,`<b>${escH(dispTitle(s.title))}</b> is set to <b>${dt}</b> — probably not a time you want to be disturbed.`)}${lockedNote}</div>
       ${row1?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${row1}</div>`:''}
+      ${merBtn}
       ${row2?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${row2}</div>`:''}
     </div>`);
   }
@@ -4704,8 +4815,14 @@ function scoreActiveSteps(steps){
 // er klart og faktisk brukes.
 function findBestWeekendCombo(){
   if(!(S.method==='poolish'||S.method==='biga')) return null;
-  if(S.mode!=='end') return null;
-  const anchor=mobGetAnchor('e');
+  // v0.753: sto `if(S.mode!=='end') return null;` her. Knappen ble likevel
+  // tegnet i «begynn nå»-modus, fordi vis-vilkåret (prefWorks && coldWorks)
+  // aldri så på modusen. Resultatet var en knapp som ikke gjorde NOE når du
+  // trykket — ikke engang en feilmelding. Vis-betingelsen og gjør-betingelsen
+  // var uenige. Søket er like meningsfullt forover: da flytter det når deigen
+  // blir ferdig i stedet for når du må starte, og det er nettopp valget man
+  // har tatt ved å si «jeg begynner nå».
+  const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
   if(isNaN(anchor.getTime())) return null;
   const isPoolish=S.method==='poolish';
   const prefField=isPoolish?'poolishH':'bigaH';
@@ -4878,6 +4995,38 @@ function activeStepWarnTryKveld(){
   applyMobTypeUI();
   mobGen();
   mobShowTab('plan');
+}
+// v0.753: hovedknappen UTFØRER endringen og sier hva den gjorde. Før navigerte
+// den til en glidebryter og lot deg gjette. Angrelenka står i kvitteringen, så
+// en endring som skjer med ett trykk også kan tas tilbake med ett.
+let _lastEscape=null;
+function applyStepEscape(field, value){
+  _lastEscape={field, prev:S[field], value};
+  S[field]=value;
+  try{ persistSetup(); }catch(e){}
+  mobGen();
+}
+function undoStepEscape(){
+  if(!_lastEscape) return;
+  S[_lastEscape.field]=_lastEscape.prev;
+  _lastEscape=null;
+  try{ persistSetup(); }catch(e){}
+  mobGen();
+}
+function escapeReceiptHTML(){
+  if(!_lastEscape) return '';
+  const navn=_lastEscape.field==='cold'?L('Kjøleskapstid','Cold time')
+            :_lastEscape.field==='bigaH'?L('Biga','Biga'):L('Poolish','Poolish');
+  return `<div style="background:var(--forno-bg-raised,#F2F2F7);border:1px solid var(--forno-border,#ddd);border-radius:10px;padding:.65rem .9rem;margin-bottom:.8rem">
+    <div style="font-size:12px;color:var(--forno-text-faint,#666);line-height:1.5">${L(
+      // «ute av natta» var feil halvparten av gangene: konflikten er like ofte
+      // «tid du ikke har satt av til pizza». leverEscape() krever at HELE
+      // planen blir konfliktfri, så «planen går opp» er både riktigere og
+      // nøyaktig det som er sjekket.
+      `✓ <b style="color:var(--forno-text,#333)">${navn}</b> endret fra ${_lastEscape.prev} til ${_lastEscape.value} timer, og planen går opp.`,
+      `✓ <b style="color:var(--forno-text,#333)">${navn}</b> changed from ${_lastEscape.prev} to ${_lastEscape.value} hours, and the plan works out.`)}</div>
+    <div style="margin-top:.4rem"><span onclick="undoStepEscape()" style="font-size:11px;color:#8a5a05;font-weight:600;text-decoration:underline;cursor:pointer">${L('Angre','Undo')}</span></div>
+  </div>`;
 }
 function activeStepWarnFindBest(){
   const best=findBestWeekendCombo();
@@ -6585,14 +6734,14 @@ function wizCheckRender(){
     let klar='';
     try{
       const steps=computeCurrentSteps();
-      if(steps && steps.length){ let at=steps[steps.length-1].at; if(!(at instanceof Date)) at=new Date(at); if(!isNaN(at.getTime())) klar=fDT(at); }
+      if(steps && steps.length){ let at=steps[steps.length-1].at; if(!(at instanceof Date)) at=new Date(at); if(!isNaN(at.getTime())) klar=fDTLang(at); }
     }catch(e){}
     const receipt=`<div style="background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:10px;padding:.75rem .9rem;margin-bottom:${parts.length?'.6rem':'0'}">
       <div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:.25rem">✓ ${L('Du setter i gang nå','You start now')}</div>
-      <div style="font-size:12px;color:#0F6E56;line-height:1.5">${klar?L(`Deigen er klar ca. ${escH(klar)}. Følg stegene i ditt tempo — det er ingen frist å bomme på.`,`The dough is ready around ${escH(klar)}. Follow the steps at your own pace — there is no deadline to miss.`):L('Følg stegene i ditt tempo — det er ingen frist å bomme på.','Follow the steps at your own pace — there is no deadline to miss.')}</div>
+      <div style="font-size:12px;color:#0F6E56;line-height:1.5">${klar?L(`Deigen er klar rundt ${escH(klar)}. Følg stegene og du får en pizza i premie.`,`The dough is ready around ${escH(klar)}. Follow the steps and you get a pizza as your prize.`):L('Følg stegene og du får en pizza i premie.','Follow the steps and you get a pizza as your prize.')}</div>
     </div>`;
     const hintLead = parts.length ? `<div style="font-size:12px;font-weight:600;color:var(--forno-text-faint);margin-bottom:.4rem">💡 ${L('Verdt å vite','Worth knowing')}</div>` : '';
-    el.innerHTML=receipt+hintLead+parts.join('');
+    el.innerHTML=receipt+escapeReceiptHTML()+hintLead+parts.join('');
     return;
   }
 
