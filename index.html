@@ -1938,8 +1938,36 @@ function preheatSteps(bakeAt, roomMin, type){
       ...(stone?[L('Sett pizzastein/-stål inn med en gang','Put the pizza stone/steel in right away')]:[]),
       L('La deigemnene stå videre på benken','Leave the dough balls on the counter')
     ],
-    why:L('Ovnen er det eneste i planen som ikke kan hastes. En pizzastein som ikke er gjennomvarm gir blek, seig bunn uansett hvor god deigen er — og du merker det ikke før pizzaen er inne.','The oven is the one thing in the plan that cannot be rushed. A stone that is not heated through gives a pale, chewy base no matter how good the dough is — and you will not notice until the pizza is already in.'),
-    tip:oT(tp)}];
+    // v0.742: «Hvorfor» sto tidligere og snakket om pizzastein uansett ovnstype,
+    // mens beskrivelsen rett over bevisst lot være når det ikke er noen stein.
+    // Nå følger begge samme `stone`-vakt.
+    why:stone
+      ? L('Ovnen er det eneste i planen som ikke kan hastes. En pizzastein som ikke er gjennomvarm gir blek, seig bunn uansett hvor god deigen er — og du merker det ikke før pizzaen er inne.','The oven is the one thing in the plan that cannot be rushed. A stone that is not heated through gives a pale, chewy base no matter how good the dough is — and you will not notice until the pizza is already in.')
+      : L('Ovnen er det eneste i planen som ikke kan hastes. En ovn som ikke er gjennomvarm gir blek, seig bunn uansett hvor god deigen er — og du merker det ikke før pizzaen er inne.','The oven is the one thing in the plan that cannot be rushed. An oven that is not heated through gives a pale, chewy base no matter how good the dough is — and you will not notice until the pizza is already in.'),
+    // v0.742: her sto `oT(tp)` — nøyaktig samme streng som stekesteget bruker,
+    // så de to nabostegene ga identisk tips. For napoletansk var den attpåtil
+    // «forvarm ovnen godt», gjentatt på stekesteget 20 minutter ETTER at du
+    // gjorde det. Forvarmingssteget har nå et tips om selve forvarmingen.
+    // Tre tilfeller, ikke to: en pizzaovn har verken termostat som slår av og på
+    // eller en løs stein å måle — den har et dekke. Å gi den termostat-rådet
+    // ville vært et tips om utstyr brukeren ikke har.
+    tip:S.oven==='pizza'
+      ? L('Dekket er varmt lenge før det er gjennomvarmt. Har du et IR-termometer, sikt på stedet pizzaen skal ligge — det er den temperaturen som avgjør bunnen, ikke flammen.','The deck is hot long before it is heated through. If you have an IR thermometer, point it at the spot the pizza will sit — that is the temperature that decides the base, not the flame.')
+      : stone
+      ? L('Ovnstermostaten måler luften, ikke steinen — og luften er varm lenge før steinen er det. Har du et IR-termometer, sikt på steinen og vent til den er nær måltemperaturen.','The oven thermostat measures the air, not the stone — and the air is hot long before the stone is. If you have an IR thermometer, point it at the stone and wait until it is close to the target temperature.')
+      : L('Ovnen er gjennomvarm først når termostaten har slått av og på et par ganger. Første gang den piper er ikke det samme som at den er klar.','The oven is heated through only once the thermostat has cycled on and off a couple of times. The first beep is not the same as being ready.')}];
+}
+// v0.742: tipset på selve stekesteget. For napoletansk var `oT()` ren
+// forvarmingsinstruksjon («Forvarm pizzaovnen godt …») — den kom altså 20
+// minutter etter at forvarmingssteget hadde bedt deg gjøre nettopp det, og var
+// samtidig ordrett identisk med nabosteget. De øvrige typene har innhold som
+// faktisk gjelder stekeøyeblikket (strekk tynt, tykkbunnet form, ost under
+// sausen), så de leser fortsatt oT().
+function bakeTip(t){
+  if(t!=='napoletana') return oT(t);
+  return S.oven==='pizza'
+    ? L('Dra pizzaen ut og drei den en halv omgang etter ~30 sek — dekket er kaldest der pizzaen nettopp lå. Blir kanten mørk før bunnen er ferdig, senk temperaturen litt til neste.','Pull the pizza out and turn it half a turn after ~30 sec — the deck is coolest where the pizza has just been. If the rim darkens before the base is done, lower the temperature a little for the next one.')
+    : L('Stek på øverste rille. Er bunnen blek når kanten er ferdig, flytt pizzaen ned et hakk de siste par minuttene.','Bake on the top rack. If the base is pale when the rim is done, move the pizza down a level for the last couple of minutes.');
 }
 // v5.99: understeg for det delte stekestegetet — samme gren-logikk (type ×
 // ovnstype) som oD()/oT(), brutt opp i egne linjer i stedet for ett avsnitt.
@@ -2246,7 +2274,7 @@ function rawSteps(a){
       // også kaller. Klemt mot benketida så det aldri kan havne før «Ta ut av
       // kjøleskap», selv om noen senere skulle senke gulvet på temper (i dag ≥ 60 min).
       ...preheatSteps(bake, temper, tp),
-      {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:oT(tp)}
+      {title:'Strekk og stek 🔥',loc:'ovn',at:bake,dur:0,desc:oD(tp),substeps:bakeSubsteps(tp),why:WHY.st,tip:bakeTip(tp)}
     ];
   }
   if(S.method==='standard'){
@@ -2308,7 +2336,13 @@ function rawSteps(a){
           L(`La stå ved ${S.temp}°C i ca. ${rt} min — skal heve synlig`,`Let sit at ${S.temp}°C for about ${rt} min — should rise visibly`)
         ],
         why:rtW(rt),
-        tip:L('Bruk "windowpane test" for å sjekke glutenstruktur: strekk en bit deig tynt — skal bli gjennomsiktig uten å rive.',`Use the "windowpane test" to check the gluten structure: stretch a piece of dough thin — it should become translucent without tearing.`)},
+        // v0.742: sto tidligere med et eget windowpane-tips her. Det var galt på
+        // to måter: windowpane er sluttpunktet for ELTINGEN (og sier det i tipset
+        // på steget over), så å gjøre den her betyr å rive løs deig fra en deig
+        // som hever. Og Poolish, Biga og Hurtigdeig bruker alle TIP.roomRise med
+        // fingertrykk-testen på nøyaktig samme fase — samme fase ga altså
+        // motstridende råd avhengig av hvilken metode du sto i.
+        tip:TIP.roomRise},
       ...tailSteps(aM(t0,45+rt))
     ];
   }
@@ -2488,7 +2522,7 @@ function rawSteps(a){
       {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
         desc:oN()+'.',
         substeps:bakeSubsteps(S.type),
-        why:WHY.st,tip:L(S.oven==='pizza'?'Forvarm pizzaovnen godt — dekket/steinen er klart på ~15–20 min.':'Pizzastein/-stål må varmes minst 45 min i vanlig ovn.',S.oven==='pizza'?'Preheat the pizza oven well — the deck/stone is ready in ~15–20 min.':'A pizza stone/steel must preheat at least 45 min in a regular oven.')}
+        why:WHY.st,tip:bakeTip(S.type)}
     ];
   }
   return[];
@@ -2555,7 +2589,7 @@ function hurtigSteps(anchor){
     {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}. Round well.`),needs:[L(`📦 ${p.count} emne${p.count>1?'r':''}`,`📦 ${p.count} ball${p.count>1?'s':''}`)],substeps:[L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],why:L('Runde, stramme emner holder formen gjennom den korte etterhevingen som følger, og gir jevn heving.','Round, tight balls hold their shape through the short final proof that follows, and rise evenly.'),tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
     {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${fmtHM(afm)}. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${fmtHM(afm)}. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${fmtHM(afm)}, tildekket`,`Final proof ${fmtHM(afm)}, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
-      why:WHY.st,tip:(oT(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
+      why:WHY.st,tip:(bakeTip(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
   ]};
 }
 
@@ -2616,7 +2650,7 @@ function kveldSteps(anchor){
     // v0.739: Kveldsdeig manglet forvarmingssteget. v0.737 antok at metoden alt
     // hadde et — det gjaldt kun Hurtigdeig, som bygger sitt inn i etterhevingen.
     ...preheatSteps(bakeAt, TEMPER_MIN, S.type),
-    {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),substeps:bakeSubsteps(S.type),why:WHY.st,tip:oT(S.type)}
+    {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,desc:oD(S.type),substeps:bakeSubsteps(S.type),why:WHY.st,tip:bakeTip(S.type)}
   ];
   return {ya,steps};
 }
@@ -2934,7 +2968,7 @@ const RECIPE_LABEL_EN = {
   'Mel':'Flour','Vann':'Water','Salt':'Salt','Olivenolje':'Olive oil','Smør':'Butter','Sukker':'Sugar','Gjær':'Yeast',
   'Steking':'Baking','Romtemperatur':'Room temperature','Ovntype':'Oven type','Kjøleskapsheving':'Cold proof',
   'Poolish':'Poolish','Vann del 1':'Water part 1','Vann del 2':'Water part 2','Hoveddeig':'Main dough',
-  'Gjærtest':'Yeast test'
+  'Gjærtest':'Yeast test','Emnevekt':'Ball weight'
 };
 function recLbl(k){ return (window._lang==='en' && RECIPE_LABEL_EN[k]!=null) ? RECIPE_LABEL_EN[k] : k; }
 // ===== ARKITEKTUR: felles oppskrift-radbygging PC+mobil (v5.62) =====
@@ -2951,8 +2985,22 @@ function baseIngredientRows({mel,vann,hydro,salt,oil,butter,sugar,gjaer,melLabel
     ...(butter?[{k:'Smør',v:`${butter}g`}]:[]),
     ...(sugar?[{k:'Sukker',v:`${sugar}g`}]:[]),
     {k:gjaerLabel,v:gjaer},
-    ...gjaertestRows()
+    ...gjaertestRows(),
+    ...ballWeightRows()
   ];
+}
+// v0.742: sier fra når emnet havner langt fra målvekten for typen. Uten den
+// står det «Napoletansk pizza» og «1 emne à 336g» rett under hverandre uten at
+// noe kobler de to — og 336g er 24% over de 270g appen selv definerer en
+// napoletansk pizza som. Raden oppgir også melmengden som ville truffet, så
+// den er til å gjøre noe med og ikke bare en pekefinger.
+function ballWeightRows(){
+  const n=(typeof ballWeightNote==='function')?ballWeightNote():null;
+  if(!n) return [];
+  const retning=n.pst>0?L('over','above'):L('under','below');
+  return [{k:'Emnevekt',v:L(
+    `${Math.abs(n.pst)}% ${retning} ${n.mal}g · ${n.forslag}g mel treffer`,
+    `${Math.abs(n.pst)}% ${retning} ${n.mal}g · ${n.forslag}g flour hits it`)}];
 }
 // v0.741: sammenligningsraden. Den ligger HER fordi baseIngredientRows er det
 // ene stedet alle oppskriftsflater går gjennom (PC, mobil, hurtig, kveld, mania)
@@ -3082,7 +3130,14 @@ function copyP(steps){
   // versjon og når planen ble hentet ut.
   const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
   const _now=new Date();
-  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),
+  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),
+    // v0.742: emnevekten står her i kopien også — det er nettopp i en kopiert
+    // plan at «Napoletansk pizza» og «336g per emne» leses av noen som ikke har
+    // appen foran seg og ikke kan se at de to ikke henger sammen.
+    ...(()=>{ const n=ballWeightNote(); if(!n) return [];
+      return [L(`  ⚠ Emnet er ${Math.abs(n.pst)}% ${n.pst>0?'over':'under'} målvekten på ${n.mal}g for typen — ${n.forslag}g mel gir ${n.count} emne${n.count>1?'r':''} på ca. ${n.mal}g.`,
+                `  ⚠ The ball is ${Math.abs(n.pst)}% ${n.pst>0?'above':'below'} the ${n.mal}g target for this type — ${n.forslag}g flour gives ${n.count} ball${n.count>1?'s':''} of about ${n.mal}g.`)]; })(),
+    '',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),
     // v0.741: står gjærtesten på, MÅ kopien si det. Uten linja ser planen ut som
     // en helt vanlig oppskrift, og den som leser den — et menneske eller
     // sjekk-gjennomgangen i review_plans.py — ville målt et forsøkstall mot

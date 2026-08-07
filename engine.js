@@ -158,10 +158,18 @@ function recipeFor(){
   return rec;
 }
 function yLabelFor(rec){return S.gjaer==='torr'?L(`${rec.yDry}g tørrgjær`,`${rec.yDry}g dry yeast`):L(`${rec.yFresh}g fersk gjær`,`${rec.yFresh}g fresh yeast`);}
+// v0.742: målvekten per emne — ETT sted. Den lå tidligere som en identisk
+// kopi i både pc() og flourForCount(), og det var nettopp derfor de to kunne
+// motsi hverandre: flourForCount(1) svarte 200g mel, som pc() så gjorde om til
+// et emne på 336g — 24% over de 270g flourForCount selv regnet ut fra.
+// Langpanne/IngenElting: 0,7g deig per cm² formflate (standard focaccia-
+// tommelfingerregel), 30×40cm langpanne = 1200cm² => ca. 840g fyller én panne godt.
+function targetBallWeight(type){
+  const t=type||S.type;
+  return t==='napoletana'?270:t==='newyork'?300:(t==='langpanne'||t==='ingenelting')?840:500;
+}
 function pc(){
-  // Langpanne/IngenElting: 0,7g deig per cm² formflate (standard focaccia-tommelfingerregel),
-  // 30×40cm langpanne = 1200cm² => ca. 840g fyller én panne godt.
-  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:(S.type==='langpanne'||S.type==='ingenelting')?840:500;
+  const eg=targetBallWeight();
   let td;
   if(S.method==='mania'){
     const rm=maniaRecipe();
@@ -277,9 +285,33 @@ function totalFermentHours(){
 }
 
 function flourForCount(n){
-  const eg=S.type==='napoletana'?270:S.type==='newyork'?300:(S.type==='langpanne'||S.type==='ingenelting')?840:500;
+  const eg=targetBallWeight();
   const frac=1+S.hydro/100+BSALT[S.type]/100+BOIL[S.type]/100+effSugarPct()/100;
-  return Math.max(200,Math.round(n*eg/frac/10)*10);
+  // v0.742: gulvet var 200g, og det var feil. Uttrykket regner allerede ut «nok
+  // mel til n emner à målvekt» — det kan per konstruksjon ikke bli for lite. Det
+  // eneste gulvet gjorde var å LØFTE svaret over målvekten når n=1: for
+  // napoletansk ga 200g et emne på 336g (+24%), og for New York 200g mot 180g
+  // som er riktig. Appen svarte altså på «hvor mye mel til én pizza» med en
+  // mengde som ikke gir én pizza. Gulvet er nå satt så lavt at det aldri kan
+  // binde for en ekte type (minste er New York på 180g) — det står bare igjen
+  // som en vakt mot tullete n.
+  return Math.max(100,Math.round(Math.max(1,n)*eg/frac/10)*10);
+}
+// v0.742: hvor langt emnet havner fra målvekten for typen. Antallet emner må
+// rundes til et helt tall, og da kan vekten per emne ikke alltid treffe: med
+// 240g mel blir det ett emne på 403g (+49%), med 260g to på 218g (−19%).
+// Rundingen er riktig — det er å TIE om utslaget som er feil, for planen sier
+// «Napoletansk pizza» og leverer noe som ikke veier som en.
+// Returnerer null når emnet er innenfor, ellers avviket og melmengden som ville
+// truffet. Terskelen på 12% er satt der ekte melmengder begynner å bomme
+// merkbart (500g → +4% tier, 560g → +16% sier fra).
+const BALL_DEV_PCT=12;
+function ballWeightNote(){
+  const p=pc(), eg=targetBallWeight();
+  if(!p.count || !p.perPizza) return null;
+  const pst=Math.round((p.perPizza/eg-1)*100);
+  if(Math.abs(pst)<BALL_DEV_PCT) return null;
+  return {pst, per:p.perPizza, mal:eg, count:p.count, forslag:flourForCount(p.count)};
 }
 
 // ===== «FRA–TIL»: MAKS GJÆRING I ET KJENT VINDU (v0.725) =====

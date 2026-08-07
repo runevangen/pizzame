@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.742",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ba du om mel til én napoletansk pizza, svarte appen 200g — og laget så ett emne på 336g. Det er 24 % over de 270g appen selv definerer et napoletansk emne som. Årsaken var et gulv på 200g som overstyrte målvekten. Nå svarer den 160g, som gir 269g.",
+      "Antall emner må rundes til et helt tall, og da treffer vekten per emne ikke alltid: 240g mel ga ett emne på 403g uten at noe sa fra. Oppskriften viser nå en «Emnevekt»-linje når emnet havner mer enn 12 % fra målvekten — med melmengden som ville truffet, så den er til å gjøre noe med.",
+      "Romtemperaturhevingen i Langtidsdeig ba deg gjøre windowpane-testen midt i hevingen, mens steget over sier at den testen er sluttpunktet for eltingen. Den bruker nå fingertrykk-testen, som Poolish, Biga og Hurtigdeig alltid har gjort på samme fase.",
+      "Forvarmingssteget og stekesteget hadde ordrett samme tips, og for napoletansk ba stekesteget deg forvarme ovnen 20 minutter etter at du hadde gjort det. Forvarmingssteget handler nå om forvarmingen, stekesteget om stekingen.",
+      "Forvarmingen snakket om pizzastein også når du steker i pizzaovn, der det er et dekke og ingen løs stein. Teksten følger nå ovnstypen — og pizzaovn-brukere får ikke lenger råd om en ovnstermostat de ikke har."
+    ],
+    "changes_en": [
+      "Ask for the flour for one Neapolitan pizza and the app answered 200g — then made a single 336g ball. That is 24% above the 270g the app itself defines a Neapolitan ball as. The cause was a 200g floor overriding the target weight. It now answers 160g, which gives 269g.",
+      "The number of balls has to round to a whole number, so the weight per ball does not always land: 240g flour gave one 403g ball with nothing to warn you. The recipe now shows a “Ball weight” line when the ball ends up more than 12% off target — with the flour amount that would have hit it.",
+      "The room-temperature rise in Long-ferment dough told you to do the windowpane test mid-rise, while the step above says that test is the endpoint of kneading. It now uses the finger-poke test, as Poolish, Biga and Quick dough always have on the same phase.",
+      "The preheat step and the baking step carried word-for-word the same tip, and for Neapolitan the baking step told you to preheat the oven 20 minutes after you had done so. The preheat step is now about preheating and the baking step about baking.",
+      "The preheat text mentioned a pizza stone even when baking in a pizza oven, which has a deck and no loose stone. The text now follows the oven type — and pizza oven users no longer get advice about an oven thermostat they do not have."
+    ]
+  },
+  {
     "v": "0.741",
     "d": "august 2026",
     "d_en": "August 2026",

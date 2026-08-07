@@ -1,6 +1,6 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 06.08.2026 · F27, F28 og F25 bygget; F24 har fått en utfordrer (v0.741) og venter nå på bakst. Gjenstår ellers: F29 (lag 2), F26 (følger F24), F12 og T-i18n2 (parkert).
+Sist oppdatert: 07.08.2026 · F27, F28 og F25 bygget; F24 har fått en utfordrer og venter på bakst; fem funn fra plangjennomgang fikset (v0.742). Gjenstår: F29 (lag 2), F26 (følger F24), F12 og T-i18n2 (parkert).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -996,6 +996,18 @@ rekkefølgen. F17 er det klart mest verdifulle.
   planuttrekk, rensing, feilhåndtering (avslag, avkortning, ugyldig JSON),
   rapportinndeling og forespørselsformatet mot SDK-et. Selve modellsvaret er
   per natur ikke testbart.
+- **Kjent blindsone (funnet ved en manuell gjennomgang aug 2026).** Skriptet leser
+  planen ALENE. En motsigelse som bare finnes mellom planen og *koden* ser den
+  derfor ikke: en plan kan si «Napoletansk pizza» og «336g per emne» uten at det
+  er selvmotsigende i teksten — det blir det først når du vet at appen selv
+  definerer et napoletansk emne som 270g. Nøyaktig den feilen ble funnet manuelt
+  og fikset i v0.742, og gjennomgangen ville ikke tatt den, fordi systemprompten
+  med vilje avviser funn som bygger på bransjenorm. Tekstfunnene fra samme
+  gjennomgang (identiske nabotips, windowpane midt i hevingen) er derimot midt i
+  blinken for den.
+- **Mulig utvidelse:** send med målverdiene fra koden (`targetBallWeight()`,
+  `preheatMin()` o.l.) som en «fasit»-blokk i prompten, så kan den sammenligne
+  planen mot spesifikasjonen og ikke bare mot seg selv.
 
 ### F29. Lag 2: `uses:{vann:305}` per steg — gjør klassen strukturelt umulig
 - **I klartekst:** i dag er mengdene skrevet inn i prosaen, og `needs`-lista er en

@@ -4594,6 +4594,89 @@ def run_behavioral_tests(page):
         'retning', 'stegStemmer', 'kopiSierFra', 'kopiTierNårAv'])
     results.append(('yeast_test_challenges_three_methods_off_by_default', ok119, r119))
 
+    # v0.742: fem funn fra en gjennomgang av en generert plan (200g mel,
+    # napoletansk, Langtidsdeig, pizzaovn). Alle fem er motsigelser mellom to
+    # steder i samme plan — nøyaktig klassen lag 3 er bygget for å finne.
+    #  1) flourForCount(1) svarte 200g mel, som gir et emne på 336g — 24% over de
+    #     270g funksjonen selv regner ut fra. Gulvet på 200 overstyrte målvekten.
+    #  2) Rundingen av antall emner ga sagtann fra −19% til +49% uten at planen
+    #     sa fra. Den kan ikke fjernes (antallet MÅ være helt), men den kan opplyses.
+    #  3) Romhevingen ba deg windowpane-teste midt i hevingen, mens steget over sa
+    #     windowpane er sluttpunktet for eltingen — og de tre andre metodene brukte
+    #     fingertrykk-testen på samme fase.
+    #  4) Forvarmingssteget og stekesteget hadde ORDRETT samme tips, og for
+    #     napoletansk ba stekesteget deg forvarme 20 minutter etter at du gjorde det.
+    #  5) Forvarmingens «hvorfor» snakket om pizzastein også når beskrivelsen
+    #     bevisst lot være (pizzaovn har dekke, ikke løs stein).
+    r120 = page.evaluate("""() => {
+      const saved={...S};
+      const sett=(mel,ovn)=>{ S.type='napoletana'; S.method='standard'; S.mel=mel;
+        S.hydro=65; S.cold=24; S.temp=22; S.fridgeC=3; S.oven=ovn; S.gjaer='torr';
+        S.mode='start'; S.kjokkenmaskin='manuell'; S.gjaertest=false;
+        _q10Memo={k:null,v:null}; };
+
+      // 1) Appens egen anbefaling må treffe sin egen målvekt, for hver type.
+      let anbefalingTreffer=true;
+      for(const t of ['napoletana','newyork','langpanne','chicago']){
+        S.type=t; S.hydro=65;
+        for(const n of [1,2,3]){
+          const før=S.mel; S.mel=flourForCount(n); _q10Memo={k:null,v:null};
+          const p=pc(), mål=targetBallWeight();
+          if(Math.abs(p.perPizza/mål-1)>0.12) anbefalingTreffer=false;
+          S.mel=før;
+        }
+      }
+      // Gulvet skal ikke lenger løfte n=1 over målvekten.
+      S.type='napoletana'; S.hydro=65;
+      const melFor1 = flourForCount(1);
+
+      // 2) Varselet: sier fra ved 200g, tier ved 160g og 500g.
+      sett(200,'pizza'); const v200=ballWeightNote();
+      sett(160,'pizza'); const v160=ballWeightNote();
+      sett(500,'pizza'); const v500=ballWeightNote();
+      const varselStemmer = v200 && v200.pst===24 && v200.forslag===160
+                         && v160===null && v500===null;
+      // Forslaget må faktisk treffe når man følger det.
+      sett(v200?v200.forslag:160,'pizza');
+      const forslagTreffer = ballWeightNote()===null;
+
+      // 3–5) Tekstene i den ekte stegkjeden.
+      const les=(mel,ovn)=>{ sett(mel,ovn);
+        const st=stepsForAnchor(new Date(2026,7,7,8,24));
+        const f=t=>st.find(s=>s.title.includes(t))||{};
+        return {heving:f('Romtemperaturheving').tip||'', forvarmTip:f('Sett på ovnen').tip||'',
+                forvarmWhy:f('Sett på ovnen').why||'', stek:f('Strekk og stek').tip||''}; };
+      const pizzaOvn=les(200,'pizza'), vanligOvn=les(200,'vanlig');
+
+      // 3) Ingen windowpane i hevesteget, og samme tips som de andre metodene.
+      const ingenWindowpaneIHeving = !/windowpane/i.test(pizzaOvn.heving);
+      const sammeSomAndreMetoder = pizzaOvn.heving===TIP.roomRise;
+
+      // 4) Nabostegene må ikke være ordrett like, og stekesteget skal ikke be deg
+      //    forvarme — det er gjort for lengst når du står der.
+      const ikkeIdentiske = pizzaOvn.forvarmTip!==pizzaOvn.stek
+                         && vanligOvn.forvarmTip!==vanligOvn.stek;
+      const stekTierOmForvarming = !/forvarm|preheat/i.test(pizzaOvn.stek)
+                                && !/forvarm|preheat/i.test(vanligOvn.stek);
+
+      // 5) Stein nevnes bare når det ER en stein (vanlig ovn + napoletansk/NY).
+      const steinBareNårDenFinnes = !/stein/i.test(pizzaOvn.forvarmWhy)
+                                 && /stein/i.test(vanligOvn.forvarmWhy);
+      // Og pizzaovn-brukeren skal ikke få råd om en ovnstermostat den ikke har.
+      const ingenTermostatIPizzaovn = !/termostat/i.test(pizzaOvn.forvarmTip);
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {anbefalingTreffer, melFor1, gulvSenket:melFor1===160,
+              varselStemmer, forslagTreffer, ingenWindowpaneIHeving, sammeSomAndreMetoder,
+              ikkeIdentiske, stekTierOmForvarming, steinBareNårDenFinnes,
+              ingenTermostatIPizzaovn, v200};
+    }""")
+    ok120 = all(r120.get(k) for k in [
+        'anbefalingTreffer', 'gulvSenket', 'varselStemmer', 'forslagTreffer',
+        'ingenWindowpaneIHeving', 'sammeSomAndreMetoder', 'ikkeIdentiske',
+        'stekTierOmForvarming', 'steinBareNårDenFinnes', 'ingenTermostatIPizzaovn'])
+    results.append(('plan_review_findings_ball_weight_and_duplicate_tips', ok120, r120))
+
     return results
 
 
