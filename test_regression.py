@@ -4877,6 +4877,48 @@ def run_behavioral_tests(page):
                 ['påBeggeFaner', 'harVeiUt', 'tierNårAv', 'tierNårUberørt'])
     results.append(('yeast_test_is_visible_where_it_changes_the_yeast', ok123, r123))
 
+    # v0.746: «Start ny deig» slo av gjærtesten i det stille. doReset() gjør
+    # Object.assign(S,DEF) OG sletter pizzaSetup, så både gjaertest og favMethod
+    # forsvant permanent. For gjærtesten var det direkte ødeleggende: hele poenget
+    # er å bake flere deiger med samme innstilling og sammenligne terningkastene —
+    # stiller bakst nr. 2 seg tilbake, er den ikke lenger et testbakst, og
+    # sammenligningen er verdiløs uten at noe har sagt fra.
+    # Deigfeltene skal derimot FORTSATT nullstilles; det er hele poenget med knappen.
+    r124 = page.evaluate("""() => {
+      const saved={...S};
+      const lagret=localStorage.getItem('pizzaPrefs');
+      window._planChosen=true; setLayout('mob');
+
+      // Sett preferansene, og gjør deigfeltene tydelig ulike DEF.
+      S.gjaertest=true; S.favMethod='poolish'; savePrefs();
+      S.mel=800; S.hydro=72; S.type='newyork'; S.method='biga'; S.cold=72;
+      _q10Memo={k:null,v:null};
+
+      doReset();
+
+      const prefOverlevde = S.gjaertest===true && S.favMethod==='poolish';
+      // Deigen SKAL være nullstilt — knappen ville vært meningsløs ellers.
+      const deigNullstilt = ['mel','hydro','type','method','cold']
+        .every(k=>S[k]===DEF[k]);
+      // Og preferansen må ligge i sin egen nøkkel, ikke bare i minnet — det er
+      // den som overlever en reload, siden doReset sletter pizzaSetup.
+      let iEgenNokkel=false;
+      try{ const p=JSON.parse(localStorage.getItem('pizzaPrefs'));
+           iEgenNokkel = p && p.gjaertest===true && p.favMethod==='poolish'; }catch(e){}
+
+      // Av skal også overleve: slår du testen AV, skal den ikke komme tilbake.
+      S.gjaertest=false; savePrefs(); S.mel=800; doReset();
+      const avOverlevdeOgsa = S.gjaertest===false && S.mel===DEF.mel;
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      if(lagret===null) localStorage.removeItem('pizzaPrefs');
+      else localStorage.setItem('pizzaPrefs',lagret);
+      return {prefOverlevde, deigNullstilt, iEgenNokkel, avOverlevdeOgsa};
+    }""")
+    ok124 = all(r124.get(k) for k in
+                ['prefOverlevde', 'deigNullstilt', 'iEgenNokkel', 'avOverlevdeOgsa'])
+    results.append(('new_dough_resets_the_dough_but_keeps_preferences', ok124, r124))
+
     return results
 
 

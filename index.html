@@ -1247,6 +1247,32 @@ const DOUGH_FIELDS=['type','method','mel','hydro','temp','gjaer','kjokkenmaskin'
 function isAtDefaultConfig(){
   return DOUGH_FIELDS.every(k=>S[k]===DEF[k]);
 }
+// v0.746: PREFERANSER — felt som bor i S, men som IKKE hører til én bestemt
+// deig. «Start ny deig» gjør `Object.assign(S,DEF)` og sletter `pizzaSetup`,
+// og tok dermed disse med seg. For gjærtesten var det direkte ødeleggende:
+// hele poenget er å bake FLERE deiger med samme innstilling og sammenligne
+// terningkastene, og da kan ikke bakst nummer to stille tilbake i det stille.
+// `favMethod` rammes av nøyaktig samme linje — en stjernemerket favoritt er
+// ikke en egenskap ved den ene deigen du nettopp forlot.
+//
+// De ligger fortsatt i S (og dermed i `config:{...S}`, så hver bakst husker hva
+// den faktisk brukte) — men de har i tillegg sin egen nøkkel, slik `showSubsteps`
+// har hatt siden F2. Åpner du en lagret deig, styrer dens config visningen; det
+// er riktig, for da ser du på nettopp den deigen.
+const PREF_FIELDS=['gjaertest','favMethod'];
+const PREF_KEY='pizzaPrefs';
+function loadPrefs(){
+  try{
+    const p=JSON.parse(localStorage.getItem(PREF_KEY));
+    if(p && typeof p==='object') PREF_FIELDS.forEach(k=>{ if(p[k]!==undefined) S[k]=p[k]; });
+  }catch(e){}
+}
+function savePrefs(){
+  try{
+    const out={}; PREF_FIELDS.forEach(k=>{ out[k]=S[k]; });
+    localStorage.setItem(PREF_KEY, JSON.stringify(out));
+  }catch(e){ /* stille — preferanser er ikke kritiske */ }
+}
 // v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett ved en EKTE reload. Deig-
 // konfigurasjonen S ble aldri lagret, så «Fortsetter: X · Y»-banneret virket bare
 // under SPA-navigasjon i økten — etter en sidelast var oppsettet borte. Persister
@@ -1612,6 +1638,10 @@ function setMode(m){
 }
 function doReset(){
   Object.assign(S,DEF);
+  // v0.746: preferansene overlever «Start ny deig». Uten dette ble gjærtesten
+  // slått av i det stille hver gang du startet en ny deig — og da er bakst nr. 2
+  // ikke lenger et testbakst, som gjør hele sammenligningen verdiløs.
+  loadPrefs();
   window._activeDeigId=null;window._activeDeigName=null;
   try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
@@ -3575,7 +3605,7 @@ function betaMethodAllowed(method){ return loadBetaMethods()[method]!==false; }
 function toggleBetaMethod(v){
   const m=loadBetaMethods(); m[v]=!m[v];
   try{ localStorage.setItem('pizzaBetaMethods', JSON.stringify(m)); }catch(e){}
-  if(m[v]===false && S.favMethod===v){ S.favMethod=null; try{ persistSetup(); }catch(e){} }
+  if(m[v]===false && S.favMethod===v){ S.favMethod=null; try{ savePrefs(); persistSetup(); }catch(e){} }
   renderBetaMethodFilter();
   try{ renderWindowPicker(); }catch(e){}   // C: filteret gjelder også Fra–til
   // Oppdater et allerede vist resultat med det samme, så filteret føles direkte.
@@ -3587,6 +3617,7 @@ function toggleBetaMethod(v){
 // ikke er med i), så de to innstillingene ikke kan komme i motstrid.
 function toggleFavMethod(v){
   S.favMethod = (S.favMethod===v) ? null : v;
+  try{ savePrefs(); }catch(e){}   // v0.746: favoritten overlever «Start ny deig»
   try{ persistSetup(); }catch(e){}
   renderBetaMethodFilter();
   try{ renderWindowPicker(); }catch(e){}
@@ -3683,7 +3714,7 @@ function renderGjaertestBanners(){
 }
 function toggleGjaertest(){
   S.gjaertest=!gjaertestOn();
-  try{ persistSetup(); }catch(e){}
+  try{ savePrefs(); persistSetup(); }catch(e){}
   renderGjaertest();
   renderGjaertestBanners();
   // Gjærmengden er nettopp endret, så alt som viser den må tegnes på nytt.
@@ -5953,6 +5984,7 @@ async function loadConfigThenStart(){
     initAdvancedState();
     // v6.13 (BACKLOG F2): gjenopprett husket understeg-visning før første render.
     try{ if(localStorage.getItem('pizzaSubsteps')==='1') S.showSubsteps=true; }catch(e){}
+    loadPrefs();   // v0.746: gjærtest + favorittmetode overlever både reload og «Start ny deig»
     // v6.13 (BACKLOG F3): gjenopprett påbegynt oppsett før layout/render, så
     // «Fortsetter»-banneret og alle kontroller reflekterer det du hadde.
     const restored = restoreSetup();

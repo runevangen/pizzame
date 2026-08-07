@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.746",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Start ny deig» slo av gjærtesten i det stille. Det ødela hele poenget: du skal bake flere deiger med samme innstilling og sammenligne terningkastene, og stiller bakst nummer to seg tilbake til vanlig gjærmengde, sammenligner du to ulike ting uten å vite det.",
+      "Favorittmetoden din — stjerna i Smart-plan — forsvant på nøyaktig samme måte. Begge overlever nå både «Start ny deig» og en omstart av appen.",
+      "Selve deigen nullstilles fortsatt: mel, hydrering, type, metode og hevetider går tilbake til utgangspunktet. Det er innstillinger som gjelder deg, ikke den ene deigen, som blir stående."
+    ],
+    "changes_en": [
+      "“Start a new dough” silently switched the yeast test off. That defeated the whole point: you are meant to bake several doughs on the same setting and compare the ratings, and if the second bake quietly reverts to the normal yeast amount, you are comparing two different things without knowing it.",
+      "Your favourite method — the star in Smart plan — disappeared in exactly the same way. Both now survive “Start a new dough” as well as restarting the app.",
+      "The dough itself is still reset: flour, hydration, type, method and proofing times all return to the starting point. It is the settings that belong to you, rather than to that one dough, that stay put."
+    ]
+  },
+  {
     "v": "0.745",
     "d": "august 2026",
     "d_en": "August 2026",
