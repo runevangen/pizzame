@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.744",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Gjæren telles nå med i emnevekten. Den sto utenfor for alle metoder unntatt Mania, så veide du opp alt i ingredienslista, fikk du ikke helt den vekten planen oppga. Deigvekten leses samtidig fra samme oppskriftskilde som alt annet — Hurtigdeig og Kveldsdeig regnet den tidligere med en annen gjærmengde enn den som sto i lista.",
+      "Kveldsdeigens forklaring sa «Kald heving over 5–15 timer» uansett hva du valgte. Velger du 24 timer, motsa den sin egen overskrift. Den oppgir nå tiden du faktisk har valgt.",
+      "New York-pizza i pizzaovn forklarte temperaturgrensen med «sukkeret i deigen brunes raskt og kan brenne over 350°C». Men i pizzaovn er sukkeret droppet med vilje, så teksten viste til en ingrediens oppskriften ikke inneholder — og grensen på 350°C motsa tipset rett under, som ber deg justere opp mot 350–370°C hvis pizzaen blir for lys. Beskrivelsen oppgir nå utgangspunktet, og tipset eier finjusteringen."
+    ],
+    "changes_en": [
+      "The yeast now counts toward the ball weight. It was left out for every method except Mania, so weighing out everything in the ingredient list did not quite give you the weight the plan stated. The dough weight is also read from the same recipe source as everything else — Quick dough and Evening dough previously calculated it with a different amount of yeast than the one listed.",
+      "Evening dough's explanation said “Cold proofing over 5–15 hours” no matter what you picked. Choose 24 hours and it contradicted its own heading. It now states the time you actually selected.",
+      "New York pizza in a pizza oven explained the temperature limit with “the sugar in the dough browns quickly and can burn above 350°C”. But in a pizza oven the sugar is deliberately dropped, so the text referred to an ingredient the recipe does not contain — and the 350°C limit contradicted the tip right below it, which tells you to adjust up toward 350–370°C if the pizza is too pale. The description now gives the starting point, and the tip owns the fine-tuning."
+    ]
+  },
+  {
     "v": "0.743",
     "d": "august 2026",
     "d_en": "August 2026",

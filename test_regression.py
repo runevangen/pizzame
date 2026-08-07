@@ -4749,6 +4749,83 @@ def run_behavioral_tests(page):
                 ['ingenFlertallVedEtt', 'brukerFlertall', 'tallFølgerFunksjonen'])
     results.append(('step_texts_match_ball_count_and_cite_real_bench_time', ok121, r121))
 
+    # v0.744: tre funn til fra en ekstern gjennomgang, denne gang av en
+    # New York-plan (160g mel, 63% hydrering, Kveldsdeig 24t, pizzaovn).
+    #  1) Gjæren sto UTENFOR deigvekta for alle metoder unntatt Mania, så
+    #     ingredienslista summerte ikke til emnevekten planen selv oppga
+    #     (160+101+3,2+3+0,32 = 267,52, appen skrev 267).
+    #  2) Kveldsdeigens «hvorfor» sa «Kald heving over 5–15 timer» mens KOPTS
+    #     tilbyr opptil 24 — velger du 24t motsa forklaringen sin egen overskrift.
+    #  3) New York i pizzaovn begrunnet temperaturtaket med «sukkeret i deigen».
+    #     v0.724 fjernet nettopp sukkeret for pizzaovn, så teksten viste til en
+    #     ingrediens oppskriften ikke inneholder — og taket på 350°C motsa tipset
+    #     rett under, som ber deg justere opp mot 350–370°C.
+    r122 = page.evaluate("""() => {
+      const saved={...S};
+      const sett=(t,m,mel,ovn,extra)=>{ S.type=t; S.method=m; S.mel=mel; S.hydro=63;
+        S.cold=24; S.temp=22; S.fridgeC=3; S.oven=ovn; S.gjaer='torr'; S.mode='start';
+        S.kveldH=10; S.hurtigH=4; S.poolishH=14; S.bigaH=18; S.gjaertest=false;
+        Object.assign(S, extra||{}); _q10Memo={k:null,v:null}; };
+
+      // 1) Emnevekten må være summen av det ingredienslista faktisk oppgir,
+      //    for HVER metode — ikke bare for Mania, som alltid har talt gjæren med.
+      const vektAvvik=[];
+      for(const t of ['napoletana','newyork','langpanne','chicago'])
+      for(const m of ['standard','poolish','biga','kveld','hurtig','mania'])
+      for(const mel of [160,200,500,800]){
+        sett(t,m,mel,'vanlig');
+        const r=recipeFor(), p=pc();
+        // Mania har sin egen oppskrift; sammenlign mot recipeFor uansett, som er
+        // den ENE ingredienskilden alle flater leser (F17).
+        const sum=r.flour+r.water+r.salt+(r.oil||0)+(r.butter||0)+(r.sugar||0)+(r.yDry||0);
+        if(Math.abs(p.totalDough-Math.round(sum))>0)
+          vektAvvik.push(`${t}/${m}/${mel}: deigvekt ${p.totalDough} mot sum ${Math.round(sum)}`);
+      }
+
+      // 2) Kveldsdeigens forklaring må oppgi den valgte kjøletida, ikke et fast spenn.
+      const kveldAvvik=[];
+      for(const kh of KOPTS.map(o=>o.h)){
+        sett('napoletana','kveld',500,'vanlig',{kveldH:kh});
+        const st=stepsForAnchor(new Date(2026,7,7,10,0));
+        const s=st.find(x=>x.title.includes('Kjøleskapsheving'))||{};
+        const why=s.why||'';
+        if(!why.includes(String(kh))) kveldAvvik.push(`${kh}t: «${why.slice(0,60)}»`);
+        if(/5–15 timer/.test(why)) kveldAvvik.push(`${kh}t: fast spenn står igjen`);
+      }
+
+      // 3) Ingen steketekst får vise til sukker når oppskriften ikke har noe —
+      //    og beskrivelsen må ikke sette et tak tipset rett under bryter.
+      const sukkerAvvik=[], takAvvik=[];
+      for(const t of ['napoletana','newyork','langpanne','chicago'])
+      for(const ovn of ['vanlig','pizza']){
+        sett(t,'standard',500,ovn);
+        const r=recipeFor();
+        const st=stepsForAnchor(new Date(2026,7,7,10,0));
+        const stek=st[st.length-1];
+        const tekst=(stek.desc||'')+' '+(stek.tip||'');
+        if(!r.sugar && /sukker|sugar/i.test(tekst))
+          sukkerAvvik.push(`${t}/${ovn}: nevner sukker, oppskriften har ${r.sugar}g`);
+        // Et «kan brenne over N°C» i desc må ikke stå mot en anbefaling om å gå
+        // høyere enn N i tipset.
+        const tak=/over (\\d{3})°C/.exec(stek.desc||'');
+        if(tak){
+          const grense=Number(tak[1]);
+          const anbefalt=[...(stek.tip||'').matchAll(/(\\d{3})[–-](\\d{3})°C/g)].map(x=>Number(x[2]));
+          if(anbefalt.some(a=>a>grense))
+            takAvvik.push(`${t}/${ovn}: desc sier maks ${grense}, tips anbefaler ${Math.max(...anbefalt)}`);
+        }
+      }
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {vektStemmer:vektAvvik.length===0, vektAvvik:vektAvvik.slice(0,6),
+              kveldStemmer:kveldAvvik.length===0, kveldAvvik:kveldAvvik.slice(0,6),
+              ingenFalsktSukker:sukkerAvvik.length===0, sukkerAvvik,
+              ingenSelvmotsigendeTak:takAvvik.length===0, takAvvik};
+    }""")
+    ok122 = all(r122.get(k) for k in
+                ['vektStemmer', 'kveldStemmer', 'ingenFalsktSukker', 'ingenSelvmotsigendeTak'])
+    results.append(('dough_weight_sums_and_oven_text_matches_recipe', ok122, r122))
+
     return results
 
 

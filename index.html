@@ -1892,7 +1892,13 @@ function pcCountBadge(){
 function oD(t){
   const p=S.oven==='pizza';
   if(t==='napoletana')return p?L('Pizzaovn: 430–450°C, 90–120 sek. Leopardmønster og sprø kanter.','Pizza oven: 430–450°C, 90–120 sec. Leopard spotting and crisp edges.'):L('Vanlig ovn: 250°C, pizzastein/stål varmes 45 min. Stek 6–9 min øverste rille.','Regular oven: 250°C, preheat pizza stone/steel 45 min. Bake 6–9 min on the top rack.');
-  if(t==='newyork')return p?L('Pizzaovn: 300–340°C, 4–6 min. Lavere temperatur enn napoletansk — sukkeret i deigen brunes raskt og kan brenne over 350°C.','Pizza oven: 300–340°C, 4–6 min. Lower temperature than Neapolitan — the sugar in the dough browns quickly and can burn above 350°C.'):L('Vanlig ovn: 250°C på pizzastein/stål (varmes 45 min). Stek 6–8 min til gyllen og sprø bunn.','Regular oven: 250°C on a pizza stone/steel (preheat 45 min). Bake 6–8 min until golden with a crisp base.');
+  // v0.744: teksten begrunnet temperaturtaket med «sukkeret i deigen». I pizzaovn
+  // er det ikke noe sukker — v0.724 fjernet det nettopp fordi det brenner ved
+  // 400°C+ — så forklaringen viste til en ingrediens oppskriften ikke inneholder.
+  // Taket på 350°C motsa dessuten tipset rett under, som ber deg justere opp mot
+  // 350–370°C hvis pizzaen blir for lys. Begge deler er borte: teksten oppgir
+  // utgangspunktet, og tipset eier finjusteringen.
+  if(t==='newyork')return p?L('Pizzaovn: 300–340°C, 4–6 min. Lavere temperatur enn napoletansk — NY-bunnen skal stekes gjennom og bli sprø, ikke svis på 90 sekunder.','Pizza oven: 300–340°C, 4–6 min. Lower temperature than Neapolitan — the NY base should bake through and go crisp, not be seared in 90 seconds.'):L('Vanlig ovn: 250°C på pizzastein/stål (varmes 45 min). Stek 6–8 min til gyllen og sprø bunn.','Regular oven: 250°C on a pizza stone/steel (preheat 45 min). Bake 6–8 min until golden with a crisp base.');
   if(t==='langpanne')return p?L('Pizzaovn: 300–350°C, 8–12 min.','Pizza oven: 300–350°C, 8–12 min.'):L('Vanlig ovn: 230–250°C, oljet langpanne, 12–16 min.','Regular oven: 230–250°C, oiled sheet pan, 12–16 min.');
   return p?L('Pizzaovn: 250–280°C i jernpanne, 20–25 min.','Pizza oven: 250–280°C in a cast-iron pan, 20–25 min.'):L('Vanlig ovn: 200–220°C, smørsmurt form, 28–35 min.','Regular oven: 200–220°C, buttered pan, 28–35 min.');
 }
@@ -2651,7 +2657,10 @@ function kveldSteps(anchor){
         L(`${N('La emnet stå urørt','La emnene stå urørt')} i kjøleskapet i ca. ${kh} timer`,`${N('Let the ball sit undisturbed','Let the balls sit undisturbed')} in the fridge for about ${kh} hours`),
         L(N('Ikke åpne boksen','Ikke åpne boksene'),N('Don\'t open the container','Don\'t open the containers'))
       ],
-      why:L('Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.','Cold proofing over 5–15 hours gives more flavor than a pure room-temperature quick dough, without having to plan several days ahead like the standard method.'),
+      // v0.744: sto med «5–15 timer» hardkodet, mens KOPTS tilbyr opptil 24.
+      // Velger du 18 eller 24 timer, motsa forklaringen sin egen overskrift
+      // («Kjøleskapsheving (24t)»). Leser nå den valgte verdien.
+      why:L(`Kald heving i ${kh} timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.`,`Cold proofing for ${kh} hours gives more flavor than a pure room-temperature quick dough, without having to plan several days ahead like the standard method.`),
       tip:TIP.coldRise},
     {title:'Ta ut og temperer',loc:'rom',at:temperAt,dur:TEMPER_MIN,passive:true,
       desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return L(`${N('Ta emnet','Ta emnene')} ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`,`${N('Take the ball','Take the balls')} out of the fridge. Let ${N('it','them')} sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'} before you stretch and bake.`);})(),

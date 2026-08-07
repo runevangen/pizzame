@@ -175,8 +175,19 @@ function pc(){
     const rm=maniaRecipe();
     td=Math.round(rm.poolishMel+rm.poolishVann+rm.hovedMel+rm.vann1+rm.vann2+rm.salt+rm.poolishYd+rm.hovedYd);
   }else{
-    const r=R();
-    td=Math.round(r.flour+r.water+r.salt+r.oil+(r.butter||0)+(r.sugar||0));
+    // v0.744, to ting på én gang:
+    // (a) Kilden. Sto tidligere `R()`, men Hurtigdeig og Kveldsdeig OVERSTYRER
+    //     gjæren i recipeFor() (HOPTS / KCOLDMULT). pc() regnet altså deigvekta
+    //     med en annen gjærmengde enn den alle visningsflater viser — pc() var
+    //     en fjerde gjærkilde, nøyaktig klassen F17 fjernet. Nå leser den samme
+    //     recipeFor() som resten.
+    // (b) Gjæren telles med. Den sto utenfor for alle metoder unntatt Mania, så
+    //     ingredienslista summerte ikke til emnevekten planen selv oppga:
+    //     160g mel NY ga 160+101+3,2+3+0,32 = 267,52, mens appen skrev 267.
+    //     Målt over ~1500 konfigurasjoner flytter det ANTALL emner i seks
+    //     tilfeller, alle på en avrundingsgrense der tallet uansett var vilkårlig.
+    const r=recipeFor();
+    td=Math.round(r.flour+r.water+r.salt+r.oil+(r.butter||0)+(r.sugar||0)+(r.yDry||0));
   }
   const cnt=Math.max(1,Math.round(td/eg));
   return{count:cnt,perPizza:Math.round(td/cnt),totalDough:td,melPer:Math.round((S.method==='mania'?S.mel:R().flour)/cnt)};
