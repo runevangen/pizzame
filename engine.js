@@ -453,6 +453,32 @@ const Q10=2.3;
 // Målt avvik mot den gamle tabellen over hele kald-spennet (napoletana 500g,
 // 22°C rom, 3°C skap): 24t og 72t eksakt, 48t −0,04g, 96t +0,01g, 120t +0,04g.
 // Alle avvik er under oppløsningen på en hjemmevekt (0,1g).
+// v0.752: hvor bredt er poolish-vinduet, og hvor ligger det ved DIN romtemperatur?
+//
+// Gjærmengden i poolishen endrer seg ikke med romtemperaturen — 0,79g enten
+// kjøkkenet holder 18 eller 26 grader — og timeplanen setter av like mange
+// timer uansett. Men appens egen Q10-modell sier at samme gjæring tar 19,5
+// timer ved 18°C og 10 timer ved 26°C. På et varmt kjøkken står poolishen
+// altså 4 timer for lenge etter planen, topper og faller sammen. Det er
+// nettopp det som gjør deigen «nesten for slapp» — og det er temperaturen som
+// gjør det, ikke hvor stor andel av melet som ligger i poolishen.
+//
+// Her endres ikke ett gram. Poenget er å si fra HVOR i tida du bør begynne å
+// se etter, slik at deigen får bestemme og ikke klokka. Samme Q10-faktor som
+// fermentLoadHours() bruker — én modell, ikke to som kan sprike.
+//
+// Returnerer null når den ikke har noe å tilføye: kald poolish (kjøleskapet
+// gjør vinduet så bredt at en time fra eller til ikke betyr noe) og ved
+// romtemperaturer der planen allerede stemmer.
+function poolishWindowHours(){
+  if(S.method!=='poolish' || S.poolishCold) return null;
+  const f=Math.pow(Q10,((S.temp==null?22:S.temp)-Q10_REF_C)/10);
+  const planlagt=S.poolishH;
+  const ekte=planlagt/f;
+  // Under en halvtimes forskjell er ikke verdt en setning.
+  if(Math.abs(ekte-planlagt)<0.5) return null;
+  return {planlagt, ekte:Math.round(ekte*2)/2, temp:S.temp, raskere:ekte<planlagt};
+}
 const Q10_K=14.85;
 function stepTempC(loc){
   if(loc==='kjol') return (S.fridgeC==null?3:S.fridgeC);

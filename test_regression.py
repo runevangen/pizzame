@@ -4418,13 +4418,18 @@ def run_behavioral_tests(page):
       const out=[];
       for(const m of ['standard','poolish','biga','mania','hurtig','kveld'])
       for(const t of ['napoletana','newyork','langpanne','chicago','ingenelting'])
-      for(const o of ['vanlig','pizza']){
+      for(const o of ['vanlig','pizza'])
+      // v0.752: hydrering var IKKE med i sveipet — alt ble målt på 65 %. Da er
+      // en hel akse av matrisen utestet, og en feil som bare slår ut ved tørre
+      // eller våte deiger er usynlig for alle tre invariantene. Glideren går
+      // 55–80 for alle typer, så endene og midten dekker det nåbare rommet.
+      for(const h of [55,65,80]){
         S.method=m; S.type=t; S.oven=o; S.mode='start';
-        S.mel=500; S.hydro=65; S.cold=48; S.temp=22; S.fridgeC=3; S.gjaer='torr';
+        S.mel=500; S.hydro=h; S.cold=48; S.temp=22; S.fridgeC=3; S.gjaer='torr';
         S.hurtigH=4; S.kveldH=10; S.poolishH=14; S.bigaH=18;
         let steps=null;
-        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ out.push({m,t,o,err:''+e}); continue; }
-        if(!steps||!steps.length){ out.push({m,t,o,err:'ingen steg'}); continue; }
+        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ out.push({m,t,o,h,err:''+e}); continue; }
+        if(!steps||!steps.length){ out.push({m,t,o,h,err:'ingen steg'}); continue; }
         const bake=steps[steps.length-1];
         // Siste steg før steking som handler om ovnen — enten merket dit du går
         // (dispLoc) eller navngitt som forvarming (Hurtigdeig/Ingen elting folder
@@ -4435,7 +4440,7 @@ def run_behavioral_tests(page):
             gap=Math.round((bake.at-steps[i].at)/60000); phTitle=steps[i].title; break;
           }
         }
-        out.push({m,t,o, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
+        out.push({m,t,o,h, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
                   needs:steps.map(s=>s.needs||[]).reduce((a,b)=>a.concat(b),[])});
       }
       Object.assign(S,saved);
@@ -5157,6 +5162,80 @@ def run_behavioral_tests(page):
                  'ektefeilFallerTilbake', 'delKnappBetinget', 'kvittererPåKnappen',
                  'etikettKommerTilbake'])
     results.append(('share_sends_the_same_text_copy_does', ok127, r127))
+
+    # v0.752: poolish-vinduet. En gjennomgang antydet at 50 % av melet i
+    # poolishen gir dårlig sikkerhetsmargin, og at 20–30 % ville vært tryggere.
+    # Målt går det MOTSATT vei: all gjæren ligger i poolishen, så halverer du
+    # melet der uten å flytte gjær, nesten fordobler du konsentrasjonen
+    # (0,34 % → 0,57 %). Poolishen topper tidligere og faller tidligere.
+    # Andelen er altså ikke marginspaken.
+    #
+    # Det ekte hullet er temperaturen: gjærmengden i poolishen er den SAMME
+    # ved 18 og 26 grader, og timeplanen setter av like mange timer uansett —
+    # mens appens egen Q10-modell sier at 14t ved 22°C tilsvarer 19,5t ved 18°C
+    # og 10t ved 26°C. På et varmt kjøkken står poolishen fire timer for lenge
+    # etter planen, topper og faller sammen. DET er «nesten for slapp».
+    #
+    # Her endres ikke ett gram — bare hva planen tør si. Kravene:
+    #  - vinduet regnes med SAMME Q10 som fermentLoadHours(), ikke en ny modell
+    #  - varmt kjøkken → kortere, kaldt → lengre, og retningen må stemme
+    #  - ved 22°C skal den TIE. En setning som gjentar planen lærer folk å
+    #    hoppe over teksten.
+    #  - kald poolish tier også: kjøleskapet gjør vinduet så bredt at en time
+    #    fra eller til ikke betyr noe
+    #  - den må si hvordan man kjenner igjen at den har gått for langt.
+    #    Fallende midte er den eneste beskjeden som ikke kan feiltolkes som
+    #    «trenger litt mer tid».
+    r128 = page.evaluate("""() => {
+      const saved={...S};
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      const sett=temp=>{ S.method='poolish'; S.type='napoletana'; S.mel=500;
+        S.hydro=65; S.cold=48; S.temp=temp; S.fridgeC=3; S.oven='pizza';
+        S.gjaer='torr'; S.mode='start'; S.poolishH=14; S.poolishCold=false;
+        S.poolishPauseH=0; S.gjaertest=false; _q10Memo={k:null,v:null}; };
+      const tips=()=>{ const st=stepsForAnchor(new Date(2027,2,3,10,0));
+                       return st[0].tip||''; };
+
+      // Vinduet må komme fra samme Q10 som gjæringsbelastningen — ikke en
+      // parallell modell som kan sprike fra den.
+      let sammeModell=true;
+      for(const t of [18,20,24,26]){
+        sett(t);
+        const v=poolishWindowHours();
+        const fasit=14/Math.pow(Q10,(t-Q10_REF_C)/10);
+        if(!v || Math.abs(v.ekte-Math.round(fasit*2)/2)>0.001) sammeModell=false;
+      }
+
+      sett(26); const varm=tips();
+      sett(18); const kald=tips();
+      sett(22); const nøytral=tips();
+      // Kald poolish: to lag stopper den — teksten (kald gren av
+      // poolishRestText) og selve modellen. Teksten alene ville skjult at
+      // vakten i poolishWindowHours() var borte, så begge sjekkes.
+      sett(26); S.poolishCold=true; _q10Memo={k:null,v:null};
+      const kjøleskap=tips();
+      const kaldPoolishGirIkkeVindu = poolishWindowHours()===null;
+
+      const varmSierKortere = /går det fortere/.test(varm) && /10 timer/.test(varm);
+      const kaldSierLengre  = /går det saktere/.test(kald) && /19,5 timer/.test(kald);
+      const tierVed22 = !/går det (fortere|saktere)/.test(nøytral);
+      const kaldPoolishTier = !/går det (fortere|saktere)/.test(kjøleskap);
+      const harFalletegn = /midten begynt å synke/.test(varm);
+      // Retningen må stemme: varmt kjøkken kan ikke gi LENGRE tid enn kaldt.
+      sett(26); const a=poolishWindowHours().ekte;
+      sett(18); const b=poolishWindowHours().ekte;
+      const retningStemmer = a < 14 && b > 14 && a < b;
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {sammeModell, varmSierKortere, kaldSierLengre, tierVed22,
+              kaldPoolishTier, kaldPoolishGirIkkeVindu, harFalletegn,
+              retningStemmer, ved26:a, ved18:b};
+    }""")
+    ok128 = all(r128.get(k) for k in
+                ['sammeModell', 'varmSierKortere', 'kaldSierLengre', 'tierVed22',
+                 'kaldPoolishTier', 'kaldPoolishGirIkkeVindu', 'harFalletegn',
+                 'retningStemmer'])
+    results.append(('poolish_window_follows_room_temperature', ok128, r128))
 
     return results
 

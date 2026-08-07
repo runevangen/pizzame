@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.752",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Poolish-steget sier nå hvor lenge den faktisk trenger på ditt kjøkken. Gjærmengden i poolishen er den samme enten det er 18 eller 26 grader, og planen setter av like mange timer uansett — men gjæringen bryr seg ikke om planen. På et 26-graders kjøkken er poolishen klar rundt 10 timer, ikke 14. Står den til 14, har den toppet og falt, og deigen blir slapp uten at du skjønner hvorfor.",
+      "Derfor står det nå: «Men på et 26°C kjøkken går det fortere enn planen sier — regn med at den er klar rundt 10 timer, og se etter fra da av. Har midten begynt å synke, er den over toppen.» Kaldt kjøkken får motsatt beskjed. Ingen gram er endret — planen tør bare si mer.",
+      "Ved 22 grader står det ingenting, for da stemmer planen. Og har du satt poolishen i kjøleskapet, sier den heller ingenting: der er vinduet så bredt at en time fra eller til ikke betyr noe.",
+      "Under panseret: tallet regnes med nøyaktig samme Q10-modell som resten av appen bruker til gjæring, ikke en egen formel som kunne sagt noe annet.",
+      "Invariant-testene sveipet alle metoder, typer og ovner — men alltid på 65 % hydrering. Nå dekkes 55, 65 og 80 også, så en feil som bare slår ut på tørre eller våte deiger ikke lenger er usynlig."
+    ],
+    "changes_en": [
+      "The poolish step now says how long it actually needs in your kitchen. The amount of yeast in the poolish is the same whether it is 18 or 26 degrees, and the plan sets aside the same number of hours either way — but the fermentation does not care about the plan. In a 26-degree kitchen the poolish is ready around 10 hours, not 14. Leave it to 14 and it has peaked and fallen, and the dough goes slack without you understanding why.",
+      "So it now says: “But in a 26°C kitchen it goes faster than the plan says — expect it ready around 10 hours, and start checking from then. If the middle has begun to sink, it is past its peak.” A cold kitchen gets the opposite message. Not a gram has changed — the plan simply dares to say more.",
+      "At 22 degrees it says nothing, because there the plan is right. And if you put the poolish in the fridge it stays quiet too: there the window is so wide that an hour either way does not matter.",
+      "Under the hood: the number is worked out with exactly the same Q10 model the rest of the app uses for fermentation, not a separate formula that could say something different.",
+      "The invariant tests swept every method, type and oven — but always at 65% hydration. They now cover 55, 65 and 80 as well, so a fault that only shows up on dry or wet doughs is no longer invisible."
+    ]
+  },
+  {
     "v": "0.751",
     "d": "august 2026",
     "d_en": "August 2026",
