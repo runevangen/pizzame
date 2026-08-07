@@ -4868,40 +4868,47 @@ def run_behavioral_tests(page):
       const stdPlan=synlig('plan'), stdWiz=synlig('settings');
       const tierNårUberørt = stdPlan.trim()==='' && stdWiz.trim()==='';
 
-      // v0.747: forklaringen i Mer-panelet må gjelde METODEN du står i. En
-      // generisk setning svarer ikke på spørsmålet man faktisk sitter med —
-      // «hvorfor skjedde det ingenting da jeg slo den på?» — og grunnen er
-      // forskjellig for Langtidsdeig (bruker beregningen alt), Mania (fast
-      // oppskrift) og Hurtigdeig (egen tabell).
-      const grunner={};
-      for(const m of ['standard','mania','hurtig']){
+      // v0.748: statuslinja i Mer-panelet svarer på det SAMME spørsmålet i alle
+      // metoder — «hva er gjæren min nå?» — i stedet for å melde fra om at det
+      // ikke skjedde noe. «Ingen endring akkurat nå» var skrevet fra kodens
+      // synsvinkel: en verdi ble ikke endret. Den som nettopp huket av en boks
+      // har ikke noe «før» i hodet, og lurer bare på om bryteren gjør noe.
+      const panel=()=>{ mobShowTab('tips'); renderGjaertest();
+        const el=document.getElementById('mob-gjaertest-wrap');
+        return el?el.innerText:''; };
+      const status={};
+      for(const m of ['standard','mania','hurtig','poolish','biga','kveld']){
         sett(m,true);
-        mobShowTab('tips'); renderGjaertest();
-        const el=document.getElementById('mob-gjaertest-wrap');
-        const txt=el?el.innerText:'';
-        grunner[m]={nevnerMetoden:txt.includes(mN(m)), harGrunn:txt.includes('Ingen endring')};
+        const txt=panel(), tall=recipeFor().yDry;
+        status[m]={tall, viserTallet:txt.includes(String(tall))};
       }
-      const forklarerPerMetode=['standard','mania','hurtig']
-        .every(m=>grunner[m].nevnerMetoden && grunner[m].harGrunn);
-      // Og de tre grunnene må være ULIKE — ellers er det en generisk setning
-      // med metodenavnet limt på.
-      const tekster=[];
-      for(const m of ['standard','mania','hurtig']){
-        sett(m,true); renderGjaertest();
-        const el=document.getElementById('mob-gjaertest-wrap');
-        tekster.push((el?el.innerText:'').replace(new RegExp(mN(m),'g'),'X'));
-      }
-      const grunneneErUlike=new Set(tekster).size===3;
+      const viserAlltidGjæren=Object.keys(status).every(m=>status[m].viserTallet);
+
+      // Etiketten må ramse opp metodene testen GJELDER. Det er den som gjør at
+      // ingen boks trenger å forklare hvorfor det ikke skjedde noe i de andre:
+      // står du i Langtidsdeig og etiketten sier Poolish, Biga og Kveldsdeig,
+      // så har du allerede svaret.
+      sett('standard',true);
+      const etikett=panel();
+      const nevnerDeTre=Object.keys(METHODS).filter(methodAllowsYeastTest)
+        .every(m=>etikett.includes(mN(m)));
+
+      // Ingen elting er det ene hullet etiketten IKKE kan tette: den sier at
+      // Poolish er med, men testen virker likevel ikke. Den ene ekte
+      // overraskelsen — og den eneste som fortsatt fortjener en begrunnelse.
+      sett('poolish',true); S.type='ingenelting'; _q10Memo={k:null,v:null};
+      const ieTxt=panel();
+      const forklarerIngenElting=/Ingen elting har fast|No-knead has a fixed/.test(ieTxt);
 
       Object.assign(S,saved); _q10Memo={k:null,v:null};
       try{ mobShowTab('plan'); }catch(e){}
       return {påBeggeFaner, harVeiUt, tierNårAv, tierNårUberørt,
-              forklarerPerMetode, grunneneErUlike, grunner,
+              viserAlltidGjæren, nevnerDeTre, forklarerIngenElting, status,
               nå, før, planTekst:plan.trim().slice(0,90)};
     }""")
     ok123 = all(r123.get(k) for k in
                 ['påBeggeFaner', 'harVeiUt', 'tierNårAv', 'tierNårUberørt',
-                 'forklarerPerMetode', 'grunneneErUlike'])
+                 'viserAlltidGjæren', 'nevnerDeTre', 'forklarerIngenElting'])
     results.append(('yeast_test_is_visible_where_it_changes_the_yeast', ok123, r123))
 
     # v0.746: «Start ny deig» slo av gjærtesten i det stille. doReset() gjør

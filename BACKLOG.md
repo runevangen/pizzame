@@ -746,7 +746,7 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > 🧪 **Verktøyet er bygget; spørsmålet står fortsatt åpent.** F24 sa selv at dette
 > ikke kan avgjøres ved tastaturet. v0.741 gjør derfor ikke et bytte — den gir deg
 > en utfordrer du kan slå på og bake mot: **Innstillinger → 🧪 Utprøving →
-> «Utfordre gjærmengden»**. Av som standard.
+> «Teste ny måte å regne ut gjærmengden»**. Av som standard.
 >
 > **Målt sprik ved påslag** (napoletana 500 g, 22 °C rom, 3 °C skap):
 >

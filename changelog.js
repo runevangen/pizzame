@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.748",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Gjærtesten heter nå «Teste ny måte å regne ut gjærmengden», og etiketten sier rett ut hvilke metoder den gjelder: Poolish, Biga og Kveldsdeig. Det gamle navnet — «Utfordre gjærmengden» — sa ikke hva som skjer, og hvem som utfordret hvem sto det ingenting om.",
+      "Da forsvant behovet for forklaringsboksen. Står du i Langtidsdeig og etiketten sier Poolish, Biga og Kveldsdeig, vet du allerede hvorfor det ikke skjedde noe da du slo den på.",
+      "I stedet står det én linje som svarer på det samme spørsmålet uansett metode: hva er gjæren min nå? «0.48g i stedet for 1.13g» der testen virker, «1.13g som vanlig» der den ikke gjør det. «Ingen endring akkurat nå» er borte — det var skrevet fra maskinens side, om en verdi som ikke ble endret, til en som ikke hadde noe «før» å sammenligne med.",
+      "Ett unntak fortjener fortsatt en begrunnelse: velger du Ingen elting, virker testen ikke selv om du står i Poolish. Der sier den fra hvorfor."
+    ],
+    "changes_en": [
+      "The yeast test is now called “Test a new way of working out the yeast”, and the label states outright which methods it covers: Poolish, Biga and Evening dough. The old name — “Challenge the yeast amount” — did not say what happens, and left it unclear who was challenging whom.",
+      "That removed the need for the explanation box. If you are in Long-rise dough and the label says Poolish, Biga and Evening dough, you already know why nothing happened when you switched it on.",
+      "In its place is a single line that answers the same question in every method: what is my yeast right now? “0.48g instead of 1.13g” where the test applies, “1.13g as usual” where it does not. “No change right now” is gone — it was written from the machine's side, about a value that did not change, to someone who had no “before” to compare against.",
+      "One exception still deserves a reason: pick No-knead and the test does not apply even in Poolish. There it says why."
+    ]
+  },
+  {
     "v": "0.747",
     "d": "august 2026",
     "d_en": "August 2026",
