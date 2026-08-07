@@ -4868,13 +4868,40 @@ def run_behavioral_tests(page):
       const stdPlan=synlig('plan'), stdWiz=synlig('settings');
       const tierNårUberørt = stdPlan.trim()==='' && stdWiz.trim()==='';
 
+      // v0.747: forklaringen i Mer-panelet må gjelde METODEN du står i. En
+      // generisk setning svarer ikke på spørsmålet man faktisk sitter med —
+      // «hvorfor skjedde det ingenting da jeg slo den på?» — og grunnen er
+      // forskjellig for Langtidsdeig (bruker beregningen alt), Mania (fast
+      // oppskrift) og Hurtigdeig (egen tabell).
+      const grunner={};
+      for(const m of ['standard','mania','hurtig']){
+        sett(m,true);
+        mobShowTab('tips'); renderGjaertest();
+        const el=document.getElementById('mob-gjaertest-wrap');
+        const txt=el?el.innerText:'';
+        grunner[m]={nevnerMetoden:txt.includes(mN(m)), harGrunn:txt.includes('Ingen endring')};
+      }
+      const forklarerPerMetode=['standard','mania','hurtig']
+        .every(m=>grunner[m].nevnerMetoden && grunner[m].harGrunn);
+      // Og de tre grunnene må være ULIKE — ellers er det en generisk setning
+      // med metodenavnet limt på.
+      const tekster=[];
+      for(const m of ['standard','mania','hurtig']){
+        sett(m,true); renderGjaertest();
+        const el=document.getElementById('mob-gjaertest-wrap');
+        tekster.push((el?el.innerText:'').replace(new RegExp(mN(m),'g'),'X'));
+      }
+      const grunneneErUlike=new Set(tekster).size===3;
+
       Object.assign(S,saved); _q10Memo={k:null,v:null};
       try{ mobShowTab('plan'); }catch(e){}
       return {påBeggeFaner, harVeiUt, tierNårAv, tierNårUberørt,
+              forklarerPerMetode, grunneneErUlike, grunner,
               nå, før, planTekst:plan.trim().slice(0,90)};
     }""")
     ok123 = all(r123.get(k) for k in
-                ['påBeggeFaner', 'harVeiUt', 'tierNårAv', 'tierNårUberørt'])
+                ['påBeggeFaner', 'harVeiUt', 'tierNårAv', 'tierNårUberørt',
+                 'forklarerPerMetode', 'grunneneErUlike'])
     results.append(('yeast_test_is_visible_where_it_changes_the_yeast', ok123, r123))
 
     # v0.746: «Start ny deig» slo av gjærtesten i det stille. doReset() gjør

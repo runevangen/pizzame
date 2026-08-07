@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.747",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Forklaringen i Utprøving-panelet var vanskelig å forstå. Det sto «Testen er på, men Langtidsdeig rører den ikke» — som om metoden lot være å røre testen, når det er testen som ikke rører metoden. Og den svarte ikke på spørsmålet du faktisk sitter med: hvorfor skjedde det ingenting da jeg slo den på?",
+      "Nå står det «Ingen endring akkurat nå», etterfulgt av grunnen for nettopp den metoden du står i — Langtidsdeig regner allerede gjæren slik, Mania er en fast oppskrift fra en kilde, Hurtigdeig henter gjæren fra sin egen tabell — og til slutt hva du kan gjøre: velg Poolish, Biga eller Kveldsdeig for å se testen i arbeid.",
+      "Beskrivelsen av selve testen er skrevet om uten fagord. «Q10-modellen» og «tabellene» sier ingenting hvis du ikke har lest koden; nå står det hva den faktisk gjør, og hvorfor du skulle ønske å prøve den."
+    ],
+    "changes_en": [
+      "The explanation in the Experiments panel was hard to follow. It said “The test is on, but Long-rise dough does not touch it” — as if the method were leaving the test alone, when it is the test that leaves the method alone. And it did not answer the question you are actually sitting with: why did nothing happen when I switched it on?",
+      "It now says “No change right now”, followed by the reason for the method you are actually in — Long-rise dough already works out the yeast this way, Mania is a fixed recipe from a source, Quick dough takes its yeast from its own table — and finally what you can do about it: pick Poolish, Biga or Evening dough to see the test at work.",
+      "The description of the test itself has been rewritten without jargon. “The Q10 model” and “the tables” mean nothing unless you have read the code; it now says what the test actually does, and why you might want to try it."
+    ]
+  },
+  {
     "v": "0.746",
     "d": "august 2026",
     "d_en": "August 2026",

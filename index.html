@@ -3667,8 +3667,12 @@ function renderGjaertest(){
   const el=document.getElementById('mob-gjaertest-wrap');
   if(!el) return;
   const on=gjaertestOn();
-  const metoder=Object.keys(METHODS).filter(methodAllowsYeastTest).map(mN).join(' · ');
+  const metoder=Object.keys(METHODS).filter(methodAllowsYeastTest).map(mN);
+  // «og» når vi ramser opp hva testen virker på, «eller» når du skal velge én.
+  const bind=(ord)=>metoder.slice(0,-1).join(', ')+ord+metoder[metoder.length-1];
+  const alle=bind(L(' og ',' and ')), velg=bind(L(' eller ',' or '));
   const gjelderNå=methodAllowsYeastTest(S.method) && S.type!=='ingenelting';
+  const boks='margin-top:7px;padding:8px 11px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:600;color:var(--forno-accent-text);line-height:1.5';
   el.innerHTML=`
     <div style="display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="toggleGjaertest()"
          role="switch" aria-checked="${on}" tabindex="0"
@@ -3676,17 +3680,32 @@ function renderGjaertest(){
       <span aria-hidden="true" style="width:18px;height:18px;margin-top:1px;border-radius:5px;border:2px solid ${on?'var(--forno-accent)':'var(--forno-border)'};background:${on?'var(--forno-accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a1512;font-size:12px;font-weight:800">${on?'✓':''}</span>
       <span style="flex:1">
         <span style="display:block;font-size:13px;font-weight:600;color:var(--forno-text)">${L('Utfordre gjærmengden','Challenge the yeast amount')}</span>
-        <span style="display:block;font-size:11px;color:var(--forno-text-faint);line-height:1.45;margin-top:3px">${L(
-          `Regner gjæren med Q10-modellen i stedet for tabellene, og viser hva metoden normalt ville gitt. Gjelder ${metoder}. Langtidsdeig bruker Q10 fra før; Mania er en oppskrift fra en kilde, og Hurtigdeig har sin egen modell.`,
-          `Calculates the yeast with the Q10 model instead of the tables, and shows what the method would normally give. Applies to ${metoder}. Long-ferment already uses Q10; Mania is a recipe from a source, and Quick dough has its own model.`)}</span>
+        <span style="display:block;font-size:11px;color:var(--forno-text-faint);line-height:1.5;margin-top:3px">${L(
+          `Regner ut gjæren etter hvor mye gjæringen faktisk rekker ved temperaturen deigen står i, i stedet for etter faste tabeller. Du får se begge tallene, så du kan bake dem mot hverandre og se hvilket som gir best deig. Virker på ${alle}.`,
+          `Works out the yeast from how much fermentation actually happens at the temperature the dough sits at, instead of from fixed tables. You see both numbers, so you can bake them against each other and see which gives the better dough. Works on ${alle}.`)}</span>
       </span>
     </div>
-    ${on&&!gjelderNå?`<div style="margin-top:7px;padding:7px 10px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:600;color:var(--forno-accent-text);line-height:1.4">${L(
-      `Testen er på, men ${mN(S.method)} rører den ikke — gjærmengden er uendret akkurat nå.`,
-      `The test is on, but it does not touch ${mN(S.method)} — the yeast amount is unchanged right now.`)}</div>`:''}
-    ${on&&gjelderNå?`<div style="margin-top:7px;padding:7px 10px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:600;color:var(--forno-accent-text);line-height:1.4">🧪 ${L(
-      'Bak den, og gi den terningkast i Deiger — det er slik spørsmålet avgjøres.',
-      'Bake it and rate it under Doughs — that is how the question gets settled.')}</div>`:''}`;
+    ${on&&!gjelderNå?`<div style="${boks}">${L(
+      `Ingen endring akkurat nå. ${gjaertestWhyNot()} Velg ${velg} for å se testen i arbeid.`,
+      `No change right now. ${gjaertestWhyNot()} Pick ${velg} to see the test at work.`)}</div>`:''}
+    ${on&&gjelderNå?`<div style="${boks}">${L(
+      `🧪 Nå er den i bruk. Bak deigen og gi den terningkast under Deiger — det er slik du finner ut hvilken gjærmengde som gir best resultat.`,
+      `🧪 It is in use now. Bake the dough and rate it under Doughs — that is how you find out which amount of yeast gives the better result.`)}</div>`:''}`;
+}
+// v0.747: hvorfor testen ikke gjør noe akkurat nå. Grunnen er ULIK per metode,
+// og en generisk setning («metoden rører den ikke») svarer ikke på spørsmålet
+// man faktisk sitter med: hvorfor skjedde det ingenting da jeg slo den på?
+function gjaertestWhyNot(){
+  const m=mN(S.method);
+  if(S.type==='ingenelting')
+    return L(`Ingen elting har fast prosess og fast gjærmengde.`,`No-knead has a fixed process and a fixed amount of yeast.`);
+  if(S.method==='standard')
+    return L(`${m} regner allerede gjæren på denne måten, så det finnes ingen forskjell å vise.`,`${m} already works out the yeast this way, so there is no difference to show.`);
+  if(S.method==='mania')
+    return L(`${m} er en fast oppskrift fra en kilde, og gjæren i den skal ikke justeres.`,`${m} is a fixed recipe from a source, and its yeast should not be adjusted.`);
+  if(S.method==='hurtig')
+    return L(`${m} henter gjæren fra sin egen tabell, som testen ikke rører.`,`${m} takes its yeast from its own table, which the test does not touch.`);
+  return L(`${m} bruker en annen gjærberegning enn den testen utfordrer.`,`${m} uses a different yeast calculation from the one the test challenges.`);
 }
 // v0.745: banneret. Bryteren bor i Mer → Utprøving, og der blir den værende —
 // men gjærmengden endres i Tidsplan og Planlegging, der du ikke ser bryteren.
