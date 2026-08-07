@@ -4677,6 +4677,78 @@ def run_behavioral_tests(page):
         'stekTierOmForvarming', 'steinBareNårDenFinnes', 'ingenTermostatIPizzaovn'])
     results.append(('plan_review_findings_ball_weight_and_duplicate_tips', ok120, r120))
 
+    # v0.743: to funn til fra en ekstern gjennomgang av en Kveldsdeig-plan.
+    #  1) Appen har alltid vært nøye med selve tellingen («Del i 1 emne à ca. 269g»)
+    #     og så fortsatt i flertall i alt rundt: «La emnene stå urørt», «Ikke åpne
+    #     boksene», «Ikke stable boksene tett i høyden» — det siste rent meningsløst
+    #     med én boks. Det ble mer synlig med v0.742, som gjorde én pizza til det
+    #     vanlige tilfellet (flourForCount(1) svarer nå 160g).
+    #  2) Kveldsdeigens «hvorfor» sa «Kortere enn standardmetodens 4 timer». Det var
+    #     riktig helt til F14 (v0.720) gjorde standardmetodens benketid
+    #     temperaturavhengig: 6,4t ved 18°C, 2t ved 28°C. Tallet stemte da bare ved
+    #     nøyaktig 22°C — samme klasse som forvarmingsfeilen i v0.737, der et tall i
+    #     prosa ikke kom fra funksjonen tidsplanen faktisk bruker.
+    r121 = page.evaluate("""() => {
+      const saved={...S};
+      // Flertallsord som BARE gir mening om det er flere emner. «de» og «dem» er
+      // utelatt med vilje — «de 10g vannet du holdt av» er bestemt artikkel, ikke
+      // flertall, og ville gitt falske treff.
+      const FLERTALL=/\\b(emnene|boksene|deigemnene|the balls|the containers|the boxes)\\b/i;
+      const funn=[];
+      for(const m of ['standard','poolish','biga','mania','hurtig','kveld'])
+      for(const lang of ['no','en']){
+        window._lang=lang;
+        S.method=m; S.type='napoletana'; S.mel=160; S.hydro=65; S.cold=24;
+        S.temp=22; S.fridgeC=3; S.oven='pizza'; S.gjaer='torr'; S.mode='start';
+        S.kveldH=10; S.hurtigH=4; S.poolishH=14; S.bigaH=18; S.gjaertest=false;
+        _q10Memo={k:null,v:null};
+        let st=null; try{ st=stepsForAnchor(new Date(2026,7,7,10,0)); }catch(e){ continue; }
+        if(pc().count!==1) { funn.push(`${m}: forventet 1 emne, fikk ${pc().count}`); continue; }
+        for(const s of st){
+          for(const [felt,txt] of [['desc',s.desc||''],['tip',s.tip||''],['why',s.why||''],
+                                   ['substeps',(s.substeps||[]).join(' | ')],
+                                   ['needs',(s.needs||[]).join(' | ')]]){
+            const t=FLERTALL.exec(txt);
+            if(t) funn.push(`${m}/${lang} · ${s.title} · ${felt}: «${t[1]}»`);
+          }
+        }
+      }
+      window._lang='no';
+
+      // Med FLERE emner skal flertallsformen fortsatt brukes — ellers har vi bare
+      // byttet den ene feilen mot den motsatte.
+      S.method='standard'; S.mel=500; _q10Memo={k:null,v:null};
+      const flere=stepsForAnchor(new Date(2026,7,7,10,0));
+      const antallFlere=pc().count;
+      const brukerFlertall=flere.some(s=>FLERTALL.test((s.desc||'')+(s.tip||'')));
+
+      // 2) «standardmetodens ca. X» må følge rtM(240) ved enhver romtemperatur.
+      const tider=[];
+      for(const temp of [18,22,28]){
+        S.method='kveld'; S.type='napoletana'; S.mel=500; S.kveldH=10; S.temp=temp;
+        S.cold=24; S.fridgeC=3; S.oven='pizza'; S.mode='start'; _q10Memo={k:null,v:null};
+        const st=stepsForAnchor(new Date(2026,7,7,10,0));
+        const why=(st.find(s=>s.title.includes('Ta ut og temperer'))||{}).why||'';
+        // Standardmetodens FAKTISKE benketid ved samme romtemperatur.
+        S.method='standard'; _q10Memo={k:null,v:null};
+        const s2=stepsForAnchor(new Date(2026,7,7,10,0));
+        const ut=s2.find(x=>x.title.includes('Ta ut av kjøleskap'));
+        const stek=s2[s2.length-1];
+        const faktisk=Math.round((stek.at-ut.at)/60000);
+        tider.push({temp, why, faktisk, nevner:why.includes(fmtDur(faktisk)),
+                    harGammeltTall:/standardmetodens 4 timer/.test(why)});
+      }
+      const tallFølgerFunksjonen = tider.every(t=>t.nevner && !t.harGammeltTall);
+
+      Object.assign(S,saved); window._lang='no'; _q10Memo={k:null,v:null};
+      return {ingenFlertallVedEtt:funn.length===0, funn:funn.slice(0,10),
+              antallFlere, brukerFlertall, tallFølgerFunksjonen,
+              tider:tider.map(t=>({temp:t.temp,faktisk:t.faktisk,nevner:t.nevner}))};
+    }""")
+    ok121 = all(r121.get(k) for k in
+                ['ingenFlertallVedEtt', 'brukerFlertall', 'tallFølgerFunksjonen'])
+    results.append(('step_texts_match_ball_count_and_cite_real_bench_time', ok121, r121))
+
     return results
 
 

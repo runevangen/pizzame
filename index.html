@@ -1936,7 +1936,7 @@ function preheatSteps(bakeAt, roomMin, type){
     substeps:[
       L(`Sett på ${t} — ca. ${fmtDur(ph)} til den er klar`,`Turn on ${t} — about ${durEn(fmtDur(ph))} until it is ready`),
       ...(stone?[L('Sett pizzastein/-stål inn med en gang','Put the pizza stone/steel in right away')]:[]),
-      L('La deigemnene stå videre på benken','Leave the dough balls on the counter')
+      L(N('La deigemnet stå videre på benken','La deigemnene stå videre på benken'),N('Leave the dough ball on the counter','Leave the dough balls on the counter'))
     ],
     // v0.742: «Hvorfor» sto tidligere og snakket om pizzastein uansett ovnstype,
     // mens beskrivelsen rett over bevisst lot være når det ikke er noen stein.
@@ -2045,23 +2045,38 @@ const WHY=new Proxy({},{get:(_,k)=>((window._lang==='en'?WHY_EN:WHY_NO)[k])});
 // ville lekket dit. Fingertrykk-test: kun på VARM deig (roomRise) — på kald deig er den
 // upålitelig fordi deigen er stiv av kulde.
 const TIP_NO={
-  coldRise:'Sjekk gjennom lokket uten å åpne: emnene skal vokse til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut og bak litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.',
+  coldRise:()=>'Sjekk gjennom lokket uten å åpne: '+N('emnet skal vokse','emnene skal vokse')+' til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut og bak litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.',
   roomRise:'Klar når den har vokst merkbart (regn med ca. 30–50 % på denne korte hevingen — ikke vent på at den dobler seg), myk og luftig med begynnende bobler. Fingertrykk-test: trykk lett med våt finger — gropa skal fjære sakte halvveis tilbake. Spretter den rett opp igjen, trenger den mer tid; blir gropa stående og deigen synker sammen, er den for langt fram — gå videre med en gang. Varmt kjøkken går raskere enn klokka antyder.',
-  benchTemper:'Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. Fortsatt stive og kalde — gi dem mer tid før du strekker og steker. Slappe og flyter utover i boksen — de er tempererte nok; strekk og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.',
+  benchTemper:()=>N('Klart når det ikke lenger er kaldt og har hevet litt synlig i boksen. Fortsatt stivt og kaldt — gi det mer tid før du strekker og steker. Slapt og flyter utover i boksen — det er temperert nok; strekk og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og det kan overheve og bli slapt.','Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. Fortsatt stive og kalde — gi dem mer tid før du strekker og steker. Slappe og flyter utover i boksen — de er tempererte nok; strekk og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.'),
   poolishFerment:'Klar når overflaten er full av bobler, hvelver seg lett oppover og lukter friskt syrlig av gjær. Flat og stille ennå — la den stå lenger; kaldt kjøkken bremser den. Falt sammen i midten og lukter skarpt/alkoholaktig — den er gått litt for langt; bruk den likevel, men regn med noe mer syrlig smak.',
   // Praktisk "sett-i-kjøleskap"-tips (ikke "les deigen"): fysisk oppsett når emnene
   // settes kaldt. Brukes på form→kjøleskap-stegene (tailSteps + Kveldsdeig).
-  intoFridge:'Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe. Sett dem i den kaldeste sonen: bakerst og nederst, over grønnsakskuffen (ca. 2–4°C). Unngå kjøleskapsdøra (5–7°C) — den er varmest og svinger mest hver gang du åpner, så deigen hever ujevnt der. Ikke stable boksene tett i høyden; det kan blokkere luftsirkulasjonen — spre dem litt utover. Og stol ikke blindt på tallet på kjøleskapshjulet: 1–5-skalaene varierer mellom merker, så har du et termometer, sjekk at den kaldeste sonen ligger under 4°C.'
+  intoFridge:()=>N('Bruk boks med lokk — klut tørker ut overflaten og lager skorpe. Sett den i den kaldeste sonen','Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe. Sett dem i den kaldeste sonen')+': bakerst og nederst, over grønnsakskuffen (ca. 2–4°C). Unngå kjøleskapsdøra (5–7°C) — den er varmest og svinger mest hver gang du åpner, så deigen hever ujevnt der.'+N('',' Ikke stable boksene tett i høyden; det kan blokkere luftsirkulasjonen — spre dem litt utover.')+' Og stol ikke blindt på tallet på kjøleskapshjulet: 1–5-skalaene varierer mellom merker, så har du et termometer, sjekk at den kaldeste sonen ligger under 4°C.'
 };
 const TIP_EN={
-  coldRise:'Check through the lid without opening: the balls should grow to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out and bake a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.',
+  coldRise:()=>'Check through the lid without opening: '+N('the ball should grow','the balls should grow')+' to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out and bake a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.',
   roomRise:'Ready when it has grown noticeably (expect about 30–50% on this short rise — don\'t wait for it to double), soft and airy with the first bubbles appearing. Finger-poke test: press lightly with a wet finger — the dimple should spring back slowly, halfway. If it springs right back, it needs more time; if the dimple stays and the dough sinks, it is too far along — move on right away. A warm kitchen goes faster than the clock suggests.',
-  benchTemper:'Ready when they are no longer cold and have risen a little visibly in the box. Still stiff and cold — give them more time before you stretch and bake. Slack and spreading out in the box — they are tempered enough; stretch and bake without waiting longer. Too short gives stiff, dense dough that is hard to open; far too long and they can over-proof and go slack.',
+  benchTemper:()=>N('Ready when it is no longer cold and has risen a little visibly in the box. Still stiff and cold — give it more time before you stretch and bake. Slack and spreading out in the box — it is tempered enough; stretch and bake without waiting longer. Too short gives stiff, dense dough that is hard to open; far too long and it can over-proof and go slack.','Ready when they are no longer cold and have risen a little visibly in the box. Still stiff and cold — give them more time before you stretch and bake. Slack and spreading out in the box — they are tempered enough; stretch and bake without waiting longer. Too short gives stiff, dense dough that is hard to open; far too long and they can over-proof and go slack.'),
   poolishFerment:'Ready when the surface is full of bubbles, domes up easily and has a fresh, slightly tangy yeast smell. Flat and still — let it stand longer; a cold kitchen slows it down. Collapsed in the middle and smelling sharp/alcoholic — it has gone a bit too far; use it anyway, but expect a somewhat more sour taste.',
-  intoFridge:'Use boxes with lids — cloths dry out the surface and form a skin. Put them in the coldest zone: at the back and bottom, above the vegetable drawer (about 2–4°C). Avoid the fridge door (5–7°C) — it\'s the warmest part and swings the most every time you open it, so the dough rises unevenly there. Don\'t stack the boxes tightly on top of each other; it can block air circulation — spread them out a little. And don\'t trust the number on the fridge dial blindly: the 1–5 scales vary between brands, so if you have a thermometer, check that the coldest zone sits below 4°C.'
+  intoFridge:()=>N('Use a box with a lid — a cloth dries out the surface and forms a skin. Put it in the coldest zone','Use boxes with lids — cloths dry out the surface and form a skin. Put them in the coldest zone')+': at the back and bottom, above the vegetable drawer (about 2–4°C). Avoid the fridge door (5–7°C) — it\'s the warmest part and swings the most every time you open it, so the dough rises unevenly there.'+N('',' Don\'t stack the boxes tightly on top of each other; it can block air circulation — spread them out a little.')+' And don\'t trust the number on the fridge dial blindly: the 1–5 scales vary between brands, so if you have a thermometer, check that the coldest zone sits below 4°C.'
 };
 // Proxy slik at eksisterende TIP.xx-oppslag følger valgt språk (byte-identisk norsk).
-const TIP=new Proxy({},{get:(_,k)=>((window._lang==='en'?TIP_EN:TIP_NO)[k])});
+// v0.743: Proxyen kaller verdien hvis den er en funksjon. Det lar de tipsene som
+// avhenger av ANTALL emner regnes ut ved oppslag, uten at et eneste kallsted
+// («tip:TIP.intoFridge») måtte endres.
+const TIP=new Proxy({},{get:(_,k)=>{
+  const v=(window._lang==='en'?TIP_EN:TIP_NO)[k];
+  return typeof v==='function' ? v() : v;
+}});
+// v0.743: entall/flertall etter hvor mange emner planen faktisk lager.
+// Appen har alltid vært nøye med selve tellingen («Del i 1 emne à ca. 269g»),
+// men fortsatte i flertall i alle instruksjonene rundt: «La emnene stå urørt»,
+// «Ikke åpne boksene», «Ikke stable boksene». Med v0.742 ble én pizza dessuten
+// det vanlige tilfellet — flourForCount(1) svarer nå 160g — så teksten snakket
+// til flertall i den planen folk oftest lager.
+function N(entall, flertall){
+  try{ return pc().count>1 ? flertall : entall; }catch(e){ return flertall; }
+}
 // Kort "hvorfor"-forklaring til den dynamiske boksen under metodevalg-kortene
 // (wizardens Metode-steg, v5.70). Poolish/Biga gjenbruker WHY.pl/WHY.bi
 // ordrett i stedet for å duplisere teksten. Skrevet i samme stil, godkjent
@@ -2250,19 +2265,19 @@ function rawSteps(a){
         why:WHY.form,
         tip:TIP.intoFridge},
       {title:'Kjøleskapsheving',loc:'kjol',at:aM(formAt,15),dur:coldDur,passive:true,
-        desc:L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(coldDur)}. Ikke åpne boksene.`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(coldDur))}. Don't open the containers.`),
+        desc:L(`${N('La emnet stå urørt','La emnene stå urørt')} i kjøleskapet i ca. ${fmtDur(coldDur)}. ${N('Ikke åpne boksen.','Ikke åpne boksene.')}`,`${N('Let the ball sit undisturbed','Let the balls sit undisturbed')} in the fridge for about ${durEn(fmtDur(coldDur))}. ${N("Don't open the container.","Don't open the containers.")}`),
         substeps:[
-          L(`La emnene stå urørt i kjøleskapet i ca. ${fmtDur(coldDur)}`,`Let the balls sit undisturbed in the fridge for about ${durEn(fmtDur(coldDur))}`),
-          L('Ikke åpne boksene',`Don't open the containers`)
+          L(`${N('La emnet stå urørt','La emnene stå urørt')} i kjøleskapet i ca. ${fmtDur(coldDur)}`,`${N('Let the ball sit undisturbed','Let the balls sit undisturbed')} in the fridge for about ${durEn(fmtDur(coldDur))}`),
+          L(N('Ikke åpne boksen','Ikke åpne boksene'),N("Don't open the container","Don't open the containers"))
         ],
         why:WHY.fk,
         tip:TIP.coldRise},
       {title:'Ta ut av kjøleskap',loc:'rom',at:taUt,dur:0,
-        desc:L(`Ta deigemnene ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. La dem stå dekket ved romtemperatur i ca. ${fmtDur(temper)} (ved ${S.temp}°C) før steking, så deigen både blir strekkbar og får en siste heving. Ikke åpne boksene ennå.`,`Take the dough balls out onto the counter — this is the bench rest (warming up) after the cold fermentation. Let them sit covered at room temperature for about ${durEn(fmtDur(temper))} (at ${S.temp}°C) before baking, so the dough both becomes stretchable and gets a final rise. Don't open the containers yet.`),
+        desc:L(`${N('Ta deigemnet','Ta deigemnene')} ut på benken — dette er benktida (temperering) etter kjøleskapsfermenteringen. ${N('La det stå dekket','La dem stå dekket')} ved romtemperatur i ca. ${fmtDur(temper)} (ved ${S.temp}°C) før steking, så deigen både blir strekkbar og får en siste heving. ${N('Ikke åpne boksen ennå.','Ikke åpne boksene ennå.')}`,`Take the dough balls out onto the counter — this is the bench rest (warming up) after the cold fermentation. Let them sit covered at room temperature for about ${durEn(fmtDur(temper))} (at ${S.temp}°C) before baking, so the dough both becomes stretchable and gets a final rise. ${N("Don't open the container yet.","Don't open the containers yet.")}`),
         substeps:[
-          L('Ta deigemnene ut av kjøleskapet, over på benken',`Take the dough balls out of the fridge, onto the counter`),
-          L(`La stå dekket ved romtemperatur i ca. ${fmtDur(temper)} (benktid)`,`Let sit covered at room temperature for about ${durEn(fmtDur(temper))} (bench time)`),
-          L('Ikke åpne boksene ennå',`Don't open the containers yet`)
+          L(N('Ta deigemnet ut av kjøleskapet, over på benken','Ta deigemnene ut av kjøleskapet, over på benken'),N('Take the dough ball out of the fridge, onto the counter','Take the dough balls out of the fridge, onto the counter')),
+          L(`${N('La det stå','La dem stå')} dekket ved romtemperatur i ca. ${fmtDur(temper)} (benktid)`,`Let sit covered at room temperature for about ${durEn(fmtDur(temper))} (bench time)`),
+          L(N('Ikke åpne boksen ennå','Ikke åpne boksene ennå'),N("Don't open the container yet","Don't open the containers yet"))
         ],
         why:WHY.tu,
         tip:TIP.benchTemper},
@@ -2494,7 +2509,7 @@ function rawSteps(a){
           L('Legg i bakebolle eller lignende',`Place in a baking bowl or similar`),
           L('Dekk med lokk eller plastfolie',`Cover with a lid or plastic wrap`)
         ],
-        why:L('Formingen bygger opp spenning i deigoverflaten, som gir bedre holdbarhet og struktur gjennom den lange kalde hevingen som følger.',`Shaping builds up tension in the dough surface, which helps the balls hold their shape and structure through the long cold proof that follows.`),
+        why:L('Formingen bygger opp spenning i deigoverflaten, som gir bedre holdbarhet og struktur gjennom den lange kalde hevingen som følger.',`Shaping builds up tension in the dough surface, which gives better hold and structure through the long cold proof that follows.`),
         tip:L(`La stå i romtemperatur i ca. ${fmtHM(ROOMTEMP1)} før kjøleskapet.`,`Let sit at room temperature for about ${fmtHM(ROOMTEMP1)} before the fridge.`)},
       {title:'Kjøleskapsheving (udelt)',loc:'kjol',at:coldBulkStart,dur:COLDBULK,passive:true,
         desc:L('Hele deigen kjøleskapheves samlet, udelt — deles i emner først etterpå.',`The whole dough is cold-proofed together, undivided — divided into balls only afterward.`),
@@ -2502,20 +2517,20 @@ function rawSteps(a){
         why:L('Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.',`Cold fermentation of the whole dough together (instead of divided into balls) is the structural core of this method — gives even, controlled maturation.`),
         tip:L('Sjekk gjennom lokket uten å åpne: deigen skal vokse til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.','Check through the lid without opening: the dough should grow to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.')},
       {title:'Del i emner',loc:'benk',at:divideAt,dur:MANIA_T.DIVIDE,
-        desc:L('Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.',`Divide into balls of the desired weight (weigh them for equal size). Shape balls and place each in its own oiled container or deep bowl, cover with a lid or plastic wrap.`),
-        needs:[L('📦 boks/skål per emne',`📦 container/bowl per ball`), L('🫒 litt olje',`🫒 a little oil`)],
+        desc:L(N('Del i ett emne à ønsket vekt. Form en ball og legg i oljet boks eller dyp skål, dekk med lokk eller plastfolie.','Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.'),N('Divide into one ball of the desired weight. Shape it and place in an oiled container or deep bowl, cover with a lid or plastic wrap.',`Divide into balls of the desired weight (weigh them for equal size). Shape balls and place each in its own oiled container or deep bowl, cover with a lid or plastic wrap.`)),
+        needs:[L(N('📦 boks/skål','📦 boks/skål per emne'),N(`📦 container/bowl`,`📦 container/bowl per ball`)), L('🫒 litt olje',`🫒 a little oil`)],
         substeps:[
-          L('Del i emner à ønsket vekt (vei dem for lik størrelse)',`Divide into balls of the desired weight (weigh them for equal size)`),
+          L(N('Del i ett emne à ønsket vekt','Del i emner à ønsket vekt (vei dem for lik størrelse)'),N('Divide into one ball of the desired weight','Divide into balls of the desired weight (weigh them for equal size)')),
           L('Form stramme baller',`Shape tight balls`),
           L('Legg i hver sin oljede boks eller dype skål, dekk til',`Place each in its own oiled container or deep bowl, cover`)
         ],
         why:L('Deigen deles først etter den lange, samlede kjølehevingen — da bærer hvert emne med seg modningen hele deigen har bygget opp.','The dough is divided only after the long, undivided cold proof — so each ball carries the maturation the whole dough has built up.'),
         tip:L('Baller som er formet stramt holder seg bedre gjennom neste, lange romtemperaturheving.',`Balls shaped tightly hold up better through the next, long room-temperature rise.`)},
       {title:'Romtemperaturheving (delt)',loc:'rom',at:aM(divideAt,15),dur:FINAL_PROOF-15,passive:true,
-        desc:L(`La emnene heve i romtemperatur ved ${S.temp}°C.`,`Let the balls rise at room temperature at ${S.temp}°C.`),
-        substeps:[L(`La emnene heve i romtemperatur ved ${S.temp}°C`,`Let the balls rise at room temperature at ${S.temp}°C`)],
-        why:L('Emnene tar til seg romvarme og hever ferdig, så de blir luftige og strekkbare når du skal steke.',`The balls take on room warmth and finish rising, so they become airy and stretchable by the time you bake.`),
-        tip:L('Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.',`After this they can also stand up to 4 hours extra at room temperature as a buffer, if you're not ready right then.`)},
+        desc:L(`${N('La emnet heve','La emnene heve')} i romtemperatur ved ${S.temp}°C.`,`${N('Let the ball rise','Let the balls rise')} at room temperature at ${S.temp}°C.`),
+        substeps:[L(`${N('La emnet heve','La emnene heve')} i romtemperatur ved ${S.temp}°C`,`${N('Let the ball rise','Let the balls rise')} at room temperature at ${S.temp}°C`)],
+        why:L(N('Emnet tar til seg romvarme og hever ferdig, så det blir luftig og strekkbart når du skal steke.','Emnene tar til seg romvarme og hever ferdig, så de blir luftige og strekkbare når du skal steke.'),N('The ball takes on room warmth and finishes rising, so it becomes airy and stretchable by the time you bake.',`The balls take on room warmth and finish rising, so they become airy and stretchable by the time you bake.`)),
+        tip:L(N('Etter dette kan det også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.','Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.'),N('After this it can also stand up to 4 hours extra at room temperature as a buffer, if you\'re not ready right then.',`After this they can also stand up to 4 hours extra at room temperature as a buffer, if you're not ready right then.`))},
       // v0.739: Mania manglet forvarmingssteget helt — stekesteget krevde 45 min
       // (vanlig ovn med stein) mens tidsplanen gikk rett fra romhevingen til steking.
       ...preheatSteps(bakeAt, FINAL_PROOF-15, S.type),
@@ -2631,21 +2646,25 @@ function kveldSteps(anchor){
       why:L('Forming før kjøling gjør at hvert emne får jevn temperatur og heving gjennom natten.','Shaping before chilling gives each ball even temperature and rise through the night.'),
       tip:TIP.intoFridge},
     {title:`Kjøleskapsheving (${kh}t)`,loc:'kjol',at:coldAt,dur:KVELD_MIN,passive:true,
-      desc:L(`La emnene stå urørt i kjøleskapet i ca. ${kh} timer. Ikke åpne boksene.`,`Let the balls sit undisturbed in the fridge for about ${kh} hours. Don't open the containers.`),
+      desc:L(`${N('La emnet stå urørt','La emnene stå urørt')} i kjøleskapet i ca. ${kh} timer. ${N('Ikke åpne boksen.','Ikke åpne boksene.')}`,`${N('Let the ball sit undisturbed','Let the balls sit undisturbed')} in the fridge for about ${kh} hours. ${N("Don't open the container.","Don't open the containers.")}`),
       substeps:[
-        L(`La emnene stå urørt i kjøleskapet i ca. ${kh} timer`,`Let the balls sit undisturbed in the fridge for about ${kh} hours`),
-        L('Ikke åpne boksene','Don\'t open the containers')
+        L(`${N('La emnet stå urørt','La emnene stå urørt')} i kjøleskapet i ca. ${kh} timer`,`${N('Let the ball sit undisturbed','Let the balls sit undisturbed')} in the fridge for about ${kh} hours`),
+        L(N('Ikke åpne boksen','Ikke åpne boksene'),N('Don\'t open the container','Don\'t open the containers'))
       ],
       why:L('Kald heving over 5–15 timer gir mer smak enn en ren romtemperatur-hurtigdeig, uten at du må planlegge flere dager frem som med standardmetoden.','Cold proofing over 5–15 hours gives more flavor than a pure room-temperature quick dough, without having to plan several days ahead like the standard method.'),
       tip:TIP.coldRise},
     {title:'Ta ut og temperer',loc:'rom',at:temperAt,dur:TEMPER_MIN,passive:true,
-      desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return L(`Ta emnene ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`,`Take the balls out of the fridge. Let them sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'} before you stretch and bake.`);})(),
+      desc:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return L(`${N('Ta emnet','Ta emnene')} ut av kjøleskapet. La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'} før du strekker og steker.`,`${N('Take the ball','Take the balls')} out of the fridge. Let ${N('it','them')} sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'} before you stretch and bake.`);})(),
       substeps:(()=>{const th=Math.round(TEMPER_MIN/60*10)/10;return [
-        L('Ta emnene ut av kjøleskapet','Take the balls out of the fridge'),
+        L(N('Ta emnet ut av kjøleskapet','Ta emnene ut av kjøleskapet'),N('Take the ball out of the fridge','Take the balls out of the fridge')),
         L(`La stå tildekket ved romtemperatur i ${th.toString().replace('.',',')} ${th===1?'time':'timer'}`,`Let them sit covered at room temperature for ${th.toString()} ${th===1?'hour':'hours'}`),
-        L('Ikke rør dem før du skal strekke og steke','Don\'t touch them until you\'re ready to stretch and bake')
+        L(N('Ikke rør det før du skal strekke og steke','Ikke rør dem før du skal strekke og steke'),N('Don\'t touch it until you\'re ready to stretch and bake','Don\'t touch them until you\'re ready to stretch and bake'))
       ];})(),
-      why:L('Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens 4 timer siden emnene ikke har vært kalde like lenge.','Cold dough is stiff — a short temper makes it stretchable again without tearing. Shorter than the standard method\'s 4 hours since the balls haven\'t been cold as long.'),
+      // v0.743: sto tidligere med «standardmetodens 4 timer» hardkodet. F14 (v0.720)
+      // gjorde standardmetodens benketid temperaturavhengig — 6,4t ved 18°C, 2t ved
+      // 28°C — og etterlot dette tallet som bare stemmer ved nøyaktig 22°C. Det
+      // leses nå fra rtM(240), samme uttrykk standardmetoden selv bruker.
+      why:L(`Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens ca. ${fmtDur(rtM(240))} siden ${N('emnet ikke har vært kaldt','emnene ikke har vært kalde')} like lenge.`,`Cold dough is stiff — a short temper makes it stretchable again without tearing. Shorter than the standard method's roughly ${durEn(fmtDur(rtM(240)))} since ${N("the ball hasn't been cold","the balls haven't been cold")} as long.`),
       tip:TIP.benchTemper},
     // v0.739: Kveldsdeig manglet forvarmingssteget. v0.737 antok at metoden alt
     // hadde et — det gjaldt kun Hurtigdeig, som bygger sitt inn i etterhevingen.

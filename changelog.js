@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.743",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Lager du én pizza, snakket appen fortsatt om «emnene» og «boksene». Verst i tipset om å ikke stable boksene tett i høyden og spre dem utover — med én boks er det ingenting å spre. Alle stegtekstene bøyer seg nå etter hvor mange emner planen faktisk lager, på begge språk.",
+      "Det ble mer synlig med forrige versjon: siden appen nå svarer 160g mel på én pizza, er én pizza blitt det vanlige tilfellet.",
+      "Kveldsdeigens forklaring sa «Kortere enn standardmetodens 4 timer». Det stemte da det ble skrevet, men benketida i standardmetoden ble senere gjort avhengig av romtemperaturen — den er 6,4 timer på et kjølig kjøkken og 2 timer på et varmt. Teksten leser nå den faktiske verdien i stedet for et fast tall."
+    ],
+    "changes_en": [
+      "When you make a single pizza, the app still talked about “the balls” and “the containers”. Worst in the tip about not stacking the boxes and spreading them out — with one box there is nothing to spread. Every step text now matches how many balls the plan actually makes, in both languages.",
+      "The previous version made this more visible: since the app now answers 160g flour for one pizza, a single pizza has become the common case.",
+      "Evening dough's explanation said “Shorter than the standard method's 4 hours”. That was true when it was written, but the standard method's bench time was later made to depend on room temperature — 6.4 hours in a cool kitchen, 2 hours in a warm one. The text now reads the actual value instead of a fixed number."
+    ]
+  },
+  {
     "v": "0.742",
     "d": "august 2026",
     "d_en": "August 2026",
