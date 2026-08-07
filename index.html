@@ -2281,7 +2281,14 @@ function rawSteps(a){
           L('Dekk bollen med plastfolie eller lokk',`Cover the bowl with plastic wrap or a lid`),
           L(`La stå i romtemperatur i ca. ${Math.round(REST_MIN/60)} timer, til den er full av bobler og har doblet seg`,`Let it sit at room temperature for about ${Math.round(REST_MIN/60)} hours, until it is full of bubbles and has doubled`)
         ],
-        why:L('Enzymer og gjær jobber sakte over lang tid og bygger smak og glutenstruktur uten at du trenger å gjøre noe.',`Enzymes and yeast work slowly over a long time and build flavor and gluten structure without you needing to do anything.`)},
+        why:L('Enzymer og gjær jobber sakte over lang tid og bygger smak og glutenstruktur uten at du trenger å gjøre noe.',`Enzymes and yeast work slowly over a long time and build flavor and gluten structure without you needing to do anything.`),
+        // v0.758: femten timer på benken, og steget hadde ikke noe tips i det
+        // hele tatt — verken norsk eller engelsk. Beskrivelsen sier hva som er
+        // KLART, men ingenting om hva som er for langt, og en ingen elting-deig
+        // med bare ett hevesteg har ingen senere sjekkpunkt å redde seg på.
+        // Samme tre tegn med hver sin handling som resten av hevestegene.
+        tip:L('Klar når overflaten er full av bobler og deigen har mer enn doblet seg — den skal skjelve som gelé når du rister forsiktig på bollen. Er den lite vokst med få bobler, gi den mer tid; kjøkkenet er kaldere enn du tror. Har midten sunket inn og lukten blitt skarpt sur, er den for langt fram — bruk den med en gang, den blir ikke bedre av å vente.',
+              `Ready when the surface is full of bubbles and the dough has more than doubled — it should wobble like jelly when you shake the bowl gently. If it has barely grown and has few bubbles, give it more time; the kitchen is colder than you think. If the middle has sunk and the smell has turned sharply sour, it is too far gone — use it right away, it will not improve by waiting.`)},
       {title:pc().count>1?'Del i langpanner, press ut':'Press ut i oljet form',loc:'benk',at:shapeAt,dur:SHAPE_DUR,
         desc:pc().count>1
           ?L(`Del deigen i ${pc().count} deler à ca. ${pc().perPizza}g. Fordel ${r.oil||30}g olivenolje totalt utover langpannene. Vend hver del forsiktig ut i sin egen form — ikke elt, bare press utover med fingertuppene til den dekker bunnen.`,`Divide the dough into ${pc().count} pieces of about ${pc().perPizza}g each. Spread ${r.oil||30}g olive oil in total across the sheet pans. Turn each piece gently out into its own pan — don't knead, just press outward with your fingertips until it covers the bottom.`)
@@ -2618,7 +2625,19 @@ function rawSteps(a){
         desc:L(`${N('La emnet heve','La emnene heve')} i romtemperatur ved ${S.temp}°C.`,`${N('Let the ball rise','Let the balls rise')} at room temperature at ${S.temp}°C.`),
         substeps:[L(`${N('La emnet heve','La emnene heve')} i romtemperatur ved ${S.temp}°C`,`${N('Let the ball rise','Let the balls rise')} at room temperature at ${S.temp}°C`)],
         why:L(N('Emnet tar til seg romvarme og hever ferdig, så det blir luftig og strekkbart når du skal steke.','Emnene tar til seg romvarme og hever ferdig, så de blir luftige og strekkbare når du skal steke.'),N('The ball takes on room warmth and finishes rising, so it becomes airy and stretchable by the time you bake.',`The balls take on room warmth and finish rising, so they become airy and stretchable by the time you bake.`)),
-        tip:L(N('Etter dette kan det også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.','Etter dette kan de også stå opptil 4 timer ekstra i romtemperatur som buffer, hvis du ikke er klar akkurat da.'),N('After this it can also stand up to 4 hours extra at room temperature as a buffer, if you\'re not ready right then.',`After this they can also stand up to 4 hours extra at room temperature as a buffer, if you're not ready right then.`))},
+        // v0.758: dette er det lengste romtemperatur-steget i hele appen — ti
+        // timer ved 22°C på FERDIG FORMEDE emner, etter at deigen alt har stått
+        // ti timer kaldt. Likevel sto det ingen modenhetstegn her, bare et
+        // tilbud om fire timer ekstra som buffer. Alle andre hevesteg gir tre
+        // tegn med hver sin handling — klar / henger etter / for langt fram — og
+        // det er nettopp her de trengs mest: et emne som flyter ut, kommer ikke
+        // tilbake, og bufferen var et tilbud uten et eneste forbehold.
+        // Tallene i MANIA_T er urørt. Dette er hva planen tør si, ikke hva den
+        // regner ut.
+        tip:L(N('Klar når emnet har vokst tydelig, kjennes luftig og fortsatt holder kuppelformen. Er det lite endret og fast, gi det mer tid. Har det flytt utover og blitt flatt, med en kant som går i ett med bunnen, er det for langt fram — strekk og stek med en gang, det kommer ikke tilbake. Varmt kjøkken går fortere enn klokka antyder. Holder emnet fortsatt formen, tåler det opptil 4 timer ekstra som buffer hvis du ikke er klar.',
+                'Klare når emnene har vokst tydelig, kjennes luftige og fortsatt holder kuppelformen. Er de lite endret og faste, gi dem mer tid. Har de flytt utover og blitt flate, med en kant som går i ett med bunnen, er de for langt fram — strekk og stek med en gang, de kommer ikke tilbake. Varmt kjøkken går fortere enn klokka antyder. Holder emnene fortsatt formen, tåler de opptil 4 timer ekstra som buffer hvis du ikke er klar.'),
+              N('Ready when the ball has grown clearly, feels airy and still holds its domed shape. If it is barely changed and firm, give it more time. If it has spread out and gone flat, with an edge that merges into the base, it is too far gone — stretch and bake right away, it will not come back. A warm kitchen goes faster than the clock suggests. If the ball still holds its shape, it can take up to 4 hours extra as a buffer if you are not ready.',
+                'Ready when the balls have grown clearly, feel airy and still hold their domed shape. If they are barely changed and firm, give them more time. If they have spread out and gone flat, with an edge that merges into the base, they are too far gone — stretch and bake right away, they will not come back. A warm kitchen goes faster than the clock suggests. If the balls still hold their shape, they can take up to 4 hours extra as a buffer if you are not ready.'))},
       // v0.739: Mania manglet forvarmingssteget helt — stekesteget krevde 45 min
       // (vanlig ovn med stein) mens tidsplanen gikk rett fra romhevingen til steking.
       ...preheatSteps(bakeAt, FINAL_PROOF-15, S.type),

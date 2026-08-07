@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.758",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Mania-metodens siste heving er ti timer ved romtemperatur på ferdig formede emner, etter at deigen alt har stått ti timer kaldt. Der sto det bare «La emnene heve i romtemperatur ved 22°C» — og tipset tilbød fire timer ekstra som buffer, uten et eneste forbehold. Et emne som har flytt utover kommer ikke tilbake.",
+      "Nå står de samme tre tegnene som resten av hevestegene har: klar når emnet har vokst tydelig og fortsatt holder kuppelformen; lite endret og fast betyr mer tid; flytt utover og flatt, med en kant som går i ett med bunnen, betyr strekk og stek med en gang. Bufferen gjelder bare hvis emnet fortsatt holder formen.",
+      "«Ingen elting» hadde samme hull og verre: femten timer på benken, og steget hadde ikke noe tips i det hele tatt, på noen av språkene. Den deigen har bare én heving, så det finnes ikke noe senere sjekkpunkt å redde seg på. Nå sier den at deigen skal skjelve som gelé — og at en sunket midte med skarpt sur lukt betyr at du skal bruke den nå.",
+      "Ingen tall i oppskriftene er endret. Mania er en avskrift av en publisert oppskrift, og fasevarighetene står urørt — dette er bare hva planen tør si om det den allerede gjør.",
+      "Ny invariant-test: en passiv heving på fire timer eller mer må beskrive hvordan for langt fram ser ut. Å si hva som er klart holder ikke — det forteller deg når du kan gå videre, ikke når toget har gått."
+    ],
+    "changes_en": [
+      "The Mania method's final rise is ten hours at room temperature on fully shaped balls, after the dough has already spent ten hours cold. All it said was “Let the balls rise at room temperature at 22°C” — and the tip offered four extra hours as a buffer, without a single caveat. A ball that has spread out does not come back.",
+      "It now carries the same three signs as the other rising steps: ready when the ball has grown clearly and still holds its domed shape; barely changed and firm means more time; spread out and flat, with an edge that merges into the base, means stretch and bake right away. The buffer only applies if the ball still holds its shape.",
+      "“No-knead” had the same gap and worse: fifteen hours on the counter, and the step had no tip at all, in either language. That dough has only one rise, so there is no later checkpoint to fall back on. It now says the dough should wobble like jelly — and that a sunken middle with a sharply sour smell means use it now.",
+      "No numbers in the recipes have changed. Mania is a transcription of a published recipe, and its phase durations are untouched — this is only what the plan dares to say about what it already does.",
+      "New invariant test: a passive rise of four hours or more must describe what too far gone looks like. Saying what ready looks like is not enough — that tells you when you may move on, not when you have missed the moment."
+    ]
+  },
+  {
     "v": "0.757",
     "d": "august 2026",
     "d_en": "August 2026",

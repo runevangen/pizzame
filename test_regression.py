@@ -4443,8 +4443,16 @@ def run_behavioral_tests(page):
         out.push({m,t,o,h, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
                   // v0.755: stegtekstene ut, så invariant D kan se hva som bare
                   // bor i understegene og aldri kommer med i en kopiert plan.
-                  steps:steps.map(s=>({title:s.title, desc:s.desc, why:s.why,
-                                       tip:s.tip, substeps:s.substeps||[]})),
+                  steps:steps.map((s,i)=>({title:s.title, desc:s.desc, why:s.why,
+                                       tip:s.tip, substeps:s.substeps||[],
+                                       // v0.758: passiv/plassering/varighet ut,
+                                       // så invariant F kan finne de LANGE
+                                       // hevingene — det er bare der et manglende
+                                       // overmodning-tegn koster deg deigen.
+                                       passive:!!s.passive, loc:stepLoc(s),
+                                       minTilNeste: steps[i+1]
+                                         ? Math.round((new Date(steps[i+1].at)-new Date(s.at))/60000)
+                                         : 0})),
                   // v0.757: og hele sjekk-panelet, som er der varslene bor.
                   // Å hente det ferdig rendret dekker ALLE varsler på én gang,
                   // i stedet for at testen må kjenne navnet på hver enkelt —
@@ -4613,6 +4621,46 @@ def run_behavioral_tests(page):
     results.append(('invariant_no_raw_floats_in_user_text', ok118b,
                     {'stygge': sorted(set(ugly_numbers))[:12],
                      'antall': len(ugly_numbers)}))
+
+    # --- F: lange hevinger må si hva FOR LANGT ser ut som ---
+    # v0.758: Mania sitt sluttsteg er ti timer ved romtemperatur på ferdig
+    # formede emner, etter ti timer kaldt. Der sto det bare «La emnene heve i
+    # romtemperatur ved 22°C», og tipset tilbød fire timer EKSTRA som buffer —
+    # uten et eneste forbehold. Et emne som har flytt ut kommer ikke tilbake.
+    #
+    # «Ingen elting» hadde samme hull og verre: femten timer på benken, og
+    # steget hadde ikke noe tips i det hele tatt, på noen av språkene. Den
+    # deigen har bare ÉN heving, så det finnes ikke noe senere sjekkpunkt å
+    # redde seg på.
+    #
+    # Regelen: en passiv heving på fire timer eller mer må beskrive hvordan for
+    # langt fram ser ut. Beskrivelsen av hva som er KLART holder ikke — den
+    # forteller deg når du kan gå videre, ikke når toget har gått. Målt: begge
+    # hullene ovenfor var de eneste i hele matrisen, på begge språk.
+    OVERMODEN = re.compile(
+        r"\b(flyt|flat|kollaps|overhev|synker|sunket|slapp|spread|collaps|flatten|sunken|slack)\w*\b"
+        r"|for langt|sur smak|skarpt sur|sharply sour|too far", re.I)
+
+    missing_cue = []
+    for d in sweep:
+        if d.get("err"):
+            continue
+        for st in (d.get("steps") or []):
+            if not st.get("passive"):
+                continue
+            if st.get("loc") not in ("rom", "kjol"):
+                continue
+            if (st.get("minTilNeste") or 0) < 240:
+                continue
+            tekst = " ".join(str(st.get(f) or "") for f in ("desc", "why", "tip"))
+            if not OVERMODEN.search(tekst):
+                missing_cue.append(
+                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {st.get('title')} "
+                    f"({round((st.get('minTilNeste') or 0)/60)}t)")
+    ok118c = not missing_cue
+    results.append(('invariant_long_rises_say_what_too_far_looks_like', ok118c,
+                    {'utenTegn': sorted(set(missing_cue))[:12],
+                     'antall': len(missing_cue)}))
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
