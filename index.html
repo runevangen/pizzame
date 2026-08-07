@@ -963,7 +963,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="engine.js?v=1"></script>
 <script src="guide.js?v=1"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -2933,7 +2933,8 @@ const INGREDIENT_KEYS = ['Mel','Vann','Salt','Olivenolje','Smør','Sukker','Gjæ
 const RECIPE_LABEL_EN = {
   'Mel':'Flour','Vann':'Water','Salt':'Salt','Olivenolje':'Olive oil','Smør':'Butter','Sukker':'Sugar','Gjær':'Yeast',
   'Steking':'Baking','Romtemperatur':'Room temperature','Ovntype':'Oven type','Kjøleskapsheving':'Cold proof',
-  'Poolish':'Poolish','Vann del 1':'Water part 1','Vann del 2':'Water part 2','Hoveddeig':'Main dough'
+  'Poolish':'Poolish','Vann del 1':'Water part 1','Vann del 2':'Water part 2','Hoveddeig':'Main dough',
+  'Gjærtest':'Yeast test'
 };
 function recLbl(k){ return (window._lang==='en' && RECIPE_LABEL_EN[k]!=null) ? RECIPE_LABEL_EN[k] : k; }
 // ===== ARKITEKTUR: felles oppskrift-radbygging PC+mobil (v5.62) =====
@@ -2949,8 +2950,29 @@ function baseIngredientRows({mel,vann,hydro,salt,oil,butter,sugar,gjaer,melLabel
     ...(oil?[{k:'Olivenolje',v:`${oil}g`}]:[]),
     ...(butter?[{k:'Smør',v:`${butter}g`}]:[]),
     ...(sugar?[{k:'Sukker',v:`${sugar}g`}]:[]),
-    {k:gjaerLabel,v:gjaer}
+    {k:gjaerLabel,v:gjaer},
+    ...gjaertestRows()
   ];
+}
+// v0.741: sammenligningsraden. Den ligger HER fordi baseIngredientRows er det
+// ene stedet alle oppskriftsflater går gjennom (PC, mobil, hurtig, kveld, mania)
+// — samme grep som F17. Legger vi den hos kallerne i stedet, er det seks steder
+// som må huskes, og da er det bare et tidsspørsmål før én av dem glemmes.
+// Poenget med raden: en gjærtest som bare viser det NYE tallet er ikke en test,
+// det er en endring. Du skal se hva du bytter bort, ellers kan du ikke vurdere
+// resultatet etterpå.
+function gjaertestRows(){
+  const før=(typeof recipeWithoutGjaertest==='function')?recipeWithoutGjaertest():null;
+  if(!før) return [];
+  const nå=recipeFor();
+  const a=S.gjaer==='torr'?før.yDry:før.yFresh;
+  const b=S.gjaer==='torr'?nå.yDry:nå.yFresh;
+  if(!a||!b) return [];
+  const pst=Math.round((b/a-1)*100);
+  const enhet=L('g','g');
+  return [{k:'Gjærtest',v:L(
+    `normalt ${a}${enhet} · ${pst>0?'+':''}${pst}%`,
+    `normally ${a}${enhet} · ${pst>0?'+':''}${pst}%`)}];
 }
 // Samlet rendring av oppskriftsrader — erstatter tidligere to nesten-identiske
 // funksjoner (recipeRowsHTML for PC, mobRecipeRowsHTML for mobil). PC beholder
@@ -3060,7 +3082,18 @@ function copyP(steps){
   // versjon og når planen ble hentet ut.
   const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
   const _now=new Date();
-  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),'',L('TIDSPLAN','SCHEDULE'),'--------'];
+  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),'',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),
+    // v0.741: står gjærtesten på, MÅ kopien si det. Uten linja ser planen ut som
+    // en helt vanlig oppskrift, og den som leser den — et menneske eller
+    // sjekk-gjennomgangen i review_plans.py — ville målt et forsøkstall mot
+    // normale forventninger og meldt det som feil.
+    ...(()=>{ const før=recipeWithoutGjaertest(); if(!før) return [];
+      const a=S.gjaer==='torr'?før.yDry:før.yFresh, b=S.gjaer==='torr'?rec.yDry:rec.yFresh;
+      if(!a||!b) return [];
+      const pst=Math.round((b/a-1)*100);
+      return [L(`Gjærtest (beta): PÅ — ${mN(S.method)} gir normalt ${a}g (${pst>0?'+':''}${pst}%)`,
+                `Yeast test (beta): ON — ${mN(S.method)} normally gives ${a}g (${pst>0?'+':''}${pst}%)`)]; })(),
+    '',L('TIDSPLAN','SCHEDULE'),'--------'];
   steps.forEach((s,i)=>{
     const locMap=L({kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'},{kjol:'❄️ Fridge',rom:'🏠 Room temperature',ovn:'🔥 Oven',benk:'🔧 Counter'});
     const loc=locMap[stepLoc(s)]||stepLoc(s);
@@ -3508,6 +3541,45 @@ function renderBetaMethodFilter(){
     const onCount=BETA_METHOD_DEFS.filter(([v])=>m[v]!==false).length;
     lbl.textContent=L('🎛️ Metoder du blir tilbudt','🎛️ Methods you are offered')+(onCount<BETA_METHOD_DEFS.length?L(` · ${onCount} av 6`,` · ${onCount} of 6`):L(' · alle',' · all'));
   }
+}
+
+// v0.741: bryteren for gjærtesten. Den står i Innstillinger, ikke i metode-
+// velgeren, med vilje: −58 % gjær er ikke noe man skal kunne velge ved et uhell
+// mens man planlegger middag. Den som slår den på har tatt et bevisst valg.
+// Panelet viser alltid hvilke metoder den gjelder, og sier fra når den er på
+// mens du står i en metode den ikke rører — ellers ville den vært en bryter som
+// tilsynelatende ikke gjorde noe.
+function renderGjaertest(){
+  const el=document.getElementById('mob-gjaertest-wrap');
+  if(!el) return;
+  const on=gjaertestOn();
+  const metoder=Object.keys(METHODS).filter(methodAllowsYeastTest).map(mN).join(' · ');
+  const gjelderNå=methodAllowsYeastTest(S.method) && S.type!=='ingenelting';
+  el.innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="toggleGjaertest()"
+         role="switch" aria-checked="${on}" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleGjaertest()}">
+      <span aria-hidden="true" style="width:18px;height:18px;margin-top:1px;border-radius:5px;border:2px solid ${on?'var(--forno-accent)':'var(--forno-border)'};background:${on?'var(--forno-accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a1512;font-size:12px;font-weight:800">${on?'✓':''}</span>
+      <span style="flex:1">
+        <span style="display:block;font-size:13px;font-weight:600;color:var(--forno-text)">${L('Utfordre gjærmengden','Challenge the yeast amount')}</span>
+        <span style="display:block;font-size:11px;color:var(--forno-text-faint);line-height:1.45;margin-top:3px">${L(
+          `Regner gjæren med Q10-modellen i stedet for tabellene, og viser hva metoden normalt ville gitt. Gjelder ${metoder}. Langtidsdeig bruker Q10 fra før; Mania er en oppskrift fra en kilde, og Hurtigdeig har sin egen modell.`,
+          `Calculates the yeast with the Q10 model instead of the tables, and shows what the method would normally give. Applies to ${metoder}. Long-ferment already uses Q10; Mania is a recipe from a source, and Quick dough has its own model.`)}</span>
+      </span>
+    </div>
+    ${on&&!gjelderNå?`<div style="margin-top:7px;padding:7px 10px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:600;color:var(--forno-accent-text);line-height:1.4">${L(
+      `Testen er på, men ${mN(S.method)} rører den ikke — gjærmengden er uendret akkurat nå.`,
+      `The test is on, but it does not touch ${mN(S.method)} — the yeast amount is unchanged right now.`)}</div>`:''}
+    ${on&&gjelderNå?`<div style="margin-top:7px;padding:7px 10px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:600;color:var(--forno-accent-text);line-height:1.4">🧪 ${L(
+      'Bak den, og gi den terningkast i Deiger — det er slik spørsmålet avgjøres.',
+      'Bake it and rate it under Doughs — that is how the question gets settled.')}</div>`:''}`;
+}
+function toggleGjaertest(){
+  S.gjaertest=!gjaertestOn();
+  try{ persistSetup(); }catch(e){}
+  renderGjaertest();
+  // Gjærmengden er nettopp endret, så alt som viser den må tegnes på nytt.
+  try{ if(document.body.classList.contains('mob-mode')) mobGen(); else gen(); }catch(e){}
 }
 
 // ===== BETA-fane: rendring =====
@@ -6762,7 +6834,7 @@ function mobShowTab(t){
   // varsel som svarte på gammel tilstand.
   if(t==='plan'){ try{ mobGen(); }catch(e){} }
   // v0.653: Deiger bor nå øverst i «Mer»-fanen (rommer også Notater for aktiv deig).
-  if(t==='tips'){ renderBaksterPanel('mob-bakster-content'); renderBaksterNotes(); }
+  if(t==='tips'){ renderBaksterPanel('mob-bakster-content'); renderBaksterNotes(); renderGjaertest(); }
   if(t==='settings') wizEnterSettingsTab();
   if(t==='beta') renderBetaPanel();
   // Bytter du fane på egen hånd til noe annet enn dit du ble sendt, er hoppet
@@ -8144,6 +8216,9 @@ document.addEventListener('change', firstInteractionCheck, true);
       <span id="mob-help-feedback" style="font-size:13px;color:var(--dyn-text);font-weight:500">💬 Feedback</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
+
+    <div class="mob-section-lbl" id="mob-utproving-lbl">🧪 Utprøving</div>
+    <div id="mob-gjaertest-wrap" style="padding:.2rem 1rem .7rem"></div>
 
     <div class="mob-section-lbl" id="mob-admin-lbl">Admin</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openFormlerModal()">

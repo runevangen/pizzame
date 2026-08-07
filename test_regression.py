@@ -4517,6 +4517,83 @@ def run_behavioral_tests(page):
     ok117 = not preheat_bad
     results.append(('invariant_schedule_allows_the_preheat_it_demands', ok117, r117))
 
+    # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
+    # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
+    # Fem ting må holde, og den første er den viktigste:
+    #  1) AV SOM STANDARD. En eksisterende bruker skal ikke merke at funksjonen
+    #     finnes før hen slår den på. Ryker denne, har vi endret gjærmengden til
+    #     alle uten å spørre — nøyaktig det F24 sa vi ikke kunne gjøre.
+    #  2) Den treffer de tre metodene som fortsatt bruker tabellene, og BARE dem.
+    #     Lista leses fra METHODS (F21), ikke fra en hardkodet kopi her.
+    #  3) Begge tallene vises. En test som bare viser det nye tallet er ikke en
+    #     test, det er en endring — da kan man ikke vurdere resultatet etterpå.
+    #  4) Stegene og oppskriften viser SAMME gjær (F17-kontrakten må overleve).
+    #  5) Valget lagres med deigen, ellers vet man ikke hvilken gjærmengde
+    #     terningkastet i Deiger-fanen faktisk gjelder — og da er forsøket verdiløst.
+    r119 = page.evaluate("""() => {
+      const saved={...S};
+      const sett=m=>{ S.method=m; S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22;
+        S.fridgeC=3; S.cold=24; S.poolishH=14; S.poolishCold=false; S.poolishPauseH=0;
+        S.bigaH=18; S.kveldH=10; S.hurtigH=4; S.gjaer='torr'; S.oven='vanlig'; S.mode='start';
+        _q10Memo={k:null,v:null}; };
+
+      const standardAv = DEF.gjaertest===false;
+      const lagresMedDeig = SETUP_FIELDS.includes('gjaertest');
+
+      // Registeret bestemmer hvem som kan utfordres — ingen liste duplisert her.
+      const kanUtfordres = Object.keys(METHODS).filter(methodAllowsYeastTest).sort();
+      const forventet = ['biga','kveld','poolish'];
+      const registerStemmer = JSON.stringify(kanUtfordres)===JSON.stringify(forventet);
+
+      const ut={};
+      for(const m of ['standard','poolish','biga','kveld','mania','hurtig']){
+        sett(m); S.gjaertest=false; const av=recipeFor().yDry;
+        sett(m); S.gjaertest=true;  const paa=recipeFor().yDry;
+        const rad=baseIngredientRows({mel:500,vann:325,hydro:65,salt:14,oil:0,butter:0,
+                                      sugar:0,gjaer:paa+'g'}).filter(r=>r.k==='Gjærtest');
+        ut[m]={av,paa,endret:av!==paa,harRad:rad.length===1,
+               radTekst:rad.length?rad[0].v:null};
+      }
+      // De tre skal endre seg OG ha sammenligningsrad; de tre andre ingen av delene.
+      const endrerRiktige = forventet.every(m=>ut[m].endret && ut[m].harRad)
+                         && ['standard','mania','hurtig'].every(m=>!ut[m].endret && !ut[m].harRad);
+      // Raden må oppgi det gamle tallet, ikke bare en prosent uten referanse.
+      const radViserBegge = forventet.every(m=>ut[m].radTekst && ut[m].radTekst.includes(String(ut[m].av)));
+      // Retningen: poolish/biga ned, kveld opp. Går en av dem feil vei, er noe galt
+      // i koblingen — kveld regnes et annet sted enn de to andre.
+      const retning = ut.poolish.paa<ut.poolish.av && ut.biga.paa<ut.biga.av && ut.kveld.paa>ut.kveld.av;
+
+      // F17: stegene må vise samme gjær som oppskriften, også med testen på.
+      let stegStemmer=true;
+      for(const m of forventet){
+        sett(m); S.gjaertest=true;
+        const rec=recipeFor();
+        const st=stepsForAnchor(new Date(2027,2,3,10,0));
+        const alle=st.map(s=>(s.needs||[]).join(' ')+' '+(s.desc||'')).join(' ');
+        if(!alle.includes(String(rec.yDry))) stegStemmer=false;
+      }
+
+      // Kopien må si fra at testen er på — ellers leses et forsøkstall som normalt.
+      sett('poolish'); S.gjaertest=true;
+      let fanget='';
+      try{ if(!navigator.clipboard) Object.defineProperty(navigator,'clipboard',{value:{},configurable:true});
+           navigator.clipboard.writeText=t=>{fanget=t;return Promise.resolve();}; }catch(e){}
+      try{ copyP(stepsForAnchor(new Date(2027,2,3,10,0))); }catch(e){ fanget='ERR:'+e; }
+      const kopiSierFra = /Gjærtest \\(beta\\): PÅ/.test(fanget) && /normalt 1\\.13g/.test(fanget);
+      // Og den må TIE når testen er av.
+      sett('poolish'); S.gjaertest=false; fanget='';
+      try{ copyP(stepsForAnchor(new Date(2027,2,3,10,0))); }catch(e){}
+      const kopiTierNårAv = !/Gjærtest/.test(fanget);
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {standardAv,lagresMedDeig,registerStemmer,endrerRiktige,radViserBegge,
+              retning,stegStemmer,kopiSierFra,kopiTierNårAv,kanUtfordres,detaljer:ut};
+    }""")
+    ok119 = all(r119.get(k) for k in [
+        'standardAv', 'lagresMedDeig', 'registerStemmer', 'endrerRiktige', 'radViserBegge',
+        'retning', 'stegStemmer', 'kopiSierFra', 'kopiTierNårAv'])
+    results.append(('yeast_test_challenges_three_methods_off_by_default', ok119, r119))
+
     return results
 
 

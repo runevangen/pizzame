@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.741",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny bryter under Innstillinger → 🧪 Utprøving: «Utfordre gjærmengden». Den regner gjæren med Q10-modellen — samme fysikk Langtidsdeig allerede bruker — i stedet for tabellene, og viser hva metoden normalt ville gitt rett under gjærmengden.",
+      "Den gjelder Poolish, Biga og Kveldsdeig, som fortsatt regner gjæren med tabeller. Langtidsdeig bruker Q10 fra før; Mania er en publisert oppskrift fra en kilde og skal ikke overprøves; Hurtigdeig har sin egen modell.",
+      "Utslagene er store og går begge veier: Poolish −58 %, Biga −65 %, men Kveldsdeig +133 %. Modellen mener altså at forspillene er kraftig overdosert og kveldsdeigen underdosert. Hvem som har rett vet vi ikke — det er derfor dette er en test og ikke en endring.",
+      "Bryteren er av som standard. Slår du den på, lagres valget sammen med deigen, så terningkastet i Deiger-fanen forteller hvilken gjærmengde det faktisk gjelder. Bak begge, gi dem terning, og spørsmålet avgjøres av deig i stedet for av regnestykker."
+    ],
+    "changes_en": [
+      "New switch under Settings → 🧪 Trials: “Challenge the yeast amount”. It calculates the yeast with the Q10 model — the same physics Long-ferment dough already uses — instead of the tables, and shows what the method would normally give right below the yeast amount.",
+      "It applies to Poolish, Biga and Evening dough, which still calculate yeast from tables. Long-ferment already uses Q10; Mania is a published recipe from a source and should not be overruled; Quick dough has its own model.",
+      "The differences are large and go both ways: Poolish −58%, Biga −65%, but Evening dough +133%. The model reckons the pre-ferments are heavily overdosed and the evening dough underdosed. Which is right, we do not know — that is why this is a test and not a change.",
+      "The switch is off by default. Turn it on and the choice is saved with the dough, so the rating in the Doughs tab tells you which yeast amount it actually applies to. Bake both, rate them, and the question gets settled by dough instead of by arithmetic."
+    ]
+  },
+  {
     "v": "0.740",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -81,7 +81,10 @@ function rtM(b){return Math.round(b*tf());}
 // notatet nederst for hvorfor poolish/biga ikke er med i denne runden).
 function yeastMultiplier(){
   if(S.method==='hurtig'||S.method==='kveld'||S.type==='ingenelting') return 1;
-  if(S.method==='standard'){
+  // v0.741: Langtidsdeig bruker Q10 alltid (F23). Poolish og Biga gjør det bare
+  // når gjærtesten er slått på — da er det nettopp Q10 som er utfordreren.
+  // (Kveldsdeig går ikke via denne funksjonen; den overstyres i recipeFor.)
+  if(S.method==='standard' || gjaertestActive()){
     const load=currentFermentLoad();
     if(load) return Q10_K/load;
     // Faller hit kun under selve integralberegningen (rekursjonsvakten) — da er
@@ -139,7 +142,10 @@ function recipeFor(){
     const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3], f=S.mel/500;
     rec.yDry=Math.round(o.yp*f*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
   }else if(S.method==='kveld'){
-    const mult=(KCOLDMULT[S.kveldH]||2.0)*fridgeYeastMult(); // F13: kveld kaldhever også
+    // v0.741: Kveldsdeig regner gjæren her, ikke via yeastMultiplier — så
+    // gjærtesten må gripe inn på dette stedet for at den skal gjelde metoden.
+    const q=gjaertestActive()?gjaertestMult():null;
+    const mult=(q!==null)?q:(KCOLDMULT[S.kveldH]||2.0)*fridgeYeastMult(); // F13: kveld kaldhever også
     rec.yDry=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
   }else if(S.method==='mania'){
     const rm=maniaRecipe();
@@ -176,18 +182,72 @@ function pc(){
 // for en metode med fast struktur mens mobil skjulte den.
 // coldSlider: metoden bruker den justerbare kjøleskapshevings-slideren (S.cold).
 // smartPlan: metoden deltar i Smart-plan-kandidatlista og Deiger-filteret.
+// yeastTest (F24/v0.741): metoden regner fortsatt gjæren med de multipliserte
+// tabellene, og kan derfor utfordres av Q10-modellen. Hvem som står her er MÅLT,
+// ikke antatt — se «Gjærtest» under. Langtidsdeig er ikke med fordi den allerede
+// ER Q10 (F23, avviket er 0,0%); Mania fordi den er en publisert oppskrift fra en
+// kilde og ikke noe appen regner ut; Hurtigdeig fordi gjæren kommer fra HOPTS,
+// en annen modell enn tabellene — å sammenligne den med Q10 er epler mot pærer.
 const METHODS={
   // fridgeTemp (F13): metoden kaldhever med app-beregnet gjær → kjøleskaps-
   // temperatur-valget vises og kompenserer gjæren. Mania: false med vilje —
   // fast, publisert oppskrift fra kilden, gjæren skal ikke justeres.
   standard:{no:'Langtidsdeig',en:'Long-ferment dough',noShort:'Langtidsdeig',enShort:'Long-ferment',coldSlider:true, smartPlan:true, fridgeTemp:true},
-  poolish: {no:'Poolish',     en:'Poolish',           noShort:'Poolish',     enShort:'Poolish',     coldSlider:true, smartPlan:true, fridgeTemp:true},
-  biga:    {no:'Biga',        en:'Biga',              noShort:'Biga',        enShort:'Biga',        coldSlider:true, smartPlan:true, fridgeTemp:true},
+  poolish: {no:'Poolish',     en:'Poolish',           noShort:'Poolish',     enShort:'Poolish',     coldSlider:true, smartPlan:true, fridgeTemp:true, yeastTest:true},
+  biga:    {no:'Biga',        en:'Biga',              noShort:'Biga',        enShort:'Biga',        coldSlider:true, smartPlan:true, fridgeTemp:true, yeastTest:true},
   mania:   {no:'Mania-poolish',en:'Mania poolish',    noShort:'Mania',       enShort:'Mania',       coldSlider:false,smartPlan:true, fridgeTemp:false},
   hurtig:  {no:'Hurtigdeig',  en:'Quick dough',       noShort:'Hurtigdeig',  enShort:'Quick',       coldSlider:false,smartPlan:true, fridgeTemp:false},
-  kveld:   {no:'Kveldsdeig',  en:'Evening dough',     noShort:'Kveldsdeig',  enShort:'Evening',     coldSlider:false,smartPlan:true, fridgeTemp:true},
+  kveld:   {no:'Kveldsdeig',  en:'Evening dough',     noShort:'Kveldsdeig',  enShort:'Evening',     coldSlider:false,smartPlan:true, fridgeTemp:true, yeastTest:true},
   ingenelting:{no:'Ingen elting',en:'No-knead',       noShort:'Ingen elting',enShort:'No-knead',    coldSlider:false,smartPlan:false,fridgeTemp:false}
 };
+
+// ===== GJÆRTEST (v0.741) — utfordrer gjærmengden med Q10 =====
+// F24 spurte om Q10 også burde gjelde Poolish og Biga, og svarte selv at det
+// ikke kan avgjøres ved tastaturet: en halvering av gjæren er den største
+// enkeltendringen appen kan gjøre mot en eksisterende bruker, og den må BAKES.
+// Gjærtesten gjør nettopp det mulig. Den bytter ikke modell for noen — den lar
+// deg slå på en utfordrer, ser at du får se BEGGE tallene, og lagrer hvilket du
+// bakte med, slik at terningkastene i Deiger-fanen (F9) avgjør spørsmålet.
+//
+// Målt avvik ved påslag (napoletana 500g, 22°C rom, 3°C skap):
+//   Poolish    14t + 24t kaldt   1,13 g → 0,48 g   (−58 %)
+//   Biga       18t + 24t kaldt   1,13 g → 0,40 g   (−65 %)
+//   Kveldsdeig 10t               1,24 g → 2,89 g   (+133 %)
+// Kveldsdeig peker MOTSATT vei og sto ikke i F24 i det hele tatt. Merk at den
+// også er det svakest funderte tilfellet: Q10_K er kalibrert på Langtidsdeig,
+// der belastningen er 9,9–19,7 ekvivalenttimer. Kveldsdeig ligger på 3,9 — godt
+// utenfor. Det er ekstrapolering, og det er nøyaktig derfor den må bakes.
+// Flagget bor i S (og dermed i DEF/SETUP_FIELDS), ikke i en egen localStorage-
+// nøkkel. Det er ikke en detalj: `saveBake` lagrer `config:{...S}`, så valget
+// havner i bakeloggen HELT AV SEG SELV, og å åpne en gammel deig gjenskaper den
+// med samme gjærmodell den ble bakt med. Hadde flagget ligget ved siden av S,
+// måtte begge deler vært husket manuelt — og et forsøk der du ikke vet hvilken
+// gjærmengde deigen faktisk hadde, er ikke et forsøk.
+function gjaertestOn(){ return S.gjaertest===true; }
+function methodAllowsYeastTest(m){ const d=METHODS[m]; return !!(d&&d.yeastTest); }
+// Vakten som lar oss regne ut «hva metoden ville gitt UTEN testen» ved å kalle
+// samme kode én gang til med testen midlertidig av. Uten den måtte tabellveien
+// vært duplisert, og da har vi to gjærkilder igjen — feilen F17 fjernet.
+let _gjaertestAv=false;
+function gjaertestActive(){
+  if(_gjaertestAv) return false;
+  if(S.type==='ingenelting') return false;   // fast prosess, overstyrer metode
+  return gjaertestOn() && methodAllowsYeastTest(S.method);
+}
+// Q10-multiplikatoren, samme integral Langtidsdeig bruker. null når belastningen
+// ikke kan regnes ut — det skjer under selve integralberegningen (rekursjons-
+// vakten), og da faller kalleren tilbake på tabellene, akkurat som F23 gjør.
+function gjaertestMult(){
+  const load=currentFermentLoad();
+  return load ? Q10_K/load : null;
+}
+// Oppskriften metoden ville gitt uten testen — grunnlaget for å vise begge tall.
+// Returnerer null når testen ikke er på, så kallerne kan bruke den som vakt.
+function recipeWithoutGjaertest(){
+  if(!gjaertestActive()) return null;
+  _gjaertestAv=true;
+  try{ return recipeFor(); } finally{ _gjaertestAv=false; }
+}
 function methodShowsColdSlider(m){const d=METHODS[m];return !!(d&&d.coldSlider);}
 function methodUsesFridge(m){const d=METHODS[m];return !!(d&&d.fridgeTemp);}
 function mN(m){const d=METHODS[m];return d?(window._lang==='en'?d.en:d.no):m;}

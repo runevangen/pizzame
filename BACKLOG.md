@@ -1,6 +1,6 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 06.08.2026 · F27, F28 og F25 bygget. Gjenstår: F29 (lag 2), F24+F26 (gjærkalibrering, venter på bakst), F12 og T-i18n2 (parkert).
+Sist oppdatert: 06.08.2026 · F27, F28 og F25 bygget; F24 har fått en utfordrer (v0.741) og venter nå på bakst. Gjenstår ellers: F29 (lag 2), F26 (følger F24), F12 og T-i18n2 (parkert).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -742,7 +742,48 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
-### F24. Vurder Q10 også for Poolish og Biga — krever validering mot ekte bakst
+### F24. Vurder Q10 også for Poolish og Biga — 🧪 UTFORDRER BYGGET (v0.741), venter på bakst
+> 🧪 **Verktøyet er bygget; spørsmålet står fortsatt åpent.** F24 sa selv at dette
+> ikke kan avgjøres ved tastaturet. v0.741 gjør derfor ikke et bytte — den gir deg
+> en utfordrer du kan slå på og bake mot: **Innstillinger → 🧪 Utprøving →
+> «Utfordre gjærmengden»**. Av som standard.
+>
+> **Målt sprik ved påslag** (napoletana 500 g, 22 °C rom, 3 °C skap):
+>
+> | Metode | I dag | Q10 sier | Endring |
+> |---|---:|---:|---:|
+> | Langtidsdeig 24/48/72 t | 1,13 / 0,75 / 0,56 | samme | **0,0 %** (kontroll ✓) |
+> | Poolish 14 t + 24 t | 1,13 g | 0,48 g | **−58 %** |
+> | Biga 18 t + 24 t | 1,13 g | 0,40 g | **−65 %** |
+> | **Kveldsdeig 10 t** | 1,24 g | 2,89 g | **+133 %** |
+> | Mania (ikke aktuell) | 0,85 g | 0,42 g | −51 % |
+> | Hurtigdeig (ikke aktuell) | 3,00 g | 2,57 g | −14 % |
+>
+> **Kveldsdeig er et nytt funn** og sto ikke i F24 opprinnelig — den peker MOTSATT
+> vei. Den er også det svakest funderte tilfellet: `Q10_K` er kalibrert på
+> Langtidsdeig, der belastningen er 9,9–19,7 ekvivalenttimer, mens Kveldsdeig
+> ligger på 3,9. Det er ekstrapolering langt utenfor kalibreringsområdet — altså
+> nøyaktig den påstanden F23 gjorde om «ærlig ekstrapolering», ubevist til noen
+> har bakt den.
+>
+> Langtidsdeig lander på 0,0 % og fungerer som kontroll: at den treffer eksakt
+> bekrefter at målemetoden er riktig, ikke bare at tallene ser rimelige ut.
+>
+> **Hvorfor det er trygt:** flagget bor i `S` (og dermed i `SETUP_FIELDS`), så
+> `saveBake` lagrer det med deigen av seg selv, og å åpne en gammel deig gjenskaper
+> den med samme gjærmodell. Et forsøk der du ikke vet hvilken gjærmengde deigen
+> hadde, er ikke et forsøk. Både oppskriftsraden og «Kopier plan» oppgir hva
+> metoden normalt ville gitt — en test som bare viser det nye tallet er en endring,
+> ikke en test.
+>
+> **Hva som gjenstår:** bak Poolish med og uten, gi dem terningkast i Deiger, og
+> gjør det samme for Biga og Kveldsdeig. Først da kan modellen byttes for alvor —
+> og da er det et **[baseline]**-bytte som skal tas sammen med F26.
+>
+> Testet av `yeast_test_challenges_three_methods_off_by_default`: av som standard,
+> at registeret (`METHODS.yeastTest`) styrer hvem som utfordres, at begge tall
+> vises, at retningen stemmer per metode, at stegene og oppskriften fortsatt viser
+> samme gjær (F17-kontrakten), og at kopien sier fra når testen er på — og tier når den er av.
 - **I klartekst:** F23 innførte Q10 for Langtidsdeig. Utvider vi den til Poolish,
   faller gjærmengden fra 1,13 g til ca. 0,47 g for standardvalget (14 t
   romtemperatur-poolish + 24 t kaldt) — en reduksjon på ~58 %. Modellen mener
