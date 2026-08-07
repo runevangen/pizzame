@@ -45,6 +45,7 @@ To-trinns design
 import argparse
 import json
 import os
+import re
 import sys
 import http.server
 import socketserver
@@ -184,6 +185,20 @@ SKJEMA_VERIFISERING = {
 
 
 # ===== PLANUTTREKK ==================================================
+# copyP() legger en instruksjon foran planen, skrevet for et menneske som limer
+# den inn i en chat MED nettilgang. Fra v0.749 ber den om å slå opp lignende
+# oppskrifter på nett. Modellen her har ingen nettilgang, så den instruksjonen
+# ville bare gitt oppdiktede sammenligninger — og skriptet har uansett sin egen
+# systemprompt. Derfor klippes innledningen vekk: planen starter på versjonslinja.
+PLAN_START = re.compile(r"^UltimatePizza v", re.M)
+
+
+def uten_instruksjon(plan):
+    """Planteksten uten innledningen copyP() skriver for menneskelig bruk."""
+    m = PLAN_START.search(plan)
+    return plan[m.start():] if m else plan
+
+
 def hent_planer(konfigurasjoner, index_path="index.html"):
     """Kjører appen i en headless nettleser og henter ut planteksten for hver
     konfigurasjon — via `copyP()`, så teksten er NØYAKTIG den brukeren limer
@@ -314,7 +329,7 @@ def _kall(klient, system, bruker, skjema, effort):
 def gjennomgå(klient, oppf, effort):
     bruker = (
         f"Konfigurasjon: metode={oppf['metode']} · type={oppf['type']} · ovn={oppf['ovn']}\n\n"
-        f"{oppf['plan']}"
+        f"{uten_instruksjon(oppf['plan'])}"
     )
     data, feil = _kall(klient, SYSTEM_GJENNOMGANG, bruker, SKJEMA_GJENNOMGANG, effort)
     if feil:
@@ -324,7 +339,7 @@ def gjennomgå(klient, oppf, effort):
 
 def verifiser(klient, oppf, funn, effort):
     bruker = (
-        f"{oppf['plan']}\n\n"
+        f"{uten_instruksjon(oppf['plan'])}\n\n"
         f"=== PÅSTAND SOM SKAL ETTERPRØVES ===\n"
         f"Påstand: {funn['oppsummering']}\n"
         f"Siterer: «{funn['sitat_a']}»\n"

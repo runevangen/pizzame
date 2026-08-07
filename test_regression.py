@@ -3144,8 +3144,11 @@ def run_behavioral_tests(page):
       try{ if(orig) navigator.clipboard.writeText=orig; }catch(e){}
       S.method=savedS.method;S.type=savedS.type;S.mode=savedS.mode; mobGen();
       return {
-        hasInconsistency: /interne inkonsistenser/.test(captured),
-        hasAnchorGuard: /ikke mot generelle bransjenormer/.test(captured),
+        // v0.749: ordlyden ble delt i to deler («interne motsigelser», «ikke mot
+        // bransjenormer eller antatt praksis»). Kravet er det samme, så mønstrene
+        // godtar begge formuleringene — det er intensjonen som er festet her.
+        hasInconsistency: /interne (motsigelser|inkonsistenser)/.test(captured),
+        hasAnchorGuard: /ikke mot (generelle )?bransjenormer/.test(captured),
         stillHasInputs: /Hydrering/.test(captured) && /INGREDIENSER/.test(captured)
       };
     }""")
@@ -4952,6 +4955,78 @@ def run_behavioral_tests(page):
     ok124 = all(r124.get(k) for k in
                 ['prefOverlevde', 'deigNullstilt', 'iEgenNokkel', 'avOverlevdeOgsa'])
     results.append(('new_dough_resets_the_dough_but_keeps_preferences', ok124, r124))
+
+    # v0.749: instruksjonen copyP() legger foran planen. Begge de eksterne
+    # gjennomgangene vi har fått åpnet med avrunding — «267.52 mot 267»,
+    # «63.125% ikke 63%» — og dyttet de ekte funnene (emnevekten, sukkeret som
+    # ble sitert uten å finnes) nedover i lista. Pirk som drukner de store
+    # funnene er verre enn å la det ligge.
+    #
+    # Instruksjonen har nå to deler med hver sin regel, og de MÅ holdes fra
+    # hverandre: del 1 dømmer bare mot dokumentet selv (det er den regelen som
+    # hindrer «napoletana bør ligge på 60–65 % hydrering» når brukeren valgte
+    # 70), del 2 sammenligner utad og er informasjon, ikke feilmeldinger.
+    #
+    # Og: avrundingsregelen må beholde unntaket sitt. En 1 %-grense uten unntak
+    # ville slått av nettopp det vi leter etter — samme størrelse oppgitt med to
+    # ulike verdier er en motsigelse selv om spriket er 0,1 %.
+    r125 = page.evaluate("""() => {
+      const saved={...S};
+      const hent=lang=>{
+        window._lang=lang;
+        S.method='poolish'; S.type='napoletana'; S.mel=500; S.hydro=65;
+        S.cold=24; S.temp=22; S.fridgeC=3; S.oven='pizza'; S.gjaer='torr';
+        S.mode='start'; S.gjaertest=false; _q10Memo={k:null,v:null};
+        let fanget='';
+        try{ if(!navigator.clipboard) Object.defineProperty(navigator,'clipboard',{value:{},configurable:true});
+             navigator.clipboard.writeText=t=>{fanget=t;return Promise.resolve();}; }catch(e){}
+        try{ copyP(stepsForAnchor(new Date(2027,2,3,10,0))); }catch(e){ fanget='ERR:'+e; }
+        return fanget;
+      };
+      const no=hent('no'), en=hent('en');
+      window._lang='no';
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+
+      const harToDeler = /DEL 1 — INTERN SJEKK/.test(no) && /DEL 2 — SAMMENLIGNING/.test(no)
+                      && /PART 1 — INTERNAL CHECK/.test(en) && /PART 2 — COMPARISON/.test(en);
+      // Del 1 må fortsatt forby normvurdering — ellers gjør del 2 hele del 1 verdiløs.
+      const del1ErLukket = /ikke mot bransjenormer eller antatt praksis/.test(no)
+                        && /not against industry norms or assumed practice/.test(en);
+      // Del 2 må si at avvik IKKE er feil, og oppgi kildene sine.
+      const del2ErValgIkkeFeil = /Avvik her er ikke feil — de er valg/.test(no)
+                              && /not errors — they are choices/.test(en)
+                              && /Oppgi hvilke du sammenligner med/.test(no);
+      // Avrundingsregelen, og unntaket som gjør den trygg.
+      const harAvrundingsregel = /Avrunding er ikke feil/.test(no) && /under 1 ?%/.test(no)
+                              && /Rounding is not an error/.test(en);
+      const harUnntaket = /SAMME størrelse oppgitt med to ulike verdier/.test(no)
+                       && /SAME quantity is given with two different values/.test(en);
+      const harRekkefølge = /som faktisk endrer deigen øverst/.test(no)
+                         && /actually changes the dough first/.test(en);
+      return {harToDeler, del1ErLukket, del2ErValgIkkeFeil, harAvrundingsregel,
+              harUnntaket, harRekkefølge, no, en};
+    }""")
+
+    # review_plans.py sender kopien videre til en modell UTEN nettilgang. Ville
+    # «søk opp lignende oppskrifter på nett» fulgt med, fikk vi oppdiktede
+    # sammenligninger i den automatiske gjennomgangen. Innledningen må klippes
+    # vekk — og klippet må treffe på den EKTE copyP-teksten, ikke på et
+    # konstruert eksempel.
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import review_plans
+    strippet = review_plans.uten_instruksjon(r125['no'])
+    r125['klippetTreffer'] = strippet.startswith('UltimatePizza v')
+    r125['ingenNettinstruksIgjen'] = ('på nett' not in strippet
+                                      and 'DEL 2' not in strippet
+                                      and 'DEL 1' not in strippet)
+    # Og klippet må ikke spise av selve planen.
+    r125['planenErIntakt'] = 'PIZZAPLAN' in strippet and 'TIDSPLAN' in strippet
+    r125.pop('no', None); r125.pop('en', None)
+    ok125 = all(r125.get(k) for k in
+                ['harToDeler', 'del1ErLukket', 'del2ErValgIkkeFeil', 'harAvrundingsregel',
+                 'harUnntaket', 'harRekkefølge', 'klippetTreffer',
+                 'ingenNettinstruksIgjen', 'planenErIntakt'])
+    results.append(('copy_instruction_ranks_findings_and_survives_stripping', ok125, r125))
 
     return results
 

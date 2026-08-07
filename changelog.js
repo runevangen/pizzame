@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.749",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Instruksjonen som følger med «Kopier tidsplan» er delt i to. Del 1 er den interne sjekken, som før: feil og motsigelser, vurdert bare mot det som faktisk står i planen. Del 2 er ny — den ber om at lignende oppskrifter slås opp på nett og sammenlignes med din.",
+      "De to holdes bevisst fra hverandre. Del 1 skal ikke måle deigen din mot bransjenormer — det er den regelen som hindrer at du får «napoletana bør ligge på 60–65 % hydrering» når du selv valgte 70. I del 2 er avvik ikke feil, men valg, og den må oppgi hvilke oppskrifter den sammenligner med.",
+      "Ny regel mot pirk: avrunding er ikke feil. Tallene er avrundet for visning, så en sum kan avvike fra summen av de viste tallene. Sprik under 1 % er nesten alltid dette. Unntaket står eksplisitt — er samme størrelse oppgitt med to ulike verdier, skal det meldes uansett hvor lite spriket er, for det er nettopp en motsigelse.",
+      "Og den bes sortere: det som faktisk endrer deigen øverst. Begge gjennomgangene vi har fått åpnet med avrunding og dyttet de ekte funnene nedover."
+    ],
+    "changes_en": [
+      "The instruction that comes with “Copy schedule” is now in two parts. Part 1 is the internal check, as before: errors and contradictions, judged only against what is actually written in the plan. Part 2 is new — it asks for similar recipes to be looked up online and compared with yours.",
+      "The two are kept deliberately apart. Part 1 must not measure your dough against industry norms — that is the rule that stops you getting “Neapolitan should be 60–65% hydration” when you chose 70 yourself. In part 2 differences are not errors but choices, and it has to state which recipes it is comparing with.",
+      "A new rule against nitpicking: rounding is not an error. The numbers are rounded for display, so a total can differ from the sum of the displayed numbers. Discrepancies below 1% are almost always this. The exception is spelled out — if the same quantity is given with two different values it must be reported however small the gap, because that is precisely a contradiction.",
+      "And it is asked to sort: what actually changes the dough goes first. Both reviews we have had opened with rounding and pushed the real findings down the list."
+    ]
+  },
+  {
     "v": "0.748",
     "d": "august 2026",
     "d_en": "August 2026",

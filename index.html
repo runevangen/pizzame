@@ -3188,7 +3188,28 @@ function copyP(steps){
   // versjon og når planen ble hentet ut.
   const _ver=(typeof CHANGELOG!=='undefined'&&CHANGELOG[0])?CHANGELOG[0].v:'?';
   const _now=new Date();
-  const lines=[L('Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan, og for interne inkonsistenser — tekst eller tall som motsier hverandre (samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd). Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor, og vurder mot det som faktisk står her — ikke mot generelle bransjenormer eller antatt praksis:',`Check this pizza recipe systematically for errors in ingredients, math and schedule, and for internal inconsistencies — text or numbers that contradict each other (the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice). Look especially for deviations from what I specified myself below, and judge against what is actually written here — not against general industry norms or assumed practice:`),'',L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),
+  const lines=[
+    L('Gå gjennom denne pizzaoppskriften i to deler.',
+      'Go through this pizza recipe in two parts.'),'',
+    L('DEL 1 — INTERN SJEKK. Se etter feil i ingredienser, matematikk og tidsplan, og etter interne motsigelser: samme tid, temperatur eller mengde oppgitt ulikt to steder, eller to steg som gir motstridende råd. Se spesielt etter avvik fra det jeg selv har oppgitt nedenfor. Vurder bare mot det som faktisk står her — ikke mot bransjenormer eller antatt praksis.',
+      'PART 1 — INTERNAL CHECK. Look for errors in ingredients, math and schedule, and for internal contradictions: the same time, temperature or amount stated differently in two places, or two steps giving conflicting advice. Look especially for deviations from what I specified myself below. Judge only against what is actually written here — not against industry norms or assumed practice.'),'',
+    // v0.749: begge de eksterne gjennomgangene vi har fått åpnet med avrunding
+    // («267.52 mot 267», «63.125% ikke 63%») og dyttet de ekte funnene nedover.
+    // Grensa er tatt med fordi den er lett å forholde seg til, men den ekte
+    // skillelinja er ÅRSAK, ikke størrelse: avrunding for visning kontra to
+    // kilder som er uenige. Derfor står unntaket eksplisitt — en motsigelse er
+    // en motsigelse selv om spriket er 0,1 %.
+    L('Avrunding er ikke feil. Tallene er avrundet for visning, så en sum kan avvike fra summen av de viste tallene, og en prosent kan være regnet ut fra uavrundede verdier. Sprik under 1 % er nesten alltid dette — hopp over det. Unntaket: er SAMME størrelse oppgitt med to ulike verdier, meld det uansett hvor lite spriket er. Det er nettopp en intern motsigelse.',
+      'Rounding is not an error. The numbers are rounded for display, so a total may differ from the sum of the displayed numbers, and a percentage may be worked out from unrounded values. Discrepancies below 1% are almost always this — skip them. The exception: if the SAME quantity is given with two different values, report it however small the gap is. That is precisely an internal contradiction.'),'',
+    L('Sorter funnene med det som faktisk endrer deigen øverst. Pirk som drukner de store funnene er verre enn å la det ligge.',
+      'Order the findings with what actually changes the dough first. Nitpicks that drown the big findings are worse than leaving them out.'),'',
+    // Del 2 er bevisst skilt fra del 1. Del 1 dømmer bare mot seg selv — det er
+    // den regelen som hindrer «napoletana bør ligge på 60–65 % hydrering» når
+    // brukeren selv valgte 70. Sammenligningen utad er nyttig, men den er
+    // informasjon, ikke feilmeldinger, og må si hvor den har tallene fra.
+    L('DEL 2 — SAMMENLIGNING. Søk opp lignende oppskrifter på nett og sammenlign denne med dem. Oppgi hvilke du sammenligner med. Avvik her er ikke feil — de er valg. Si hva hvert avvik betyr i praksis for deig og resultat, så kan jeg avgjøre selv om jeg vil endre noe.',
+      'PART 2 — COMPARISON. Look up similar recipes online and compare this one against them. State which ones you are comparing with. Differences here are not errors — they are choices. Say what each difference means in practice for the dough and the result, so I can decide for myself whether to change anything.'),'',
+    L(`UltimatePizza v${_ver} · ${fd(_now)} kl. ${fT(_now)}`,`UltimatePizza v${_ver} · ${fd(_now)} at ${fT(_now)}`),'',L('PIZZAPLAN','PIZZA PLAN'),'=========','',`Type: ${rec.name}`,L(`Metode: ${mN(S.method)}`,`Method: ${mN(S.method)}`),L(`Mel: ${_flour}g · Hydrering: ${_hydro}%`,`Flour: ${_flour}g · Hydration: ${_hydro}%`),...(coldLine?[coldLine]:[]),...(ovnLine?[ovnLine]:[]),L(`Romtemperatur: ${S.temp}°C`,`Room temperature: ${S.temp}°C`),'',L(`Antall ${pcUnitLabel(true)}: ${p.count} stk (${p.perPizza}g per emne)`,`Number of ${pcUnitLabel(true)}: ${p.count} (${p.perPizza}g per ball)`),
     // v0.742: emnevekten står her i kopien også — det er nettopp i en kopiert
     // plan at «Napoletansk pizza» og «336g per emne» leses av noen som ikke har
     // appen foran seg og ikke kan se at de to ikke henger sammen.
