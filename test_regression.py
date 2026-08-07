@@ -5072,6 +5072,92 @@ def run_behavioral_tests(page):
     ok126 = all(r126.get(k) for k in ['ingenDøgn', 'ekkoStemmer', 'kort', 'lang'])
     results.append(('durations_stated_in_hours_and_match_actual_step_length', ok126, r126))
 
+    # v0.751: «Del» ved siden av «Kopier». På iPhone var kopiering bare halve
+    # jobben — du måtte forlate appen, åpne Claude, holde inne og lime. iOS
+    # kaster PWA-er ut av minnet, så turen ut kan koste deg planen du så på.
+    #
+    # Fire krav, og det første er det viktigste:
+    #  - delt tekst == kopiert tekst. Deles planen UTEN sjekk-instruksjonen,
+    #    leses den som en vanlig oppskrift, og hele hensikten med å sende den
+    #    et sted faller bort.
+    #  - bare `text` i share-kallet. Deler man `title` i tillegg, plukker
+    #    enkelte mål på iOS bare det ene — og da er planen borte.
+    #  - avbrutt deling (AbortError) er IKKE en feil og skal ikke gjøre noe.
+    #    En ekte feil skal derimot falle tilbake til utklippstavla, ikke
+    #    forsvinne i stillhet.
+    #  - kvitteringen står på knappen du faktisk trykket på. Før het den
+    #    «cbtn», og bare PC-en hadde den — på mobil skjedde ingenting synlig.
+    r127 = page.evaluate("""async () => {
+      const pust=()=>new Promise(r=>setTimeout(r,0));
+      const saved={...S};
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      S.method='poolish'; S.type='napoletana'; S.mel=500; S.hydro=65; S.cold=24;
+      S.temp=22; S.fridgeC=4; S.oven='pizza'; S.gjaer='torr'; S.mode='start';
+      S.gjaertest=false; _q10Memo={k:null,v:null};
+      const steg=stepsForAnchor(new Date(2027,2,3,10,0));
+
+      let kopiert='';
+      if(!navigator.clipboard) Object.defineProperty(navigator,'clipboard',{value:{},configurable:true});
+      navigator.clipboard.writeText=t=>{kopiert=t;return Promise.resolve()};
+
+      // --- delt tekst == kopiert tekst, og bare `text` sendes ---
+      let delt=null;
+      const ekteShare=navigator.share, ekteCan=navigator.canShare;
+      Object.defineProperty(navigator,'share',{value:d=>{delt=d;return Promise.resolve()},configurable:true});
+      Object.defineProperty(navigator,'canShare',{value:()=>true,configurable:true});
+      sharePlan(steg);
+      copyP(steg);
+      const sammeTekst = delt && delt.text===kopiert && kopiert.length>500;
+      const barePåText = delt && Object.keys(delt).join(',')==='text';
+      const delerInstruksjonen = !!(delt && /DEL 1 — INTERN SJEKK/.test(delt.text)
+                                       && /DEL 2 — SAMMENLIGNING/.test(delt.text));
+
+      // --- avbrutt deling gjør ingenting; ekte feil faller tilbake til kopi ---
+      kopiert='';
+      Object.defineProperty(navigator,'share',{value:()=>Promise.reject(
+        Object.assign(new Error('avbrutt'),{name:'AbortError'})),configurable:true});
+      sharePlan(steg); await pust();
+      const avbruttGjørIngenting = kopiert==='';
+
+      // En ekte feil skal IKKE forsvinne i stillhet — planen kommer ut på
+      // utklippstavla i stedet, med nøyaktig samme tekst.
+      Object.defineProperty(navigator,'share',{value:()=>Promise.reject(
+        Object.assign(new Error('nekta'),{name:'NotAllowedError'})),configurable:true});
+      sharePlan(steg); await pust();
+      const ektefeilFallerTilbake = kopiert.length>500 && /DEL 1 — INTERN SJEKK/.test(kopiert);
+
+      // --- knappen: Del vises bare når deling finnes ---
+      const medDel=planBottomActionsHTML();
+      Object.defineProperty(navigator,'share',{value:undefined,configurable:true});
+      Object.defineProperty(navigator,'canShare',{value:undefined,configurable:true});
+      const utenDel=planBottomActionsHTML();
+      const delKnappBetinget = /sharePlan/.test(medDel) && !/sharePlan/.test(utenDel);
+
+      // --- kvittering på knappen man trykket på, og etiketten kommer tilbake ---
+      const d=document.createElement('div');
+      d.innerHTML='<button><span>📋</span>Kopier</button>';
+      const b=d.firstChild;
+      kvitter(b,'✓ Kopiert!');
+      const kvittererPåKnappen = b.textContent==='✓ Kopiert!';
+      // Og etiketten som kommer TILBAKE må være knappens egen. Den gamle koden
+      // skrev tilbake «📋 Kopier tidsplan» på en knapp som het «📋 Kopier», så
+      // etiketten drev permanent etter første trykk. Her lar vi timeren gå.
+      await new Promise(r=>setTimeout(r,2100));
+      const etikettKommerTilbake = b.innerHTML==='<span>📋</span>Kopier';
+
+      Object.defineProperty(navigator,'share',{value:ekteShare,configurable:true});
+      Object.defineProperty(navigator,'canShare',{value:ekteCan,configurable:true});
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {sammeTekst, barePåText, delerInstruksjonen, avbruttGjørIngenting,
+              ektefeilFallerTilbake, delKnappBetinget, kvittererPåKnappen,
+              etikettKommerTilbake, lengde:kopiert.length};
+    }""")
+    ok127 = all(r127.get(k) for k in
+                ['sammeTekst', 'barePåText', 'delerInstruksjonen', 'avbruttGjørIngenting',
+                 'ektefeilFallerTilbake', 'delKnappBetinget', 'kvittererPåKnappen',
+                 'etikettKommerTilbake'])
+    results.append(('share_sends_the_same_text_copy_does', ok127, r127))
+
     return results
 
 

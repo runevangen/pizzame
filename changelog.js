@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.751",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny «📤 Del»-knapp under tidsplanen. Der telefonen har et delingsark, går hele planen rett inn i appen du velger — Claude, ChatGPT, Notater, Meldinger. På iPhone slipper du kopier, bytt app, hold inne, lim. Det er verdt mer enn det høres ut: iOS kaster apper ut av minnet, så turen ut for å lime kunne koste deg planen du sto i.",
+      "Delt tekst er nøyaktig den samme som kopiert tekst, sjekk-instruksjonen inkludert. Uten den ville en delt plan blitt lest som en helt vanlig oppskrift.",
+      "Avbryter du delingsarket, skjer ingenting — det er ikke en feil. Går delingen derimot faktisk galt, havner planen på utklippstavla i stedet, så den aldri forsvinner i stillhet.",
+      "«Kopier» ga ingen bekreftelse på mobil. Kvitteringen lette etter en knapp som bare fantes på PC, så på telefonen skjedde det ingenting synlig — og på iOS kan du ikke se utklippstavla, så du fikk ikke vite om det gikk bra før du limte inn et annet sted. Nå svarer knappen du faktisk trykket på.",
+      "Og på PC drev knappeteksten: den het «📋 Kopier», men ble satt til «📋 Kopier tidsplan» etter første trykk. Nå legges knappens egen etikett tilbake."
+    ],
+    "changes_en": [
+      "New “📤 Share” button below the schedule. Where the phone has a share sheet, the whole plan goes straight into the app you pick — Claude, ChatGPT, Notes, Messages. On iPhone that saves you copy, switch app, long-press, paste. It matters more than it sounds: iOS evicts apps from memory, so the trip out to paste could cost you the plan you were looking at.",
+      "The shared text is exactly the same as the copied text, check instruction included. Without it a shared plan would read as an ordinary recipe.",
+      "Cancel the share sheet and nothing happens — that is not an error. If the share genuinely fails, the plan lands on the clipboard instead, so it never disappears silently.",
+      "“Copy” gave no confirmation on mobile. The receipt looked for a button that only existed on desktop, so nothing visible happened on the phone — and on iOS you cannot see the clipboard, so you had no way to know it worked until you pasted somewhere else. Now the button you actually pressed answers.",
+      "And on desktop the button label drifted: it read “📋 Copy”, but was set to “📋 Copy schedule” after the first press. It now puts its own label back."
+    ]
+  },
+  {
     "v": "0.750",
     "d": "august 2026",
     "d_en": "August 2026",

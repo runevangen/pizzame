@@ -1016,12 +1016,12 @@ const TXT = {
   no:{ tab_settings:'Planlegging',tab_plan:'Tidsplan',tab_recipe:'Oppskrift',tab_notes:'Notater',tab_bakster:'Deiger',tab_tips:'Mer',tab_beta:'Smart-plan',
        li_section:'Språk / Enheter',li_lang:'Språk',li_units:'Enheter',u_metric:'Metrisk (g · °C)',u_imperial:'Imperial (oz · °F)',
        ai_note:'⚠️ Engelsk er maskinoversatt (AI). Sjekk kritiske steg – oppskriftsteksten er ennå ikke fullt gjennomgått.',
-       a_copy:'Kopier',a_cal:'Kalender',a_save:'Lagre',tb_juster:'⚙️ Juster',tb_understeg:'📋 Understeg',tb_tips:'💡 Tips',
+       a_copy:'Kopier',a_cal:'Kalender',a_save:'Lagre',a_share:'Del',tb_juster:'⚙️ Juster',tb_understeg:'📋 Understeg',tb_tips:'💡 Tips',
        r_count:'Antall',r_size:'Emnestørrelse',r_dough:'ferdig deig' },
   en:{ tab_settings:'Planner',tab_plan:'Schedule',tab_recipe:'Recipe',tab_notes:'Notes',tab_bakster:'Doughs',tab_tips:'More',tab_beta:'Smart plan',
        li_section:'Language / Units',li_lang:'Language',li_units:'Units',u_metric:'Metric (g · °C)',u_imperial:'Imperial (oz · °F)',
        ai_note:'⚠️ English is machine-translated (AI). Double-check critical steps — the recipe text is not yet fully reviewed.',
-       a_copy:'Copy',a_cal:'Calendar',a_save:'Save',tb_juster:'⚙️ Adjust',tb_understeg:'📋 Substeps',tb_tips:'💡 Tips',
+       a_copy:'Copy',a_cal:'Calendar',a_save:'Save',a_share:'Share',tb_juster:'⚙️ Adjust',tb_understeg:'📋 Substeps',tb_tips:'💡 Tips',
        r_count:'Quantity',r_size:'Dough ball size',r_dough:'final dough' } };
 function t(key){ const l=window._lang||'no'; return (TXT[l]&&TXT[l][key]!=null)?TXT[l][key]:(TXT.no[key]||key); }
 // Display-oversettelse av steg-titler (rører IKKE step.title-objektet → baseline trygg).
@@ -3173,9 +3173,11 @@ function toggleHelpFromPlan(){
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
 }
 
-function copyP(steps){
-  // F17: hele ingredienssannheten leses fra recipeFor() — samme kilde som
-  // Tidsplan-stegene og Oppskrift-fanene. Kopien KAN ikke lenger sprike.
+// v0.751: teksten bygges ett sted, og sendes til flere steder. Kopier og Del
+// SKAL gi identisk tekst — hele poenget med å dele planen er å få den gjennomgått,
+// og en delt plan uten sjekk-instruksjonen ville blitt lest som en vanlig
+// oppskrift. Samme grep som F17: én kilde, flere overflater.
+function planTekst(steps){
   const rec=recipeFor(),p=pc();
   const _flour=rec.flour,_water=rec.water,_salt=rec.salt,_hydro=rec.hydro,_yeast=yLabelFor(rec);
   // Faktisk total tid fra første steg til steking (bakover fra selve tidsplanen),
@@ -3246,10 +3248,53 @@ function copyP(steps){
     if(s.why)lines.push(`   ${L('Hvorfor','Why')}: ${s.why}`);
     if(s.tip)lines.push(`   ${L('Tips','Tips')}: ${s.tip}`);
   });
-  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
-    const b=document.getElementById('cbtn');
-    if(b){b.textContent=L('✓ Kopiert!','✓ Copied!');setTimeout(()=>{b.textContent=L('📋 Kopier tidsplan','📋 Copy schedule');},2000);}
+  return lines.join('\n');
+}
+
+// Kvittering på knappen man faktisk trykket på. Før het den ene knappen «cbtn»
+// og bare PC-en hadde den — på mobil skjedde det INGENTING synlig når du trykket
+// Kopier. På iOS kan du ikke se utklippstavla, så du fikk ikke vite om det gikk
+// bra før du limte inn et annet sted. Etiketten leses av knappen selv og legges
+// tilbake, i stedet for å skrives inn på nytt fra hukommelsen — den gamle koden
+// skrev tilbake «📋 Kopier tidsplan» på en knapp som het «📋 Kopier», så
+// etiketten drev permanent etter første trykk.
+function kvitter(btn, tekst){
+  if(!btn) return;
+  if(btn.dataset.orig===undefined) btn.dataset.orig=btn.innerHTML;
+  btn.textContent=tekst;
+  clearTimeout(btn._kvitt);
+  btn._kvitt=setTimeout(()=>{ btn.innerHTML=btn.dataset.orig; },2000);
+}
+
+function copyP(steps, btn){
+  navigator.clipboard.writeText(planTekst(steps)).then(()=>{
+    kvitter(btn||document.getElementById('cbtn'), L('✓ Kopiert!','✓ Copied!'));
   }).catch(()=>alert(L('Kopi feilet — prøv manuelt.','Copy failed — try manually.')));
+}
+
+// v0.751: «Del» i stedet for kopier-bytt-app-lim. På iPhone lander hele planen
+// rett i en ny samtale i den appen du velger, uten at du forlater planen for å
+// finne den igjen — iOS kaster PWA-er ut av minnet, så turen ut kan koste deg
+// det du så på.
+// Bare `text`: deler man `title` i tillegg, plukker enkelte mål på iOS bare det
+// ene, og da er planen borte. Filedeling ville gjort planen til et vedlegg
+// mottakeren må åpne — teksten skal leses direkte.
+// navigator.share() må kalles synkront i brukergesten, akkurat som clipboard.
+// planTekst() er synkron, så det holder.
+function canShare(){
+  try{ return !!(navigator.share && (!navigator.canShare || navigator.canShare({text:'x'}))); }
+  catch(e){ return false; }
+}
+function sharePlan(steps, btn){
+  const txt=planTekst(steps);
+  if(!canShare()){ copyP(steps, btn); return; }
+  navigator.share({text:txt}).catch(err=>{
+    // Avbrutt er ikke en feil — brukeren ombestemte seg i delingsarket.
+    // Alt annet ER en feil, og da skal planen fortsatt komme seg ut: fall
+    // tilbake til utklippstavla i stedet for å forsvinne i stillhet.
+    if(err && err.name==='AbortError') return;
+    copyP(steps, btn);
+  });
 }
 
 function icsStamp(d){
@@ -7668,7 +7713,8 @@ function planBottomActionsHTML(){
   return `<div style="padding:1.1rem .9rem 1.5rem;border-top:1px solid var(--forno-border-soft,#e8e5e0);margin-top:.5rem">
     <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-text-faint,#999);margin-bottom:8px">${L('Med denne planen','With this plan')}</div>
     <div style="display:flex;gap:8px">
-      ${btn("copyP(window._steps||[])",'📋',t('a_copy'))}
+      ${canShare()?btn("sharePlan(window._steps||[], this)",'📤',t('a_share')):''}
+      ${btn("copyP(window._steps||[], this)",'📋',t('a_copy'))}
       ${btn("downloadIcs(window._steps||[])",'📅',t('a_cal'))}
       ${btn("saveBake()",'💾',t('a_save'),'mob-savebake-btn')}
     </div>
@@ -7851,7 +7897,7 @@ function actionGroupHTML(){
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="act-btn act-btn-sec" id="savebake-btn" onclick="saveBake()" title="${L('Lagre denne deigen slik at du eller andre kan hente den frem igjen senere','Save this dough so you or others can bring it back later')}">${saveBakeLabel()}</button>
       <button class="act-btn act-btn-sec" onclick="jumpToDeiger()" title="${L('Se alle lagrede deiger','See all saved doughs')}">${L('🍽️ Mine deiger','🍽️ My doughs')}</button>
-      <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[])" title="${L('Kopier tidsplan som tekst','Copy schedule as text')}">${L('📋 Kopier','📋 Copy')}</button>
+      <button class="act-btn act-btn-sec" id="cbtn" onclick="copyP(window._steps||[], this)" title="${L('Kopier tidsplan som tekst','Copy schedule as text')}">${L('📋 Kopier','📋 Copy')}</button>
       <button class="act-btn act-btn-sec" onclick="downloadIcs(window._steps||[])" title="${L('Last ned tidsplanen som kalenderfil, med påminnelse 10 min før hvert handlingssteg','Download the schedule as a calendar file, with a reminder 10 min before each action step')}">${L('📅 Påminnelser','📅 Reminders')}</button>
     </div>
     ${fontSizeStepperHTML()}
