@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.757",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Varselet om mel og gjæringstid skrev «ca. 35.916666666666664 timer». Nå står det «ca. 36 timer». Desimaler er uansett falsk presisjon på en gjæring som styres av hvordan deigen ser ut — og fjorten av dem er et regnestykke som har lekket ut i teksten.",
+      "Selve sammenligningen bruker fortsatt det eksakte tallet, så varselet slår ut på nøyaktig samme tidspunkt som før. Det er bare visningen som er rundet.",
+      "Ny invariant-test vokter hele klassen: ingen tekst du skal lese kan inneholde et tall med tre eller flere desimaler. Gjær oppgis med to (0,48g), alt annet med færre. Sjekken dekker både stegtekstene og hele sjekk-panelet der varslene bor — panelet hentes ferdig rendret, så et varsel som kommer til senere blir dekket uten at testen må kjenne navnet på det."
+    ],
+    "changes_en": [
+      "The flour and fermentation-time warning read “about 35.916666666666664 hours”. It now says “about 36 hours”. Decimals are false precision on a fermentation governed by how the dough looks anyway — and fourteen of them is a calculation that has leaked into the text.",
+      "The comparison itself still uses the exact number, so the warning triggers at precisely the same point as before. Only the display is rounded.",
+      "A new invariant test guards the whole class: no text you are meant to read may contain a number with three or more decimals. Yeast is given with two (0.48g), everything else with fewer. The check covers both the step texts and the entire check panel where the warnings live — the panel is captured fully rendered, so a warning added later is covered without the test having to know its name."
+    ]
+  },
+  {
     "v": "0.756",
     "d": "august 2026",
     "d_en": "August 2026",

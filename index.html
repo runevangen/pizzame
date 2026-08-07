@@ -4486,6 +4486,13 @@ function meltypeWarningHTML(){
   // poenget med valget — brukerens mel finnes ikke i lista.
   if(flour.generic) return '';
   const hrs=totalFermentHours();
+  // v0.757: `hrs` er et rått flyttall — 35.916666666666664 — og sto slik i
+  // varselet, med punktum og fjorten desimaler. Sammenligningen under skal
+  // fortsatt bruke den eksakte verdien; det er bare VISNINGEN som rundes. Hele
+  // timer, samme regel som fmtDur() bruker for lange varigheter (v0.750):
+  // desimaler her er falsk presisjon på en gjæring som uansett styres av
+  // hvordan deigen ser ut.
+  const hrsVist=Math.round(hrs);
   const fermOk = hrs>=flour.ferm.mn && hrs<=flour.ferm.mx;
   const hydroOk = !flour.hydroRange || (S.hydro>=flour.hydroRange.mn && S.hydro<=flour.hydroRange.mx);
   if(fermOk && hydroOk) return '';
@@ -4493,7 +4500,7 @@ function meltypeWarningHTML(){
   const issues=[];
   if(!fermOk){
     const tooShort=hrs<flour.ferm.mn;
-    issues.push(L(`Du har planlagt ca. ${hrs} timer total gjæringstid, mens ${flour.t} er ment for ${flour.ferm.mn}–${flour.ferm.mx} timer. ${tooShort?'For kort tid gir dårlig utviklet gluten og lite smak — melet rekker ikke å bygge den strukturen den er laget for.':'For lang tid kan bryte ned glutenet mer enn det bygges — deigen kan bli slapp og vanskelig å håndtere.'} Vurder ${tooShort?'et svakere mel (f.eks. Dallari eller Doppio Zero) eller kortere hevetid':'et sterkere mel (lenger ned på listen) eller kortere hevetid'} for bedre match.`,`You have planned about ${hrs} hours of total fermentation time, while ${flour.t} is meant for ${flour.ferm.mn}–${flour.ferm.mx} hours. ${tooShort?'Too short a time gives poorly developed gluten and little flavor — the flour does not have time to build the structure it is made for.':'Too long a time can break down the gluten faster than it builds — the dough can become slack and hard to handle.'} Consider ${tooShort?'a weaker flour (e.g. Dallari or Doppio Zero) or a shorter rise time':'a stronger flour (further down the list) or a shorter rise time'} for a better match.`));
+    issues.push(L(`Du har planlagt ca. ${hrsVist} timer total gjæringstid, mens ${flour.t} er ment for ${flour.ferm.mn}–${flour.ferm.mx} timer. ${tooShort?'For kort tid gir dårlig utviklet gluten og lite smak — melet rekker ikke å bygge den strukturen den er laget for.':'For lang tid kan bryte ned glutenet mer enn det bygges — deigen kan bli slapp og vanskelig å håndtere.'} Vurder ${tooShort?'et svakere mel (f.eks. Dallari eller Doppio Zero) eller kortere hevetid':'et sterkere mel (lenger ned på listen) eller kortere hevetid'} for bedre match.`,`You have planned about ${hrsVist} hours of total fermentation time, while ${flour.t} is meant for ${flour.ferm.mn}–${flour.ferm.mx} hours. ${tooShort?'Too short a time gives poorly developed gluten and little flavor — the flour does not have time to build the structure it is made for.':'Too long a time can break down the gluten faster than it builds — the dough can become slack and hard to handle.'} Consider ${tooShort?'a weaker flour (e.g. Dallari or Doppio Zero) or a shorter rise time':'a stronger flour (further down the list) or a shorter rise time'} for a better match.`));
   }
   if(!hydroOk){
     const tooLow = S.hydro<flour.hydroRange.mn;

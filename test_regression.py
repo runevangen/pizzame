@@ -4445,6 +4445,14 @@ def run_behavioral_tests(page):
                   // bor i understegene og aldri kommer med i en kopiert plan.
                   steps:steps.map(s=>({title:s.title, desc:s.desc, why:s.why,
                                        tip:s.tip, substeps:s.substeps||[]})),
+                  // v0.757: og hele sjekk-panelet, som er der varslene bor.
+                  // Å hente det ferdig rendret dekker ALLE varsler på én gang,
+                  // i stedet for at testen må kjenne navnet på hver enkelt —
+                  // et varsel som legges til senere blir dekket gratis.
+                  varsler:(()=>{ try{ window._steps=steps; window._wizStep=3;
+                    wizCheckRender();
+                    const el=document.getElementById('wiz-check');
+                    return el?el.innerText:''; }catch(e){ return ''; } })(),
                   needs:steps.map(s=>s.needs||[]).reduce((a,b)=>a.concat(b),[])});
       }
       Object.assign(S,saved);
@@ -4571,6 +4579,40 @@ def run_behavioral_tests(page):
     results.append(('invariant_no_facts_live_only_in_substeps', ok118,
                     {'foreldreløse': substep_orphans[:12],
                      'antall': len(substep_orphans)}))
+
+    # --- E: ingen råe flyttall i tekst et menneske skal lese ---
+    # v0.757: varselet om mel og gjæringstid skrev «ca. 35.916666666666664
+    # timer». totalFermentHours() returnerer et flyttall, og det sto rett i
+    # teksten — med punktum og fjorten desimaler.
+    #
+    # Regelen: mer enn to desimaler i en brukertekst er alltid feil. Gjær
+    # oppgis med to (0,48g), alt annet med færre. Et tall med tre eller flere
+    # er et regnestykke som har lekket ut, ikke en mengde noen kan måle opp.
+    #
+    # Sjekken dekker stegtekstene OG hele sjekk-panelet, som er der varslene
+    # bor — panelet hentes ferdig rendret, så et varsel som kommer til senere
+    # blir dekket uten at testen må kjenne navnet på det.
+    RAA_FLYT = re.compile(r"\d+[.,]\d{3,}")
+
+    ugly_numbers = []
+    for d in sweep:
+        if d.get("err"):
+            continue
+        biter = [(f"{st.get('title')}.{felt}", st.get(felt))
+                 for st in (d.get("steps") or [])
+                 for felt in ("desc", "why", "tip")]
+        biter += [(f"{st.get('title')}.substep", sub)
+                  for st in (d.get("steps") or [])
+                  for sub in (st.get("substeps") or [])]
+        biter.append(("sjekk-panelet", d.get("varsler")))
+        for hvor, txt in biter:
+            for m in RAA_FLYT.findall(str(txt or "")):
+                ugly_numbers.append(
+                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {hvor}: {m}")
+    ok118b = not ugly_numbers
+    results.append(('invariant_no_raw_floats_in_user_text', ok118b,
+                    {'stygge': sorted(set(ugly_numbers))[:12],
+                     'antall': len(ugly_numbers)}))
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
