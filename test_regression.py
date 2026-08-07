@@ -5192,12 +5192,18 @@ def run_behavioral_tests(page):
       sharePlan(steg); await pust();
       const ektefeilFallerTilbake = kopiert.length>500 && /DEL 1 — INTERN SJEKK/.test(kopiert);
 
-      // --- knappen: Del vises bare når deling finnes ---
+      // --- v0.756: knappen er TATT UT ---
+      // Meldt inn: appen henger etter bruk på iPhone. Lar seg ikke reprodusere
+      // i Chromium (share som resolver, avbryter, nekter og aldri svarer gir
+      // alle en app som fortsatt virker), så mekanismen er sannsynligvis
+      // iOS-spesifikk — standalone PWA med service worker, der deling
+      // bakgrunner appen. Funksjonene over blir stående og testet, slik at de
+      // ikke råtner mens knappen er borte, men den skal ikke tegnes før noen
+      // har bekreftet på en ekte iPhone at deling ikke etterlater appen død.
       const medDel=planBottomActionsHTML();
       Object.defineProperty(navigator,'share',{value:undefined,configurable:true});
       Object.defineProperty(navigator,'canShare',{value:undefined,configurable:true});
-      const utenDel=planBottomActionsHTML();
-      const delKnappBetinget = /sharePlan/.test(medDel) && !/sharePlan/.test(utenDel);
+      const delKnappErUte = !/sharePlan\(/.test(medDel);
 
       // --- kvittering på knappen man trykket på, og etiketten kommer tilbake ---
       const d=document.createElement('div');
@@ -5215,12 +5221,12 @@ def run_behavioral_tests(page):
       Object.defineProperty(navigator,'canShare',{value:ekteCan,configurable:true});
       Object.assign(S,saved); _q10Memo={k:null,v:null};
       return {sammeTekst, barePåText, delerInstruksjonen, avbruttGjørIngenting,
-              ektefeilFallerTilbake, delKnappBetinget, kvittererPåKnappen,
+              ektefeilFallerTilbake, delKnappErUte, kvittererPåKnappen,
               etikettKommerTilbake, lengde:kopiert.length};
     }""")
     ok127 = all(r127.get(k) for k in
                 ['sammeTekst', 'barePåText', 'delerInstruksjonen', 'avbruttGjørIngenting',
-                 'ektefeilFallerTilbake', 'delKnappBetinget', 'kvittererPåKnappen',
+                 'ektefeilFallerTilbake', 'delKnappErUte', 'kvittererPåKnappen',
                  'etikettKommerTilbake'])
     results.append(('share_sends_the_same_text_copy_does', ok127, r127))
 

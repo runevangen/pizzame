@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.756",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«📤 Del»-knappen er tatt ut igjen. Den ble meldt inn som årsak til at appen henger etter bruk på iPhone — ingenting virker etterpå.",
+      "Feilen lar seg ikke reprodusere her: deling som fullfører, avbrytes, nektes eller aldri svarer, gir alle en app som fortsatt bytter fane, regner ut planen på nytt og svarer på trykk. Mekanismen er derfor sannsynligvis noe iOS gjør — appen kjører som en installert PWA, deling sender den i bakgrunnen, og iOS er hard mot bakgrunnede apper.",
+      "Uten en enhet å bekrefte på, er en gjetning i produksjon verre enn ingen knapp. «Kopier» virker som før, og deler du derfra, går det gjennom systemets egen lim-inn i stedet.",
+      "Alt annet fra samme runde blir stående: «Kopier» gir fortsatt bekreftelse på mobil, og knappeteksten på PC drifter ikke lenger."
+    ],
+    "changes_en": [
+      "The “📤 Share” button has been taken out again. It was reported as the cause of the app hanging after use on iPhone — nothing works afterwards.",
+      "The fault cannot be reproduced here: sharing that completes, is cancelled, is denied, or never answers all leave an app that still switches tabs, recalculates the plan and responds to taps. The mechanism is therefore most likely something iOS does — the app runs as an installed PWA, sharing sends it to the background, and iOS is harsh with backgrounded apps.",
+      "Without a device to confirm on, a guess in production is worse than no button. “Copy” works as before, and sharing from there goes through the system's own paste instead.",
+      "Everything else from the same round stays: “Copy” still confirms on mobile, and the button label on desktop no longer drifts."
+    ]
+  },
+  {
     "v": "0.755",
     "d": "august 2026",
     "d_en": "August 2026",

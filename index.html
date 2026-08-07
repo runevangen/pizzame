@@ -7912,7 +7912,17 @@ function planBottomActionsHTML(){
   return `<div style="padding:1.1rem .9rem 1.5rem;border-top:1px solid var(--forno-border-soft,#e8e5e0);margin-top:.5rem">
     <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-text-faint,#999);margin-bottom:8px">${L('Med denne planen','With this plan')}</div>
     <div style="display:flex;gap:8px">
-      ${canShare()?btn("sharePlan(window._steps||[], this)",'📤',t('a_share')):''}
+      ${'' /* v0.756: Del-knappen er tatt UT. Meldt inn: appen henger etter bruk
+             på iPhone, og ingenting virker etterpå. Lar seg ikke reprodusere i
+             Chromium — share som resolver, avbryter, nekter og aldri svarer gir
+             alle en app som fortsatt bytter fane, regenererer plan og svarer på
+             trykk. Mekanismen er derfor sannsynligvis iOS-spesifikk: appen er
+             en standalone PWA med service worker, deling bakgrunner den, og iOS
+             er hard mot bakgrunnede PWA-er.
+             Funksjonene under står igjen og er testdekket, så knappen kan
+             skrus på med denne ene linja — men først når noen har bekreftet på
+             en ekte iPhone at deling ikke etterlater appen død. En gjetning i
+             produksjon er verre enn ingen knapp. */}
       ${btn("copyP(window._steps||[], this)",'📋',t('a_copy'))}
       ${btn("downloadIcs(window._steps||[])",'📅',t('a_cal'))}
       ${btn("saveBake()",'💾',t('a_save'),'mob-savebake-btn')}
