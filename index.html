@@ -3229,6 +3229,23 @@ function toggleHelpFromPlan(){
 // SKAL gi identisk tekst — hele poenget med å dele planen er å få den gjennomgått,
 // og en delt plan uten sjekk-instruksjonen ville blitt lest som en vanlig
 // oppskrift. Samme grep som F17: én kilde, flere overflater.
+// v0.754: kopien oppgir gjærmengden — ikke hva den kunne ha vært.
+//
+// Før sto det en egen linje: «Gjærtest (beta): PÅ — Poolish gir normalt 1.13g
+// (−58%)». To tall for én ingrediens, og leseren måtte selv finne ut hvilket
+// som gjaldt. Sammenligningen hører hjemme I appen, der du kjører forsøket og
+// skal se forskjellen — ikke i en oppskrift du sender til noen andre.
+//
+// Merket blir stående, men uten tall. Grunnen er den samme som da linja kom
+// (v0.741): uten et ord om at dette er en forsøksmengde, måler både et
+// menneske og DEL 2 i sjekk-instruksjonen 0,48g mot vanlige poolish-mengder og
+// melder et bevisst valg som en feil. Tre ord koster lite; et falskt funn
+// koster mer.
+function gjaertestKopiMerke(){
+  return recipeWithoutGjaertest()
+    ? L(' (forsøksmengde — gjærtest på)',' (experimental amount — yeast test on)')
+    : '';
+}
 function planTekst(steps){
   const rec=recipeFor(),p=pc();
   const _flour=rec.flour,_water=rec.water,_salt=rec.salt,_hydro=rec.hydro,_yeast=yLabelFor(rec);
@@ -3278,17 +3295,7 @@ function planTekst(steps){
     ...(()=>{ const n=ballWeightNote(); if(!n) return [];
       return [L(`  ⚠ Emnet er ${Math.abs(n.pst)}% ${n.pst>0?'over':'under'} målvekten på ${n.mal}g for typen — ${n.forslag}g mel gir ${n.count} emne${n.count>1?'r':''} på ca. ${n.mal}g.`,
                 `  ⚠ The ball is ${Math.abs(n.pst)}% ${n.pst>0?'above':'below'} the ${n.mal}g target for this type — ${n.forslag}g flour gives ${n.count} ball${n.count>1?'s':''} of about ${n.mal}g.`)]; })(),
-    '',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}`,`Yeast: ${_yeast}`),
-    // v0.741: står gjærtesten på, MÅ kopien si det. Uten linja ser planen ut som
-    // en helt vanlig oppskrift, og den som leser den — et menneske eller
-    // sjekk-gjennomgangen i review_plans.py — ville målt et forsøkstall mot
-    // normale forventninger og meldt det som feil.
-    ...(()=>{ const før=recipeWithoutGjaertest(); if(!før) return [];
-      const a=S.gjaer==='torr'?før.yDry:før.yFresh, b=S.gjaer==='torr'?rec.yDry:rec.yFresh;
-      if(!a||!b) return [];
-      const pst=Math.round((b/a-1)*100);
-      return [L(`Gjærtest (beta): PÅ — ${mN(S.method)} gir normalt ${a}g (${pst>0?'+':''}${pst}%)`,
-                `Yeast test (beta): ON — ${mN(S.method)} normally gives ${a}g (${pst>0?'+':''}${pst}%)`)]; })(),
+    '',L('INGREDIENSER','INGREDIENTS'),'------------',L(`Mel: ${_flour}g`,`Flour: ${_flour}g`),L(`Vann: ${_water}g`,`Water: ${_water}g`),L(`Salt: ${_salt}g`,`Salt: ${_salt}g`),...(rec.oil?[L(`Olivenolje: ${rec.oil}g`,`Olive oil: ${rec.oil}g`)]:[]),...(rec.butter?[L(`Smør: ${rec.butter}g`,`Butter: ${rec.butter}g`)]:[]),...(rec.sugar?[L(`Sukker: ${rec.sugar}g`,`Sugar: ${rec.sugar}g`)]:[]),L(`Gjær: ${_yeast}${gjaertestKopiMerke()}`,`Yeast: ${_yeast}${gjaertestKopiMerke()}`),
     '',L('TIDSPLAN','SCHEDULE'),'--------'];
   steps.forEach((s,i)=>{
     const locMap=L({kjol:'❄️ Kjøleskap',rom:'🏠 Romtemperatur',ovn:'🔥 Ovn',benk:'🔧 Kjøkkenbenk'},{kjol:'❄️ Fridge',rom:'🏠 Room temperature',ovn:'🔥 Oven',benk:'🔧 Counter'});

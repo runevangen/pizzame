@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.754",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kopiert plan oppgir gjærmengden — ikke hva den kunne ha vært. Før sto det en egen linje: «Gjærtest (beta): PÅ — Poolish gir normalt 1.13g (−58%)». To tall for én ingrediens, og den som leste måtte selv finne ut hvilket som gjaldt.",
+      "Nå står det bare «Gjær: 0.48g tørrgjær (forsøksmengde — gjærtest på)». Sammenligningen mellom de to tallene hører hjemme i appen, der du kjører forsøket og skal se forskjellen — ikke i en oppskrift du sender til noen andre.",
+      "Merket blir stående, men uten tall. Uten et ord om at dette er en forsøksmengde, måler både et menneske og del 2 av sjekk-instruksjonen 0,48g mot vanlige poolish-mengder og melder et bevisst valg som en feil."
+    ],
+    "changes_en": [
+      "A copied plan states the amount of yeast — not what it might have been. It used to carry a line of its own: “Yeast test (beta): ON — Poolish normally gives 1.13g (−58%)”. Two numbers for one ingredient, and the reader had to work out which one applied.",
+      "It now simply says “Yeast: 0.48g dry yeast (experimental amount — yeast test on)”. The comparison between the two numbers belongs in the app, where you are running the trial and want to see the difference — not in a recipe you send to someone else.",
+      "The marker stays, but without a number. Without a word saying this is an experimental amount, both a human and part 2 of the check instruction would measure 0.48g against ordinary poolish amounts and report a deliberate choice as an error."
+    ]
+  },
+  {
     "v": "0.753",
     "d": "august 2026",
     "d_en": "August 2026",

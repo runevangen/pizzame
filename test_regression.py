@@ -4581,25 +4581,39 @@ def run_behavioral_tests(page):
         if(!alle.includes(String(rec.yDry))) stegStemmer=false;
       }
 
-      // Kopien må si fra at testen er på — ellers leses et forsøkstall som normalt.
+      // Kopien må si fra at testen er på — ellers måler både et menneske og
+      // DEL 2 i sjekk-instruksjonen 0,48g mot vanlige poolish-mengder og melder
+      // et bevisst valg som feil.
+      // v0.754: men den skal oppgi ÉN mengde. Før sto «Gjærtest (beta): PÅ —
+      // Poolish gir normalt 1.13g (−58%)» på egen linje: to tall for én
+      // ingrediens, og leseren måtte selv finne ut hvilket som gjaldt.
+      // Sammenligningen hører hjemme i appen, der forsøket kjøres, ikke i en
+      // oppskrift man sender videre.
       sett('poolish'); S.gjaertest=true;
       let fanget='';
       try{ if(!navigator.clipboard) Object.defineProperty(navigator,'clipboard',{value:{},configurable:true});
            navigator.clipboard.writeText=t=>{fanget=t;return Promise.resolve();}; }catch(e){}
       try{ copyP(stepsForAnchor(new Date(2027,2,3,10,0))); }catch(e){ fanget='ERR:'+e; }
-      const kopiSierFra = /Gjærtest \\(beta\\): PÅ/.test(fanget) && /normalt 1\\.13g/.test(fanget);
+      const kopiSierFra = /forsøksmengde — gjærtest på/.test(fanget);
+      // Og den gamle sammenligningen skal være borte: ingen «normalt», ingen
+      // prosent, ingen alternativ gjærmengde noe sted i kopien.
+      const kopiHarBareEttTall = !/Gjærtest \\(beta\\)/.test(fanget)
+                              && !/1\\.13g/.test(fanget)
+                              && /0\\.48g/.test(fanget);
       // Og den må TIE når testen er av.
       sett('poolish'); S.gjaertest=false; fanget='';
       try{ copyP(stepsForAnchor(new Date(2027,2,3,10,0))); }catch(e){}
-      const kopiTierNårAv = !/Gjærtest/.test(fanget);
+      const kopiTierNårAv = !/gjærtest|forsøksmengde/i.test(fanget);
 
       Object.assign(S,saved); _q10Memo={k:null,v:null};
       return {standardAv,lagresMedDeig,registerStemmer,endrerRiktige,radViserBegge,
-              retning,stegStemmer,kopiSierFra,kopiTierNårAv,kanUtfordres,detaljer:ut};
+              retning,stegStemmer,kopiSierFra,kopiHarBareEttTall,kopiTierNårAv,
+              kanUtfordres,detaljer:ut};
     }""")
     ok119 = all(r119.get(k) for k in [
         'standardAv', 'lagresMedDeig', 'registerStemmer', 'endrerRiktige', 'radViserBegge',
-        'retning', 'stegStemmer', 'kopiSierFra', 'kopiTierNårAv'])
+        'retning', 'stegStemmer', 'kopiSierFra', 'kopiHarBareEttTall',
+        'kopiTierNårAv'])
     results.append(('yeast_test_challenges_three_methods_off_by_default', ok119, r119))
 
     # v0.742: fem funn fra en gjennomgang av en generert plan (200g mel,
