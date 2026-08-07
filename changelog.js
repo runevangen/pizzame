@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.759",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Mania-metoden er nå etterprøvd mot originaloppskriften — «Lørdagspizza med poolish tilpasset tidsklemma» fra pizzamani.no — og en ny test fryser avskriften. Tidsplanen stemmer på hvert eneste ledd: 12 timer poolish, nedkjøling, 30 minutters hvile, 1–1,5 time i romtemperatur, 10 timer i kjøleskap, 10 timer på ferdige emner, pluss fire timers buffer.",
+      "Ingredienslista for seks pizza stemmer til siste desimal. For fire pizza er poolish, vann og salt like, men hovedgjæren blir 0,71g mot oppskriftens 0,76g. Grunnen er at oppskriftens egne to kolonner ikke er proporsjonale med hverandre — hovedgjæren spriker 6,7 % mellom dem — så ett tall kan bare treffe den ene. Appen er kalibrert på seks-pizza-kolonnen, og avviket er nå skrevet ned og låst så det ikke kan vokse i det stille.",
+      "En ting til, notert for ettertiden: i oppskriftens poolish er fersk gjær 2,2 ganger tørr, som er normalt. I hoveddeigen er den 0,8 ganger — altså mindre fersk enn tørr, som er snudd. Bruker du fersk gjær, får du derfor mindre heving enn med tørr. Tallene står med vilje urørt, for Mania er en avskrift og skal ikke justeres — men nå vet du det, og koden sier fra til den som måtte finne på å «rette» det."
+    ],
+    "changes_en": [
+      "The Mania method has now been verified against the original recipe — “Lørdagspizza med poolish tilpasset tidsklemma” from pizzamani.no — and a new test freezes the transcription. The schedule matches at every step: 12 hours of poolish, chilling, a 30-minute rest, 1–1.5 hours at room temperature, 10 hours in the fridge, 10 hours on shaped balls, plus a four-hour buffer.",
+      "The ingredient list for six pizzas matches to the last decimal. For four pizzas the poolish, water and salt are identical, but the main-dough yeast comes out at 0.71g against the recipe's 0.76g. The reason is that the recipe's own two columns are not proportional to each other — the main-dough yeast differs by 6.7% between them — so a single figure can only match one. The app is calibrated on the six-pizza column, and the deviation is now written down and locked so it cannot grow quietly.",
+      "One more thing, noted for the record: in the recipe's poolish, fresh yeast is 2.2 times the dry. In the main dough it is 0.8 times — less fresh than dry, which is the wrong way round. So if you use fresh yeast you get less rise than with dry. The numbers are deliberately left untouched, because Mania is a transcription and is not to be adjusted — but now you know, and the code warns anyone who might be tempted to “fix” it."
+    ]
+  },
+  {
     "v": "0.758",
     "d": "august 2026",
     "d_en": "August 2026",

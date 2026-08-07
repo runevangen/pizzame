@@ -103,6 +103,25 @@ function R(){
 // prosenter fra kilden, uavhengig av S.type sine BSALT/BYEAST-tabeller — boka
 // spesifiserer sin egen, komplette oppskrift (64% hydrering, poolish = 50% av
 // mel/vann i 1:1-forhold), ikke en variant av appens øvrige pizzatyper.
+//
+// KILDEN (v0.759, verifisert mot originalteksten): «Lørdagspizza med poolish
+// tilpasset tidsklemma», René Munthe Eik, pizzamani.no, 5. januar 2020.
+// Oppskriften har to kolonner — 4 og 6 pizza — og koeffisientene under er
+// kalibrert på 6-PIZZA-kolonnen, som de gjengir eksakt på hvert eneste tall.
+//
+// Hvorfor bare den ene: kildens to kolonner er IKKE proporsjonale med
+// hverandre. Hovedgjæren avviker 6,7 % (tørr) og 10,8 % (fersk) mellom dem, så
+// ingen enkelt koeffisient kan treffe begge. 4-pizza-kolonnen gjengis derfor
+// med 0,71g tørr mot kildens 0,76g, og 0,56g fersk mot 0,62g. Alt annet i den
+// kolonnen — poolish-mel, -vann, -gjær, vann 1 og 2 — stemmer eksakt.
+//
+// MERK om fersk kontra tørr: i kildens POOLISH er fersk 2,2× tørr, som er den
+// normale retningen. I kildens HOVEDDEIG er fersk 0,8× tørr — altså mindre
+// fersk enn tørr, som er snudd. Regnet på totalen får den som bruker fersk
+// gjær bare ~1,25× tørrvekten, der ~3× er det vanlige. Dette er kildens tall,
+// og de står med vilje urørt: Mania er en AVSKRIFT, og appen sier selv at
+// gjæren i den ikke skal justeres. Ikke «rett opp» dette uten å endre hva
+// metoden lover å være.
 // F19: Manias faste fasevarigheter (minutter) — ETT sted, lest av BÅDE
 // stegbyggeren (rawSteps) og totalFermentHours(). Tidligere håndsummerte
 // totalFermentHours de samme tallene som en frittstående formel («720/60 +

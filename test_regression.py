@@ -4662,6 +4662,75 @@ def run_behavioral_tests(page):
                     {'utenTegn': sorted(set(missing_cue))[:12],
                      'antall': len(missing_cue)}))
 
+    # v0.759: Mania er en AVSKRIFT, ikke en beregning. Kilden er «Lørdagspizza
+    # med poolish tilpasset tidsklemma», René Munthe Eik, pizzamani.no,
+    # 5. januar 2020. Appen sier selv at gjæren i Mania ikke skal justeres —
+    # da må avskriften kunne bevises, ellers er påstanden bare en påstand.
+    #
+    # En ekstern gjennomgang hevdet at Pizzamani bruker KORTERE sluttid i
+    # romtemperatur når emnene først er delt opp, og at våre 10 timer var for
+    # mye. Originalteksten sier det motsatte, ordrett: «Deigene skal nå stå i en
+    # romtemperatur på 21 grader og heve i 10 timer», pluss «holder seg også
+    # fint i romtemperatur i 4 timer». Testen fryser dette, så neste
+    # gjennomgang som mener noe annet møter et tall som er etterprøvd.
+    KILDE_6 = {  # 6-pizza-kolonnen, ordrett fra oppskriften
+        'mel': 934, 'poolishMel': 467, 'poolishVann': 467,
+        'poolishYd': 0.52, 'poolishYf': 1.15,
+        'vann1': 93, 'vann2': 38, 'salt': 28,
+        'hovedYd': 1.07, 'hovedYf': 0.84,
+    }
+    # 4-pizza-kolonnen. Kildens to kolonner er ikke proporsjonale — hovedgjæren
+    # avviker 6,7 % (tørr) og 10,8 % (fersk) — så koeffisientene kan bare treffe
+    # den ene. De er kalibrert på 6-pizza. Avvikene under er derfor KJENTE og
+    # fryses her, slik at de ikke kan vokse ubemerket.
+    KILDE_4 = {
+        'mel': 622, 'poolishMel': 311, 'poolishVann': 311,
+        'poolishYd': 0.35, 'poolishYf': 0.77,
+        'vann1': 62, 'vann2': 25,
+    }
+    KJENT_AVVIK_4 = {'salt': (18.7, 19), 'hovedYd': (0.71, 0.76), 'hovedYf': (0.56, 0.62)}
+    # Fasevarighetene i minutter, lest ut av tilberedelses-teksten.
+    KILDE_FASER = {'POOLISH': 720, 'CHILL': 120, 'RISE1': 30,
+                   'ROOM1': 75, 'COLDBULK': 600, 'FINAL': 600}
+
+    r130 = page.evaluate("""(mel) => {
+      const saved={...S};
+      const ut={};
+      for(const m of mel){
+        S.method='mania'; S.type='napoletana'; S.mel=m; S.oven='pizza';
+        S.temp=21; S.fridgeC=4; S.gjaer='torr'; S.mode='start';
+        S.gjaertest=false; _q10Memo={k:null,v:null};
+        ut[m]=maniaRecipe(m);
+      }
+      ut.faser={...MANIA_T};
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return ut;
+    }""", [622, 934])
+
+    avvik = []
+    for felt, fasit in KILDE_6.items():
+        if felt == 'mel':
+            continue
+        fikk = r130['934'].get(felt)
+        if abs(fikk - fasit) > 1e-9:
+            avvik.append(f"6-pizza {felt}: {fikk} ≠ kilden {fasit}")
+    for felt, fasit in KILDE_4.items():
+        if felt == 'mel':
+            continue
+        fikk = r130['622'].get(felt)
+        if abs(fikk - fasit) > 1e-9:
+            avvik.append(f"4-pizza {felt}: {fikk} ≠ kilden {fasit}")
+    for felt, (vårt, kildens) in KJENT_AVVIK_4.items():
+        fikk = r130['622'].get(felt)
+        if abs(fikk - vårt) > 1e-9:
+            avvik.append(f"4-pizza {felt}: {fikk} — kjent avvik var {vårt} (kilden: {kildens})")
+    for fase, minutter in KILDE_FASER.items():
+        if r130['faser'].get(fase) != minutter:
+            avvik.append(f"fase {fase}: {r130['faser'].get(fase)} min ≠ kilden {minutter} min")
+    ok130 = not avvik
+    results.append(('mania_matches_the_published_source_exactly', ok130,
+                    {'avvik': avvik, 'faser': r130['faser']}))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:
