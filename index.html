@@ -3657,10 +3657,35 @@ function renderGjaertest(){
       'Bak den, og gi den terningkast i Deiger — det er slik spørsmålet avgjøres.',
       'Bake it and rate it under Doughs — that is how the question gets settled.')}</div>`:''}`;
 }
+// v0.745: banneret. Bryteren bor i Mer → Utprøving, og der blir den værende —
+// men gjærmengden endres i Tidsplan og Planlegging, der du ikke ser bryteren.
+// Uten et merke leser du 0,48g tørrgjær som et vanlig tall, og en glemt test
+// blir en STILLE feil: appen gir deg 58% mindre gjær og sier ikke fra.
+// Samme resonnement som pizzatidOffBannerHTML() — og samme løsning: si det der
+// virkningen er, alltid med veien ut.
+// Banneret vises kun når testen FAKTISK endrer noe (gjaertestActive), så det
+// står ikke og maser i en metode den ikke rører.
+function gjaertestBannerHTML(){
+  const før=recipeWithoutGjaertest();
+  if(!før) return '';
+  const nå=recipeFor();
+  const a=S.gjaer==='torr'?før.yDry:før.yFresh, b=S.gjaer==='torr'?nå.yDry:nå.yFresh;
+  if(!a||!b) return '';
+  const pst=Math.round((b/a-1)*100);
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;padding:7px 10px;margin-bottom:6px">
+    <span style="font-size:11px;font-weight:700;color:var(--forno-accent-text)">🧪 ${L('Gjærtest på','Yeast test on')}<span style="display:block;font-weight:600;opacity:.85;margin-top:1px">${b}g ${L('i stedet for','instead of')} ${a}g (${pst>0?'+':''}${pst}%)</span></span>
+    <button type="button" onclick="toggleGjaertest()" style="flex:0 0 auto;border:1px solid var(--forno-accent);border-radius:999px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-family:inherit;font-size:11px;font-weight:700;padding:4px 11px;cursor:pointer;white-space:nowrap">${L('Slå av','Turn off')}</button>
+  </div>`;
+}
+function renderGjaertestBanners(){
+  const html=gjaertestBannerHTML();
+  document.querySelectorAll('.js-gjaertest-banner').forEach(el=>{ el.innerHTML=html; });
+}
 function toggleGjaertest(){
   S.gjaertest=!gjaertestOn();
   try{ persistSetup(); }catch(e){}
   renderGjaertest();
+  renderGjaertestBanners();
   // Gjærmengden er nettopp endret, så alt som viser den må tegnes på nytt.
   try{ if(document.body.classList.contains('mob-mode')) mobGen(); else gen(); }catch(e){}
 }
@@ -6916,6 +6941,8 @@ function mobShowTab(t){
   // en endring gjort i en annen fane (typisk pizzatiden i Beta) etterlate et
   // varsel som svarte på gammel tilstand.
   if(t==='plan'){ try{ mobGen(); }catch(e){} }
+  // v0.745: gjærtest-banneret følger med på begge fanene der gjærmengden vises.
+  try{ renderGjaertestBanners(); }catch(e){}
   // v0.653: Deiger bor nå øverst i «Mer»-fanen (rommer også Notater for aktiv deig).
   if(t==='tips'){ renderBaksterPanel('mob-bakster-content'); renderBaksterNotes(); renderGjaertest(); }
   if(t==='settings') wizEnterSettingsTab();
@@ -7204,6 +7231,8 @@ function mobGen(){
   persistSetup();
   renderWizStatusBar();
   try{ renderReturnBar(); }catch(e){}
+  // v0.745: gjærmengden regnes om ved hver rendring, så merket må følge med.
+  try{ renderGjaertestBanners(); }catch(e){}
   if(window._wizStep===3){ try{ wizCheckRender(); }catch(e){} }
   // v0.655: Tidsplan er «tom» helt til brukeren har gjort et reelt valg —
   // fullført Planlegging, brukt Smart-plan, eller åpnet en lagret deig. Uten
@@ -7959,6 +7988,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-plan-seg-schedule" class="mob-plan-seg on" onclick="showPlanSub('schedule')">📅 <span id="mob-plan-seg-schedule-lbl">Tidsplan</span></div>
       <div id="mob-plan-seg-recipe" class="mob-plan-seg" onclick="showPlanSub('recipe')">🍕 <span id="mob-plan-seg-recipe-lbl">Oppskrift</span></div>
     </div>
+    <div class="js-gjaertest-banner" style="padding:0 1rem"></div>
     <div id="mob-plan-content"></div>
     <div class="mob-content" id="mob-recipe-content" style="display:none">
       <p id="mob-recipe-empty" style="color:#aaa;font-size:13px;text-align:center">Generer tidsplan for å se oppskriften</p>
@@ -7967,6 +7997,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <!-- TAB: INNSTILLINGER -->
   <div class="mob-screen active" id="mob-settings">
+    <div class="js-gjaertest-banner" style="padding:.55rem 1rem 0"></div>
     <!-- Inngangs-gaffel (v6.21): to likestilte dører. Dør A = Smart-plan (finn
          oppskrift ut fra ledig tid), Dør B = den vanlige wizarden. Begge bevarer
          full flyt — dette er IKKE «Hei igjen»-mellomskjermen som ble fjernet i

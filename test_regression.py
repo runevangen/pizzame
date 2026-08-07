@@ -4826,6 +4826,57 @@ def run_behavioral_tests(page):
                 ['vektStemmer', 'kveldStemmer', 'ingenFalsktSukker', 'ingenSelvmotsigendeTak'])
     results.append(('dough_weight_sums_and_oven_text_matches_recipe', ok122, r122))
 
+    # v0.745: gjærtesten var usynlig utenfor Mer-fanen. Bryteren står der, men
+    # gjærmengden endres i Tidsplan og Planlegging — og der sto det bare «0.48g
+    # tørrgjær», som leses som et helt vanlig tall. En glemt test er dermed en
+    # STILLE feil: appen gir deg 58% mindre gjær og sier ikke fra. Samme
+    # resonnement som pizzatid-banneret, og samme krav:
+    #  - merket vises der virkningen er (begge faner), ikke bare der bryteren er
+    #  - det oppgir BEGGE tallene, ellers vet du ikke hva du sammenligner med
+    #  - det har veien ut
+    #  - og det maser IKKE i en metode testen ikke rører
+    r123 = page.evaluate("""() => {
+      const saved={...S};
+      window._planChosen=true; setLayout('mob');
+      const sett=(m,på)=>{ S.method=m; S.type='napoletana'; S.mel=500; S.hydro=65;
+        S.cold=24; S.temp=22; S.fridgeC=3; S.oven='pizza'; S.gjaer='torr';
+        S.mode='start'; S.gjaertest=på; _q10Memo={k:null,v:null}; };
+      const synlig=fane=>{
+        mobShowTab(fane);
+        const el=document.getElementById('mob-'+fane);
+        if(!el) return '';
+        return [...el.querySelectorAll('.js-gjaertest-banner')]
+                 .filter(n=>n.offsetParent!==null).map(n=>n.textContent).join(' ');
+      };
+      // Testen PÅ og metoden berøres → merke i begge faner, med begge tall.
+      sett('poolish',true);
+      const plan=synlig('plan'), wiz=synlig('settings');
+      const nå=recipeFor().yDry;
+      const før=recipeWithoutGjaertest().yDry;
+      const beggeTall = t=>t.includes(String(nå)) && t.includes(String(før));
+      const påBeggeFaner = beggeTall(plan) && beggeTall(wiz);
+      const harVeiUt = /Slå av|Turn off/.test(plan) && /Slå av|Turn off/.test(wiz);
+
+      // Testen AV → ingen merker noe sted.
+      sett('poolish',false);
+      const avPlan=synlig('plan'), avWiz=synlig('settings');
+      const tierNårAv = avPlan.trim()==='' && avWiz.trim()==='';
+
+      // Testen PÅ, men Langtidsdeig rører den ikke → heller ingen merker.
+      // Et merke som står og maser der ingenting er endret, lærer folk å overse det.
+      sett('standard',true);
+      const stdPlan=synlig('plan'), stdWiz=synlig('settings');
+      const tierNårUberørt = stdPlan.trim()==='' && stdWiz.trim()==='';
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      try{ mobShowTab('plan'); }catch(e){}
+      return {påBeggeFaner, harVeiUt, tierNårAv, tierNårUberørt,
+              nå, før, planTekst:plan.trim().slice(0,90)};
+    }""")
+    ok123 = all(r123.get(k) for k in
+                ['påBeggeFaner', 'harVeiUt', 'tierNårAv', 'tierNårUberørt'])
+    results.append(('yeast_test_is_visible_where_it_changes_the_yeast', ok123, r123))
+
     return results
 
 

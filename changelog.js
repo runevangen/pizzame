@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.745",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Gjærtesten var usynlig utenfor Mer-fanen. Bryteren står der, men gjærmengden endres i Tidsplan og Planlegging — og der sto det bare «0.48g tørrgjær», som ser ut som et helt vanlig tall. Slår du testen på og glemmer den, fikk du 58 % mindre gjær uten at noe sa fra.",
+      "Nå står det et merke øverst i både Tidsplan og Planlegging: «🧪 Gjærtest på — 0.48g i stedet for 1.13g (−58 %)», med en «Slå av»-knapp.",
+      "Merket vises bare når testen faktisk endrer noe. Står du i Langtidsdeig eller Mania, som testen ikke rører, er det borte — et varsel som maser der ingenting er endret, lærer man seg bare å overse."
+    ],
+    "changes_en": [
+      "The yeast test was invisible outside the More tab. The switch lives there, but the yeast amount changes in Schedule and Planning — where it just said “0.48g dry yeast”, which looks like a perfectly ordinary number. Turn the test on and forget it, and you got 58% less yeast with nothing to tell you.",
+      "There is now a marker at the top of both Schedule and Planning: “🧪 Yeast test on — 0.48g instead of 1.13g (−58%)”, with a “Turn off” button.",
+      "The marker only appears when the test actually changes something. In Long-ferment or Mania, which it does not touch, it is gone — a warning that nags where nothing changed is one you learn to ignore."
+    ]
+  },
+  {
     "v": "0.744",
     "d": "august 2026",
     "d_en": "August 2026",
