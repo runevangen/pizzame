@@ -2622,8 +2622,15 @@ function rawSteps(a){
       // v0.739: Mania manglet forvarmingssteget helt — stekesteget krevde 45 min
       // (vanlig ovn med stein) mens tidsplanen gikk rett fra romhevingen til steking.
       ...preheatSteps(bakeAt, FINAL_PROOF-15, S.type),
+      // v0.755: sto `desc:oN()+'.'` her — altså bare «Pizzaovn.». Mania var den
+      // ENESTE metoden som ikke brukte oD(), og steketemperatur og steketid lå
+      // derfor bare i understegene. De blir ikke med i «Kopier tidsplan», som
+      // tar tittel, desc, why og tip — så en kopiert Mania-plan manglet
+      // steketemperaturen helt, i alle fire typene og begge ovnstypene.
+      // Understegene henter allerede fra bakeSubsteps(S.type); da skal
+      // beskrivelsen hente fra oD(S.type), samme kilde som resten.
       {title:'Strekk og stek 🔥',loc:'ovn',at:bakeAt,dur:0,
-        desc:oN()+'.',
+        desc:oD(S.type),
         substeps:bakeSubsteps(S.type),
         why:WHY.st,tip:bakeTip(S.type)}
     ];

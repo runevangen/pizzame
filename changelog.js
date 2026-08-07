@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.755",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "En kopiert Mania-plan manglet steketemperaturen helt. Stekesteget sa bare «Pizzaovn.» — 430–450°C og 90–120 sek lå kun i understegene, og understeg blir ikke med når du kopierer eller deler. Det gjaldt alle fire pizzatypene og begge ovnstypene: åtte kombinasjoner.",
+      "Årsaken var at Mania var den eneste metoden som ikke hentet stekebeskrivelsen fra samme kilde som de andre. Nå gjør den det, og kopien sier «Pizzaovn: 430–450°C, 90–120 sek» som overalt ellers.",
+      "Ny invariant-test vokter regelen bak funnet: ingen opplysning skal bo BARE i understegene. Understeg kan gjerne dele opp — «70g vann totalt» blir til 50g og 20g — men et tall som ikke finnes noe sted utenfor dem, er noe appen viser og kopien mister. Sjekken går over alle metoder, typer, ovner og hydreringer.",
+      "Massebalanse-testen kunne ikke fanget dette: den summerer gram mot oppskriften, og en temperatur som forsvinner har ingen sum å bryte."
+    ],
+    "changes_en": [
+      "A copied Mania plan was missing the baking temperature entirely. The bake step said only “Pizza oven.” — 430–450°C and 90–120 sec lived solely in the substeps, and substeps are not included when you copy or share. This affected all four pizza types and both oven types: eight combinations.",
+      "The cause was that Mania was the only method not taking its bake description from the same source as the others. It now does, and the copy reads “Pizza oven: 430–450°C, 90–120 sec” as it does everywhere else.",
+      "A new invariant test guards the rule behind the finding: no fact may live ONLY in the substeps. Substeps may of course break things down — “70g water in total” becomes 50g and 20g — but a number found nowhere outside them is something the app shows and the copy loses. The check runs across every method, type, oven and hydration.",
+      "The mass-balance test could not have caught this: it sums grams against the recipe, and a temperature that vanishes has no sum to break."
+    ]
+  },
+  {
     "v": "0.754",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -4441,6 +4441,10 @@ def run_behavioral_tests(page):
           }
         }
         out.push({m,t,o,h, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
+                  // v0.755: stegtekstene ut, så invariant D kan se hva som bare
+                  // bor i understegene og aldri kommer med i en kopiert plan.
+                  steps:steps.map(s=>({title:s.title, desc:s.desc, why:s.why,
+                                       tip:s.tip, substeps:s.substeps||[]})),
                   needs:steps.map(s=>s.needs||[]).reduce((a,b)=>a.concat(b),[])});
       }
       Object.assign(S,saved);
@@ -4524,6 +4528,49 @@ def run_behavioral_tests(page):
             "dekning": len([d for d in sweep if d.get("gap") is not None])}
     ok117 = not preheat_bad
     results.append(('invariant_schedule_allows_the_preheat_it_demands', ok117, r117))
+
+    # --- D: ingen fakta som bare bor i understegene ---
+    # v0.755: understegene er en OPPDELING av steget — «70g vann totalt» blir
+    # til «50g» og «20g». Det er greit. Det som ikke er greit, er et tall som
+    # ikke finnes NOEN steder utenfor understegene, for da viser appen noe som
+    # ikke kommer med videre: «Kopier tidsplan» og «Del» tar tittel, desc, why
+    # og tip — ikke substeps, ikke needs.
+    #
+    # Funnet som ga invarianten: Mania var den eneste metoden som ikke brukte
+    # oD() til stekesteget; den skrev `desc:oN()+'.'`, altså bare «Pizzaovn.».
+    # Steketemperatur og steketid lå kun i understegene, og en kopiert
+    # Mania-plan manglet derfor steketemperaturen helt — 450°C for napoletana,
+    # 350°C for langpanne, 280°C for chicago, i begge ovnstyper. Åtte
+    # kombinasjoner.
+    #
+    # Massebalansen kunne ikke se dette: den summerer GRAM mot oppskriften. En
+    # temperatur som forsvinner har ingen sum å bryte.
+    NUM_UNIT = re.compile(r"(\d+(?:[.,]\d+)?)\s*(g|°C|min|sek|timer|t)\b")
+
+    def tall_med_enhet(txt):
+        return {m.group(1).replace(",", ".") + m.group(2) for m in NUM_UNIT.finditer(str(txt or ""))}
+
+    substep_orphans = []
+    for d in sweep:
+        if d.get("err"):
+            continue
+        steps = d.get("steps") or []
+        i_kopi = set()
+        for st in steps:
+            for felt in ("desc", "why", "tip"):
+                i_kopi |= tall_med_enhet(st.get(felt))
+        for st in steps:
+            fra_sub = set()
+            for sub in (st.get("substeps") or []):
+                fra_sub |= tall_med_enhet(sub)
+            tapt = sorted(fra_sub - i_kopi)
+            if tapt:
+                substep_orphans.append(
+                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {st.get('title')}: {tapt}")
+    ok118 = not substep_orphans
+    results.append(('invariant_no_facts_live_only_in_substeps', ok118,
+                    {'foreldreløse': substep_orphans[:12],
+                     'antall': len(substep_orphans)}))
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
