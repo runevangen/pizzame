@@ -2289,8 +2289,8 @@ function rawSteps(a){
         desc:S.type==='langpanne'
           ?L(`Del deigen i ${pc().count} del${pc().count>1?'er':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per langpanne). Rund ${pc().count>1?'hver del':'delen'} løst sammen — du strekker den ut i formen senere. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap.`,`Divide the dough into ${pc().count} piece${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (${pc().melPer}g flour per sheet pan). Loosely round ${pc().count>1?'each piece':'the piece'} — you stretch it out in the pan later. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge.`)
           :S.type==='chicago'
-          ?L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap — du presser emnet ut i den runde jernpanna når du skal steke.`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (${pc().melPer}g flour per pizza). Round well with both hands. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge — you press the ball out into the round cast-iron pan when you're ready to bake.`)
-          :L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g (${pc().melPer}g mel per pizza). Rund godt med begge hender. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap.`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (${pc().melPer}g flour per pizza). Round well with both hands. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge.`),
+          ?L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g (hvorav ${pc().melPer}g mel). Rund godt med begge hender. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap — du presser emnet ut i den runde jernpanna når du skal steke.`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (of which ${pc().melPer}g is flour). Round well with both hands. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge — you press the ball out into the round cast-iron pan when you're ready to bake.`)
+          :L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g (hvorav ${pc().melPer}g mel). Rund godt med begge hender. Legg i ${pc().count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett i kjøleskap.`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''} (of which ${pc().melPer}g is flour). Round well with both hands. Place in ${pc().count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put in the fridge.`),
         needs:[L(`📦 ${pc().count} boks${pc().count>1?'er':''} m/lokk`,`📦 ${pc().count} container${pc().count>1?'s':''} w/lid${pc().count>1?'s':''}`), L('🫒 litt olje',`🫒 a little oil`)],
         substeps:[
           L(`Del i ${pc().count} emne${pc().count>1?'r':''} à ca. ${pc().perPizza}g`,`Divide into ${pc().count} ball${pc().count>1?'s':''} of about ${pc().perPizza}g${pc().count>1?' each':''}`),
@@ -2713,8 +2713,16 @@ function kveldSteps(anchor){
   return {ya,steps};
 }
 
+// v0.750: alltid timer over en time — aldri døgn. «1,3 døgn» krever hoderegning
+// for å bli nyttig, og verre: brukeren VELGER kjøleskapstida i timer (COLD_OPTS
+// er «24 timer», «48 timer», «72 timer»), og planen leste den tilbake i en annen
+// enhet. Samme størrelse, to enheter, i samme app. Nå ekko-er planen etiketten
+// du trykket på.
+// Desimaltimer beholdes bare for korte varigheter, der en halvtime betyr noe
+// («2,5 timer»). Over seks timer er «31,8 timer» falsk presisjon på en gjæring
+// som uansett styres av hvordan deigen ser ut.
 function fmtDur(mins){
-  if(mins>=1440){ return (Math.round(mins/144)/10).toString().replace('.',',')+' døgn'; }
+  if(mins>=360){ const h=Math.round(mins/60); return h+(h===1?' time':' timer'); }
   if(mins>=60){ const h=Math.round(mins/6)/10; return h.toString().replace('.',',')+(h===1?' time':' timer'); }
   return mins+' min';
 }

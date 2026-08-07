@@ -5028,6 +5028,50 @@ def run_behavioral_tests(page):
                  'ingenNettinstruksIgjen', 'planenErIntakt'])
     results.append(('copy_instruction_ranks_findings_and_survives_stripping', ok125, r125))
 
+    # v0.750: en gjennomgang stusset på at kjøleskapssteget sa «ca. 1,3 døgn».
+    # Den meldte det som et avrundingssprik — det var det ikke; 1905 min er
+    # 1,32 døgn, og det står «ca.». Det ekte problemet er enheten. Resten av
+    # planen snakker timer hele veien — «ca. 51 timer», «ca. 14 timer», «ca. 4
+    # timer», og valgene i COLD_OPTS heter «24/48/72 timer» — og så dukker det
+    # opp desimaldøgn på det lengste og viktigste steget, der det krever
+    # hoderegning før det betyr noe.
+    #
+    # Kravet: ingen varighet i døgn, og lange varigheter i hele timer. «31,8
+    # timer» er falsk presisjon på en gjæring som uansett styres av hvordan
+    # deigen ser ut. Halvtimen beholdes bare der den betyr noe (under 6 timer).
+    #
+    # NB: kjøleskapssteget er IKKE det samme tallet som COLD_OPTS-etiketten —
+    # 48 timer er form→stek, og kjøledelen er de 43,75 som blir igjen når
+    # benktida er trukket fra. Det er to ulike størrelser, ikke en motsigelse.
+    r126 = page.evaluate("""() => {
+      const saved={...S};
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      const ut={};
+      let ingenDøgn=true, ekkoStemmer=true;  // ekko: sagt varighet == faktisk varighet
+      for(const cold of COLD_OPTS.map(o=>o.h)){
+        S.method='poolish'; S.type='napoletana'; S.mel=500; S.hydro=65;
+        S.cold=cold; S.temp=22; S.fridgeC=4; S.oven='pizza'; S.gjaer='torr';
+        S.mode='start'; S.gjaertest=false; _q10Memo={k:null,v:null};
+        const st=stepsForAnchor(new Date(2027,2,3,10,0));
+        const alt=st.map(s=>[s.desc,s.why,s.tip,...(s.substeps||[])].join(' ')).join(' ');
+        if(/døgn/.test(alt)) ingenDøgn=false;
+        // Og varigheten steget OPPGIR må være den det faktisk VARER.
+        const kald=st.find(s=>stepLoc(s)==='kjol' && s.dur>=60);
+        const sier = kald ? (kald.desc||'').includes(fmtDur(kald.dur)) : false;
+        if(!sier) ekkoStemmer=false;
+        ut[cold]={dur:kald?kald.dur:null, sagt:kald?fmtDur(kald.dur):null};
+      }
+      // Korte varigheter beholder halvtimen — der betyr den noe.
+      const kort = fmtDur(150)==='2,5 timer' && fmtDur(45)==='45 min' && fmtDur(60)==='1 time';
+      // Lange runder til hele timer: «31,8 timer» er falsk presisjon.
+      const lang = fmtDur(1905)==='32 timer' && fmtDur(1440)==='24 timer'
+                && fmtDur(4320)==='72 timer';
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {ingenDøgn, ekkoStemmer, kort, lang, ut};
+    }""")
+    ok126 = all(r126.get(k) for k in ['ingenDøgn', 'ekkoStemmer', 'kort', 'lang'])
+    results.append(('durations_stated_in_hours_and_match_actual_step_length', ok126, r126))
+
     return results
 
 

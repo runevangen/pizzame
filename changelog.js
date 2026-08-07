@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.750",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Varigheter oppgis ikke lenger i døgn. Kjøleskapssteget sa «ca. 1,3 døgn» — riktig regnet, men du må gjøre om i hodet før det betyr noe. Resten av planen snakker timer hele veien, og valgene for kjøleskapstid heter «24, 48 og 72 timer». Nå står det «ca. 32 timer».",
+      "Lange varigheter rundes til hele timer. «31,8 timer» er falsk presisjon på en gjæring som uansett styres av hvordan deigen ser ut. Under seks timer beholdes halvtimen, for der betyr den noe: «2,5 timer».",
+      "I forme-steget står melmengden nå som «(hvorav 167g mel)» i stedet for «(167g mel per pizza)». Den gamle formuleringen sto rett etter emnevekten på 280g og kunne leses som om emnet besto av mel alene."
+    ],
+    "changes_en": [
+      "Durations are no longer given in days. The fridge step said “about 1.3 days” — correctly worked out, but you have to convert it in your head before it means anything. The rest of the plan talks in hours throughout, and the cold-proof options are called “24, 48 and 72 hours”. It now says “about 32 hours”.",
+      "Long durations are rounded to whole hours. “31.8 hours” is false precision on a fermentation that is governed by how the dough looks anyway. Below six hours the half hour is kept, because there it means something: “2.5 hours”.",
+      "In the shaping step the flour amount now reads “(of which 167g is flour)” instead of “(167g flour per pizza)”. The old wording sat right after the 280g ball weight and could be read as if the ball were flour alone."
+    ]
+  },
+  {
     "v": "0.749",
     "d": "august 2026",
     "d_en": "August 2026",
