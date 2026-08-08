@@ -3867,8 +3867,13 @@ function renderGjaertest(){
       <span style="flex:1">
         <span style="display:block;font-size:13px;font-weight:600;color:var(--forno-text)">${L('Teste ny måte å regne ut gjærmengden','Test a new way of working out the yeast')}</span>
         <span style="display:block;font-size:11px;color:var(--forno-text-faint);line-height:1.5;margin-top:3px">${L(
-          `På ${alle}. Du ser begge tallene, så du kan bake dem mot hverandre og se hvilket som gir best deig.`,
-          `On ${alle}. You see both numbers, so you can bake them against each other and see which gives the better dough.`)}</span>
+          // v0.762: si hva testen GJØR, ikke bare hvor den virker. Og si
+          // retningen — men ikke som «mindre gjær». Det er sant for Poolish og
+          // Biga, og GALT for Kveldsdeig, som får over dobbelt så mye. En tekst
+          // som lover en forsiktig nedjustering ville lært folk å la bryteren
+          // stå på i den ene metoden der den koster deg deigen.
+          `Regner gjæren etter hvor mye gjæringen rekker ved temperaturen deigen står i, i stedet for etter faste tabeller. På Poolish og Biga gir det mindre gjær — på Kveldsdeig gir det mer, ofte over det dobbelte. Du ser begge tallene og kan bake dem mot hverandre.`,
+          `Works out the yeast from how much fermentation happens at the temperature the dough sits at, instead of from fixed tables. On Poolish and Biga that means less yeast — on Evening dough it means more, often more than double. You see both numbers and can bake them against each other.`)}</span>
       </span>
     </div>
     ${on?`<div style="${boks}">${gjaertestStatusHTML()}</div>`:''}`;
@@ -3884,6 +3889,14 @@ function renderGjaertest(){
 // eneste som fortsatt fortjener en begrunnelse.
 function gjaertestStatusHTML(){
   if(!gjaertestOn()) return '';
+  // v0.762: uten et valgt oppsett er «1,13g som vanlig» et tall fra
+  // standardverdiene — 500g mel, napoletana — og ikke DIN gjærmengde. Panelet
+  // ligger i Mer-fanen, som er nåbar før man har valgt noe som helst, og da
+  // svarer et konkret gramtall på et spørsmål brukeren ikke har stilt ennå.
+  // Samme signal som planen selv bruker for tom-tilstanden (mobGen).
+  if(!window._planChosen)
+    return L('Slår inn når du har valgt metode og mengde.',
+             'Takes effect once you have chosen a method and an amount.');
   const g=t=>S.gjaer==='torr'?t.yDry:t.yFresh;
   const før=recipeWithoutGjaertest();
   if(før){

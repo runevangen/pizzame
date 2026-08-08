@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.762",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Utprøving-panelet oppga en gjærmengde selv om du ikke hadde valgt metode eller melmengde ennå. «1,13g som vanlig» var da bare standardverdiene — 500 g napoletana — og ikke din deig i det hele tatt. Nå står det «Slår inn når du har valgt metode og mengde», og tallet kommer først når det finnes et oppsett å regne det ut fra.",
+      "Beskrivelsen sier nå hva testen faktisk gjør: den regner gjæren etter hvor mye gjæringen rekker ved temperaturen deigen står i, i stedet for etter faste tabeller.",
+      "Og den sier hvilken vei det slår ut — begge veier. På Poolish og Biga gir det mindre gjær. På Kveldsdeig gir det mer, ofte over det dobbelte. Å bare skrive «mindre gjær» ville vært galt i den ene metoden der en glemt bryter koster deg deigen."
+    ],
+    "changes_en": [
+      "The Experiments panel stated an amount of yeast even when you had not yet chosen a method or a quantity of flour. “1.13g as usual” was then just the default settings — 500g Neapolitan — and not your dough at all. It now says “Takes effect once you have chosen a method and an amount”, and the figure appears only when there is a setup to work it out from.",
+      "The description now says what the test actually does: it works out the yeast from how much fermentation happens at the temperature the dough sits at, instead of from fixed tables.",
+      "And it says which way that goes — both ways. On Poolish and Biga it means less yeast. On Evening dough it means more, often more than double. Writing only “less yeast” would have been wrong in the one method where a forgotten switch costs you the dough."
+    ]
+  },
+  {
     "v": "0.761",
     "d": "august 2026",
     "d_en": "August 2026",

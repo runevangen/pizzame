@@ -5179,6 +5179,23 @@ def run_behavioral_tests(page):
       const nevnerDeTre=Object.keys(METHODS).filter(methodAllowsYeastTest)
         .every(m=>etikett.includes(mN(m)));
 
+      // v0.762: uten et valgt oppsett skal panelet IKKE oppgi et gramtall.
+      // «1,13g som vanlig» er da standardverdiene — 500g napoletana — og ikke
+      // brukerens gjærmengde. Mer-fanen er nåbar før man har valgt noe.
+      sett('poolish',true); window._planChosen=false;
+      const utenValg=panel();
+      window._planChosen=true;
+      const tierOmGramUtenValg = !/\d+([.,]\d+)?g/.test(utenValg)
+                              && /Slår inn når du har valgt/.test(utenValg);
+
+      // Og beskrivelsen må si retningen BEGGE veier. «Mindre gjær» alene er
+      // sant for Poolish og Biga og GALT for Kveldsdeig, som får over dobbelt
+      // så mye — nettopp metoden der en glemt bryter koster deg deigen.
+      sett('poolish',true);
+      const beskr=panel();
+      const sierBeggeRetninger = /mindre gjær/.test(beskr) && /gir det mer/.test(beskr)
+                              && /Kveldsdeig/.test(beskr);
+
       // Ingen elting er det ene hullet etiketten IKKE kan tette: den sier at
       // Poolish er med, men testen virker likevel ikke. Den ene ekte
       // overraskelsen — og den eneste som fortsatt fortjener en begrunnelse.
@@ -5190,11 +5207,13 @@ def run_behavioral_tests(page):
       try{ mobShowTab('plan'); }catch(e){}
       return {påBeggeFaner, harVeiUt, tierNårAv, tierNårUberørt,
               viserAlltidGjæren, nevnerDeTre, forklarerIngenElting, status,
+              tierOmGramUtenValg, sierBeggeRetninger,
               nå, før, planTekst:plan.trim().slice(0,90)};
     }""")
     ok123 = all(r123.get(k) for k in
                 ['påBeggeFaner', 'harVeiUt', 'tierNårAv', 'tierNårUberørt',
-                 'viserAlltidGjæren', 'nevnerDeTre', 'forklarerIngenElting'])
+                 'viserAlltidGjæren', 'nevnerDeTre', 'forklarerIngenElting',
+                 'tierOmGramUtenValg', 'sierBeggeRetninger'])
     results.append(('yeast_test_is_visible_where_it_changes_the_yeast', ok123, r123))
 
     # v0.746: «Start ny deig» slo av gjærtesten i det stille. doReset() gjør
