@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.765",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Søkefeltet i Deiger er borte når du har få deiger. Med en håndfull finner du fram raskere ved å bla enn ved å skrive, og feltet var den bredeste kontrollen — det dyttet sorteringen ned på egen linje, så tre kontroller sto over en liste på fem kort. Nå står metode og sortering side om side på én linje.",
+      "Det er skjult, ikke slettet. Baker du ukentlig i et år er 50 deiger et reelt tall, og da er søk den eneste måten å finne igjen «den med Nuvola». Feltet kommer tilbake av seg selv når lista passerer tolv.",
+      "Og har du søkt på noe før feltet forsvinner, nullstilles søket samtidig — ellers ville lista vært filtrert av noe du verken kunne se eller fjerne."
+    ],
+    "changes_en": [
+      "The search box in Doughs is gone when you have only a few doughs. With a handful you find what you want faster by scrolling than by typing, and the box was the widest control — it pushed the sort dropdown onto a line of its own, so three controls sat above a list of five cards. Method and sort now sit side by side on one line.",
+      "It is hidden, not deleted. If you bake weekly for a year, 50 doughs is a real number, and then search is the only way to find “the one with Nuvola” again. The box comes back by itself once the list passes twelve.",
+      "And if you had searched for something before the box disappears, the search is cleared at the same time — otherwise the list would have been filtered by something you could neither see nor remove."
+    ]
+  },
+  {
     "v": "0.764",
     "d": "august 2026",
     "d_en": "August 2026",

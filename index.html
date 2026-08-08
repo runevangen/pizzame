@@ -7877,14 +7877,27 @@ async function renderBaksterPanel(targetId){
   paintBakeList(targetId);
 }
 window._deigFilter = window._deigFilter || {q:'',method:'',sort:'newest'};
+// v0.765: søkefeltet vises bare når lista er lang nok til å trenge det.
+// Med en håndfull deiger finner du fram raskere ved å bla enn ved å skrive, og
+// feltet er den bredeste kontrollen — det dyttet sorteringen ned på egen linje
+// og ga tre kontroller over en liste på fem kort. Metode- og sorteringsvalget
+// dekker «snevre inn litt»; søk tjener plassen sin først når blaingen svikter,
+// altså rundt to skjermer med kort.
+// Det slettes IKKE. Baker du ukentlig i et år, er 50 deiger et reelt tall, og
+// da er søk den eneste måten å finne igjen «den med Nuvola».
+const DEIG_SEARCH_MIN = 12;
 function bakeFilterControlsHTML(targetId){
   const f = window._deigFilter;
+  const visSøk = (window._bakesCache||[]).length >= DEIG_SEARCH_MIN;
+  // Skjules feltet med en gammel søketekst i seg, ville lista blitt filtrert av
+  // noe brukeren ikke kan se eller fjerne. Nullstill i samme åndedrag.
+  if(!visSøk && f.q) f.q='';
   const methods=[['','Alle metoder','All methods'],...Object.entries(METHODS).filter(([,d])=>d.smartPlan).map(([v,d])=>[v,d.noShort,d.enShort])]; // F21: fra registeret
   const sorts=[['newest','Nyest først','Newest first'],['oldest','Eldst først','Oldest first'],['rating','Best vurdert','Highest rated']];
   const opt=(arr,cur)=>arr.map(o=>`<option value="${o[0]}"${o[0]===cur?' selected':''}>${L(o[1],o[2])}</option>`).join('');
   const inputStyle='padding:7px 9px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-surface);color:var(--dyn-text);font-size:12px';
   return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.6rem">
-    <input id="${targetId}-q" value="${escH(f.q||'')}" oninput="onDeigFilterChange('${targetId}')" placeholder="${L('Søk etter navn…','Search by name…')}" style="flex:1;min-width:130px;${inputStyle}">
+    ${visSøk?`<input id="${targetId}-q" value="${escH(f.q||'')}" oninput="onDeigFilterChange('${targetId}')" placeholder="${L('Søk etter navn…','Search by name…')}" style="flex:1;min-width:130px;${inputStyle}">`:''}
     <select id="${targetId}-method" onchange="onDeigFilterChange('${targetId}')" style="${inputStyle}">${opt(methods,f.method)}</select>
     <select id="${targetId}-sort" onchange="onDeigFilterChange('${targetId}')" style="${inputStyle}">${opt(sorts,f.sort)}</select>
   </div>`;

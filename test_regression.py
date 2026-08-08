@@ -4875,6 +4875,48 @@ def run_behavioral_tests(page):
                 ['merkerBrekkerIkke', 'biterErHele', 'kortetErIkkeAbsurdHøyt'])
     results.append(('feedback_card_badges_never_break_mid_word', ok132, r132))
 
+    # v0.765: søkefeltet i Deiger tjente ikke plassen sin. Med en håndfull
+    # deiger finner man fram raskere ved å bla, og feltet er den bredeste
+    # kontrollen — det dyttet sorteringen ned på egen linje og ga tre kontroller
+    # over en liste på fem kort.
+    #
+    # Det er skjult, ikke slettet: baker man ukentlig i et år er 50 deiger et
+    # reelt tall, og da er søk eneste vei til «den med Nuvola».
+    #
+    # Fella som må voktes: skjuler man feltet mens det ligger en gammel søketekst
+    # i filteret, blir lista filtrert av noe brukeren verken ser eller kan fjerne.
+    r133 = page.evaluate("""() => {
+      const lag=n=>Array.from({length:n},(_,i)=>({
+        id:'b'+i, navn:'Deig '+i, method:'poolish',
+        finishedAt:'2027-03-0'+((i%9)+1)+'T10:00:00Z'}));
+      const bar=n=>{ window._bakesCache=lag(n); return bakeFilterControlsHTML('mob-deiger'); };
+
+      window._deigFilter={q:'',method:'',sort:'newest'};
+      const faa=bar(5), mange=bar(12), grenseUnder=bar(11);
+      const skjultVedFaa = !/-q"/.test(faa) && !/-q"/.test(grenseUnder);
+      const synligVedMange = /-q"/.test(mange);
+      // Sorterings- og metodevalget skal stå uansett — de er ikke det som ble fjernet.
+      const andreStaar = /-method"/.test(faa) && /-sort"/.test(faa);
+
+      // Gammel søketekst må nullstilles når feltet skjules, ellers filtrerer
+      // den i det skjulte.
+      window._deigFilter={q:'Nuvola',method:'',sort:'newest'};
+      bar(5);
+      const gammelSoekNullstilt = (window._deigFilter.q||'')==='';
+      // Og den skal overleve når feltet FAKTISK vises.
+      window._deigFilter={q:'Nuvola',method:'',sort:'newest'};
+      bar(20);
+      const soekBevartNaarSynlig = window._deigFilter.q==='Nuvola';
+
+      window._deigFilter={q:'',method:'',sort:'newest'}; window._bakesCache=[];
+      return {skjultVedFaa, synligVedMange, andreStaar,
+              gammelSoekNullstilt, soekBevartNaarSynlig};
+    }""")
+    ok133 = all(r133.get(k) for k in
+                ['skjultVedFaa', 'synligVedMange', 'andreStaar',
+                 'gammelSoekNullstilt', 'soekBevartNaarSynlig'])
+    results.append(('dough_search_appears_only_when_the_list_needs_it', ok133, r133))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:
