@@ -5038,6 +5038,8 @@ def run_behavioral_tests(page):
       const tegn=()=>{ g.fillStyle='#eee'; g.fillRect(0,0,320,240);
         if(handX!==null){ g.fillStyle='#111'; g.fillRect(handX-40,60,80,120); } };
       tegn();
+      // Førstegangsforklaringen har sin egen test; her er den kvittert bort.
+      try{ localStorage.setItem('pizzaSensorInfo','1'); }catch(e){}
       const ekteGUM=navigator.mediaDevices.getUserMedia;
       navigator.mediaDevices.getUserMedia = async ()=>c.captureStream(30);
       window._planChosen=true; setLayout('mob');
@@ -5102,6 +5104,186 @@ def run_behavioral_tests(page):
                 ['hvilerNedtonet', 'lyserVedBevegelse', 'prikkenFølgerHånden',
                  'falmerTilbake', 'sierRetning', 'sierForLite', 'forLiteBlarIkke'])
     results.append(('wave_indicator_shows_all_four_states', ok135, r135))
+
+    # v0.768: klappestyring. Valgt framfor ekte talegjenkjenning fordi
+    # webkitSpeechRecognition sender lyden fra kjøkkenet til Apple eller Google,
+    # og det river i stykker den ene egenskapen vinkestyringen har: at
+    # ingenting forlater telefonen. Et klapp er en energitopp — den kan måles
+    # her.
+    #
+    # Det som avgjør om dette er brukbart er ikke lydstakken, det er TERSKELEN.
+    # Derfor er beslutningen skilt ut som ren funksjon og mates med nivåer
+    # direkte: da kan «kjøkkenmaskinen går» testes uten å spille av lyd.
+    #
+    # Kravet som betyr mest: en JEVN høy lyd skal ikke utløse noe, uansett hvor
+    # høy den er. Kjøkkenmaskinen er langt høyere enn et klapp — men den løfter
+    # støygulvet, og et klapp er en flanke mot et gulv som ikke rakk å følge
+    # etter. Hadde vi målt absolutt volum, ville maskinen bladd gjennom hele
+    # planen.
+    r136 = page.evaluate("""() => {
+      const nullstill=()=>{ KLAPP.gulv=0.01; KLAPP.forrige=0; KLAPP.sisteFlanke=0; KLAPP.kandidat=null; };
+      // Mater nivåer inn i beslutningen med simulert klokke.
+      const kjør=(nivåer, start)=>{ let t=start, n=0;
+        for(const r of nivåer){ if(klappVurder(r, t)) n++; t+=20; }
+        return n; };
+
+      // Ett klapp: stille rom, én skarp topp, rask etterklang.
+      nullstill();
+      const stille=Array(40).fill(0.004);
+      const klapp=[0.55,0.30,0.14,0.06,0.02];
+      const ettKlapp=kjør([...stille,...klapp,...stille], 100000);
+
+      // Kjøkkenmaskin: JEVNT høyt, mye høyere enn klappet over.
+      nullstill();
+      const maskin=Array(120).fill(0.42);
+      const maskinKlapper=kjør([...stille,...maskin], 200000);
+
+      // Klapp OPPÅ en gående maskin skal fortsatt telle — det er hele poenget
+      // med å måle forhold: gulvet ligger på 0,42, klappet stikker over.
+      nullstill();
+      const klappIMaskin=kjør([...stille,...maskin,...[3.0,1.6,0.7,0.42,0.42],
+                               ...Array(40).fill(0.42)], 300000);
+
+      // Etterklangen av ett klapp er ikke et nytt klapp.
+      nullstill();
+      const ekko=kjør([...stille,0.55,0.50,0.45,0.40,0.30,0.20,...stille], 400000);
+
+      // Stille rom: forholdet alene skal ikke holde. Uten det absolutte gulvet
+      // ville en knirkende dør vært et klapp.
+      nullstill();
+      const knirk=kjør([...Array(60).fill(0.001),0.02,0.01,...stille], 500000);
+
+      // Helt stille rom om natta: gulvet synker mot null, og da får selv en
+      // skuff som lukkes forsiktig et enormt FORHOLD til gulvet. Det er her
+      // det absolutte minimumet er den eneste vakten som står igjen.
+      nullstill();
+      const dødstille=Array(200).fill(0.0002);
+      const skuff=kjør([...dødstille,0.02,0.008,0.002,...dødstille], 600000);
+
+      nullstill();
+      return {ettKlapp, maskinKlapper, klappIMaskin, ekko, knirk, skuff,
+              stilleRomTrengerVolum: skuff===0,
+              ettKlappTelles: ettKlapp===1,
+              jevnStøyTierHelt: maskinKlapper===0,
+              klappOverStøyTelles: klappIMaskin===1,
+              etterklangTellesIkke: ekko===1,
+              småLyderTellesIkke: knirk===0};
+    }""")
+    ok136 = all(r136.get(k) for k in
+                ['ettKlappTelles', 'jevnStøyTierHelt', 'klappOverStøyTelles',
+                 'etterklangTellesIkke', 'småLyderTellesIkke',
+                 'stilleRomTrengerVolum'])
+    results.append(('clap_threshold_survives_a_running_mixer', ok136, r136))
+
+    # v0.768: førstegangsforklaringen. Meldt ønske var en advarsel ved OPPSTART
+    # av appen. Den ligger bevisst ikke der: kamera og mikrofon er av hver
+    # eneste gang appen åpnes (ingen av dem lagres), så en advarsel om noe som
+    # er avslått lærer folk å trykke bort advarsler. Riktig øyeblikk er når man
+    # faktisk ber om sensoren — og da kommer systemdialogen rett etter uansett.
+    #
+    # Kravene: forklaringen må komme FØR sensoren starter, et nei må bety at
+    # ingenting starter, og et ja må huskes så den ikke maser hver gang.
+    r137 = page.evaluate("""async () => {
+      const ekteConfirm=window.confirm, ekteGUM=navigator.mediaDevices.getUserMedia;
+      let spurt=0, spørsmål='';
+      let gumKalt=0;
+      navigator.mediaDevices.getUserMedia=async ()=>{ gumKalt++; throw new Error('nei'); };
+      try{ localStorage.removeItem('pizzaSensorInfo'); }catch(e){}
+      window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      openFocus();
+
+      // Nei takk: ingenting skal starte.
+      window.confirm=t=>{ spurt++; spørsmål=t; return false; };
+      await vinkToggle();
+      const nei={spurt, gumKalt, huket:localStorage.getItem('pizzaSensorInfo')};
+
+      // Ja: sensoren forsøkes startet, og valget huskes.
+      window.alert=()=>{};
+      window.confirm=t=>{ spurt++; return true; };
+      await vinkToggle();
+      const ja={spurt, gumKalt, huket:localStorage.getItem('pizzaSensorInfo')};
+
+      // Andre gang: ikke spurt på nytt.
+      await vinkToggle();
+      const igjen={spurt, gumKalt};
+
+      closeFocus();
+      window.confirm=ekteConfirm; navigator.mediaDevices.getUserMedia=ekteGUM;
+      try{ localStorage.setItem('pizzaSensorInfo','1'); }catch(e){}
+      return {
+        spørOmSamtykke: nei.spurt===1,
+        neiStarterIngenting: nei.gumKalt===0 && !VINK.på,
+        neiHuskesIkke: nei.huket!=='1',
+        jaStarter: ja.gumKalt===1 && ja.huket==='1',
+        spørIkkeIgjen: igjen.spurt===2 && igjen.gumKalt===2,
+        sierAtIngentingSendes: /sendes noe sted|sent anywhere/.test(spørsmål),
+        sierAtDetErAvVedStart: /av hver gang|off every time/.test(spørsmål)
+      };
+    }""")
+    ok137 = all(r137.get(k) for k in
+                ['spørOmSamtykke', 'neiStarterIngenting', 'neiHuskesIkke', 'jaStarter',
+                 'spørIkkeIgjen', 'sierAtIngentingSendes', 'sierAtDetErAvVedStart'])
+    results.append(('sensor_consent_is_asked_once_at_the_moment_it_matters', ok137, r137))
+
+    # v0.768: klapp gjennom HELE stien — ekte AudioContext, ekte MediaStream,
+    # ekte analysernode. Terskeltesten over mater nivåer rett inn i beslutningen
+    # og var blind for en ekte feil: sperren telte fra BEKREFTELSEN i stedet for
+    # fra klappet, så den reelle dødtiden ble 150+120 = 270 ms. Et naturlig
+    # dobbeltklapp ligger rundt 260, så andre klapp ble spist og «to klapp =
+    # forrige» ble to ganger «neste». Bare integrasjonen så det.
+    r138 = page.evaluate("""async () => {
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return {hopper:true};
+      try{ localStorage.setItem('pizzaSensorInfo','1'); }catch(e){}
+      window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      openFocus();
+      const ac=new AC();
+      const dest=ac.createMediaStreamDestination();
+      const gain=ac.createGain(); gain.gain.value=0; gain.connect(dest);
+      const buf=ac.createBuffer(1, ac.sampleRate*2, ac.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      const src=ac.createBufferSource(); src.buffer=buf; src.loop=true;
+      src.connect(gain); src.start();
+      if(ac.state==='suspended'){ try{ await ac.resume(); }catch(e){} }
+
+      const startet=klappStart(dest.stream);
+      await new Promise(r=>setTimeout(r,400));
+      const logg=[]; const ekte=window.klappUtløst;
+      window.klappUtløst=x=>logg.push(x);
+      // Kort burst med rask utklang — formen på et klapp.
+      const klapp=async ()=>{ gain.gain.setValueAtTime(0.9, ac.currentTime);
+        gain.gain.setTargetAtTime(0, ac.currentTime+0.03, 0.02);
+        await new Promise(r=>setTimeout(r,260)); };
+
+      await klapp();
+      await new Promise(r=>setTimeout(r,700));
+      const ett=logg.slice();
+      await klapp(); await klapp();        // ~260 ms mellom — et vanlig dobbeltklapp
+      await new Promise(r=>setTimeout(r,700));
+      const to=logg.slice(ett.length);
+
+      // Å tømme feltene er ikke nok — mikrofonsporet må faktisk STOPPES,
+      // ellers står opptaksindikatoren på telefonen og lyser videre.
+      const spor=KLAPP.strøm?KLAPP.strøm.getTracks():[];
+      klappStopp();
+      const stoppet = KLAPP.timer===null && !KLAPP.ctx && !KLAPP.strøm && !KLAPP.på
+                   && spor.length>0 && spor.every(t=>t.readyState==='ended');
+      window.klappUtløst=ekte; closeFocus();
+      try{ ac.close(); }catch(e){}
+      return {startet, ett, to, stoppet,
+              ettKlappGirNeste: ett.length===1 && ett[0]==='neste',
+              toKlappGirForrige: to.length===1 && to[0]==='forrige',
+              slipperMikrofonen: stoppet};
+    }""")
+    if r138.get('hopper'):
+        results.append(('clap_end_to_end_through_real_audio', True, {'hoppet over': 'ingen AudioContext'}))
+    else:
+        ok138 = all(r138.get(k) for k in
+                    ['startet', 'ettKlappGirNeste', 'toKlappGirForrige', 'slipperMikrofonen'])
+        results.append(('clap_end_to_end_through_real_audio', ok138, r138))
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.

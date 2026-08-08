@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.768",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nytt i Fokus: bla med klapp. Ett klapp går til neste steg, to klapp til forrige. Det virker når du står med ryggen til, utenfor kameraets synsfelt — og med deig på hendene.",
+      "Klapp ble valgt framfor ekte talegjenkjenning med vilje. Talegjenkjenning i nettleseren sender lyden fra kjøkkenet ditt til Apple eller Google. Et klapp trenger ingen sky: appen måler bare lydstyrke, her på telefonen.",
+      "Kjøkkenmaskinen din blar ikke. Det som teller er ikke hvor høyt noe er, men at det er et brått smell som faller like fort igjen. En maskin er langt høyere enn et klapp, men den blir stående — og da skjer ingenting. Klapper du mens den går, teller det fortsatt.",
+      "Første gang du slår på vink eller klapp får du en forklaring: hva som brukes, at alt regnes ut på telefonen, at ingenting lagres eller sendes, og at begge er av hver gang du åpner appen. Den kommer i det øyeblikket du ber om det — ikke som en advarsel ved oppstart om noe som er avslått."
+    ],
+    "changes_en": [
+      "New in Focus: flip with a clap. One clap moves to the next step, two claps to the previous one. It works when your back is turned, out of the camera's view — and with dough on your hands.",
+      "Clapping was chosen over real speech recognition deliberately. Speech recognition in the browser sends the sound from your kitchen to Apple or Google. A clap needs no cloud: the app measures only loudness, here on the phone.",
+      "Your stand mixer will not flip the step. What counts is not how loud something is, but that it is a sudden bang that falls away just as fast. A machine is far louder than a clap, but it stays — and then nothing happens. Clap while it runs and it still counts.",
+      "The first time you switch on waving or clapping you get an explanation: what is used, that everything is worked out on the phone, that nothing is stored or sent, and that both are off every time you open the app. It comes at the moment you ask for it — not as a startup warning about something that is switched off."
+    ]
+  },
+  {
     "v": "0.767",
     "d": "august 2026",
     "d_en": "August 2026",

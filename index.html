@@ -7494,7 +7494,7 @@ document.addEventListener('visibilitychange', ()=>{
   // v0.766: går appen i bakgrunnen, slippes kameraet. Et kamera som står på i
   // en app du ikke ser, er ikke noe man skal måtte stole på at vi rydder opp i
   // senere — og frames vi ikke kan behandle er uansett bortkastet strøm.
-  if(document.visibilityState!=='visible') vinkStopp();
+  if(document.visibilityState!=='visible'){ vinkStopp(); klappStopp(); }
 });
 // ===== VINKESTYRING (v0.766) — bla i Fokus uten å ta på telefonen =====
 //
@@ -7670,8 +7670,36 @@ function vinkStøttes(){
 // Slås på med et bevisst trykk — som også er brukergesten getUserMedia krever.
 // Av som standard, alltid: et kamera som starter av seg selv er ikke greit,
 // uansett hvor lokalt bildet blir.
+// v0.768: forklaringen kommer FØRSTE gang du slår på en sensor, ikke ved
+// oppstart av appen. En advarsel om noe som er avslått lærer folk å trykke bort
+// advarsler — og kamera og mikrofon er av hver eneste gang appen åpnes, siden
+// ingen av dem lagres. Riktig øyeblikk er når du faktisk ber om det, og da er
+// det uansett en systemdialog rett etter.
+const SENSOR_INFO_KEY='pizzaSensorInfo';
+function sensorInfoSett(){ try{ return localStorage.getItem(SENSOR_INFO_KEY)==='1'; }catch(e){ return false; } }
+function sensorInfoHuk(){ try{ localStorage.setItem(SENSOR_INFO_KEY,'1'); }catch(e){} }
+function sensorInfoTekst(){
+  return L('Vink bruker kameraet, klapp bruker mikrofonen. Alt regnes ut på telefonen din: bildene krymper til 32×24 gråtoner, sammenlignes med forrige, og kastes. Lyden måles bare som lydstyrke. Ingenting lagres, og ingenting sendes noe sted. Begge er av hver gang du åpner appen, og slås av når du lukker Fokus.',
+           'Waving uses the camera, clapping uses the microphone. Everything is worked out on your phone: images shrink to 32×24 greys, are compared with the previous one, and thrown away. Sound is measured only as loudness. Nothing is stored, and nothing is sent anywhere. Both are off every time you open the app, and switch off when you close Focus.');
+}
+// Returnerer true når det er greit å gå videre.
+function sensorSamtykke(){
+  if(sensorInfoSett()) return true;
+  const ok=confirm(sensorInfoTekst()+'\n\n'+L('Slå på?','Switch on?'));
+  if(ok) sensorInfoHuk();
+  return ok;
+}
+async function klappToggle(){
+  if(KLAPP.på){ klappStopp(); renderFocus(); return; }
+  if(!sensorSamtykke()) return;
+  const ok=await klappSlåPå();
+  renderFocus();
+  if(!ok) alert(L('Fikk ikke tilgang til mikrofonen. Sjekk at nettleseren har lov til å bruke den.',
+                  'Could not get access to the microphone. Check that the browser is allowed to use it.'));
+}
 async function vinkToggle(){
   if(VINK.på){ vinkStopp(); renderFocus(); return; }
+  if(!sensorSamtykke()) return;
   const ok=await vinkSlåPå();
   renderFocus();
   if(!ok) alert(L('Fikk ikke tilgang til kameraet. Sjekk at nettleseren har lov til å bruke det.',
@@ -7684,6 +7712,135 @@ async function vinkSlåPå(){
     VINK.speilvend=true;
     vinkStart(strøm);
     return true;
+  }catch(e){ return false; }
+}
+
+// ===== KLAPPESTYRING (v0.768) — lyd, men helt lokalt =====
+//
+// Valgt framfor ekte talegjenkjenning med vilje. webkitSpeechRecognition sender
+// lyden fra kjøkkenet ditt til Apple eller Google, og det river i stykker den
+// ene egenskapen vinkestyringen har: at ingenting forlater telefonen. Et klapp
+// trenger ingen sky — det er en energitopp, og den kan måles her.
+//
+// Den slår også gjennom der kameraet svikter: du står med ryggen til, eller
+// utenfor synsfeltet. Og et klapp med melete hender er gratis.
+//
+// NØKKELEN mot falske treff er FORHOLDET til støygulvet, ikke absolutt volum.
+// Kjøkkenmaskinen din er langt høyere enn et klapp, men den er JEVN — den
+// løfter gulvet, og da utløser den ingenting. Et klapp er en brå transient mot
+// et gulv som ikke rakk å følge etter.
+const KLAPP = {
+  ctx:null, node:null, strøm:null, analyse:null, buf:null, timer:null,
+  gulv:0.01, forrige:0, sisteFlanke:0, ventende:0, på:false, kandidat:null
+};
+const KLAPP_INTERVALL=20;      // ms mellom målinger
+const KLAPP_FORHOLD=6;         // ganger over støygulvet
+const KLAPP_MIN=0.035;         // absolutt gulv — stille rom skal ikke utløse på forhold alene
+const KLAPP_STIGNING=2.5;      // ganger forrige måling: klappet må være en FLANKE
+const KLAPP_SPERRE=150;        // ms etter et klapp (etterklangen er ikke et nytt klapp)
+const KLAPP_PAR=420;           // ms å vente på klapp nummer to
+const KLAPP_FALLTID=120;       // ms før en kandidat bekreftes
+const KLAPP_FALL=0.35;         // andel av toppen lyden må ha falt til
+
+// Ren beslutning, uten lyd-API: gitt et RMS-nivå og et tidspunkt, var dette et
+// klapp? Skilt ut for å kunne testes direkte — lydstakken er ikke det usikre
+// her, terskelen er.
+// To faser, og fase to er den som gjør detektoren brukbar.
+//
+// En flanke alene er ikke nok. Det som skiller et klapp fra alt annet skarpt
+// på et kjøkken, er at klappet er KORT: det topper og faller. En kjøkkenmaskin
+// som skrus på er også en brå flanke mot et lavt gulv — men den blir stående.
+// Uten fase to bladde maskinen ett steg hver gang du startet den.
+//
+// Derfor: flanken gir bare en KANDIDAT. Den bekreftes 120 ms senere, og bare
+// hvis lyden har falt tilbake. Det koster 120 ms — usynlig ved siden av
+// par-vinduet på 420 ms som «neste» uansett venter på.
+function klappVurder(rms, nå){
+  const k=KLAPP;
+  let bekreftet=false;
+  if(k.kandidat && nå-k.kandidat.t >= KLAPP_FALLTID){
+    if(rms < k.kandidat.topp*KLAPP_FALL) bekreftet=true;
+    k.kandidat=null;
+  }
+  // Sperren teller fra KLAPPET, ikke fra bekreftelsen. Målte den fra
+  // bekreftelsen, ble den reelle dødtiden 150+120 = 270 ms — og et naturlig
+  // dobbeltklapp ligger rundt 260. Andre klapp ble spist, og «to klapp =
+  // forrige» ble to ganger «neste».
+  const flanke = rms > KLAPP_MIN
+              && rms > k.gulv*KLAPP_FORHOLD
+              && rms > k.forrige*KLAPP_STIGNING
+              && (nå-k.sisteFlanke) > KLAPP_SPERRE;
+  if(flanke && !k.kandidat){ k.kandidat={t:nå, topp:rms}; k.sisteFlanke=nå; }
+  // Gulvet følger bare når ingenting er på gang: ellers spiser en høy lyd sitt
+  // eget grunnlag, og neste klapp blir umulig å se. Men det MÅ få klatre etter
+  // at en kandidat er forkastet — ellers ligger gulvet lavt mens maskinen går.
+  if(!flanke && !k.kandidat) k.gulv = k.gulv*0.98 + rms*0.02;
+  k.forrige = rms;
+  return bekreftet;
+}
+// Ett klapp = neste, to klapp = forrige. «Neste» må vente på par-vinduet
+// (~0,4 s) før det kan slå fast at det var ett — det er prisen for å ha to
+// retninger på ett signal. Neste er det man gjør oftest, så den korte pausen
+// treffer der den merkes minst.
+function klappTikk(){
+  const k=KLAPP;
+  if(!k.analyse) return;
+  k.analyse.getByteTimeDomainData(k.buf);
+  let sum=0;
+  for(let i=0;i<k.buf.length;i++){ const v=(k.buf[i]-128)/128; sum+=v*v; }
+  const rms=Math.sqrt(sum/k.buf.length);
+  const nå=Date.now();
+  if(klappVurder(rms, nå)){
+    k.ventende++;
+    if(k.ventende===2){ clearTimeout(k.parTimer); k.ventende=0; klappUtløst('forrige'); }
+    else k.parTimer=setTimeout(()=>{ k.ventende=0; klappUtløst('neste'); }, KLAPP_PAR);
+  }
+}
+function klappUtløst(retning){
+  const ov=document.getElementById('focus-overlay');
+  if(!ov || ov.style.display!=='flex'){ klappStopp(); return; }
+  const total=(window._steps||[]).length;
+  if(retning==='neste'){ if((window._focusIdx||0) < total-1) focusGoto((window._focusIdx||0)+1); }
+  else focusPrev();
+  vinkMelding(retning==='neste' ? L('👏 → Neste','👏 → Next') : L('👏 ← Forrige','👏 ← Previous'));
+}
+// Tar en ferdig MediaStream, av samme grunn som vinkStart().
+function klappStart(strøm){
+  klappStopp();
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC) return false;
+  KLAPP.ctx=new AC();
+  KLAPP.strøm=strøm;
+  KLAPP.node=KLAPP.ctx.createMediaStreamSource(strøm);
+  KLAPP.analyse=KLAPP.ctx.createAnalyser();
+  KLAPP.analyse.fftSize=1024;
+  KLAPP.buf=new Uint8Array(KLAPP.analyse.fftSize);
+  KLAPP.node.connect(KLAPP.analyse);   // ikke til destination: vi skal lytte, ikke spille av
+  KLAPP.gulv=0.01; KLAPP.forrige=0; KLAPP.sisteFlanke=0; KLAPP.ventende=0; KLAPP.kandidat=null; KLAPP.på=true;
+  try{ if(KLAPP.ctx.state==='suspended') KLAPP.ctx.resume(); }catch(e){}
+  KLAPP.timer=setInterval(klappTikk, KLAPP_INTERVALL);
+  return true;
+}
+function klappStopp(){
+  const k=KLAPP;
+  if(k.timer) clearInterval(k.timer);
+  clearTimeout(k.parTimer);
+  k.timer=null; k.parTimer=null;
+  try{ if(k.strøm) k.strøm.getTracks().forEach(t=>t.stop()); }catch(e){}
+  try{ if(k.node) k.node.disconnect(); }catch(e){}
+  try{ if(k.ctx && k.ctx.state!=='closed') k.ctx.close(); }catch(e){}
+  k.ctx=null; k.node=null; k.analyse=null; k.buf=null; k.strøm=null;
+  k.ventende=0; k.kandidat=null; k.på=false;
+}
+function klappStøttes(){
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+            && (window.AudioContext||window.webkitAudioContext));
+}
+async function klappSlåPå(){
+  if(!klappStøttes()) return false;
+  try{
+    const strøm=await navigator.mediaDevices.getUserMedia({audio:true, video:false});
+    return klappStart(strøm);
   }catch(e){ return false; }
 }
 
@@ -7701,7 +7858,7 @@ function closeFocus(){
   const ov=document.getElementById('focus-overlay');
   if(ov) ov.style.display='none';
   focusReleaseWake();
-  vinkStopp();   // v0.766: kameraet skal aldri overleve at Fokus lukkes
+  vinkStopp(); klappStopp();   // v0.766/0.768: sensorer overlever aldri at Fokus lukkes
 }
 function focusPrev(){ if((window._focusIdx||0)>0){ window._focusIdx--; renderFocus(); } }
 function focusGoto(idx){ const t=(window._steps||[]).length; if(idx>=0 && idx<t){ window._focusIdx=idx; renderFocus(); } }
@@ -7775,11 +7932,12 @@ function renderFocus(){
     <div style="height:6px;background:var(--forno-bg-raised);border-radius:3px;margin:12px 18px 0;overflow:hidden"><div style="height:100%;width:${Math.round((i+1)/total*100)}%;background:var(--forno-accent)"></div></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;min-height:16px">
       ${window._focusWake?`<span style="font-size:10.5px;font-weight:700;color:var(--forno-text-faint)">🔆 ${L('Skjermen holdes våken','Screen stays awake')}</span>`:''}
-      ${vinkStøttes()?`<span onclick="vinkToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${VINK.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${VINK.på?L('👋 Vink: på — trykk for å slå av','👋 Wave: on — tap to switch off'):L('👋 Bla med vink','👋 Flip with a wave')}</span>`:''}
+      ${vinkStøttes()?`<span onclick="vinkToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${VINK.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${VINK.på?L('👋 Vink: på','👋 Wave: on'):L('👋 Bla med vink','👋 Flip with a wave')}</span>`:''}
+      ${klappStøttes()?`<span onclick="klappToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${KLAPP.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${KLAPP.på?L('👏 Klapp: på — 1 neste, 2 forrige','👏 Clap: on — 1 next, 2 previous'):L('👏 Bla med klapp','👏 Flip with a clap')}</span>`:''}
     </div>
-    ${VINK.på?`<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;min-height:22px">
-      <span id="vink-hand" style="font-size:19px;line-height:1;opacity:.3;transition:opacity .12s linear,transform .12s linear;will-change:opacity,transform">👋</span>
-      <span style="position:relative;flex:0 1 120px;height:4px;border-radius:2px;background:var(--forno-bg-raised);overflow:visible">
+    ${(VINK.på||KLAPP.på)?`<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;min-height:22px">
+      <span id="vink-hand" style="font-size:19px;line-height:1;opacity:.3;display:${VINK.på?'inline':'none'};transition:opacity .12s linear,transform .12s linear;will-change:opacity,transform">👋</span>
+      <span style="display:${VINK.på?'inline-block':'none'};position:relative;flex:0 1 120px;height:4px;border-radius:2px;background:var(--forno-bg-raised);overflow:visible">
         <span id="vink-prikk" style="position:absolute;top:-3px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--forno-accent);opacity:.25;transition:left .1s linear,opacity .12s linear;will-change:left,opacity"></span>
       </span>
       <span id="vink-kvittering" style="font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;color:var(--forno-accent-text);min-width:56px;text-align:left"></span>
