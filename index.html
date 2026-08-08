@@ -3845,7 +3845,19 @@ function toggleFavMethod(v){
 function betaOppdaterResultat(){
   const res=document.getElementById('mob-beta-result');
   if(!res || !res.innerHTML.trim()) return;
+  // v0.774: uendret scrollTop er ikke lenger nok. Resultatblokka ligger OVER
+  // metodelista og skifter høyde når vinneren skifter (andre kort, annen
+  // notelengde) — da glir filteret du står og trykker i, selv om rullingen
+  // står stille. Anker derfor filterets SKJERMPOSISJON over re-renderingen:
+  // mål avstanden til toppen før, og juster rullingen med differansen etter.
+  const skjerm=document.getElementById('mob-beta');
+  const anker=document.getElementById('mob-beta-methods-lbl');
+  const ankerFør=(anker&&skjerm)?anker.getBoundingClientRect().top:null;
   try{ runBetaSearch(true); }catch(e){ return; }
+  if(ankerFør!=null){
+    const drift=anker.getBoundingClientRect().top-ankerFør;
+    if(drift) skjerm.scrollTop+=drift;
+  }
   const el=document.getElementById('mob-beta-result');
   if(!el) return;
   el.style.transition='none';
@@ -4324,8 +4336,29 @@ function betaDeig(snapshot){
 // lengste, slik at alternativene i praksis er kortere. Da sto det «mer smak» rett
 // under tre kort merket «raskere». Teksten leser nå av hva alternativene faktisk
 // er, i stedet for å anta.
-function betaHvorforTekst(results, top){
-  const andre=results.slice(1,3);
+// v0.774: hvilke kandidater blir KORT. Før: results.slice(0,3) — men søket
+// prøver hver metode i mange kombinasjoner (Biga: 5 fortidslengder × kjøletider
+// i 6-timers steg), så plass 2 og 3 var vinnerens egne naboer. Målt for et
+// anker 7 døgn frem: Biga 48t, Biga 46t, Biga 44t — mens Poolish 43t og
+// Langtidsdeig 25t lå gjemt på plass 4 og 6. Samme metode minus to timer er
+// ikke et alternativ; en annen metode er det. Vinneren kåres som før, men
+// alternativkortene tar beste kandidat per ANNEN metode. Finnes det færre enn
+// tre metoder i pulja (f.eks. alt unntatt én skrudd av), fylles resten med
+// tidsvarianter som før — bedre enn ett ensomt kort.
+function betaKortUtvalg(results){
+  const kort=results.length?[results[0]]:[];
+  for(const c of results){
+    if(kort.length>=3) break;
+    if(!kort.some(k=>k.snapshot.method===c.snapshot.method)) kort.push(c);
+  }
+  for(const c of results){
+    if(kort.length>=3) break;
+    if(!kort.includes(c)) kort.push(c);
+  }
+  return kort;
+}
+function betaHvorforTekst(kort, top){
+  const andre=kort.slice(1,3);
   const lengre=andre.filter(c=>c.totalHrs>top.totalHrs+1).length;
   const kortere=andre.filter(c=>c.totalHrs<top.totalHrs-1).length;
   const felles=L('vant på færrest tidskonflikter. ','won on fewest time conflicts. ');
@@ -4361,8 +4394,13 @@ function renderResultBlock(containerId, label, anchorIso){
   // v0.705: sammenligningstabell — vinner + inntil 2 alternativer, hver med konflikt-
   // detalj (steg, tid, arbeidsmengde). Slik kan du velge et lengre, mer smaksrikt
   // alternativ når du ser at «ulempen» bare er raskt gjort — noe du kan ta hjemmefra.
-  const compRows=results.slice(0,3).map((c,i)=>{
+  const kortListe=betaKortUtvalg(results);
+  const compRows=kortListe.map((c,i)=>{
     const isWin=i===0;
+    // Knappen må peke på kandidatens plass i RESULTS — registeret indekserer
+    // dit, og med metode-spredning er kortposisjon og resultatplass ikke lenger
+    // samme tall (Poolish-kortet kan være results[3]).
+    const resIdx=results.indexOf(c);
     // v0.771: kortene så like ut — «Biga ~48t», «Biga ~46t», «Biga ~44t», og
     // «✓ alt passer» tre ganger. Tre varianter av samme ord er ikke tre valg.
     // Nå sier hvert kort hva det ER i forhold til det anbefalte, og med hvor
@@ -4382,7 +4420,7 @@ function renderResultBlock(containerId, label, anchorIso){
       ${flav?`<div class="beta-sub">${flav}</div>`:''}
       <div class="beta-sub" style="opacity:.85">🫙 ${escH(deig.gjaer)}</div>
       <div class="beta-whenrow">${betaWhenRow(c.conflicts, isWin)}</div>
-      <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${i})">${L('Åpne planen →','Open the plan →')}</button>
+      <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${resIdx})">${L('Åpne planen →','Open the plan →')}</button>
     </div>`;
   }).join('');
   // Oppskriften står ÉN gang, over kortene. Uten den er et resultat bare
@@ -4390,14 +4428,28 @@ function renderResultBlock(containerId, label, anchorIso){
   // det de fikk som en oppskrift i det hele tatt. Det er ikke knappen som er
   // utydelig; det sto ingen deig i svaret.
   const d=betaDeig(top.snapshot);
+  // v0.774: «gjæren er den eneste forskjellen» var målt sann da kortene var
+  // vinnerens naboer. Med metode-spredning kan Mania havne på et kort, og den
+  // følger sin egen publiserte oppskrift (320g vann, 15g salt). Påstanden leses
+  // derfor av kortene i stedet for å antas — samme lærdom som hintet i v0.771.
+  const avvikere=kortListe.filter(c=>{
+    const kd=betaDeig(c.snapshot);
+    return kd.mel!==d.mel||kd.vann!==d.vann||kd.salt!==d.salt
+        ||kd.perEmne!==d.perEmne||kd.antall!==d.antall||kd.navn!==d.navn;
+  }).map(c=>c.label);
+  const deigNote=avvikere.length
+    ? L(`${avvikere.join(' og ')} følger sin egen oppskrift — tallene over gjelder de andre forslagene.`,
+        `${avvikere.join(' and ')} follows its own recipe — the numbers above apply to the other options.`)
+    : L('Gjærmengden er den eneste som skiller forslagene under.',
+        'The amount of yeast is the only thing that differs between the options below.');
   const deigBlokk=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:9px 11px;margin-top:8px">
     <div style="font-size:13px;font-weight:800;color:var(--forno-text)">${escH(d.navn)} · ${d.antall} ${escH(pcUnitLabel(d.antall>1))} à ${d.perEmne}g</div>
     <div style="font-size:11.5px;color:var(--forno-text-faint);line-height:1.6;margin-top:3px">🌾 ${d.mel}g ${L('mel','flour')} · 💧 ${d.vann}g ${L('vann','water')} (${d.hydro}%) · 🧂 ${d.salt}g ${L('salt','salt')}</div>
-    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">${L('Gjærmengden er den eneste som skiller forslagene under.','The amount of yeast is the only thing that differs between the options below.')}</div>
+    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">${escH(deigNote)}</div>
   </div>`;
   const compTable=deigBlokk+`<div class="beta-list">${compRows}</div>`;
   const whyLine=(ok && results.length>1)
-    ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${betaHvorforTekst(results, top)}</div>`
+    ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${betaHvorforTekst(kortListe, top)}</div>`
     : '';
   const el=document.getElementById(containerId);
   if(!el) return;

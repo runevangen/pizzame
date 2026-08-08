@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.774",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Fikk bare biga som alternativ.» Målt, og det stemte: for et søk en uke frem var topp tre Biga 48t, Biga 46t og Biga 44t — mens Poolish 43t og Langtidsdeig 25t lå gjemt rett under på plass 4 og 6. Søket prøver hver metode i mange kombinasjoner, så de nest beste treffene er nesten alltid vinnerens egne naboer med to timers forskjell og et par hundredels gram gjær.",
+      "Samme metode minus to timer er ikke et alternativ. Kortene viser nå beste kandidat per metode: vinneren kåres nøyaktig som før, men alternativkortene er andre metoder — reelle valg med annen arbeidsflyt. For søket over blir kortene Biga 48t (anbefalt), Poolish 43t og Langtidsdeig 25t. Har du skrudd av alt unntatt én metode, fylles kortene med tidsvarianter som før.",
+      "Med ulike metoder på kortene kunne teksten «gjærmengden er den eneste som skiller» blitt usann — Mania-poolish følger sin egen publiserte oppskrift med annet vann og salt. Teksten leser nå av kortene: står Mania der, sier den det i stedet for å påstå noe annet.",
+      "Og en liten en: resultatblokka ligger over metodelista og skifter høyde når vinneren skifter. Da gled filteret du sto og trykket i, noen titalls piksler — selv om rullingen sto stille. Nå er det filterets posisjon på skjermen som holdes fast, ikke rulletallet."
+    ],
+    "changes_en": [
+      "\"Only got biga as an alternative.\" Measured, and it was true: for a search one week out, the top three were Biga 48h, Biga 46h and Biga 44h — while Poolish 43h and Long-ferment 25h sat hidden just below at places 4 and 6. The search tries each method in many combinations, so the runners-up are almost always the winner's own neighbours, two hours apart with a few hundredths of a gram of yeast between them.",
+      "The same method minus two hours is not an alternative. The cards now show the best candidate per method: the winner is chosen exactly as before, but the alternative cards are other methods — real choices with a different workflow. For the search above the cards become Biga 48h (recommended), Poolish 43h and Long-ferment 25h. If you have switched off everything except one method, the cards fill with time variants as before.",
+      "With different methods on the cards, the line \"the amount of yeast is the only difference\" could become false — Mania poolish follows its own published recipe with different water and salt. The text now reads the cards: if Mania is there, it says so instead of claiming otherwise.",
+      "And a small one: the result block sits above the method list and changes height when the winner changes. That made the filter you were tapping drift a few dozen pixels — even though the scroll stood still. It is now the filter's position on screen that is held fixed, not the scroll number."
+    ]
+  },
+  {
     "v": "0.773",
     "d": "august 2026",
     "d_en": "August 2026",

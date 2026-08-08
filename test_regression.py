@@ -3213,7 +3213,11 @@ def run_behavioral_tests(page):
       return {
         noErr: err==='',
         threeCards:(h.match(/class=\"beta-card/g)||[]).length===3,
-        perCardUseButtons: useIdx.join(',')==='0,1,2',        // egen «Bruk denne» på hvert valg
+        // v0.774: indeksene er ikke lenger 0,1,2 — kortene er beste per METODE,
+        // og peker på kandidatens plass i results (f.eks. 0,3,5). Kravet er:
+        // tre knapper, tre ULIKE mål, vinneren først. At målene er riktige
+        // kandidater testes ved faktisk klikk i r144.
+        perCardUseButtons: useIdx.length===3 && useIdx[0]==='0' && new Set(useIdx).size===3,
         bigTimeProminent:/beta-when-big/.test(h),             // tidspunktet stort/fremhevet
         confUnderMethod: orderInCard,                          // tid under metoden, ikke ved siden av
         altBtnOutline:/beta-use beta-sec/.test(h),            // alternativer = omriss-knapp
@@ -5478,8 +5482,9 @@ def run_behavioral_tests(page):
       const harEmner = t.includes('à '+d.perEmne+'g') && t.includes(String(d.antall));
       const harMel = t.includes(d.mel+'g') && t.includes(d.vann+'g')
                   && t.includes(d.hydro+'%') && t.includes(d.salt+'g');
-      // Gjæren skiller kortene, så den må stå PÅ dem.
-      const gjaerPerKort = res.slice(0,3).every(c=>t.includes(betaDeig(c.snapshot).gjaer));
+      // Gjæren skiller kortene, så den må stå PÅ dem. v0.774: kortene er ikke
+      // lenger topp 3 — les samme utvalg som render bruker.
+      const gjaerPerKort = betaKortUtvalg(res).every(c=>t.includes(betaDeig(c.snapshot).gjaer));
       // Knappen sier hvor du havner.
       const knappSierHvor = /Åpne planen/.test(t) && !/Bruk denne/.test(t);
       // Hintet må ikke motsi kortene. MÅ leses fra hvert sitt element: leser man
@@ -5553,9 +5558,21 @@ def run_behavioral_tests(page):
         if(body && body.style.display==='none') toggleBetaMethodsOpen();
         await vent();
         const skjerm=document.getElementById('mob-beta');
-        skjerm.scrollTop=skjerm.scrollHeight; await vent();
+        // v0.774: invarianten er FILTERETS skjermposisjon, ikke scrollTop.
+        // Resultatblokka over skifter høyde når vinneren skifter, og da må
+        // rullingen justeres for at filteret skal stå stille — et frosset
+        // scrollTop ville vært et filter som glir.
+        //
+        // Og målingen MÅ skje midt i rullingen, ikke på endestopp: helt nederst
+        // klamper nettleseren scrollTop selv når innholdet over krymper, så
+        // filteret står stille uansett — mutasjonen som fjernet justeringen
+        // besto testen så lenge den målte fra bunnen.
+        const anker=document.getElementById('mob-beta-methods-lbl');
+        anker.scrollIntoView({block:'center'}); await vent();
         const førRull=skjerm.scrollTop;
-        if(førRull < 100) return {kunneIkkeRulle:true, førRull};
+        if(førRull < 100 || førRull >= skjerm.scrollHeight-skjerm.clientHeight-40)
+          return {kunneIkkeRulle:true, førRull, max:skjerm.scrollHeight-skjerm.clientHeight};
+        const ankerFør=anker.getBoundingClientRect().top;
         // Slå av en metode som ER blant treffene — ellers kan resultatet være
         // uendret av gode grunner, og «regnet på nytt» blir umulig å skille
         // fra «gjorde ingenting».
@@ -5567,13 +5584,14 @@ def run_behavioral_tests(page):
         // etter to rAF, har den ikke rukket å flytte seg ennå, og testen ville
         // bestått selv med fiksen reversert. Vent til rullingen har roet seg.
         await new Promise(r=>setTimeout(r,900));
-        const etterRull=document.getElementById('mob-beta').scrollTop;
+        const ankerEtter=anker.getBoundingClientRect().top;
         const etterHTML=document.getElementById('mob-beta-result').innerHTML;
         // «Mania-poolish» inneholder «poolish» — fjern Mania-navnene før vi
         // spør om Poolish forsvant, ellers slår sjekken feil ut av seg selv.
         const rens=etterHTML.replace(/Mania-?[Pp]oolish|Mania/g,'');
         const merket=rens.includes(METHODS[vinner].no) || rens.includes(METHODS[vinner].noShort);
-        return {førRull, etterRull, beholderPlass: Math.abs(etterRull-førRull) < 12,
+        return {førRull, ankerFør, ankerEtter,
+                beholderPlass: Math.abs(ankerEtter-ankerFør) < 12,
                 regnetPåNytt: etterHTML!==førHTML, vinnerBorte: !merket, vinner,
                 blink, blinker: !!blink && blink!=='none' && !/transparent/.test(blink)};
       } finally {
@@ -5639,6 +5657,64 @@ def run_behavioral_tests(page):
              and r143.get('planFortsattSlørt') is True
              and r143.get('løftetAvBeta') is True)
     results.append(('smartplan_is_never_greyed_and_using_it_lifts_the_veil', ok143, r143))
+
+    # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
+    # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —
+    # mens Poolish 43t og Langtidsdeig 25t lå på plass 4 og 6. Samme metode
+    # minus to timer er ikke et alternativ. Kortene tar nå beste kandidat per
+    # ANNEN metode (betaKortUtvalg).
+    #
+    # Tre ting som hver kan ryke stille:
+    #  1) SPREDNING: med ≥3 metoder i pulja skal kortene ha 3 ulike metoder.
+    #  2) INDEKS: knappene peker inn i RESULTS, og med spredning er kortposisjon
+    #     og resultatplass ulike tall. Testes ved faktisk KLIKK på kort 2 —
+    #     naiv implementasjon åpner Biga 46t (results[1]) i stedet for Poolish.
+    #  3) ÆRLIG DEIGBLOKK: «gjæren er eneste forskjell» var målt sann for
+    #     nabokort. Mania har egen publisert oppskrift (320g vann, 15g salt) —
+    #     står den på et kort, må teksten si det i stedet.
+    r144 = page.evaluate("""() => {
+      const saved={...S}, savedFilter=localStorage.getItem('pizzaBetaMethods');
+      const boks=document.createElement('div');
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+        S.oven='pizza'; S.gjaer='torr'; _q10Memo={k:null,v:null};
+        _betaMethods=null; try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){}
+        boks.id='test-beta-kort'; boks.style.cssText='position:fixed;left:-9999px;width:360px';
+        document.body.appendChild(boks);
+        const anchor=new Date(2027,2,13,18,0); // 7 døgn frem fra testklokka? Nei — fast, langt anker.
+        renderResultBlock('test-beta-kort', fDT(anchor), anchor.toISOString());
+        const res=searchAllMethods(anchor);
+        const kort=betaKortUtvalg(res);
+        const metoder=kort.map(c=>c.snapshot.method);
+        const iPulja=new Set(res.map(c=>c.snapshot.method)).size;
+        const spredning = iPulja>=3 ? new Set(metoder).size===3 : null;
+        // 2) klikk på ANDRE kortets knapp og se hvilken metode som faktisk åpnes
+        const knapper=[...boks.querySelectorAll('.beta-use')];
+        knapper[1].click();
+        const åpnetRiktig = S.method===metoder[1] && metoder[1]!==metoder[0];
+        // 3) deigblokk-ærlighet: tving Mania inn på et kort
+        Object.assign(S,saved); _q10Memo={k:null,v:null};
+        try{ localStorage.setItem('pizzaBetaMethods',
+          JSON.stringify({standard:false,poolish:false,biga:true,mania:true,hurtig:false,kveld:false})); }catch(e){}
+        _betaMethods=null;
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.gjaer='torr';
+        renderResultBlock('test-beta-kort', fDT(anchor), anchor.toISOString());
+        const t2=boks.innerText;
+        const maniaPåKort=[...boks.querySelectorAll('.beta-card')].some(e=>/Mania/.test(e.textContent));
+        const ærligNote = !maniaPåKort
+          || (/følger sin egen oppskrift/.test(t2) && !/eneste som skiller/.test(t2));
+        return {metoder, iPulja, spredning, åpnetRiktig, maniaPåKort, ærligNote};
+      } finally {
+        boks.remove(); Object.assign(S,saved); _q10Memo={k:null,v:null};
+        _betaMethods=null;
+        if(savedFilter===null){ try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){} }
+        else { try{ localStorage.setItem('pizzaBetaMethods',savedFilter); }catch(e){} }
+      }
+    }""")
+    ok144 = (r144.get('spredning') is True and r144.get('åpnetRiktig') is True
+             and r144.get('maniaPåKort') is True and r144.get('ærligNote') is True)
+    results.append(('smartplan_alternatives_are_other_methods_and_buttons_open_them', ok144, r144))
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
