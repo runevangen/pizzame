@@ -3809,9 +3809,7 @@ function toggleBetaMethod(v){
   if(m[v]===false && S.favMethod===v){ S.favMethod=null; try{ savePrefs(); persistSetup(); }catch(e){} }
   renderBetaMethodFilter();
   try{ renderWindowPicker(); }catch(e){}   // C: filteret gjelder også Fra–til
-  // Oppdater et allerede vist resultat med det samme, så filteret føles direkte.
-  const res=document.getElementById('mob-beta-result');
-  if(res && res.innerHTML.trim()){ try{ runBetaSearch(); }catch(e){} }
+  betaOppdaterResultat();
 }
 // v0.730: favorittmetode. Én om gangen — trykk på stjerna igjen for å fjerne.
 // Å skru AV en metode fjerner også favoritt-status (den kan ikke vinne noe den
@@ -3822,8 +3820,30 @@ function toggleFavMethod(v){
   try{ persistSetup(); }catch(e){}
   renderBetaMethodFilter();
   try{ renderWindowPicker(); }catch(e){}
+  betaOppdaterResultat();
+}
+// v0.771 (F31): et allerede vist resultat regnes på nytt når filteret endres —
+// men UTEN å rulle. runBetaSearch() avslutter med scrollIntoView på
+// resultatblokka, og den ligger OVER metodelista: står du nede ved filteret og
+// huker av, ble du kastet 482 px opp. Riktig for det første søket (du trykker
+// «Finn» og vil se svaret), feil når du bare justerer et filter.
+//
+// Men å bare sende `true` er halvveis: da oppdateres resultatet helt utenfor
+// syne, og du vet ikke om avhakingen gjorde noen forskjell. Samme lærdom som
+// «litt større» i vinkestyringen — stillhet er dårlig tilbakemelding. Derfor
+// blinker resultatblokka kort, så du ser at den svarte uten å bli dratt dit.
+function betaOppdaterResultat(){
   const res=document.getElementById('mob-beta-result');
-  if(res && res.innerHTML.trim()){ try{ runBetaSearch(); }catch(e){} }
+  if(!res || !res.innerHTML.trim()) return;
+  try{ runBetaSearch(true); }catch(e){ return; }
+  const el=document.getElementById('mob-beta-result');
+  if(!el) return;
+  el.style.transition='none';
+  el.style.boxShadow='0 0 0 3px var(--forno-accent)';
+  requestAnimationFrame(()=>{
+    el.style.transition='box-shadow .6s ease';
+    el.style.boxShadow='0 0 0 0 transparent';
+  });
 }
 function toggleBetaMethodsOpen(){
   const body=document.getElementById('mob-beta-methods-body');
@@ -4262,6 +4282,44 @@ function pizzatidOffControlHTML(){
     ${ts===null?'':`<div style="margin-top:6px;font-size:11px;font-weight:700;color:var(--forno-accent-text)">🔕 ${L('Telles ikke med','Not counted')} ${pizzatidOffLabel()}</div>`}
   </div>`;
 }
+// v0.771: hva en kandidat faktisk gir av DEIG. Søket har alltid kunnet dette —
+// hver kandidat bærer et `snapshot` av innstillingene som definerer den — men
+// resultatet viste bare metode og timer. Måling over de fire toppkandidatene:
+// type, antall, emnevekt, mel, vann, hydrering og salt er IDENTISKE for alle.
+// Bare gjæren varierer (0,96 / 1,04 / 1,08 / 1,13g). Derfor står oppskriften
+// ÉN gang over kortene, og gjæren på hvert kort — å gjenta de samme sju tallene
+// tre ganger er støy, ikke tydelighet.
+function betaDeig(snapshot){
+  const lagret={...S};
+  try{
+    Object.assign(S, snapshot||{}); _q10Memo={k:null,v:null};
+    const r=recipeFor(), p=pc();
+    return {navn:r.name, antall:p.count, perEmne:p.perPizza, mel:r.flour,
+            vann:r.water, hydro:r.hydro, salt:r.salt, gjaer:yLabelFor(r)};
+  } finally { Object.assign(S,lagret); _q10Memo={k:null,v:null}; }
+}
+// v0.771: hintet påsto blindt at «alternativene over gir mer smak». Det er bare
+// sant når alternativene er LENGRE enn vinneren — og vinneren er ofte den
+// lengste, slik at alternativene i praksis er kortere. Da sto det «mer smak» rett
+// under tre kort merket «raskere». Teksten leser nå av hva alternativene faktisk
+// er, i stedet for å anta.
+function betaHvorforTekst(results, top){
+  const andre=results.slice(1,3);
+  const lengre=andre.filter(c=>c.totalHrs>top.totalHrs+1).length;
+  const kortere=andre.filter(c=>c.totalHrs<top.totalHrs-1).length;
+  const felles=L('vant på færrest tidskonflikter. ','won on fewest time conflicts. ');
+  if(lengre && !kortere)
+    return felles+L('Alternativene over tar lengre tid og gir mer smak — er konflikten deres raskt gjort (som å ta ut av kjøleskap), kan du velge dem i stedet.',
+                    'The alternatives above take longer and give more flavour — if their conflict is quickly done (like taking it out of the fridge), you can pick them instead.');
+  if(kortere && !lengre)
+    return felles+L('Alternativene over er raskere, men rekker mindre gjæring — velg dem hvis du har dårligere tid enn planen forutsetter.',
+                    'The alternatives above are faster, but get less fermentation — pick them if you have less time than the plan assumes.');
+  if(kortere && lengre)
+    return felles+L('Alternativene over er kortere eller lengre — lengre gir mer smak, kortere gir mer slingringsmonn i tida.',
+                    'The alternatives above are shorter or longer — longer gives more flavour, shorter gives more slack in the timing.');
+  return felles+L('Alternativene over tar omtrent like lang tid, og skiller seg mest på gjærmengde og hvilke steg som havner hvor.',
+                  'The alternatives above take about the same time, and differ mostly in the amount of yeast and where the steps land.');
+}
 function renderResultBlock(containerId, label, anchorIso){
   const results=searchAllMethods(new Date(anchorIso));
   const regId=window._betaResultRegistry.length;
@@ -4284,21 +4342,41 @@ function renderResultBlock(containerId, label, anchorIso){
   // alternativ når du ser at «ulempen» bare er raskt gjort — noe du kan ta hjemmefra.
   const compRows=results.slice(0,3).map((c,i)=>{
     const isWin=i===0;
-    const flav=(!isWin && c.totalHrs>top.totalHrs+2) ? L('mer smak','more flavor')
-             : (!isWin && c.totalHrs<top.totalHrs-2 ? L('kortere','shorter') : '');
+    // v0.771: kortene så like ut — «Biga ~48t», «Biga ~46t», «Biga ~44t», og
+    // «✓ alt passer» tre ganger. Tre varianter av samme ord er ikke tre valg.
+    // Nå sier hvert kort hva det ER i forhold til det anbefalte, og med hvor
+    // mye: en differanse i timer betyr noe, et absolutt timetall gjør det ikke
+    // for den som ikke har bakt før.
+    const dt=Math.round(c.totalHrs-top.totalHrs);
+    const flav = isWin ? L('Anbefalt','Recommended')
+             : dt>1 ? L(`+${dt}t · mer smak`,`+${dt}h · more flavour`)
+             : dt<-1 ? L(`${dt}t · raskere`,`${dt}h · faster`)
+             : L('Alternativ','Alternative');
+    const deig=betaDeig(c.snapshot);
     // Hvert valg er et kort med egen «Bruk denne»-knapp: fylt for anbefalt, omriss
     // for alternativene. «mer smak» på egen linje så gjæringstallet holder seg kort
     // og ikke flyter ut av kortet ved siden av et langt, wrappet metodenavn.
     return `<div class="beta-card${isWin?' beta-win':''}">
       <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">~${Math.round(c.totalHrs)}${L('t','h')}</span></div>
       ${flav?`<div class="beta-sub">${flav}</div>`:''}
+      <div class="beta-sub" style="opacity:.85">🫙 ${escH(deig.gjaer)}</div>
       <div class="beta-whenrow">${betaWhenRow(c.conflicts, isWin)}</div>
-      <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${i})">${L('Bruk denne','Use this one')}</button>
+      <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${i})">${L('Åpne planen →','Open the plan →')}</button>
     </div>`;
   }).join('');
-  const compTable=`<div class="beta-list">${compRows}</div>`;
+  // Oppskriften står ÉN gang, over kortene. Uten den er et resultat bare
+  // metode og klokkeslett — og brukertesting viste at folk da ikke kjente igjen
+  // det de fikk som en oppskrift i det hele tatt. Det er ikke knappen som er
+  // utydelig; det sto ingen deig i svaret.
+  const d=betaDeig(top.snapshot);
+  const deigBlokk=`<div style="background:var(--forno-bg-raised);border:1px solid var(--forno-border);border-radius:10px;padding:9px 11px;margin-top:8px">
+    <div style="font-size:13px;font-weight:800;color:var(--forno-text)">${escH(d.navn)} · ${d.antall} ${escH(pcUnitLabel(d.antall>1))} à ${d.perEmne}g</div>
+    <div style="font-size:11.5px;color:var(--forno-text-faint);line-height:1.6;margin-top:3px">🌾 ${d.mel}g ${L('mel','flour')} · 💧 ${d.vann}g ${L('vann','water')} (${d.hydro}%) · 🧂 ${d.salt}g ${L('salt','salt')}</div>
+    <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:4px">${L('Gjærmengden er den eneste som skiller forslagene under.','The amount of yeast is the only thing that differs between the options below.')}</div>
+  </div>`;
+  const compTable=deigBlokk+`<div class="beta-list">${compRows}</div>`;
   const whyLine=(ok && results.length>1)
-    ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${L('vant på færrest tidskonflikter. Alternativene over gir mer smak — er konflikten deres raskt gjort (som å ta ut av kjøleskap), kan du velge dem i stedet.','won on fewest time conflicts. The alternatives above give more flavor — if their conflict is quickly done (like taking it out of the fridge), you can pick them instead.')}</div>`
+    ? `<div style="background:var(--forno-accent-soft);border:1px solid #f1c49a;border-radius:8px;padding:7px 9px;margin-top:8px;font-size:10.5px;color:#7a3d0d;line-height:1.5">💡 <b style="color:var(--forno-accent-text)">${escH(top.label)}</b> ${betaHvorforTekst(results, top)}</div>`
     : '';
   const el=document.getElementById(containerId);
   if(!el) return;

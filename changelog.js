@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.771",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Brukertesting av Smart-plan viste at folk ikke skjønte at det lå ekte oppskrifter bak knappen. Diagnosen var ikke at knappen er utydelig — det STO ingen oppskrift i svaret. Kortene ga metode og timer: «Biga ~48t» tre ganger på rad, uten mel, vann, salt, gjær, emnevekt eller hva slags pizza det blir.",
+      "Så jeg målte hva som faktisk skiller forslagene. Over de fire toppkandidatene er type, antall, emnevekt, mel, vann, hydrering og salt identiske. Bare gjæren varierer, og bare med noen tideler. Derfor står oppskriften nå ÉN gang over kortene — «Napoletana · 4 emner à 250g · 🌾 500g mel · 💧 325g vann (65%) · 🧂 15g salt» — og gjærmengden på hvert kort, der forskjellen faktisk er.",
+      "Kortene sier nå hva valget betyr i stedet for bare hvor lenge det tar: «Anbefalt», «+4t · mer smak», «-6t · raskere». Og knappen sier hvor du havner: «Åpne planen →» i stedet for «Bruk denne».",
+      "Hintet nederst påsto blindt at «alternativene over gir mer smak». Det er bare sant når de er lengre enn vinneren — og vinneren er ofte den lengste. Teksten sto altså rett under tre kort merket «raskere». Den leser nå hva alternativene faktisk er, og sier det.",
+      "Og et hopp du meldte inn: huket du av en metode nede i filteret, ble du kastet 803 px opp. Ingenting glemte plassen din — resultatblokka ble bevisst rullet til, og den ligger over metodelista. Nå står du der du står, og resultatblokka blinker kort så du ser at den svarte. Å bare la være å rulle hadde vært halvveis: da oppdateres svaret helt utenfor syne, og du vet ikke om avhakingen gjorde noen forskjell."
+    ],
+    "changes_en": [
+      "User testing of Smart plan showed that people did not realise there were real recipes behind the button. The diagnosis was not that the button is unclear — there was no recipe in the answer. The cards gave method and hours: \"Biga ~48h\" three times in a row, with no flour, water, salt, yeast, ball weight or what kind of pizza it becomes.",
+      "So I measured what actually separates the suggestions. Across the four top candidates, type, count, ball weight, flour, water, hydration and salt are identical. Only the yeast varies, and only by tenths of a gram. The recipe therefore now appears ONCE above the cards — \"Napoletana · 4 balls à 250g · 🌾 500g flour · 💧 325g water (65%) · 🧂 15g salt\" — and the yeast on each card, where the difference actually is.",
+      "The cards now say what the choice means rather than just how long it takes: \"Recommended\", \"+4h · more flavour\", \"-6h · faster\". And the button says where you end up: \"Open the plan →\" instead of \"Use this\".",
+      "The hint at the bottom blindly claimed that \"the alternatives above give more flavour\". That is only true when they are longer than the winner — and the winner is often the longest. So the text sat right under three cards labelled \"faster\". It now reads what the alternatives actually are, and says that.",
+      "And a jump you reported: tick a method down in the filter and you were thrown 803 px upwards. Nothing forgot your place — the result block was deliberately scrolled to, and it sits above the method list. Now you stay where you are, and the result block flashes briefly so you can see that it answered. Simply not scrolling would have been half a fix: then the answer updates completely out of sight, and you have no idea whether the tick made any difference."
+    ]
+  },
+  {
     "v": "0.770",
     "d": "august 2026",
     "d_en": "August 2026",

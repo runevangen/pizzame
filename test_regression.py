@@ -3193,8 +3193,12 @@ def run_behavioral_tests(page):
         // v0.708: konflikten er MERKET som konflikt (ikke noe å gjette), og «mer smak»
         // ligger på egen linje så gjæringstallet ikke flyter ut ved siden av et langt navn.
         conflictLabelled:/beta-conf-lbl/.test(h) && /(Utenfor ledig tid|Midt på natten)/.test(h),
-        flavOnOwnLine:/class=\"beta-sub\">(mer smak|kortere)/.test(h),
-        hrsHasNoFlav: !/beta-hrs\">[^<]*(mer smak|kortere)/.test(h),
+        // v0.771: ordlyden ble «+4t · mer smak» / «-2t · raskere» / «Anbefalt» —
+        // en differanse betyr noe for den som ikke har bakt før, et absolutt
+        // timetall gjør det ikke. Kravet er det samme: merkelappen står på EGEN
+        // linje, og ikke klemt inn i timetallet.
+        flavOnOwnLine:/class=\"beta-sub\">[^<]*(mer smak|raskere|Anbefalt|Alternativ)/.test(h),
+        hrsHasNoFlav: !/beta-hrs\">[^<]*(mer smak|raskere|kortere)/.test(h),
         winnerFits:/beta-eff fits/.test(h),
         altQuickPill:/beta-eff quick/.test(h),
         altShowsStep:/Ta ut av kj/.test(h),
@@ -5402,6 +5406,133 @@ def run_behavioral_tests(page):
                     ['beholderPlassVedAvhaking', 'beholderPlassVedBryter',
                      'nyttStegStarterØverst'])
         results.append(('focus_keeps_your_place_when_ticking_substeps', ok140, r140))
+
+    # v0.771: brukertesting viste at folk ikke kjente igjen Smart-plan-treffene
+    # som oppskrifter. Diagnosen var ikke at knappen er utydelig — det STO ingen
+    # oppskrift i svaret. Kortene ga metode og timer: «Biga ~48t» tre ganger,
+    # uten mel, vann, salt, gjær, emnevekt eller pizzatype.
+    #
+    # Målt over de fire toppkandidatene: type, antall, emnevekt, mel, vann,
+    # hydrering og salt er IDENTISKE. Bare gjæren varierer. Derfor står
+    # oppskriften ÉN gang over kortene, og gjæren på hvert kort.
+    #
+    # Og hintet nederst påsto blindt «alternativene over gir mer smak». Det er
+    # bare sant når de er lengre enn vinneren — og vinneren er ofte den lengste,
+    # så teksten sto rett under tre kort merket «raskere». En motsigelse som
+    # oppsto først da kortene begynte å si retningen sin.
+    r141 = page.evaluate("""() => {
+      const saved={...S};
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+      S.oven='pizza'; S.gjaer='torr'; _q10Memo={k:null,v:null};
+      const boks=document.createElement('div');
+      boks.id='test-beta-res'; boks.style.cssText='position:fixed;left:-9999px;width:360px';
+      document.body.appendChild(boks);
+      const anchor=new Date(2027,2,6,18,0);
+      renderResultBlock('test-beta-res', fDT(anchor), anchor.toISOString());
+      const h=boks.innerHTML, t=boks.innerText;
+      const res=searchAllMethods(anchor);
+      const top=res[0];
+      const d=betaDeig(top.snapshot);
+
+      // Oppskriften må stå der, med ekte tall fra recipeFor()/pc().
+      const harType = t.includes(d.navn);
+      const harEmner = t.includes('à '+d.perEmne+'g') && t.includes(String(d.antall));
+      const harMel = t.includes(d.mel+'g') && t.includes(d.vann+'g')
+                  && t.includes(d.hydro+'%') && t.includes(d.salt+'g');
+      // Gjæren skiller kortene, så den må stå PÅ dem.
+      const gjaerPerKort = res.slice(0,3).every(c=>t.includes(betaDeig(c.snapshot).gjaer));
+      // Knappen sier hvor du havner.
+      const knappSierHvor = /Åpne planen/.test(t) && !/Bruk denne/.test(t);
+      // Hintet må ikke motsi kortene. MÅ leses fra hvert sitt element: leser man
+      // begge fra samme innerText, gjør hintets egen «mer smak» kort-sjekken
+      // sann, og motsigelsen blir usynlig for testen.
+      const kortTekst=[...boks.querySelectorAll('.beta-sub')].map(e=>e.textContent).join(' ');
+      const hintEl=[...boks.querySelectorAll('div')].find(e=>/^💡/.test(e.textContent||''));
+      const hintTekst=hintEl?hintEl.textContent:'';
+      const kortSierRaskere = /raskere/.test(kortTekst);
+      const kortSierMerSmak = /mer smak/.test(kortTekst);
+      const hintSierMerSmak = /lengre tid og gir mer smak/.test(hintTekst);
+      const hintSierRaskere = /Alternativene over er raskere/.test(hintTekst);
+      const hintMotsierIkke = !(kortSierRaskere && !kortSierMerSmak && hintSierMerSmak)
+                           && !(kortSierMerSmak && !kortSierRaskere && hintSierRaskere);
+
+      boks.remove();
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {harType, harEmner, harMel, gjaerPerKort, knappSierHvor, hintMotsierIkke,
+              fasit:d, kortSierRaskere, kortSierMerSmak, hintSierMerSmak,
+              hintSierRaskere, fantHint:!!hintEl};
+    }""")
+    ok141 = all(r141.get(k) for k in
+                ['harType', 'harEmner', 'harMel', 'gjaerPerKort', 'knappSierHvor',
+                 'hintMotsierIkke', 'fantHint'])
+    results.append(('smartplan_result_reads_as_a_real_recipe', ok141, r141))
+
+    # v0.771 (F31): «inne på Smart-plan og metoder du blir tilbudt så hopper den
+    # til toppen ved hver endring». Målt til 482 px opp. Årsaken var ikke en
+    # gjenoppbygging som nullstiller rullingen — det var et BEVISST
+    # scrollIntoView i runBetaSearch(), og resultatblokka ligger OVER metodelista.
+    #
+    # Begge halvdelene må testes, og det er hele poenget: en test som bare
+    # sjekker at rullingen står stille, ville blitt bestått av å fjerne
+    # oppdateringen helt. Derfor slås en metode av som faktisk er blant treffene,
+    # og treffene må ha endret seg etterpå.
+    r142 = page.evaluate("""async () => {
+      const _saved=localStorage.getItem('pizzaBetaMethods'), _lang=window._lang;
+      const vent=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('beta');
+        _betaMethods=null; try{localStorage.removeItem('pizzaBetaMethods');}catch(e){}
+        renderBetaMethodFilter();
+        // Langt anker så alle metoder er gjennomførbare og filteret ikke slappes.
+        const d=new Date(Date.now()+140*3600000); d.setHours(18,0,0,0);
+        const inp=document.getElementById('mob-beta-when');
+        if(inp){ inp.value=fDT(d); inp.dataset.iso=d.toISOString(); }
+        runBetaSearch(); await vent();
+        const res=document.getElementById('mob-beta-result');
+        const førHTML=res.innerHTML;
+        if(!førHTML.trim()) return {ingenTreff:true};
+        // Åpne metodelista og rull helt ned til den, slik brukeren står.
+        const body=document.getElementById('mob-beta-methods-body');
+        if(body && body.style.display==='none') toggleBetaMethodsOpen();
+        await vent();
+        const skjerm=document.getElementById('mob-beta');
+        skjerm.scrollTop=skjerm.scrollHeight; await vent();
+        const førRull=skjerm.scrollTop;
+        if(førRull < 100) return {kunneIkkeRulle:true, førRull};
+        // Slå av en metode som ER blant treffene — ellers kan resultatet være
+        // uendret av gode grunner, og «regnet på nytt» blir umulig å skille
+        // fra «gjorde ingenting».
+        const vinner=searchAllMethods(new Date(d))[0].snapshot.method;
+        toggleBetaMethod(vinner);
+        // Blinket settes synkront og fjernes i neste rAF — det må leses NÅ.
+        const blink=document.getElementById('mob-beta-result').style.boxShadow;
+        // scrollIntoView er `behavior:'smooth'` — animert. Leser man posisjonen
+        // etter to rAF, har den ikke rukket å flytte seg ennå, og testen ville
+        // bestått selv med fiksen reversert. Vent til rullingen har roet seg.
+        await new Promise(r=>setTimeout(r,900));
+        const etterRull=document.getElementById('mob-beta').scrollTop;
+        const etterHTML=document.getElementById('mob-beta-result').innerHTML;
+        // «Mania-poolish» inneholder «poolish» — fjern Mania-navnene før vi
+        // spør om Poolish forsvant, ellers slår sjekken feil ut av seg selv.
+        const rens=etterHTML.replace(/Mania-?[Pp]oolish|Mania/g,'');
+        const merket=rens.includes(METHODS[vinner].no) || rens.includes(METHODS[vinner].noShort);
+        return {førRull, etterRull, beholderPlass: Math.abs(etterRull-førRull) < 12,
+                regnetPåNytt: etterHTML!==førHTML, vinnerBorte: !merket, vinner,
+                blink, blinker: !!blink && blink!=='none' && !/transparent/.test(blink)};
+      } finally {
+        window._lang=_lang; _betaMethods=null;
+        if(_saved===null){ try{localStorage.removeItem('pizzaBetaMethods');}catch(e){} }
+        else { try{localStorage.setItem('pizzaBetaMethods',_saved);}catch(e){} }
+        try{ renderBetaMethodFilter(); }catch(e){}
+      }
+    }""")
+    if r142.get('ingenTreff') or r142.get('kunneIkkeRulle'):
+        ok142 = False
+    else:
+        ok142 = all(r142.get(k) for k in
+                    ['beholderPlass', 'regnetPåNytt', 'vinnerBorte', 'blinker'])
+    results.append(('smartplan_filter_change_keeps_your_place_and_still_recomputes', ok142, r142))
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.

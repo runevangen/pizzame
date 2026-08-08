@@ -1096,7 +1096,22 @@ rekkefølgen. F17 er det klart mest verdifulle.
   ordlista råtne fra hverandre når tekstene endres. Samme mønster som invariant
   D (ingenting bor bare i understegene).
 
-### F31. Smart-plan hopper 482 px opp hver gang du huker av en metode
+### F31. Smart-plan hopper 482 px opp hver gang du huker av en metode ✅ FIKSET (v0.771)
+
+> ✅ **Bygget i v0.771.** `betaOppdaterResultat()` kjører `runBetaSearch(true)` og
+> gir resultatblokka et kort blink. `toggleBetaMethod()` og `toggleFavMethod()`
+> kaller den i stedet for `runBetaSearch()`.
+>
+> Testen (`smartplan_filter_change_keeps_your_place_and_still_recomputes`) tar
+> begge halvdelene, og det viste seg å være helt nødvendig: mutasjonen som
+> gjorde `betaOppdaterResultat()` til en tom funksjon **består**
+> posisjonssjekken alene. Stillhet holder rullingen perfekt i ro.
+>
+> Én felle til, funnet ved mutasjonstesting: `scrollIntoView` er
+> `behavior:'smooth'`, altså animert. Første utgave av testen leste posisjonen
+> etter to `requestAnimationFrame` og bestod selv med fiksen reversert —
+> rullingen hadde ikke rukket å begynne. Med 900 ms venting måles hoppet til
+> 803 px i testoppsettet.
 - **Meldt inn:** «inne på Smart-plan og metoder du blir tilbudt så hopper den til
   toppen ved hver endring».
 - **Reprodusert og målt** (390×844, dato satt, søk kjørt, metodelista åpen):
