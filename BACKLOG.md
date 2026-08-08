@@ -1095,3 +1095,43 @@ rekkefølgen. F17 er det klart mest verdifulle.
   fagord må ikke dukke opp i stegtekstene uten å stå i ordlista. Da kan ikke
   ordlista råtne fra hverandre når tekstene endres. Samme mønster som invariant
   D (ingenting bor bare i understegene).
+
+### F31. Smart-plan hopper 482 px opp hver gang du huker av en metode
+- **Meldt inn:** «inne på Smart-plan og metoder du blir tilbudt så hopper den til
+  toppen ved hver endring».
+- **Reprodusert og målt** (390×844, dato satt, søk kjørt, metodelista åpen):
+
+  | | y-posisjon i fanen |
+  |---|---:|
+  | Resultatblokka | 644 |
+  | Metodefilteret | 1555 |
+  | Rulleposisjon før avhaking | 1113 |
+  | **Rulleposisjon etter** | **631** |
+  | **Hopp** | **482 px opp** |
+
+- **Mekanismen er ikke en gjenoppbygging.** Ingenting nullstiller rullingen —
+  det er en BEVISST `scrollIntoView` som drar deg vekk. `runBetaSearch()`
+  avslutter med `resultEl.scrollIntoView({block:'center'})`, og resultatblokka
+  ligger *over* metodelista. Du står nede ved filteret, huker av, søket kjøres på
+  nytt, og resultatet sentreres — altså rulles du opp. Det oppleves som «til
+  toppen» fordi filteret er det nederste på siden.
+- **Rullingen er riktig for det FØRSTE søket** — du trykker «Søk» og vil se
+  svaret. Den er feil for et søk som kjøres på nytt fordi du endret et filter:
+  da ser du allerede på filteret, og resultatet oppdateres bak deg.
+- **Fiksen finnes allerede halvveis.** `runBetaSearch(noScroll)` tar parameteren,
+  og `pizzatidOffChanged()` sender `true` av nøyaktig denne grunnen (linje ~3618).
+  De to metodebryterne — `toggleBetaMethod()` og `toggleFavMethod()` — kaller den
+  uten. Det er samme klasse, oppdaget og løst ett sted, glemt to.
+- **Men ikke bare send `true` og gå videre.** Da oppdateres resultatet helt utenfor
+  syne, og du vet ikke om avhakingen gjorde noen forskjell. Det er den samme
+  lærdommen som «litt større» i vinkestyringen: stillhet er dårlig
+  tilbakemelding. Enten
+  1. behold posisjonen og gi resultatblokka et kort «oppdatert»-blink, eller
+  2. behold posisjonen og vis endringen i filterraden («Poolish av — 2 forslag
+     igjen»).
+- **Test når den bygges:** rulleposisjonen skal være uendret etter at et
+  metodefilter endres, og resultatet skal likevel være regnet på nytt. Begge
+  halvdelene må med — bare den første ville blitt bestått av å fjerne søket
+  helt.
+- Se etter samme mønster i andre `scrollIntoView`-kall som utløses av en
+  innstillingsendring i stedet for av et bevisst «vis meg»-trykk.
