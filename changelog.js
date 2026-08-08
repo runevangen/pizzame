@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.775",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Deigballen het fire forskjellige ting på norsk. «Emne» 75 ganger, «ball» 4, «kule» 6 — og «bolle» 30, men det siste er blandebolla, altså en helt annen gjenstand. Nå heter den «emne» overalt.",
+      "Verst var Mania-poolish, som i én og samme setning skrev «lag en stram, rund bolle. Legg i bakebolle eller lignende». Samme ord om deigen og om kara den legges i, fire ord fra hverandre — i en metode som ellers sier «Hell poolish i bollen». Steget het «Form til bolle → romtemperatur» og heter nå «Form til emne → romtemperatur».",
+      "«Kule» sto i forklaringen til Langtidsdeig, Poolish og Biga: «en løs, dårlig rundet kule flyter utover» — rett under steg som kalte det samme et emne. Engelsken var forresten konsekvent hele veien; det var bare norsken som spriket.",
+      "En invariant holder det slik. Den morsomme biten er «bolle»: ordet kunne ikke forbys, for det er jo redskapet 28 steder. Regelen er derfor at «bolle» aldri får stå som noe du former — et rent forbud ville tvunget fram feil løsning, nemlig å døpe om blandebolla.",
+      "Dette er forarbeid til ordlista som skal komme. En ordliste som forklarer «emne» mens tekstene sier «ball» og «bolle» hjelper ingen; nå finnes det ett ord å slå opp."
+    ],
+    "changes_en": [
+      "The dough ball had four different names in Norwegian. \"Emne\" 75 times, \"ball\" 4, \"kule\" 6 — and \"bolle\" 30, but that last one is the mixing bowl, an entirely different object. It is now \"emne\" everywhere.",
+      "The worst offender was Mania poolish, which in one single sentence wrote \"shape a tight, round bolle. Place in a baking bolle or similar\". The same word for the dough and for the vessel it goes into, four words apart — in a method that elsewhere says \"pour the poolish into the bollen\". The step was called \"Shape into a bolle → room temperature\" and is now \"Shape into an emne → room temperature\".",
+      "\"Kule\" appeared in the explanation for Long-ferment, Poolish and Biga: \"a loose, poorly rounded kule spreads out\" — right below steps calling the same thing an emne. The English text was consistent throughout, as it happens; only the Norwegian drifted.",
+      "An invariant keeps it that way. The interesting part is \"bolle\": the word could not simply be banned, since it is the actual bowl in 28 places. The rule is therefore that \"bolle\" may never be something you shape — a flat ban would have forced the wrong fix, namely renaming the mixing bowl.",
+      "This is groundwork for the glossary to come. A glossary explaining \"emne\" while the texts say \"ball\" and \"bolle\" helps nobody; now there is one word to look up."
+    ]
+  },
+  {
     "v": "0.774",
     "d": "august 2026",
     "d_en": "August 2026",

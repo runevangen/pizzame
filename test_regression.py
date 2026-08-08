@@ -4450,6 +4450,11 @@ def run_behavioral_tests(page):
       const saved={method:S.method,type:S.type,oven:S.oven,mode:S.mode,mel:S.mel,
                    hydro:S.hydro,cold:S.cold,temp:S.temp,fridgeC:S.fridgeC,gjaer:S.gjaer,
                    hurtigH:S.hurtigH,kveldH:S.kveldH,poolishH:S.poolishH,bigaH:S.bigaH};
+      // v0.775: språket var IKKE pinnet — sveipet arvet _lang fra forrige test.
+      // Alle invariantene under linter norsk tekst (B leter etter norske
+      // mengdeord, G etter «vann», H etter «emne»), så en lekket 'en' fra en
+      // tidligere test ville gjort dem til støy. Nå er de rekkefølge-uavhengige.
+      const _lang0=window._lang; window._lang='no';
       const out=[];
       for(const m of ['standard','poolish','biga','mania','hurtig','kveld'])
       for(const t of ['napoletana','newyork','langpanne','chicago','ingenelting'])
@@ -4498,7 +4503,7 @@ def run_behavioral_tests(page):
                     return el?el.innerText:''; }catch(e){ return ''; } })(),
                   needs:steps.map(s=>s.needs||[]).reduce((a,b)=>a.concat(b),[])});
       }
-      Object.assign(S,saved);
+      Object.assign(S,saved); window._lang=_lang0;
       return out;
     }"""
     sweep = page.evaluate(MATRIX_SWEEP)
@@ -4727,6 +4732,41 @@ def run_behavioral_tests(page):
     results.append(('invariant_water_states_its_temperature_where_added', ok118d,
                     {'utenTemp': sorted(set(water_no_temp))[:12],
                      'antall': len(water_no_temp)}))
+
+    # --- H: deigballen heter ÉN ting på norsk ---
+    # v0.775: spurt om appen bruker andre ord enn «emne». Målt over all norsk
+    # stegtekst: emne 75, ball 4, kule 6 — og «bolle» 30, men det er
+    # BLANDEBOLLA. Verst var Mania, som i én setning skrev «lag en stram, rund
+    # bolle. Legg i bakebolle» — samme ord om deigen og om kara den legges i,
+    # fire ord fra hverandre, i en metode som ellers sier «Hell poolish i
+    # bollen». Engelsken var konsekvent hele veien («ball»); det var bare
+    # norsken som spriket.
+    #
+    # «ball» og «kule» bannlyses rett ut — de har ingen annen betydning her.
+    # «bolle» kan IKKE bannlyses: den er redskapet 30 steder. Regelen er derfor
+    # at «bolle» aldri får stå som objekt for et formingsverb. En regel som
+    # bare forbød ordet ville tvunget fram feil fiks (å døpe om blandebolla).
+    NO_BALL = re.compile(r"\bball(?:en|er|ene)?\b|\bkule(?:n|r|ne)?\b", re.I)
+    BOLLE_SOM_DEIG = re.compile(
+        r"(?:form|lag|brett|rund|stram)\w*[^.!?|]{0,40}\bbolle\b", re.I)
+    ordbrudd = []
+    for d in sweep:
+        if d.get("err"):
+            continue
+        for st in (d.get("steps") or []):
+            biter = [st.get("title"), st.get("desc"), st.get("why"), st.get("tip")] \
+                    + list(st.get("substeps") or [])
+            for b in biter:
+                tekst = str(b or "")
+                for pat, hvorfor in ((NO_BALL, "ball/kule"),
+                                     (BOLLE_SOM_DEIG, "bolle=deig")):
+                    m = pat.search(tekst)
+                    if m:
+                        ordbrudd.append(f"{d['m']} · {hvorfor} · «{m.group(0)}» i: "
+                                        + re.sub(r"\s+", " ", tekst)[:90])
+    ok118e = not ordbrudd
+    results.append(('invariant_dough_ball_has_one_norwegian_name', ok118e,
+                    {'brudd': sorted(set(ordbrudd))[:12], 'antall': len(ordbrudd)}))
 
     # v0.759: Mania er en AVSKRIFT, ikke en beregning. Kilden er «Lørdagspizza
     # med poolish tilpasset tidsklemma», René Munthe Eik, pizzamani.no,

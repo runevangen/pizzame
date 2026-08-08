@@ -1069,7 +1069,7 @@ const TITLES_EN = {
   'Nedkjøling':'Cooling down',
   'Bland hoveddeig':'Mix the main dough',
   'Hvile i ro':'Rest undisturbed',
-  'Form til bolle → romtemperatur':'Shape into a ball → room temperature',
+  'Form til emne → romtemperatur':'Shape into a ball → room temperature',
   'Kjøleskapsheving (udelt)':'Cold proof (undivided)',
   'Del i emner':'Divide into balls',
   'Romtemperaturheving (delt)':'Room-temperature rise (divided)',
@@ -2119,7 +2119,7 @@ function stepLoc(s){ return s.dispLoc||s.loc; }
 const LOC=new Proxy({},{get:(_,k)=>((window._lang==='en'?LOC_EN:LOC_NO)[k])});
 const WHY_NO={
   fk:'Kald fermentering (2–4°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet. Kulda er også tilgivende — siden den bremser hele prosessen, tåler en kald deig litt mer gjær enn du skulle tro før det blir et problem.',
-  form:'Tette, godt rundede emner holder på gassen og formen gjennom hele kjøleskapshevingen. En løs, dårlig rundet kule flyter utover og gir en flat, ustrukturert pizza. Rundingen bygger også overflatespenning som får emnet til å heve oppover i stedet for utover — grunnlaget for en luftig kant.',
+  form:'Tette, godt rundede emner holder på gassen og formen gjennom hele kjøleskapshevingen. Et løst, dårlig rundet emne flyter utover og gir en flat, ustrukturert pizza. Rundingen bygger også overflatespenning som får emnet til å heve oppover i stedet for utover — grunnlaget for en luftig kant.',
   tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 2–4°C, og noen timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
   st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
@@ -2619,10 +2619,14 @@ function rawSteps(a){
         desc:L('Smør et tynt lag olivenolje på kjøkkenbenken og over deigen. Dekk til (brødpose eller plastfolie) og la ligge urørt.',`Spread a thin layer of olive oil on the counter and over the dough. Cover (bread bag or plastic wrap) and let it lie undisturbed.`),
         substeps:[L('Smør et tynt lag olivenolje på benken og over deigen',`Spread a thin layer of olive oil on the counter and over the dough`),L('Dekk til og la ligge urørt',`Cover and let it lie undisturbed`)],
         why:L('En rolig benkhvile lar gluten slappe av etter eltingen og gir deigen en første, jevn heving før forming.','A calm rest on the counter lets the gluten relax after kneading and gives the dough a first, even rise before shaping.')},
-      {title:'Form til bolle → romtemperatur',loc:'rom',at:shapeAt,dur:ROOMTEMP1,passive:false,
-        desc:L('Brett deigen noen ganger og lag en stram, rund bolle. Legg i bakebolle eller lignende, dekk med lokk eller plastfolie.',`Fold the dough a few times and make a tight, round ball. Place in a baking bowl or similar, cover with a lid or plastic wrap.`),
+      // v0.775: het «Form til bolle». «bolle» betyr blandebollen 30 andre steder
+      // i appen — og i SAMME setning sto «lag en stram, rund bolle. Legg i
+      // bakebolle». Samme ord om deigen og om kara den legges i, fire ord fra
+      // hverandre. Deigen heter «emne» 75 steder; nå også her.
+      {title:'Form til emne → romtemperatur',loc:'rom',at:shapeAt,dur:ROOMTEMP1,passive:false,
+        desc:L('Brett deigen noen ganger og lag et stramt, rundt emne. Legg i bakebolle eller lignende, dekk med lokk eller plastfolie.',`Fold the dough a few times and make a tight, round ball. Place in a baking bowl or similar, cover with a lid or plastic wrap.`),
         substeps:[
-          L('Brett deigen noen ganger, lag en stram, rund bolle',`Fold the dough a few times, make a tight, round ball`),
+          L('Brett deigen noen ganger, lag et stramt, rundt emne',`Fold the dough a few times, make a tight, round ball`),
           L('Legg i bakebolle eller lignende',`Place in a baking bowl or similar`),
           L('Dekk med lokk eller plastfolie',`Cover with a lid or plastic wrap`)
         ],
@@ -2634,15 +2638,15 @@ function rawSteps(a){
         why:L('Kald fermentering av hele deigen samlet (i stedet for delt i emner) er den strukturelle kjernen i denne metoden — gir jevn, kontrollert modning.',`Cold fermentation of the whole dough together (instead of divided into balls) is the structural core of this method — gives even, controlled maturation.`),
         tip:L('Sjekk gjennom lokket uten å åpne: deigen skal vokse til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.','Check through the lid without opening: the dough should grow to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.')},
       {title:'Del i emner',loc:'benk',at:divideAt,dur:MANIA_T.DIVIDE,
-        desc:L(N('Del i ett emne à ønsket vekt. Form en ball og legg i oljet boks eller dyp skål, dekk med lokk eller plastfolie.','Del i emner à ønsket vekt (vei dem for lik størrelse). Form baller og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.'),N('Divide into one ball of the desired weight. Shape it and place in an oiled container or deep bowl, cover with a lid or plastic wrap.',`Divide into balls of the desired weight (weigh them for equal size). Shape balls and place each in its own oiled container or deep bowl, cover with a lid or plastic wrap.`)),
+        desc:L(N('Del i ett emne à ønsket vekt. Form det stramt og legg i oljet boks eller dyp skål, dekk med lokk eller plastfolie.','Del i emner à ønsket vekt (vei dem for lik størrelse). Form dem stramt og legg i hver sin oljede boks eller dype skål, dekk med lokk eller plastfolie.'),N('Divide into one ball of the desired weight. Shape it and place in an oiled container or deep bowl, cover with a lid or plastic wrap.',`Divide into balls of the desired weight (weigh them for equal size). Shape balls and place each in its own oiled container or deep bowl, cover with a lid or plastic wrap.`)),
         needs:[L(N('📦 boks/skål','📦 boks/skål per emne'),N(`📦 container/bowl`,`📦 container/bowl per ball`)), L('🫒 litt olje',`🫒 a little oil`)],
         substeps:[
           L(N('Del i ett emne à ønsket vekt','Del i emner à ønsket vekt (vei dem for lik størrelse)'),N('Divide into one ball of the desired weight','Divide into balls of the desired weight (weigh them for equal size)')),
-          L('Form stramme baller',`Shape tight balls`),
+          L('Form stramme emner',`Shape tight balls`),
           L('Legg i hver sin oljede boks eller dype skål, dekk til',`Place each in its own oiled container or deep bowl, cover`)
         ],
         why:L('Deigen deles først etter den lange, samlede kjølehevingen — da bærer hvert emne med seg modningen hele deigen har bygget opp.','The dough is divided only after the long, undivided cold proof — so each ball carries the maturation the whole dough has built up.'),
-        tip:L('Baller som er formet stramt holder seg bedre gjennom neste, lange romtemperaturheving.',`Balls shaped tightly hold up better through the next, long room-temperature rise.`)},
+        tip:L('Emner som er formet stramt holder seg bedre gjennom neste, lange romtemperaturheving.',`Balls shaped tightly hold up better through the next, long room-temperature rise.`)},
       {title:'Romtemperaturheving (delt)',loc:'rom',at:aM(divideAt,15),dur:FINAL_PROOF-15,passive:true,
         desc:L(`${N('La emnet heve','La emnene heve')} i romtemperatur ved ${S.temp}°C.`,`${N('Let the ball rise','Let the balls rise')} at room temperature at ${S.temp}°C.`),
         substeps:[L(`${N('La emnet heve','La emnene heve')} i romtemperatur ved ${S.temp}°C`,`${N('Let the ball rise','Let the balls rise')} at room temperature at ${S.temp}°C`)],

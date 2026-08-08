@@ -1096,6 +1096,35 @@ rekkefølgen. F17 er det klart mest verdifulle.
   ordlista råtne fra hverandre når tekstene endres. Samme mønster som invariant
   D (ingenting bor bare i understegene).
 
+#### Forarbeid gjort i v0.775: «emne» er nå det ENESTE ordet
+Spurt om appen brukte andre ord enn «emne». Målt over all norsk stegtekst:
+
+| Ord | Før | Etter | Hva det var |
+|---|---:|---:|---|
+| emne | 75 | **87** | standarden |
+| bolle | 30 | 28 | *blandebolla* — riktig, skal stå |
+| kule | 6 | **0** | i «Hvorfor» hos Langtidsdeig/Poolish/Biga |
+| ball | 4 | **0** | bare Mania |
+
+Verst var Mania: **«lag en stram, rund bolle. Legg i bakebolle»** — samme ord om
+deigen og om kara den legges i, fire ord fra hverandre, i en metode som ellers
+sier «Hell poolish i bollen». Steget het «Form til bolle → romtemperatur».
+Engelsken var konsekvent hele veien («ball»); det var bare norsken som spriket.
+
+Dette er forarbeid, ikke F30 selv: en ordliste som forklarer «emne» mens
+tekstene sier «ball», «kule» og «bolle» hjelper ingen. Nå finnes det ett ord å
+slå opp.
+
+**Invariant H** (`invariant_dough_ball_has_one_norwegian_name`) holder det slik.
+Den interessante delen er «bolle»: ordet kunne ikke bannlyses, for det ER
+redskapet 28 steder. Regelen er derfor at «bolle» aldri får stå som objekt for
+et formingsverb. En regel som bare forbød ordet ville tvunget fram feil fiks —
+å døpe om blandebolla.
+
+Samme runde: `MATRIX_SWEEP` pinner nå `_lang='no'`. Det gjorde den ikke før, så
+alle de norske invariantene (B, D, F, G, H) arvet språket fra forrige test og
+var rekkefølge-avhengige.
+
 ### F31. Smart-plan hopper 482 px opp hver gang du huker av en metode ✅ FIKSET (v0.771)
 
 > ✅ **Bygget i v0.771.** `betaOppdaterResultat()` kjører `runBetaSearch(true)` og
