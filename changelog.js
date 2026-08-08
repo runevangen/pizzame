@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.772",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Finn oppskriften» var grå. Den var grå fordi den ventet på at du skulle røre klokka eller datoen — men den har hele tiden vært trykkbar, og begge feltene har alltid hatt gyldige verdier. Grått på en knapp som virker er ikke et hint, det er fargen alle andre grensesnitt bruker for «denne gjør ingenting». Nå er den oransje støtt.",
+      "Da jeg målte, viste det seg å være verre enn meldt inn. Knappen skiftet farge — og glemte det igjen. Panelet nullstiller veiledningen hver gang fanen åpnes, så du kunne sette datoen, se den bli oransje, gå til Planlegging, komme tilbake, og finne den grå med datoen fortsatt satt. Den grå var altså ikke unntaket, den var det du så nesten hver gang.",
+      "Og skjermen var ikke bare «litt grå»: null flater i aksentfarge av 35 elementer før du søker. Veiledningen ligger fortsatt i det lille glødet på klokkefeltet, som peker på hva du kan gjøre uten å påstå at knappen er død.",
+      "«Åpne planen →» på alternativforslagene var en gjennomsiktig omriss-knapp. På krem bakgrunn leses det som tomt, ikke som «nummer to». De har fått et dempet oransje fyll. Vinneren er fortsatt den eneste med full farge, så rekkefølgen er like tydelig."
+    ],
+    "changes_en": [
+      "\"Find the recipe\" was grey. It was grey because it was waiting for you to touch the clock or the date — but it has always been clickable, and both fields have always held valid values. Grey on a button that works is not a hint, it is the colour every other interface uses for \"this does nothing\". It is now orange at all times.",
+      "When I measured it, it turned out to be worse than reported. The button did change colour — and then forgot again. The panel resets the guidance every time the tab is opened, so you could set the date, watch it turn orange, go to Planning, come back, and find it grey with the date still set. Grey was not the exception; it was what you saw almost every time.",
+      "And the screen was not merely \"a bit grey\": zero accent-coloured surfaces out of 35 elements before you search. The guidance still lives in the small glow on the clock field, which points at what you can do without claiming the button is dead.",
+      "\"Open the plan →\" on the alternative suggestions was a transparent outline button. On a cream background that reads as empty, not as \"runner-up\". They now have a muted orange fill. The winner is still the only one with the full colour, so the ranking is just as clear."
+    ]
+  },
+  {
     "v": "0.771",
     "d": "august 2026",
     "d_en": "August 2026",

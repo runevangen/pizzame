@@ -1874,30 +1874,57 @@ def run_behavioral_tests(page):
             and r42['no']['pcOvn']==['Pizzaovn (430–450°C)','Vanlig ovn (maks 250°C)'])
     results.append(('yeast_machine_oven_pills_localized_pc_oven_keeps_temp', ok42, r42))
 
-    # v0.710: «Finn oppskriften» lyser opp (--forno-border → --forno-accent) så snart
-    # ETT av feltene (tid ELLER dato) er endret — ikke begge. Tid-feltet har et lite
-    # «start her»-glød til du har rørt noe. ✓-haka (is-done / .beta-done) er fjernet.
-    r43 = page.evaluate("""() => {
-      const tf=document.getElementById('mob-beta-et-field'), df=document.getElementById('mob-beta-ed-field'), btn=document.getElementById('mob-beta-search-btn');
-      if(!tf||!df||!btn) return {missing:true};
-      const st=()=>({tA:tf.classList.contains('is-active'), dA:df.classList.contains('is-active'),
-                     anyDone: tf.classList.contains('is-done')||df.classList.contains('is-done'),
-                     bg:btn.style.background});
-      window._betaTouched={time:false,date:false}; betaUpdateGuide(); const s0=st();
-      window._betaTouched={time:false,date:true}; betaUpdateGuide(); const sDate=st(); // KUN dato endret
-      window._betaTouched={time:true,date:false}; betaUpdateGuide(); const sTime=st(); // KUN tid endret
-      const noCheckmarkEls = !document.querySelector('.beta-done');
-      window._betaTouched={time:false,date:false}; betaUpdateGuide();
-      return {s0,sDate,sTime,noCheckmarkEls};
+    # v0.772: «Finn oppskriften» var grå (--forno-border, #e0d3b5) til du hadde
+    # rørt tid eller dato. Meldt inn som «skifter ikke farge» — og målingen ga
+    # noe verre enn det: den skifter, og glemmer det igjen. renderBetaPanel()
+    # nullstiller _betaTouched hver gang fanen åpnes, så
+    #   ankomst grå → sett dato oransje → bytt fane og tilbake → grå igjen,
+    # med datoen fortsatt satt. Målt 0 aksentflater av 35 før søk.
+    #
+    # Knappen har hele tiden vært trykkbar, og feltene har alltid hatt gyldige
+    # verdier. Grå på en knapp som virker er ikke et hint — det er samme farge
+    # alle andre grensesnitt bruker for «denne gjør ingenting».
+    #
+    # Testen sjekker den ferdige FARGEN, ikke inline-style-strengen: den gamle
+    # varianten leste btn.style.background og ville ikke merket at
+    # --forno-border og --forno-accent byttet verdi.
+    r43 = page.evaluate("""async () => {
+      const vent=()=>new Promise(r=>setTimeout(r,120));
+      const _lang=window._lang; window._lang='no'; setLayout('mob');
+      try{
+        mobShowTab('beta'); await vent();
+        const tf=document.getElementById('mob-beta-et-field'),
+              df=document.getElementById('mob-beta-ed-field'),
+              btn=document.getElementById('mob-beta-search-btn');
+        if(!tf||!df||!btn) return {missing:true};
+        const rot=getComputedStyle(document.body);
+        const aksent=rot.getPropertyValue('--forno-accent').trim();
+        const kant=rot.getPropertyValue('--forno-border').trim();
+        const hex=s=>{const m=s.match(/\\d+/g); return m?'#'+m.slice(0,3).map(n=>(+n).toString(16).padStart(2,'0')).join(''):s;};
+        const st=()=>({tA:tf.classList.contains('is-active'),
+                       anyDone: tf.classList.contains('is-done')||df.classList.contains('is-done'),
+                       bg:hex(getComputedStyle(btn).backgroundColor)});
+        window._betaTouched={time:false,date:false}; betaUpdateGuide(); const s0=st();
+        window._betaTouched={time:true,date:false}; betaUpdateGuide(); const sTime=st();
+        // Det avgjørende tilfellet: fanen åpnes på nytt med datoen fortsatt satt.
+        document.getElementById('mob-beta-ed').value='2026-08-12';
+        mobShowTab('plan'); await vent(); mobShowTab('beta'); await vent();
+        const sRetur=st();
+        const noCheckmarkEls = !document.querySelector('.beta-done');
+        return {s0,sTime,sRetur,noCheckmarkEls,aksent,kant,
+                erAlltidAksent:[s0,sTime,sRetur].every(s=>s.bg===aksent),
+                aldriKantfarge:[s0,sTime,sRetur].every(s=>s.bg!==kant)};
+      } finally { window._lang=_lang; }
     }""")
     ok43 = (
       not r43.get('missing') and
-      r43['s0']['tA'] is True and 'border' in r43['s0']['bg'] and r43['s0']['anyDone'] is False and
-      'accent' in r43['sDate']['bg'] and r43['sDate']['anyDone'] is False and   # kun dato → oransje
-      'accent' in r43['sTime']['bg'] and r43['sTime']['anyDone'] is False and   # kun tid → oransje
-      r43['noCheckmarkEls'] is True                                             # ✓-haka borte
+      r43.get('erAlltidAksent') is True and    # aldri disabled-drakt, uansett tilstand
+      r43.get('aldriKantfarge') is True and
+      r43['s0']['tA'] is True and              # «start her»-glødet bærer veiledningen
+      r43['s0']['anyDone'] is False and
+      r43.get('noCheckmarkEls') is True        # ✓-haka fortsatt borte
     )
-    results.append(('smartplan_find_button_lights_when_either_field_changed_no_checkmark', ok43, r43))
+    results.append(('smartplan_find_button_never_wears_disabled_grey', ok43, r43))
 
     # v0.653: Deiger flyttet inn i «Mer» (tidligere «Info»). Fire faner igjen,
     # Deiger-innholdet bor øverst i Mer-fanen (#mob-tips), og Mer-fanen får en
@@ -5320,9 +5347,14 @@ def run_behavioral_tests(page):
       const kanRulle = sc && sc.scrollHeight > sc.clientHeight+60;
       vinkStart(c.captureStream(30));
       await new Promise(r=>setTimeout(r,400));
+      // Sveipet må ligge godt INNENFOR VINK_VINDU (700 ms), ikke på kanten av
+      // det. 15 bilder à 45 ms = 630 ms lå 70 ms fra grensa, og et forsinket
+      // bilde rullet det eldste punktet ut av vinduet — da målte reisen for
+      // kort og vinket forsvant. Testen var flaky av den grunn alene. 11 à 35 ms
+      // = 385 ms tester det samme med margin.
       const sveip=async (x0,y0,x1,y1)=>{
-        for(let i=0;i<=14;i++){ hx=x0+(x1-x0)*i/14; hy=y0+(y1-y0)*i/14; tegn();
-          await new Promise(r=>setTimeout(r,45)); }
+        for(let i=0;i<=10;i++){ hx=x0+(x1-x0)*i/10; hy=y0+(y1-y0)*i/10; tegn();
+          await new Promise(r=>setTimeout(r,35)); }
         hx=null; tegn(); await new Promise(r=>setTimeout(r,500));
         await new Promise(r=>setTimeout(r,900));
       };
@@ -5341,12 +5373,18 @@ def run_behavioral_tests(page):
       return {kanRulle, s0, s1, s2, s3, s4,
               nedRuller: s1.t > s0.t + 40 && s1.i === s0.i,
               oppRullerTilbake: s2.t < s1.t - 40 && s2.i === s1.i,
-              sideveisBlarUtenÅRulle: s3.i === s2.i + 1 && Math.abs(s3.t - s2.t) < 5,
+              // Krevde tidligere at rullingen sto stille over stegbyttet. Det
+              // motsier v0.770, som med vilje nullstiller rullingen når du
+              // bytter STEG — det er en ny tekst å begynne på. Sjekken bestod
+              // bare fordi opp-vinket like før hadde rullet oss til 0; gikk
+              // opp-vinket tapt, feilet den uten at noe var galt med sideveis.
+              // Hvor rullingen havner ved stegbytte er r140 sitt ansvar.
+              sideveisBlarSteg: s3.i === s2.i + 1,
               diagonalGjørIngenting: s4.i === s3.i && Math.abs(s4.t - s3.t) < 5};
     }""")
     ok139 = all(r139.get(k) for k in
                 ['kanRulle', 'nedRuller', 'oppRullerTilbake',
-                 'sideveisBlarUtenÅRulle', 'diagonalGjørIngenting'])
+                 'sideveisBlarSteg', 'diagonalGjørIngenting'])
     results.append(('wave_scrolls_vertically_and_flips_horizontally', ok139, r139))
 
     # v0.770: rullingen i Fokus hoppet til toppen hver gang du haket av et
@@ -5457,15 +5495,33 @@ def run_behavioral_tests(page):
       const hintMotsierIkke = !(kortSierRaskere && !kortSierMerSmak && hintSierMerSmak)
                            && !(kortSierMerSmak && !kortSierRaskere && hintSierRaskere);
 
+      // v0.772: «Åpne planen er også grå». Vinneren skal ha fullt aksentfyll, og
+      // alternativene et dempet fyll — ikke gjennomsiktig. En omriss-knapp på
+      // krem leses som tom, ikke som «nummer to».
+      const knapper=[...boks.querySelectorAll('.beta-use')];
+      const bgAv=e=>getComputedStyle(e).backgroundColor;
+      const gjennomsiktig=s=>/rgba\\(.*,\\s*0\\)$/.test(s);
+      const aksent=getComputedStyle(document.body).getPropertyValue('--forno-accent').trim();
+      const somRgb=h=>{const n=parseInt(h.slice(1),16);return `rgb(${n>>16}, ${(n>>8)&255}, ${n&255})`;};
+      const vinnerFylt = knapper.length>0 && bgAv(knapper[0])===somRgb(aksent);
+      const altHarFyll = knapper.slice(1).length>0
+                      && knapper.slice(1).every(e=>!gjennomsiktig(bgAv(e)));
+      const altIkkeSammeSomVinner = knapper.slice(1).every(e=>bgAv(e)!==somRgb(aksent));
+      // MÅ leses før boks.remove(): getComputedStyle på et løsrevet element gir
+      // tom streng, og feilutskriften ville blitt ['','',''] uansett årsak.
+      const knappBg = knapper.map(bgAv);
+
       boks.remove();
       Object.assign(S,saved); _q10Memo={k:null,v:null};
       return {harType, harEmner, harMel, gjaerPerKort, knappSierHvor, hintMotsierIkke,
               fasit:d, kortSierRaskere, kortSierMerSmak, hintSierMerSmak,
-              hintSierRaskere, fantHint:!!hintEl};
+              hintSierRaskere, fantHint:!!hintEl,
+              vinnerFylt, altHarFyll, altIkkeSammeSomVinner, knappBg};
     }""")
     ok141 = all(r141.get(k) for k in
                 ['harType', 'harEmner', 'harMel', 'gjaerPerKort', 'knappSierHvor',
-                 'hintMotsierIkke', 'fantHint'])
+                 'hintMotsierIkke', 'fantHint',
+                 'vinnerFylt', 'altHarFyll', 'altIkkeSammeSomVinner'])
     results.append(('smartplan_result_reads_as_a_real_recipe', ok141, r141))
 
     # v0.771 (F31): «inne på Smart-plan og metoder du blir tilbudt så hopper den

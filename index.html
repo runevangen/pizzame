@@ -607,7 +607,11 @@ body.fs-xxlarge .mob-mcard-wrap{zoom:0.625}
 .beta-eff.quick,.beta-eff.fits{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
 .beta-eff.active{background:#fbe4d4;color:#b45309;border:1px solid #f1c49a}
 .beta-use{width:100%;height:34px;border:none;border-radius:8px;background:var(--forno-accent,#e8590c);color:#1a1512;font-size:12px;font-weight:800;cursor:pointer;margin-top:8px;font-family:inherit}
-.beta-use.beta-sec{background:transparent;border:1.5px solid var(--forno-accent,#e8590c);color:var(--forno-accent-text,#c2410c)}
+/* v0.772: alternativene var gjennomsiktige — en omriss-knapp på krem leses som
+   tom, ikke som «nummer to». De får nå samme dempede aksentfyll som
+   .mob-plan-seg.on, et par som allerede er kontrastsjekket. Vinneren er fortsatt
+   den eneste med full aksent, så rangeringen holder. */
+.beta-use.beta-sec{background:var(--forno-accent-soft,#fbe4d4);border:1.5px solid var(--forno-accent,#e8590c);color:var(--forno-accent-text,#c2410c)}
 .beta-eff.quick{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
 .beta-eff.active{background:#fbe4d4;color:#b45309;border:1px solid #f1c49a}
 .beta-eff.fits{background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab}
@@ -4036,11 +4040,22 @@ function betaUpdateGuide(){
   // Et lite «start her»-glød på tid-feltet til du har rørt ett av feltene; så ro.
   if(tf){ tf.classList.toggle('is-active', !anyTouched); tf.classList.remove('is-done'); }
   if(df){ df.classList.remove('is-active'); df.classList.remove('is-done'); }
+  // v0.772: knappen er ALLTID aksentfarget. Den var grå (--forno-border) til du
+  // hadde rørt et felt — men den har alltid vært trykkbar, og feltene har alltid
+  // hatt gyldige verdier. Grå på en knapp som virker er ikke et hint, det er en
+  // løgn: alle andre grensesnitt bruker grått for «denne gjør ingenting».
+  //
+  // Og den grå tilstanden var ikke unntaket. `renderBetaPanel()` nullstiller
+  // _betaTouched hver gang fanen åpnes, så du kunne sette datoen, se knappen bli
+  // oransje, gå til Planlegging, komme tilbake — og finne den grå igjen med
+  // datoen fortsatt satt. Målt: 0 aksentflater av 35 på skjermen før søk.
+  //
+  // Veiledningen ligger fortsatt i «start her»-glødet på tid-feltet over. Den
+  // peker på hva du kan gjøre uten å påstå at knappen er død.
   if(btn){
-    const ready = anyTouched;
-    btn.style.background = ready ? 'var(--forno-accent)' : 'var(--forno-border)';
-    btn.style.color = ready ? '#1a1512' : 'var(--forno-text-faint)';
-    btn.style.boxShadow = ready ? '0 4px 14px rgba(232,89,12,.30)' : 'none';
+    btn.style.background = 'var(--forno-accent)';
+    btn.style.color = '#1a1512';
+    btn.style.boxShadow = '0 4px 14px rgba(232,89,12,.30)';
   }
 }
 async function renderBetaPanel(){
