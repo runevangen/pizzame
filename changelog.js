@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.766",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nytt i Fokus-modus: bla mellom stegene ved å vinke, uten å ta på telefonen. Sett telefonen opp mot noe, trykk «👋 Bla med vink» én gang, og vink deretter med hånden — mot høyre for neste steg, mot venstre for forrige. Laget for øyeblikket der hendene er fulle av deig.",
+      "Kameraet ser bare etter HVOR i bildet det beveger seg. Hvert bilde krymper til 32 × 24 punkter, sammenlignes med det forrige, og kastes. Ingen bilder lagres, og ingenting sendes noe sted.",
+      "Av som standard, og det krever et bevisst trykk å slå på. Kameraet slippes når du slår det av, når du lukker Fokus, og når appen går i bakgrunnen.",
+      "Røring i en bolle blar ikke — bevegelsen må komme et sted, ikke bare fram og tilbake. Men en person som går forbi bak deg beveger seg jevnt i én retning og kan se ut som et vink. Det er en kjent begrensning."
+    ],
+    "changes_en": [
+      "New in Focus mode: move between steps by waving, without touching the phone. Prop the phone up, tap “👋 Flip with a wave” once, then wave your hand — to the right for the next step, to the left for the previous one. Made for the moment when your hands are covered in dough.",
+      "The camera only looks at WHERE in the picture something moves. Each frame shrinks to 32 × 24 points, is compared with the previous one, and is thrown away. No images are stored, and nothing is sent anywhere.",
+      "Off by default, and it takes a deliberate tap to switch on. The camera is released when you switch it off, when you close Focus, and when the app goes into the background.",
+      "Stirring a bowl will not flip the step — the movement has to get somewhere, not just go back and forth. But a person walking past behind you moves steadily in one direction and can look like a wave. That is a known limitation."
+    ]
+  },
+  {
     "v": "0.765",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -7491,7 +7491,158 @@ function focusReleaseWake(){ try{ if(_focusWakeLock) _focusWakeLock.release(); }
 document.addEventListener('visibilitychange', ()=>{
   const ov=document.getElementById('focus-overlay');
   if(document.visibilityState==='visible' && ov && ov.style.display==='flex') focusAcquireWake();
+  // v0.766: går appen i bakgrunnen, slippes kameraet. Et kamera som står på i
+  // en app du ikke ser, er ikke noe man skal måtte stole på at vi rydder opp i
+  // senere — og frames vi ikke kan behandle er uansett bortkastet strøm.
+  if(document.visibilityState!=='visible') vinkStopp();
 });
+// ===== VINKESTYRING (v0.766) — bla i Fokus uten å ta på telefonen =====
+//
+// Bruksmønsteret er hele begrunnelsen: du står ved benken med deig på hendene,
+// telefonen er satt opp mot noe, og du vil videre til neste steg. Å ta på
+// skjermen betyr å vaske hendene eller å grise ned telefonen.
+//
+// «Uten å røre mobilen» utelukker devicemotion. Da står to veier igjen:
+// stemme eller kamera. Stemme taper på et kjøkken — kjøkkenmaskinen går,
+// ovnsviften går, og webkitSpeechRecognition må startes på nytt etter hvert
+// resultat. Kamera bryr seg ikke om støy.
+//
+// Ingen bibliotek og ingen maskinlæring: det holder å se HVOR i bildet det
+// beveger seg. Hver frame tegnes ned til 32×24 piksler, differansen mot forrige
+// frame gir bevegelsesenergi per kolonne, og tyngdepunktet av den energien er
+// hånden din. Flytter tyngdepunktet seg jevnt over bildet, var det et vink.
+//
+// Bildene forlater aldri telefonen og lagres ingen steder — de blir til 768
+// gråtoner, sammenlignet med forrige sett, og kastet.
+const VINK = {
+  strøm:null, video:null, ctx:null, timer:null,
+  forrige:null, spor:[], sistUtløst:0, på:false, speilvend:true
+};
+const VINK_B=32, VINK_H=24;          // arbeidsoppløsning
+const VINK_INTERVALL=60;             // ms mellom frames (~16 fps)
+const VINK_STØY=8;                   // snitt |differanse| per piksel før noe telles som bevegelse
+const VINK_VINDU=700;                // ms sporet holdes
+const VINK_REISE=0.30;               // andel av bredden tyngdepunktet må flytte seg
+const VINK_MINTID=180;               // ms — raskere enn dette er flimmer, ikke et vink
+const VINK_PAUSE=1200;               // ms sperre etter et utløst vink
+
+// Tar en ferdig MediaStream. Skilt fra kameratilgangen med vilje: da kan en
+// test mate detektoren med canvas.captureStream() og bevise at den finner
+// retningen, uten kamera og uten tillatelsesdialog.
+function vinkStart(strøm){
+  vinkStopp();
+  VINK.strøm=strøm;
+  const v=document.createElement('video');
+  v.autoplay=true; v.muted=true; v.playsInline=true; v.srcObject=strøm;
+  VINK.video=v;
+  const c=document.createElement('canvas');
+  c.width=VINK_B; c.height=VINK_H;
+  VINK.ctx=c.getContext('2d',{willReadFrequently:true});
+  VINK.forrige=null; VINK.spor=[]; VINK.på=true;
+  const start=()=>{ VINK.timer=setInterval(vinkTikk, VINK_INTERVALL); };
+  const p=v.play();
+  if(p && p.then) p.then(start).catch(start); else start();
+}
+function vinkStopp(){
+  if(VINK.timer) clearInterval(VINK.timer);
+  VINK.timer=null;
+  try{ if(VINK.strøm) VINK.strøm.getTracks().forEach(t=>t.stop()); }catch(e){}
+  if(VINK.video){ try{ VINK.video.srcObject=null; }catch(e){} }
+  VINK.strøm=null; VINK.video=null; VINK.ctx=null;
+  VINK.forrige=null; VINK.spor=[]; VINK.på=false;
+}
+// Ett bilde: tegn ned, mål bevegelse per kolonne, finn tyngdepunktet.
+// Returnerer tyngdepunktet 0..1, eller null når det er for lite bevegelse.
+function vinkMål(){
+  const c=VINK.ctx, v=VINK.video;
+  if(!c||!v||!v.videoWidth) return null;
+  c.save();
+  // Frontkameraet gir USPEILET bilde: beveger du hånden mot høyre, går den mot
+  // venstre i bildet. Vi speiler, så «høyre» i koden er din høyre.
+  if(VINK.speilvend){ c.scale(-1,1); c.drawImage(v,-VINK_B,0,VINK_B,VINK_H); }
+  else c.drawImage(v,0,0,VINK_B,VINK_H);
+  c.restore();
+  const d=c.getImageData(0,0,VINK_B,VINK_H).data;
+  const grå=new Uint8Array(VINK_B*VINK_H);
+  for(let i=0,j=0;i<d.length;i+=4,j++) grå[j]=(d[i]+d[i+1]+d[i+2])/3;
+  const f=VINK.forrige;
+  VINK.forrige=grå;
+  if(!f) return null;
+  const kol=new Float64Array(VINK_B);
+  let sum=0;
+  for(let y=0;y<VINK_H;y++) for(let x=0;x<VINK_B;x++){
+    const diff=Math.abs(grå[y*VINK_B+x]-f[y*VINK_B+x]);
+    kol[x]+=diff; sum+=diff;
+  }
+  if(sum/(VINK_B*VINK_H) < VINK_STØY) return null;
+  let vekt=0;
+  for(let x=0;x<VINK_B;x++) vekt+=x*kol[x];
+  return (vekt/sum)/(VINK_B-1);
+}
+function vinkTikk(){
+  const nå=Date.now();
+  const x=vinkMål();
+  if(x===null){
+    // Stillhet river sporet: to halve vink et sekund fra hverandre er ikke ett vink.
+    if(VINK.spor.length && nå-VINK.spor[VINK.spor.length-1].t > VINK_INTERVALL*3) VINK.spor=[];
+    return;
+  }
+  VINK.spor.push({t:nå, x});
+  while(VINK.spor.length && nå-VINK.spor[0].t > VINK_VINDU) VINK.spor.shift();
+  if(nå-VINK.sistUtløst < VINK_PAUSE) return;
+  if(VINK.spor.length<4) return;
+  const a=VINK.spor[0], b=VINK.spor[VINK.spor.length-1];
+  const reise=b.x-a.x, tid=b.t-a.t;
+  if(tid<VINK_MINTID || Math.abs(reise)<VINK_REISE) return;
+  // Retningen må være konsekvent. Uten dette utløser en hånd som går fram og
+  // tilbake — eller en person som passerer bak deg — på tilfeldig støy.
+  const tegn=Math.sign(reise);
+  let medstrøms=0;
+  for(let i=1;i<VINK.spor.length;i++)
+    if(Math.sign(VINK.spor[i].x-VINK.spor[i-1].x)===tegn) medstrøms++;
+  if(medstrøms < (VINK.spor.length-1)*0.7) return;
+  VINK.sistUtløst=nå; VINK.spor=[];
+  vinkUtløst(tegn>0 ? 'neste' : 'forrige');
+}
+function vinkUtløst(retning){
+  const ov=document.getElementById('focus-overlay');
+  if(!ov || ov.style.display!=='flex'){ vinkStopp(); return; }
+  const total=(window._steps||[]).length;
+  if(retning==='neste'){ if((window._focusIdx||0) < total-1) focusGoto((window._focusIdx||0)+1); }
+  else focusPrev();
+  vinkKvitter(retning);
+}
+function vinkKvitter(retning){
+  const el=document.getElementById('vink-kvittering');
+  if(!el) return;
+  el.textContent = retning==='neste' ? '👋 →' : '← 👋';
+  el.style.opacity='1';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{ el.style.opacity='0'; }, 900);
+}
+function vinkStøttes(){
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+// Slås på med et bevisst trykk — som også er brukergesten getUserMedia krever.
+// Av som standard, alltid: et kamera som starter av seg selv er ikke greit,
+// uansett hvor lokalt bildet blir.
+async function vinkToggle(){
+  if(VINK.på){ vinkStopp(); renderFocus(); return; }
+  const ok=await vinkSlåPå();
+  renderFocus();
+  if(!ok) alert(L('Fikk ikke tilgang til kameraet. Sjekk at nettleseren har lov til å bruke det.',
+                  'Could not get access to the camera. Check that the browser is allowed to use it.'));
+}
+async function vinkSlåPå(){
+  if(!vinkStøttes()) return false;
+  try{
+    const strøm=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:320, height:240}, audio:false});
+    VINK.speilvend=true;
+    vinkStart(strøm);
+    return true;
+  }catch(e){ return false; }
+}
+
 function openFocus(){
   const steps=window._steps||[];
   if(!steps.length) return;
@@ -7506,6 +7657,7 @@ function closeFocus(){
   const ov=document.getElementById('focus-overlay');
   if(ov) ov.style.display='none';
   focusReleaseWake();
+  vinkStopp();   // v0.766: kameraet skal aldri overleve at Fokus lukkes
 }
 function focusPrev(){ if((window._focusIdx||0)>0){ window._focusIdx--; renderFocus(); } }
 function focusGoto(idx){ const t=(window._steps||[]).length; if(idx>=0 && idx<t){ window._focusIdx=idx; renderFocus(); } }
@@ -7577,7 +7729,11 @@ function renderFocus(){
       <span onclick="closeFocus()" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--forno-border);background:var(--forno-bg-raised);color:var(--forno-text-faint);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">✕</span>
     </div>
     <div style="height:6px;background:var(--forno-bg-raised);border-radius:3px;margin:12px 18px 0;overflow:hidden"><div style="height:100%;width:${Math.round((i+1)/total*100)}%;background:var(--forno-accent)"></div></div>
-    ${window._focusWake?`<div style="text-align:center;font-size:10.5px;font-weight:700;color:var(--forno-text-faint);margin-top:8px">🔆 ${L('Skjermen holdes våken','Screen stays awake')}</div>`:''}
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;min-height:16px">
+      ${window._focusWake?`<span style="font-size:10.5px;font-weight:700;color:var(--forno-text-faint)">🔆 ${L('Skjermen holdes våken','Screen stays awake')}</span>`:''}
+      ${vinkStøttes()?`<span onclick="vinkToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${VINK.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${VINK.på?L('👋 Vink: på — kameraet ser etter håndbevegelser','👋 Wave: on — the camera is watching for hand movements'):L('👋 Bla med vink','👋 Flip with a wave')}</span>`:''}
+      <span id="vink-kvittering" style="font-size:15px;opacity:0;transition:opacity .2s;color:var(--forno-accent-text)"></span>
+    </div>
     <div style="flex:1;overflow-y:auto;padding:14px 18px 8px;text-align:left;display:flex;flex-direction:column">
       <div style="font-size:15px;font-weight:700;color:var(--forno-accent-text)">${escH(timeTxt)}${escH(durTxt)}</div>
       <div style="font-weight:800;font-size:21px;line-height:1.14;margin:6px 0 2px;color:var(--forno-text)">${escH(title)}${done?' <span style="color:var(--forno-accent-text)">✓</span>':''}</div>

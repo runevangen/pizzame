@@ -4917,6 +4917,108 @@ def run_behavioral_tests(page):
                  'gammelSoekNullstilt', 'soekBevartNaarSynlig'])
     results.append(('dough_search_appears_only_when_the_list_needs_it', ok133, r133))
 
+    # v0.766: vinkestyring i Fokus — bla uten å ta på telefonen, fordi hendene
+    # er fulle av deig. Ren frame-differanse: hvert bilde ned til 32×24, energi
+    # per kolonne, og tyngdepunktet av energien er hånden.
+    #
+    # Testes med canvas.captureStream() i stedet for et kamera. Derfor tar
+    # vinkStart() en ferdig MediaStream — skilt fra kameratilgangen med vilje,
+    # så detektoren kan bevises uten kamera og uten tillatelsesdialog.
+    #
+    # Fire krav:
+    #  - retningen må stemme, og de to veiene må gi HVER SIN handling
+    #  - stillstand skal ikke utløse noe. En detektor som blar av seg selv når
+    #    du står i ro, blir slått av og aldri slått på igjen.
+    #  - kameraet må slippes på ALLE utganger: av-knappen, at Fokus lukkes, og
+    #    at appen går i bakgrunnen
+    #  - av som standard
+    r134 = page.evaluate("""async () => {
+      const c=document.createElement('canvas'); c.width=320; c.height=240;
+      const g=c.getContext('2d');
+      let handX=null;
+      const tegn=()=>{ g.fillStyle='#eee'; g.fillRect(0,0,320,240);
+        if(handX!==null){ g.fillStyle='#111'; g.fillRect(handX-40,60,80,120); } };
+      tegn();
+      const logg=[];
+      const ekte=window.vinkUtløst;
+      window.vinkUtløst=r=>logg.push(r);
+      const sveip=async (fra,til)=>{
+        for(let i=0;i<=14;i++){ handX=fra+(til-fra)*i/14; tegn(); await new Promise(r=>setTimeout(r,45)); }
+        handX=null; tegn(); await new Promise(r=>setTimeout(r,300));
+      };
+
+      const avSomStandard = !VINK.på;
+
+      vinkStart(c.captureStream(30));
+      await new Promise(r=>setTimeout(r,400));
+      await sveip(30,290);
+      const enVei=logg.slice();
+      await new Promise(r=>setTimeout(r,1400));
+      await sveip(290,30);
+      const beggeVeier=logg.slice();
+      // Stillstand: bare det samme bildet om og om igjen.
+      await new Promise(r=>setTimeout(r,1400));
+      for(let i=0;i<20;i++){ tegn(); await new Promise(r=>setTimeout(r,45)); }
+      const etterRo=logg.slice();
+
+      const finnerBeggeRetninger = beggeVeier.length===2
+        && beggeVeier[0]!==beggeVeier[1]
+        && beggeVeier.every(x=>x==='neste'||x==='forrige');
+      const enVeiGirEttUtslag = enVei.length===1;
+      const roUtløserIngenting = etterRo.length===beggeVeier.length;
+
+      // Røring skal IKKE utløse: fram og tilbake uten å ende noe annet sted.
+      // Dette er hånden i bollen, eller en visp — den vanligste bevegelsen på
+      // et kjøkken, og den som ville gjort funksjonen ubrukelig om den bladde.
+      //
+      // MERK hva dette IKKE beviser: en person som går forbi bak deg beveger
+      // seg jevnt i én retning og ser ut som et vink. Det er en kjent
+      // begrensning, ikke noe kravet om konsekvent retning fanger — den
+      // avviser bare bevegelse som ikke kommer noen vei.
+      await new Promise(r=>setTimeout(r,1400));
+      const førRøring=logg.length;
+      for(const x of [30,250,30,250,30,250]){
+        handX=x; tegn(); await new Promise(r=>setTimeout(r,60));
+      }
+      handX=null; tegn(); await new Promise(r=>setTimeout(r,300));
+      const røringUtløserIngenting = logg.length===førRøring;
+
+      // Kameraet må slippes når man slår av.
+      const spor=VINK.strøm ? VINK.strøm.getTracks() : [];
+      vinkStopp();
+      const stoppetVedAv = VINK.timer===null && !VINK.strøm && !VINK.på
+                        && spor.every(t=>t.readyState==='ended');
+
+      // ...og når Fokus lukkes.
+      vinkStart(c.captureStream(30));
+      await new Promise(r=>setTimeout(r,150));
+      closeFocus();
+      const stoppetVedLukk = VINK.timer===null && !VINK.strøm;
+
+      // ...og når appen går i bakgrunnen.
+      // Siden må faktisk RAPPORTERE at den er skjult — headless-siden er
+      // synlig, så uten dette tester vi ingenting.
+      vinkStart(c.captureStream(30));
+      await new Promise(r=>setTimeout(r,150));
+      const ekteVis=Object.getOwnPropertyDescriptor(Document.prototype,'visibilityState');
+      Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});
+      document.dispatchEvent(new Event('visibilitychange'));
+      const stoppetVedBakgrunn = VINK.timer===null && !VINK.strøm;
+      delete document.visibilityState;
+      if(ekteVis) Object.defineProperty(Document.prototype,'visibilityState',ekteVis);
+
+      vinkStopp(); window.vinkUtløst=ekte;
+      return {avSomStandard, finnerBeggeRetninger, enVeiGirEttUtslag,
+              roUtløserIngenting, røringUtløserIngenting,
+              stoppetVedAv, stoppetVedLukk, stoppetVedBakgrunn,
+              utslag:beggeVeier};
+    }""")
+    ok134 = all(r134.get(k) for k in
+                ['avSomStandard', 'finnerBeggeRetninger', 'enVeiGirEttUtslag',
+                 'roUtløserIngenting', 'røringUtløserIngenting', 'stoppetVedAv',
+                 'stoppetVedLukk', 'stoppetVedBakgrunn'])
+    results.append(('wave_gesture_reads_direction_and_releases_the_camera', ok134, r134))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:
