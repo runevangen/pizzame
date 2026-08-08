@@ -742,7 +742,33 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
-### F24. Vurder Q10 også for Poolish og Biga — 🧪 UTFORDRER BYGGET (v0.741), venter på bakst
+### F24. Vurder Q10 også for Poolish og Biga — 🧪 FØRSTE BAKST-RESULTAT (v0.761)
+> ⚠️ **Første ekte data, og de peker mot NEI for Kveldsdeig.**
+>
+> To bakst med gjærtesten på, Kveldsdeig 18 t / kjøleskap 3 °C. Det gir
+> **1,86 g mot normalt 0,90 g — +107 %**. Meldte symptomer: veldig myk deig som
+> flyter ut, lite volumøkning, ingen bobler igjen på toppen, nesten ingen
+> ovnsheving. Det er bildet på en deig som har toppet og falt før steking, og
+> det er hva dobbel gjærmengde på 18 timer kaldt gjør.
+>
+> **Ikke konkludert ennå.** Det mangler en kontroll: samme oppsett med testen AV.
+> Uten den kan ikke gjæren skilles fra en annen svakhet vi kjenner — Kveldsdeig
+> er den eneste metoden i appen uten noe mellomsteg mellom elting og balling
+> (15 min, mot 80–159 min for alle andre). Begge kan gi myk deig som flyter ut.
+> Derfor er prosessen bevisst IKKE endret ennå: to endringer samtidig gjør
+> neste bakst umulig å tolke.
+>
+> Merk asymmetrien i risiko: for Poolish og Biga senker testen gjæren (−58 %,
+> −65 %), og en underhevet deig venter man seg ut av. For Kveldsdeig hever den
+> gjæren, og en overhevet deig kommer ikke tilbake. Samme bryter, motsatt
+> retning, ulik pris ved feil.
+>
+> Læring om kopien: gjennomgangen som analyserte planen leste 1,86 g som
+> oppskriftens NORMALE mengde og begrunnet den bort, fordi merket bare sa
+> «forsøksmengde» uten størrelse. v0.761 legger til retning og prosent —
+> ett tall, ikke to.
+
+### F24 (bakgrunn). Verktøyet — 🧪 UTFORDRER BYGGET (v0.741)
 > 🧪 **Verktøyet er bygget; spørsmålet står fortsatt åpent.** F24 sa selv at dette
 > ikke kan avgjøres ved tastaturet. v0.741 gjør derfor ikke et bytte — den gir deg
 > en utfordrer du kan slå på og bake mot: **Innstillinger → 🧪 Utprøving →

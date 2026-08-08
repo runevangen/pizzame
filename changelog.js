@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.761",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kopiert plan sier nå hvor mye gjærtesten endrer, ikke bare at den er på: «(forsøksmengde — gjærtest på, +107 % mot vanlig)». Ett tall og én retning.",
+      "Grunnen er konkret. En gjennomgang av en plan med testen på leste forsøksmengden som oppskriftens normale mengde og forklarte den bort som et bevisst valg — fordi merket bare sa «forsøksmengde», uten størrelse. Uten den kan ingen vurdere om forsøket er rimelig eller vilt.",
+      "Dette er ikke tilbake til det gamle. Den gamle linja oppga to konkurrerende gjærmengder og lot leseren finne ut hvilken som gjaldt. Denne oppgir mengden som faktisk brukes, og hvor langt fra vanlig den ligger."
+    ],
+    "changes_en": [
+      "A copied plan now states how much the yeast test changes things, not just that it is on: “(experimental amount — yeast test on, +107% vs normal)”. One number, one direction.",
+      "The reason is concrete. A review of a plan with the test on read the experimental amount as the recipe's normal amount and explained it away as a deliberate choice — because the marker only said “experimental amount”, with no magnitude. Without it, nobody can judge whether the experiment is reasonable or wild.",
+      "This is not a return to the old form. The old line gave two competing amounts of yeast and left the reader to work out which applied. This one states the amount actually used, and how far from normal it sits."
+    ]
+  },
+  {
     "v": "0.760",
     "d": "august 2026",
     "d_en": "August 2026",

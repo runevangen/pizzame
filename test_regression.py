@@ -4855,6 +4855,10 @@ def run_behavioral_tests(page):
            navigator.clipboard.writeText=t=>{fanget=t;return Promise.resolve();}; }catch(e){}
       try{ copyP(stepsForAnchor(new Date(2027,2,3,10,0))); }catch(e){ fanget='ERR:'+e; }
       const kopiSierFra = /forsøksmengde — gjærtest på/.test(fanget);
+      // v0.761: og HVOR MYE. Uten størrelsen leste en ekstern gjennomgang
+      // forsøkstallet som oppskriftens normale mengde og begrunnet det bort.
+      // Ett tall og én retning — ikke to mengder å velge mellom.
+      const kopiSierHvorMye = /gjærtest på, [+−-]?\d+% mot vanlig/.test(fanget);
       // Og den gamle sammenligningen skal være borte: ingen «normalt», ingen
       // prosent, ingen alternativ gjærmengde noe sted i kopien.
       const kopiHarBareEttTall = !/Gjærtest \\(beta\\)/.test(fanget)
@@ -4867,12 +4871,12 @@ def run_behavioral_tests(page):
 
       Object.assign(S,saved); _q10Memo={k:null,v:null};
       return {standardAv,lagresMedDeig,registerStemmer,endrerRiktige,radViserBegge,
-              retning,stegStemmer,kopiSierFra,kopiHarBareEttTall,kopiTierNårAv,
+              retning,stegStemmer,kopiSierFra,kopiSierHvorMye,kopiHarBareEttTall,kopiTierNårAv,
               kanUtfordres,detaljer:ut};
     }""")
     ok119 = all(r119.get(k) for k in [
         'standardAv', 'lagresMedDeig', 'registerStemmer', 'endrerRiktige', 'radViserBegge',
-        'retning', 'stegStemmer', 'kopiSierFra', 'kopiHarBareEttTall',
+        'retning', 'stegStemmer', 'kopiSierFra', 'kopiSierHvorMye', 'kopiHarBareEttTall',
         'kopiTierNårAv'])
     results.append(('yeast_test_challenges_three_methods_off_by_default', ok119, r119))
 
@@ -5548,9 +5552,16 @@ def run_behavioral_tests(page):
       const finnerIStart = findBestWeekendCombo()!==null;
 
       // (2) Utveien må gjøre HELE planen konfliktfri, ikke bare dette steget.
+      // v0.761: FAST anker. Første versjon leste mobGetAnchor('s'), som alltid
+      // returnerer `new Date()` — start-modus er live «nå» ved design. Da flyttet
+      // hvilket steg som havnet i natta seg med klokka, og på tider av døgnet der
+      // konflikten traff FØRSTE steg gikk testen rød: det steget ligger på
+      // starttidspunktet og kan ikke flyttes av noen spak. Testen var altså
+      // tidsavhengig, ikke gal på appen. 08:00 gir en konflikt på «Form emner»
+      // som spakene faktisk kan løse — det er DEN egenskapen som skal testes.
       sett('start'); mobGen();
-      const anchor=mobGetAnchor('s');
-      const steg=window._steps||[];
+      const anchor=new Date(2027,2,3,8,0);
+      const steg=stepsForAnchor(anchor);
       let konflikt=null;
       for(const s of steg){
         if(s.passive && !s.needsPresence) continue;

@@ -3280,10 +3280,27 @@ function toggleHelpFromPlan(){
 // menneske og DEL 2 i sjekk-instruksjonen 0,48g mot vanlige poolish-mengder og
 // melder et bevisst valg som en feil. Tre ord koster lite; et falskt funn
 // koster mer.
+// v0.761: merket sier nå hvor MYE testen endrer, ikke bare at den er på.
+//
+// v0.754 fjernet den gamle to-talls-linja fordi to konkurrerende gjærmengder
+// var forvirrende. Den klagen var riktig. Men prisen viste seg med en gang: en
+// ekstern gjennomgang leste 1,86g som oppskriftens normale mengde og
+// rasjonaliserte den — «bruker du en noe høyere gjærmengde for at gjæren skal
+// klare å arbeide i 2–4°C» — når den i virkeligheten var et forsøk på +107 %.
+// Uten størrelsen kan ingen vurdere om forsøket er rimelig eller vilt.
+//
+// Ett tall og én retning, ikke to mengder å velge mellom. Det er forskjellen
+// fra v0.741-linja: den ba leseren finne ut hvilken av to som gjaldt, denne
+// sier hva som gjelder og hvor langt fra vanlig det er.
 function gjaertestKopiMerke(){
-  return recipeWithoutGjaertest()
-    ? L(' (forsøksmengde — gjærtest på)',' (experimental amount — yeast test on)')
-    : '';
+  const før=recipeWithoutGjaertest();
+  if(!før) return '';
+  const g=t=>S.gjaer==='torr'?t.yDry:t.yFresh;
+  const a=g(før), b=g(recipeFor());
+  if(!a||!b) return L(' (forsøksmengde — gjærtest på)',' (experimental amount — yeast test on)');
+  const pst=Math.round((b/a-1)*100);
+  return L(` (forsøksmengde — gjærtest på, ${pst>0?'+':''}${pst}% mot vanlig)`,
+           ` (experimental amount — yeast test on, ${pst>0?'+':''}${pst}% vs normal)`);
 }
 function planTekst(steps){
   const rec=recipeFor(),p=pc();
