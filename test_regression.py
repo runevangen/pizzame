@@ -5019,6 +5019,90 @@ def run_behavioral_tests(page):
                  'stoppetVedLukk', 'stoppetVedBakgrunn'])
     results.append(('wave_gesture_reads_direction_and_releases_the_camera', ok134, r134))
 
+    # v0.767: indikatoren. I v0.766 var BARE suksess synlig — vinket du og
+    # ingenting skjedde, visste du ikke om kameraet var dødt, om det ikke så
+    # deg, eller om vinket var for lite. Stillhet er den verste tilbakemeldingen
+    # et gestgrensesnitt kan gi: man veiver stadig hardere og gir opp.
+    #
+    # Fire tilstander, hver med sitt uttrykk:
+    #  - på, men i ro: hånden nedtonet — «jeg lever»
+    #  - ser bevegelse: hånden lyser og vokser, prikken følger tyngdepunktet
+    #  - så deg, men det kom ikke noen vei: «litt større»
+    #  - vink godtatt: «→ Neste»
+    #
+    # Den tredje er den mest undervurderte: den lærer deg hvor stort et vink må
+    # være, i stedet for at du gjetter.
+    r135 = page.evaluate("""async () => {
+      const c=document.createElement('canvas'); c.width=320; c.height=240;
+      const g=c.getContext('2d'); let handX=null;
+      const tegn=()=>{ g.fillStyle='#eee'; g.fillRect(0,0,320,240);
+        if(handX!==null){ g.fillStyle='#111'; g.fillRect(handX-40,60,80,120); } };
+      tegn();
+      const ekteGUM=navigator.mediaDevices.getUserMedia;
+      navigator.mediaDevices.getUserMedia = async ()=>c.captureStream(30);
+      window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      openFocus();
+      await vinkToggle();
+      await new Promise(r=>setTimeout(r,450));
+
+      const les=()=>{ const h=document.getElementById('vink-hand'),
+                            p=document.getElementById('vink-prikk');
+        return {o:h?+h.style.opacity:null, s:h?h.style.transform:null,
+                x:p?parseFloat(p.style.left):null}; };
+      const iRo=les();
+
+      // MERK at glattingen (VINK.glød som glidende snitt) IKKE er dekket her.
+      // Den finnes for å hindre at ikonet strober, men den syntetiske hånden
+      // beveger seg jevnt og gir ingen støy å glatte — et ekte kamera flimrer,
+      // denne canvasen gjør ikke. Fjernes glattingen, består testen likevel.
+      // En sjekk som ikke kan feile er verre enn ingen: den later som dekning
+      // som ikke finnes. Derfor står det her i stedet.
+      let midt=null;
+      for(let i=0;i<=14;i++){ handX=290-260*i/14; tegn();
+        await new Promise(r=>setTimeout(r,45)); if(i===8) midt=les(); }
+      handX=null; tegn(); await new Promise(r=>setTimeout(r,400));
+      const kv=document.getElementById('vink-kvittering');
+      const etterVink={tekst:kv.textContent, synlig:+kv.style.opacity>0.5};
+      await new Promise(r=>setTimeout(r,1600));
+      const tilbakeIRo=les();
+
+      // Ekte bevegelse, men kortere enn terskelen.
+      const idxFør=window._focusIdx;
+      kv.textContent=''; kv.style.opacity='0';
+      // Stort nok til å bli sett, for kort til å telle. Må ha nok frames til
+      // at sporet fylles (>=3), ellers dør det som «ingen bevegelse» og
+      // hintet uteblir av feil grunn.
+      // Like RASKT per frame som et ekte vink — ellers faller hvert bilde under
+      // støygulvet og vi tester «ser ingenting» i stedet for «ser deg, men det
+      // holdt ikke». Bare kortere: fem frames i stedet for femten.
+      let sporMaks=0, sporLen=0;
+      for(let i=0;i<=5;i++){ handX=150+i*18; tegn(); await new Promise(r=>setTimeout(r,45));
+        if(VINK.spor.length>sporLen) sporLen=VINK.spor.length;
+        if(VINK.spor.length>1) sporMaks=Math.max(sporMaks,
+          Math.abs(VINK.spor[VINK.spor.length-1].x-VINK.spor[0].x)); }
+      handX=null; tegn(); await new Promise(r=>setTimeout(r,500));
+      const forLite={tekst:kv.textContent, synlig:+kv.style.opacity>0.5,
+                     bladdeIkke: window._focusIdx===idxFør};
+
+      closeFocus();
+      navigator.mediaDevices.getUserMedia=ekteGUM;
+      return {
+        hvilerNedtonet: iRo.o!==null && iRo.o<=0.35 && iRo.s==='scale(1)',
+        lyserVedBevegelse: midt.o>iRo.o+0.1 && midt.s!=='scale(1)',
+        prikkenFølgerHånden: midt.x!==null && Math.abs(midt.x-50)>4,
+        falmerTilbake: tilbakeIRo.o<=0.35 && tilbakeIRo.s==='scale(1)',
+        sierRetning: etterVink.synlig && /Neste|Next/.test(etterVink.tekst),
+        sierForLite: forLite.synlig && /større|bigger/.test(forLite.tekst),
+        forLiteBlarIkke: forLite.bladdeIkke,
+        detaljer:{iRo, midt, tilbakeIRo, etterVink, forLite, sporMaks, sporLen}
+      };
+    }""")
+    ok135 = all(r135.get(k) for k in
+                ['hvilerNedtonet', 'lyserVedBevegelse', 'prikkenFølgerHånden',
+                 'falmerTilbake', 'sierRetning', 'sierForLite', 'forLiteBlarIkke'])
+    results.append(('wave_indicator_shows_all_four_states', ok135, r135))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:

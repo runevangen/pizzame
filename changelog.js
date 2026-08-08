@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.767",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Vinkestyringen viser nå at den ser deg. Under stegteksten står en hånd og en tynn stripe: hånden er nedtonet når alt er rolig, lyser opp og vokser når kameraet ser bevegelse, og prikken på stripa følger hånden din i sanntid.",
+      "I forrige versjon var bare det som lyktes synlig. Vinket du og ingenting skjedde, visste du ikke om kameraet var dødt, om det ikke så deg, eller om vinket var for lite — og da står man og veiver stadig hardere.",
+      "Derfor sier den også fra når den så deg uten at det holdt: «litt større». Det er den beskjeden som lærer deg hvor stort et vink må være.",
+      "Og når vinket går gjennom, står det «→ Neste» eller «← Forrige» i stedet for bare en pil, så du vet hvilken vei den oppfattet."
+    ],
+    "changes_en": [
+      "The wave control now shows that it can see you. Below the step text sit a hand and a thin track: the hand is dimmed when everything is still, brightens and grows when the camera sees movement, and the dot on the track follows your hand in real time.",
+      "In the previous version only success was visible. If you waved and nothing happened, you had no way to tell whether the camera was dead, whether it could not see you, or whether the wave was too small — and then you just wave harder and harder.",
+      "So it also speaks up when it saw you but it was not enough: “a bit bigger”. That is the message that teaches you how big a wave has to be.",
+      "And when a wave does go through, it says “→ Next” or “← Previous” rather than just an arrow, so you know which way it read you."
+    ]
+  },
+  {
     "v": "0.766",
     "d": "august 2026",
     "d_en": "August 2026",
