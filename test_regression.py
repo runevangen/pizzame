@@ -5590,6 +5590,56 @@ def run_behavioral_tests(page):
                     ['beholderPlass', 'regnetPåNytt', 'vinnerBorte', 'blinker'])
     results.append(('smartplan_filter_change_keeps_your_place_and_still_recomputes', ok142, r142))
 
+    # v0.773: «772 fortsatt grå». Knappen VAR oransje — bak body.pre-interact
+    # sitt 85 % gråskala-slør over alle .mob-content. Sløret løftes bare av
+    # interaksjon i .sb eller #mob-settings, så for en Smart-plan-først-bruker
+    # var det uløftbart: selv «Åpne planen →» lot hele appen stå i grått.
+    #
+    # LÆRDOM SOM ER SELVE TESTEN: getComputedStyle(btn).backgroundColor ser
+    # TVERS GJENNOM et filter på en forelder — det var sånn både r43 og min
+    # første måling sa «oransje» mens skjermen viste taupe. Derfor sjekkes
+    # forfedrekjeden, ikke elementets egen farge.
+    r143 = page.evaluate("""async () => {
+      const hadde=document.body.classList.contains('pre-interact');
+      // Fanebyttet har en kort settling-fase der hele .mob-screen har opacity 0.
+      // Den er ikke sløret — vent den ut, ellers måler vi overgangen.
+      const rolig=async el=>{ for(let i=0;i<40;i++){
+        if(!el.classList.contains('settling') && parseFloat(getComputedStyle(el).opacity)===1) return;
+        await new Promise(r=>setTimeout(r,50)); } };
+      const slørOver=el=>{ let n=el;
+        while(n && n!==document.documentElement){
+          const s=getComputedStyle(n);
+          if(s.filter!=='none' || parseFloat(s.opacity)<1) return (n.id||n.className)+': '+s.filter;
+          n=n.parentElement; }
+        return null; };
+      try{
+        window._lang='no'; setLayout('mob');
+        document.body.classList.add('pre-interact');
+        mobShowTab('beta'); await rolig(document.getElementById('mob-beta'));
+        const btn=document.getElementById('mob-beta-search-btn');
+        const betaUtenSlør = slørOver(btn)===null;
+        // Sløret skal LEVE videre andre steder — ellers består «fjern hele
+        // sløret»-mutasjonen. Planlegging-fanen er referansen.
+        mobShowTab('settings'); await rolig(document.getElementById('mob-settings'));
+        const planInnhold=document.querySelector('#mob-settings .mob-content')
+                       || document.querySelector('.mob-content');
+        const planFortsattSlørt = planInnhold ? slørOver(planInnhold)!==null : null;
+        // Klikk INNE i Smart-plan løfter sløret for hele appen. Ikke på
+        // søkeknappen — den ville startet et ekte søk som bivirkning.
+        mobShowTab('beta');
+        document.getElementById('mob-beta')
+          .dispatchEvent(new MouseEvent('click',{bubbles:true}));
+        const løftetAvBeta = !document.body.classList.contains('pre-interact');
+        return {betaUtenSlør, planFortsattSlørt, løftetAvBeta};
+      } finally {
+        document.body.classList.toggle('pre-interact', hadde);
+      }
+    }""")
+    ok143 = (r143.get('betaUtenSlør') is True
+             and r143.get('planFortsattSlørt') is True
+             and r143.get('løftetAvBeta') is True)
+    results.append(('smartplan_is_never_greyed_and_using_it_lifts_the_veil', ok143, r143))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:

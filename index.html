@@ -429,6 +429,12 @@ body.pc-mode .mob-layout{display:none!important}
 .sw.on::after{left:18px}
 body.pre-interact #main-content{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
 body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filter .3s ease,opacity .3s ease}
+/* v0.773: Smart-plan er unntatt sløret. Gråtonen sier «planen er en plassholder
+   til du velger» — men Smart-plan er selve stedet man velger. Å gråtone døra inn
+   er samme feil som den grå søkeknappen i v0.772, bare ett lag opp: v0.772
+   gjorde knappen oransje, og dette filteret la 85 % gråskala over den igjen.
+   Meldt inn som «772 fortsatt grå» — knappen VAR oransje, bak slør. */
+body.pre-interact #mob-beta .mob-content{filter:none;opacity:1}
 @keyframes fadeOutFlash{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .method-flash{animation:fadeOutFlash 2.5s forwards}
 .act-btn{display:flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none}
@@ -8920,7 +8926,11 @@ refreshDeigerBanner();
   syncFavoriteButton();
 function firstInteractionCheck(e){
   if(!document.body.classList.contains('pre-interact')) return;
-  if(e.target && e.target.closest && (e.target.closest('.sb') || e.target.closest('#mob-settings'))){
+  // v0.773: Smart-plan (#mob-beta) teller også som første ekte interaksjon.
+  // Uten den var sløret uløftbart for en Smart-plan-først-bruker: ingenting du
+  // gjorde der telte, så selv «Åpne planen →» — som faktisk VELGER en plan —
+  // lot resten av appen (Tidsplan!) bli stående i gråtone.
+  if(e.target && e.target.closest && (e.target.closest('.sb') || e.target.closest('#mob-settings') || e.target.closest('#mob-beta'))){
     document.body.classList.remove('pre-interact');
   }
 }

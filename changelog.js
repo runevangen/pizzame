@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.773",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«772 fortsatt grå.» Og det stemte — men knappen VAR oransje. Den sto bak et slør: helt siden appens første versjon har alle faner ligget under 85 % gråtone og nedsatt kontrast til du gjør din første endring i Planlegging. Fiksene i v0.772 var ekte, de var bare ikke synlige gjennom filteret. Målingen min gikk rett gjennom sløret og sa «oransje», skjermen din sa grå. Skjermen hadde rett.",
+      "Sløret er ment som et hint: «planen du ser er en plassholder til du velger». Men Smart-plan er selve stedet man velger — å gråtone døra inn er samme feil som den grå søkeknappen, bare ett lag opp. Smart-plan er nå unntatt sløret og står alltid i fulle farger.",
+      "Verre: ingenting du gjorde i Smart-plan telte som «din første endring». Du kunne søke, sammenligne og trykke «Åpne planen →» — et valg så reelt som noe — og resten av appen, selve Tidsplanen du nettopp åpnet, ble stående i gråtone. Nå teller Smart-plan som første interaksjon, og sløret løftes for hele appen.",
+      "Testen som skal hindre gjentagelse måler ikke knappens egen farge — den sjekker hele forfedrekjeden for filtre. Det var sånn feilen gjemte seg: fargemålinger ser tvers gjennom et gråtonefilter på en forelder."
+    ],
+    "changes_en": [
+      "\"772 still grey.\" And that was true — but the button WAS orange. It stood behind a veil: ever since the app's first version, every tab has sat under 85% greyscale and reduced contrast until you make your first change in Planning. The v0.772 fixes were real, they just weren't visible through the filter. My measurement went straight through the veil and said \"orange\"; your screen said grey. The screen was right.",
+      "The veil is meant as a hint: \"the plan you see is a placeholder until you choose\". But Smart plan is where you choose — greying out the entrance is the same mistake as the grey search button, one layer up. Smart plan is now exempt from the veil and always shows in full colour.",
+      "Worse: nothing you did in Smart plan counted as \"your first change\". You could search, compare and press \"Open the plan →\" — as real a choice as any — and the rest of the app, the very Schedule you just opened, stayed greyed. Smart plan now counts as a first interaction, and the veil lifts for the whole app.",
+      "The test guarding against a repeat does not measure the button's own colour — it checks the whole ancestor chain for filters. That is how the bug hid: colour measurements see straight through a greyscale filter on a parent."
+    ]
+  },
+  {
     "v": "0.772",
     "d": "august 2026",
     "d_en": "August 2026",
