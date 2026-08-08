@@ -5345,6 +5345,64 @@ def run_behavioral_tests(page):
                  'sideveisBlarUtenÅRulle', 'diagonalGjørIngenting'])
     results.append(('wave_scrolls_vertically_and_flips_horizontally', ok139, r139))
 
+    # v0.770: rullingen i Fokus hoppet til toppen hver gang du haket av et
+    # understeg. renderFocus() gjorde `body.scrollTop=0` ubetinget, og den
+    # kalles av ALT som endrer noe i panelet — avhaking, vink av/på, klapp
+    # av/på. Å krysse av punkt fire i en lang liste kastet deg til toppen, og du
+    # måtte rulle ned igjen for å finne punkt fem.
+    #
+    # Fiksen må ikke gå for langt andre veien: et NYTT steg er en ny tekst, og
+    # den skal starte øverst. Begge halvdelene testes, ellers har vi byttet én
+    # irritasjon mot en verre.
+    r140 = page.evaluate("""async () => {
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      const vent=()=>new Promise(r=>setTimeout(r,120));
+      mobShowTab('plan'); mobGen(); await vent();
+      openFocus();
+      // Finn et steg med understeg OG nok tekst til å kunne rulle.
+      let sc=null, idx=-1;
+      for(let i=0;i<(window._steps||[]).length;i++){
+        focusGoto(i); await vent();
+        sc=document.getElementById('focus-scroll');
+        const s=(window._steps||[])[i];
+        if(sc && sc.scrollHeight>sc.clientHeight+60 && s.substeps && s.substeps.length){ idx=i; break; }
+      }
+      if(idx<0){ closeFocus(); return {ingenEgnetSteg:true}; }
+
+      const maks=sc.scrollHeight-sc.clientHeight;
+      const mål=Math.round(maks*0.6);
+      sc.scrollTop=mål; await vent();
+      const før=document.getElementById('focus-scroll').scrollTop;
+
+      focusToggleSubstep(0); await vent();
+      const etterAvhaking=document.getElementById('focus-scroll').scrollTop;
+
+      // Vink av/på tegner også panelet på nytt — samme krav.
+      await vinkToggle(); await vent();
+      const etterBryter=document.getElementById('focus-scroll').scrollTop;
+      if(VINK.på) vinkStopp();
+
+      // Nytt steg SKAL starte øverst.
+      document.getElementById('focus-scroll').scrollTop=mål; await vent();
+      focusGoto(idx+1); await vent();
+      const etterNyttSteg=document.getElementById('focus-scroll').scrollTop;
+
+      closeFocus();
+      return {idx, før, etterAvhaking, etterBryter, etterNyttSteg,
+              beholderPlassVedAvhaking: Math.abs(etterAvhaking-før) < 12,
+              beholderPlassVedBryter: Math.abs(etterBryter-før) < 12,
+              nyttStegStarterØverst: etterNyttSteg < 5};
+    }""")
+    if r140.get('ingenEgnetSteg'):
+        results.append(('focus_keeps_your_place_when_ticking_substeps', False,
+                        {'feil': 'fant ikke et steg med understeg og rullbar tekst'}))
+    else:
+        ok140 = all(r140.get(k) for k in
+                    ['beholderPlassVedAvhaking', 'beholderPlassVedBryter',
+                     'nyttStegStarterØverst'])
+        results.append(('focus_keeps_your_place_when_ticking_substeps', ok140, r140))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:

@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.770",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fokus-modus hoppet til toppen hver gang du haket av et understeg. Krysset du av punkt fire i en lang liste, ble du kastet tilbake til starten og måtte rulle ned igjen for å finne punkt fem.",
+      "Årsaken var at panelet nullstilte rullingen hver gang det ble tegnet på nytt — og det skjer ved alt som endrer noe: avhaking, og å slå vink eller klapp av og på. Nå nullstilles den bare når du faktisk bytter steg, for da er det en ny tekst å begynne på.",
+      "Jeg lette etter det samme andre steder også — Tidsplan, Planlegging, Mer og Smart-plan, hver eneste knapp og avkryssing i hver fane. Der holder rullingen seg allerede.",
+      "Ett tilfelle som ser ut som en feil, men ikke er det: velger du en metode langt nede i Planlegging, kan siden bli kortere fordi et panel forsvinner. Da flyttes du opp til den nye bunnen. Det er innholdet som ble mindre, ikke plassen din som ble glemt."
+    ],
+    "changes_en": [
+      "Focus mode jumped to the top every time you ticked off a substep. Tick item four in a long list and you were thrown back to the start, and had to scroll down again to find item five.",
+      "The cause was that the panel reset the scroll every time it was redrawn — and that happens on anything that changes: ticking off, and switching waving or clapping on and off. It now resets only when you actually move to another step, because then there is new text to start on.",
+      "I looked for the same thing elsewhere too — Schedule, Planning, More and Smart plan, every button and checkbox in every tab. There the scroll position already holds.",
+      "One case that looks like a bug but is not: pick a method far down in Planning and the page can get shorter because a panel disappears. You are then moved up to the new bottom. That is the content shrinking, not your place being forgotten."
+    ]
+  },
+  {
     "v": "0.769",
     "d": "august 2026",
     "d_en": "August 2026",

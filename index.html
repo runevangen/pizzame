@@ -7885,6 +7885,7 @@ async function klappSlåPå(){
 function openFocus(){
   const steps=window._steps||[];
   if(!steps.length) return;
+  window._focusRendretIdx=null; window._focusRullPos=null;
   let start=steps.findIndex((s,i)=>!stepChecked(s,i));
   window._focusIdx = start>=0 ? start : 0;
   const ov=document.getElementById('focus-overlay');
@@ -7917,6 +7918,9 @@ function renderFocus(){
   const total=steps.length;
   const body=document.getElementById('focus-body');
   if(!body) return;
+  // Leses før innerHTML byttes ut — etterpå er den borte.
+  const _tidl=document.getElementById('focus-scroll');
+  window._focusRullPos = _tidl ? _tidl.scrollTop : null;
   if(!total){ closeFocus(); return; }
   let i=window._focusIdx||0; if(i<0)i=0; if(i>=total)i=total-1; window._focusIdx=i;
   const s=steps[i];
@@ -7990,7 +7994,21 @@ function renderFocus(){
       <button onclick="focusPrev()" ${i===0?'disabled':''} style="flex:0 0 108px;height:56px;border-radius:14px;border:1px solid var(--forno-border);background:var(--forno-bg-raised);color:var(--forno-text-faint);font-size:15px;font-weight:700;cursor:pointer;${i===0?'opacity:.4':''}">← ${L('Forrige','Back')}</button>
       <button onclick="focusMarkDone()" style="flex:1;height:56px;border-radius:14px;border:none;background:var(--forno-accent);color:#1a1512;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 5px 16px rgba(232,89,12,.34)">✓ ${done?L('Neste','Next'):L('Ferdig','Done')} →</button>
     </div>`;
-  body.scrollTop=0;
+  // v0.770: rullingen nullstilles bare når du bytter STEG. Før sto det her
+  // ubetinget, og renderFocus() kalles av alt som endrer noe i panelet — å hake
+  // av et understeg, å slå vink eller klapp av og på. Konsekvensen var at det å
+  // krysse av punkt fire i en lang liste kastet deg tilbake til toppen, og du
+  // måtte rulle ned igjen for å finne punkt fem.
+  // Nytt steg SKAL derimot starte øverst: da er det en ny tekst å lese.
+  const scr=document.getElementById('focus-scroll');
+  if(window._focusRendretIdx !== i){
+    body.scrollTop=0;
+    if(scr) scr.scrollTop=0;
+    window._focusRendretIdx=i;
+  } else if(scr && window._focusRullPos!=null){
+    // Samme steg, ny HTML: legg rulleposisjonen tilbake der den var.
+    scr.scrollTop=window._focusRullPos;
+  }
 }
 
 // Deler steg-utregningen med wizardens statuslinje, så begge alltid viser
