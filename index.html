@@ -2781,7 +2781,20 @@ function kveldSteps(anchor){
       // gjorde standardmetodens benketid temperaturavhengig — 6,4t ved 18°C, 2t ved
       // 28°C — og etterlot dette tallet som bare stemmer ved nøyaktig 22°C. Det
       // leses nå fra rtM(240), samme uttrykk standardmetoden selv bruker.
-      why:L(`Kald deig er stiv — kort temperering gjør den strekkbar igjen uten å rive. Kortere enn standardmetodens ca. ${fmtDur(rtM(240))} siden ${N('emnet ikke har vært kaldt','emnene ikke har vært kalde')} like lenge.`,`Cold dough is stiff — a short temper makes it stretchable again without tearing. Shorter than the standard method's roughly ${durEn(fmtDur(rtM(240)))} since ${N("the ball hasn't been cold","the balls haven't been cold")} as long.`),
+      // v0.760: sto «Kortere enn standardmetodens ca. 4 timer siden emnene ikke
+      // har vært kalde like lenge». Den begrunnelsen holder ikke. Et emne på
+      // 280g er gjennomkaldt etter to–tre timer i kjøleskapet; etter 18 timer
+      // er det nøyaktig like kaldt som ett som har stått i 48. Hvor LENGE det
+      // har vært kaldt sier ingenting om hvor kaldt det ER.
+      // Appens egne tall motsier den også på to måter: Kveldsdeig 24t og
+      // Langtidsdeig 48t har identisk gjærmengde (0,75g) men 120 mot 240 min
+      // benketid, og INNAD i Kveldsdeig gir lengre kaldtid LENGRE temperering
+      // (90 min under 15t, 120 min over) — motsatt vei av påstanden.
+      // Den ekte grunnen er metodens form, ikke deigens temperatur: Kveldsdeig
+      // er bygget rundt å bake dagen etter, og fire timer på benken ville
+      // flyttet steketiden ut av kvelden. Det er ærligere å si det, og gi
+      // leseren regelen som faktisk gjelder — gå etter emnet, ikke klokka.
+      why:L(`Kald deig er stiv — benketida gjør den strekkbar igjen uten å rive. Kveldsdeig har kortere benketid enn standardmetodens ca. ${fmtDur(rtM(240))} fordi hele metoden er bygget rundt å bake dagen etter; fire timer på benken ville flyttet steketiden ut av kvelden. Et emne rett fra kjøleskapet er like kaldt uansett hvor lenge det har stått, så gå etter emnet og ikke klokka: er det fortsatt stivt og kaldt, gi det mer tid.`,`Cold dough is stiff — the bench rest makes it stretchable again without tearing. Evening dough has a shorter bench rest than the standard method's roughly ${durEn(fmtDur(rtM(240)))} because the whole method is built around baking the next day; four hours on the counter would push the bake out of the evening. A ball straight from the fridge is equally cold however long it has been in there, so go by the dough rather than the clock: if it is still stiff and cold, give it more time.`),
       tip:TIP.benchTemper},
     // v0.739: Kveldsdeig manglet forvarmingssteget. v0.737 antok at metoden alt
     // hadde et — det gjaldt kun Hurtigdeig, som bygger sitt inn i etterhevingen.

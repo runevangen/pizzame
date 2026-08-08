@@ -4731,6 +4731,60 @@ def run_behavioral_tests(page):
     results.append(('mania_matches_the_published_source_exactly', ok130,
                     {'avvik': avvik, 'faser': r130['faser']}))
 
+    # v0.760: en gjennomgang fant en ÅRSAKSPÅSTAND som appens egne tall motsier.
+    # Benketid-steget i Kveldsdeig begrunnet den korte tempereringen med at
+    # «emnene ikke har vært kalde like lenge». Et emne på 280g er gjennomkaldt
+    # etter to–tre timer; etter 18 timer er det nøyaktig like kaldt som ett som
+    # har stått i 48. Hvor lenge det har vært kaldt sier ingenting om hvor kaldt
+    # det ER.
+    #
+    # Tallene motsier påstanden på to måter, og begge fryses her:
+    #  - Kveldsdeig 24t og Langtidsdeig 48t har IDENTISK gjærmengde, men 120 mot
+    #    240 minutters benketid. Kulden kan ikke være forklaringen, og
+    #    gjærmengden heller ikke.
+    #  - INNAD i Kveldsdeig gir lengre kaldtid LENGRE temperering (90 → 120 min),
+    #    stikk motsatt av «kortere fordi mindre kaldt».
+    #
+    # Massebalanse og vaghetslint kan ikke se dette: en gal begrunnelse har
+    # ingen sum å bryte og inneholder ingen vage mengdeord. Eneste måte å fange
+    # den på er å teste påstanden mot tallene den handler om.
+    r131 = page.evaluate("""() => {
+      const saved={...S};
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      const base=()=>{ S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22;
+        S.fridgeC=3; S.oven='pizza'; S.gjaer='torr'; S.mode='start';
+        S.gjaertest=false; _q10Memo={k:null,v:null}; };
+      const tempOf=kh=>{ base(); S.method='kveld'; S.kveldH=kh; _q10Memo={k:null,v:null};
+        const st=stepsForAnchor(new Date(2027,2,3,10,0));
+        const t=st.find(x=>x.title==='Ta ut og temperer');
+        return {min:t?t.dur:null, gjaer:recipeFor().yDry, why:t?t.why:''}; };
+      const k15=tempOf(15), k18=tempOf(18), k24=tempOf(24);
+      base(); S.method='standard'; S.cold=48; _q10Memo={k:null,v:null};
+      const std48={gjaer:recipeFor().yDry, temper:Math.round(rtM(240))};
+
+      // Retningen som drepte påstanden: lengre kaldt → LENGRE benketid.
+      const lengreKaldtGirLengre = k18.min > k15.min && k24.min >= k18.min;
+      // Samme gjær, halve benketida — gjærmengden er heller ingen forklaring.
+      const sammeGjaerUlikBenketid =
+        Math.abs(k24.gjaer-std48.gjaer) < 1e-9 && std48.temper > k24.min * 1.5;
+      // Begrunnelsen skal ikke lenger påstå at emnene er mindre kalde.
+      const ingenKuldepaastand = !/ikke har vært (kaldt|kalde) like lenge/.test(k18.why)
+                              && !/hasn't been cold as long/.test(k18.why);
+      // Den skal si hva som FAKTISK styrer lengden, og gi leseren en regel.
+      const harEkteGrunn = /bygget rundt å bake dagen etter/.test(k18.why);
+      const harRegel = /gå etter emnet og ikke klokka/.test(k18.why);
+
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {lengreKaldtGirLengre, sammeGjaerUlikBenketid, ingenKuldepaastand,
+              harEkteGrunn, harRegel,
+              tall:{k15:k15.min, k18:k18.min, k24:k24.min,
+                    kveld24Gjaer:k24.gjaer, std48Gjaer:std48.gjaer, std48Temper:std48.temper}};
+    }""")
+    ok131 = all(r131.get(k) for k in
+                ['lengreKaldtGirLengre', 'sammeGjaerUlikBenketid', 'ingenKuldepaastand',
+                 'harEkteGrunn', 'harRegel'])
+    results.append(('bench_rest_reason_matches_the_numbers', ok131, r131))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:

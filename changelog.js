@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.760",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Benketid-steget i Kveldsdeig forklarte den korte tempereringen med at «emnene ikke har vært kalde like lenge». Den begrunnelsen holder ikke. Et emne på 280 g er gjennomkaldt etter to–tre timer i kjøleskapet; etter 18 timer er det nøyaktig like kaldt som ett som har stått i 48. Hvor lenge det har vært kaldt sier ingenting om hvor kaldt det er.",
+      "Appens egne tall motsier den også. Kveldsdeig på 24 timer og Langtidsdeig på 48 timer har identisk gjærmengde, men 2 mot 4 timers benketid — så verken kulden eller gjæren kan være forklaringen. Og innad i Kveldsdeig gir lengre kaldtid lengre benketid, ikke kortere: 90 minutter under 15 timer, 120 over. Stikk motsatt av det som sto.",
+      "Den ekte grunnen er metodens form, ikke deigens temperatur: Kveldsdeig er bygget rundt å bake dagen etter, og fire timer på benken ville flyttet steketiden ut av kvelden. Nå står det, sammen med regelen som faktisk gjelder — et emne rett fra kjøleskapet er like kaldt uansett, så gå etter emnet og ikke klokka.",
+      "Selve tiden er uendret. Det var begrunnelsen som var gal, ikke tallet."
+    ],
+    "changes_en": [
+      "The bench-rest step in Evening dough explained its short warm-up with “the balls haven't been cold as long”. That reasoning does not hold. A 280g ball is cold right through after two to three hours in the fridge; after 18 hours it is exactly as cold as one that has sat for 48. How long it has been cold says nothing about how cold it is.",
+      "The app's own numbers contradict it too. Evening dough at 24 hours and Long-rise dough at 48 hours have identical amounts of yeast, but 2 versus 4 hours of bench rest — so neither the cold nor the yeast can be the explanation. And within Evening dough, a longer cold gives a longer bench rest, not a shorter one: 90 minutes below 15 hours, 120 above. The exact opposite of what it said.",
+      "The real reason is the shape of the method, not the temperature of the dough: Evening dough is built around baking the next day, and four hours on the counter would push the bake out of the evening. That is what it now says, along with the rule that actually applies — a ball straight from the fridge is equally cold either way, so go by the dough rather than the clock.",
+      "The time itself is unchanged. It was the reasoning that was wrong, not the number."
+    ]
+  },
+  {
     "v": "0.759",
     "d": "august 2026",
     "d_en": "August 2026",
