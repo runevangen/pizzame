@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.764",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Tilbakemeldingskortet brakk teksten midt inne i merkelappene. «Mangler mel» ble til «Mangler» på én linje og «mel» på neste, med fargen delt i to. Merkelappene lå i samme tekstflyt som dato, versjon og innstillinger, så alt brøt vilkårlig.",
+      "Nå har merkelappene sin egen rad og kan ikke deles, og metadata brytes mellom feltene i stedet for inni dem: «lør 8. aug kl. 11:36» blir stående samlet, det samme med «napoletana/standard».",
+      "Verst var det med de skjulte admin-knappene synlige og største skriftstørrelse: da ble ett enkelt kort 683 piksler høyt på en liten skjerm. Knappene tar nå sin egen linje når det blir trangt, og samme kort er 260 piksler.",
+      "Ny test måler dette på ekte layout ved største skrift, så det ikke kan komme snikende tilbake."
+    ],
+    "changes_en": [
+      "The feedback card broke text in the middle of its labels. “Missing flour” became “Missing” on one line and “flour” on the next, with the colour split in two. The labels sat in the same text flow as the date, version and settings, so everything broke arbitrarily.",
+      "The labels now have a row of their own and cannot be split, and the metadata breaks between fields rather than inside them: “Sat 8 Aug, 11:36” stays together, and so does “napoletana/standard”.",
+      "It was worst with the hidden admin buttons showing and the largest font size: a single card then came to 683 pixels tall on a small screen. The buttons now take a line of their own when space is tight, and the same card is 260 pixels.",
+      "A new test measures this on real layout at the largest font size, so it cannot creep back in."
+    ]
+  },
+  {
     "v": "0.763",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -4816,6 +4816,65 @@ def run_behavioral_tests(page):
                  'harEkteGrunn', 'harRegel'])
     results.append(('bench_rest_reason_matches_the_numbers', ok131, r131))
 
+    # v0.764: tilbakemeldingskortet brakk teksten inni merkelappene. «Mangler
+    # mel» ble til «Mangler» / «mel» på hver sin linje, og «✓ nettopp sendt»
+    # likeså — de var vanlige inline-spans uten nowrap. Verst med admin-knappene
+    # til stede: de har flex-shrink:0, venstre kolonne hadde min-width:0, og ved
+    # største skrift ble kortet 683px høyt på en 320px skjerm.
+    #
+    # Kravene: en merkelapp skal ALDRI brekke internt (én tekstlinje høy), og
+    # metadata skal brekke mellom feltene, ikke inni dem. Måles på ekte layout
+    # ved største skriftstørrelse — det er der det ryker først.
+    r132 = page.evaluate("""async () => {
+      const saved={...S};
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      const før=currentFontLevel();
+      setFontSize('xxlarge');
+      const it={id:'t1', category:'mel', message:'I miss some types flour', votes:0,
+                createdAt:'2026-08-08T11:36:00Z', submittedBy:'Rune',
+                context:{version:'0.764', type:'napoletana', method:'standard'}};
+      const catLbl=v=>{ const c=FEEDBACK_CATEGORIES.find(c=>c.v===v); return c?L(c.t,c.tEn):v; };
+      const boks=document.createElement('div');
+      // Trang, men realistisk: kortbredden i modalen på en 320px-telefon.
+      // Bredden må settes i PIKSLER FØR ZOOM — skriftstørrelse-innstillingen
+      // bruker CSS zoom, så en boks på 213px males 1,6× så bred ved xxlarge og
+      // ingenting rekker å brekke. Nøyaktig samme felle som syncMobLayoutHeight
+      // dokumenterer for .mob-layout.
+      const z=FS_ZOOM[currentFontLevel()]||1.15;
+      boks.style.cssText='position:fixed;left:-9999px;top:0;width:'+Math.round(213/z)+'px';
+      boks.innerHTML=feedbackItemHTML(it,{isAdmin:true,isNew:true,hasVoted:false,catLbl});
+      document.body.appendChild(boks);
+      const kort=boks.querySelector('[id^="fbitem-"]');
+      const merker=[...kort.querySelectorAll('span')].filter(x=>/border-radius:6px/.test(x.getAttribute('style')||''));
+      // Én tekstlinje. Kan IKKE måles mot fontSize: getBoundingClientRect
+      // skalerer med CSS-zoom (skriftstørrelse-innstillingen), computed
+      // fontSize gjør det ikke. Sammenlign i stedet med en klon av elementet
+      // som er tvunget til én linje — da faller zoomen ut av regnestykket.
+      const enLinje=x=>{
+        const ref=x.cloneNode(true);
+        ref.style.whiteSpace='nowrap';
+        ref.style.position='absolute'; ref.style.visibility='hidden';
+        x.parentNode.appendChild(ref);
+        const h=x.getBoundingClientRect().height, rh=ref.getBoundingClientRect().height;
+        ref.remove();
+        return rh>0 && h <= rh*1.4;
+      };
+      const merkerBrekkerIkke = merker.length>=2 && merker.every(enLinje);
+      // Metadata: hver bit skal stå hel.
+      const biter=[...kort.querySelectorAll('span')].filter(x=>/white-space:nowrap/.test(x.getAttribute('style')||''));
+      const biterErHele = biter.length>=4 && biter.every(enLinje);
+      const høyde=Math.round(kort.getBoundingClientRect().height);
+      boks.remove(); setFontSize(før);
+      Object.assign(S,saved); _q10Memo={k:null,v:null};
+      return {merkerBrekkerIkke, biterErHele, antallMerker:merker.length,
+              antallBiter:biter.length, høyde,
+              // 683px var før-tilstanden på nøyaktig dette oppsettet.
+              kortetErIkkeAbsurdHøyt: høyde < 400};
+    }""")
+    ok132 = all(r132.get(k) for k in
+                ['merkerBrekkerIkke', 'biterErHele', 'kortetErIkkeAbsurdHøyt'])
+    results.append(('feedback_card_badges_never_break_mid_word', ok132, r132))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:

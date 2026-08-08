@@ -5482,6 +5482,41 @@ function feedbackVoterId(){
 function feedbackVotedSet(){
   try{ return new Set(JSON.parse(localStorage.getItem('pizzaVotedFeedback'))||[]); }catch(e){ return new Set(); }
 }
+// v0.764: kortmarkupet ut i egen funksjon. Det lå inni loadFeedbackList(),
+// bak et nettverkskall, og kunne derfor ikke måles av en test — og feilen her
+// var nettopp en LAYOUT-feil: merkelappene var vanlige inline-spans, så ved
+// stor skrift brakk teksten inni dem («Mangler» / «mel»), og med admin-knappene
+// til stede ble venstre kolonne klemt så hardt at kortet ble 683px høyt.
+function feedbackItemHTML(it, o){
+  const {isAdmin, isNew, hasVoted, catLbl} = o;
+      let dt=''; try{ dt=fDT(new Date(it.createdAt)); }catch(e){}
+      const ctx = it.context||{};
+      const adminBtns = isAdmin ? `
+            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?L('Merk som ulest','Mark as unread'):L('Merk som løst','Mark as resolved')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
+            <button onclick="deleteFeedbackConfirm('${it.id}')" title="${L('Slett','Delete')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
+      return `<div id="fbitem-${it.id}" style="border:1px solid ${isNew?'#e8590c':'var(--dyn-border)'};box-shadow:${isNew?'0 0 0 2px #fbe4d4':'none'};border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
+
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1 1 11rem;min-width:0">
+            <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+              <span style="font-size:10px;font-weight:700;color:#c2410c;background:#fbe4d4;border-radius:6px;padding:1px 6px;display:inline-block;white-space:nowrap">${escH(catLbl(it.category))}</span>${isNew?`<span style="font-size:10px;font-weight:700;color:#fff;background:#e8590c;border-radius:6px;padding:1px 6px;display:inline-block;white-space:nowrap">${L('✓ nettopp sendt','✓ just sent')}</span>`:''}
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:0 6px;font-size:10px;color:var(--dyn-faint);margin-top:3px">${
+              [dt, 'v'+escH(ctx.version||'?'),
+               ctx.type?escH(ctx.type)+(ctx.method?'/'+escH(ctx.method):''):'',
+               it.submittedBy?L('av ','by ')+escH(it.submittedBy):'']
+                .filter(Boolean)
+                .map((x,i)=>`<span style="white-space:nowrap">${i?'· ':''}${x}</span>`).join('')
+            }</div>
+            <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.4">${escH(it.message)}</div>
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
+            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?L('Du har allerede stemt','You have already voted'):L('Stem opp','Vote up')}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#e8590c':'var(--dyn-border)'};border-radius:6px;background:${hasVoted?'#fbe4d4':'var(--dyn-btn-bg)'};color:${hasVoted?'#0F6E56':'var(--dyn-text)'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
+            ${adminBtns}
+          </div>
+        </div>
+      </div>`;
+}
 async function loadFeedbackList(){
   const wrap = document.getElementById('feedback-list-wrap');
   if(!wrap) return;
@@ -5507,29 +5542,9 @@ async function loadFeedbackList(){
     const isAdmin = !!window._adminPassword;
     const voted = feedbackVotedSet();
     const catLbl = v => { const c=FEEDBACK_CATEGORIES.find(c=>c.v===v); return c?L(c.t,c.tEn):v; };
-    wrap.innerHTML = items.map(it=>{
-      let dt=''; try{ dt=fDT(new Date(it.createdAt)); }catch(e){}
-      const ctx = it.context||{};
-      const hasVoted = voted.has(it.id);
-      const isNew = it.id===newId;
-      const adminBtns = isAdmin ? `
-            <button onclick="toggleFeedbackResolved('${it.id}',${!!it.resolved})" title="${it.resolved?L('Merk som ulest','Mark as unread'):L('Merk som løst','Mark as resolved')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:10px;cursor:pointer">${it.resolved?'↺':'✓'}</button>
-            <button onclick="deleteFeedbackConfirm('${it.id}')" title="${L('Slett','Delete')}" style="padding:3px 7px;border:1px solid var(--dyn-border);border-radius:6px;background:var(--dyn-btn-bg);color:#993C1D;font-size:10px;cursor:pointer">✕</button>` : '';
-      return `<div id="fbitem-${it.id}" style="border:1px solid ${isNew?'#e8590c':'var(--dyn-border)'};box-shadow:${isNew?'0 0 0 2px #fbe4d4':'none'};border-radius:8px;padding:.55rem .7rem;margin-bottom:6px;background:var(--dyn-surface);opacity:${it.resolved?'.7':'1'}">
-
-        <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
-          <div style="min-width:0">
-            <span style="font-size:10px;font-weight:700;color:#c2410c;background:#fbe4d4;border-radius:6px;padding:1px 6px">${escH(catLbl(it.category))}</span>${isNew?`<span style="font-size:10px;font-weight:700;color:#fff;background:#e8590c;border-radius:6px;padding:1px 6px;margin-left:4px">${L('✓ nettopp sendt','✓ just sent')}</span>`:''}
-            <span style="font-size:10px;color:var(--dyn-faint);margin-left:4px">${dt} · v${escH(ctx.version||'?')}${ctx.type?' · '+escH(ctx.type):''}${ctx.method?'/'+escH(ctx.method):''}${it.submittedBy?L(' · av ',' · by ')+escH(it.submittedBy):''}</span>
-            <div style="font-size:12px;color:var(--dyn-text);margin-top:4px;white-space:pre-wrap;line-height:1.4">${escH(it.message)}</div>
-          </div>
-          <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
-            <button onclick="voteFeedback('${it.id}')" ${hasVoted?'disabled':''} title="${hasVoted?L('Du har allerede stemt','You have already voted'):L('Stem opp','Vote up')}" style="display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid ${hasVoted?'#e8590c':'var(--dyn-border)'};border-radius:6px;background:${hasVoted?'#fbe4d4':'var(--dyn-btn-bg)'};color:${hasVoted?'#0F6E56':'var(--dyn-text)'};font-size:10px;font-weight:600;cursor:${hasVoted?'default':'pointer'}">👍 ${it.votes||0}</button>
-            ${adminBtns}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
+    wrap.innerHTML = items.map(it=>feedbackItemHTML(it, {
+      isAdmin, isNew: it.id===newId, hasVoted: voted.has(it.id), catLbl
+    })).join('');
   }catch(e){
     wrap.innerHTML = `<p style="color:#993C1D;font-size:12px">${L('Kunne ikke laste tilbakemeldinger.','Could not load feedback.')}</p>`;
   }
