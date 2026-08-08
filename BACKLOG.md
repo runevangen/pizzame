@@ -1044,3 +1044,54 @@ rekkefølgen. F17 er det klart mest verdifulle.
   dem fjernet en hel klasse motsigelser i stedet for å teste seg til dem.
 - Største jobben av de tre lagene — alle stegtekstene må røres. Ta den neste gang
   stegtekstene uansett skal åpnes. **[baseline]** (rendringslaget flytter seg).
+
+### F30. Ordliste — appen bruker fagord den aldri forklarer
+- **I klartekst:** stegtekstene lener seg tungt på bakespråk, og ingen av ordene
+  er definert noe sted i appen. Den som aldri har bakt før leser «rund godt med
+  begge hender» og «bygger overflatespenning» uten å ha noen mulighet til å
+  vite hva det betyr.
+- **Målt over hele matrisen** (metode × type, ~148 000 tegn stegtekst), og
+  sjekket mot `guide.js`:
+
+  | Ord | I stegtekstene | Forklart i guiden |
+  |---|---:|---:|
+  | emne / emnene | **275×** | nevnt 2×, aldri definert |
+  | gluten / glutenstruktur | **106×** | 0 |
+  | poolish | 72× | ✅ som metode |
+  | fermenter(e) | 48× | 0 |
+  | oven spring | **30×** | 0 |
+  | biga | 24× | ✅ som metode |
+  | autolyse | **20×** | 0 |
+  | etterheving | 14× | 0 |
+  | overflatespenning | 12× | 0 |
+  | runding / rundet | 24× | 0 |
+  | temperering / benketid | 20× | 0 |
+  | leopardmønster | 10× | 0 |
+  | bulk(heving) | 4× | 0 |
+  | extensibel | 4× | 0 |
+
+- **«Emne» er det viktigste.** 275 treff, og det er selve enheten hele appen
+  regner i — emnevekt, antall emner, «del i 3 emner». Uten den er resten av
+  planen vanskelig å følge.
+- **To ord som er verre enn bare uforklarte:**
+  - **«oven spring»** er engelsk midt i norsk tekst, og står uoversatt 30 ganger.
+  - **«dekket»** betyr to helt ulike ting i samme app: «dekk bollen med lokk»
+    (tildekket) og «dekket er varmt lenge før det er gjennomvarmt» (stekedekket i
+    pizzaovnen). Samme ord, to betydninger, ingen av dem forklart.
+  - **«extensibel»** er et lånord som ikke finnes i norsk til vanlig — «lett å
+    strekke» står allerede i parentes noen steder, men ikke alle.
+- **To trinn, ulik pris:**
+  1. **En ordlisteside under Tips og teknikk.** Billig, ingen stegtekster røres,
+     og den kan skrives ferdig i én omgang. Løser «jeg lurer på hva dette
+     betyr» — men ikke i øyeblikket man lurer.
+  2. **Trykkbare ord i stegteksten.** Det som faktisk hjelper, siden spørsmålet
+     dukker opp mens man står og leser. Men det krever at hver stegtekst merkes,
+     altså at alle strengene røres.
+- **Ta trinn 2 sammen med F29.** F29 skal uansett åpne samtlige stegtekster for å
+  innføre `uses:{}` — å merke fagord i samme runde koster nesten ingenting ekstra,
+  mens to separate runder gjennom de samme strengene koster dobbelt.
+- **Test:** en invariant kan holde lista ærlig — hvert ord i ordlista må faktisk
+  forekomme i minst én stegtekst (ingen døde oppslag), og en liste over kjente
+  fagord må ikke dukke opp i stegtekstene uten å stå i ordlista. Da kan ikke
+  ordlista råtne fra hverandre når tekstene endres. Samme mønster som invariant
+  D (ingenting bor bare i understegene).
