@@ -7517,7 +7517,7 @@ document.addEventListener('visibilitychange', ()=>{
 const VINK = {
   strøm:null, video:null, ctx:null, timer:null,
   forrige:null, spor:[], sistUtløst:0, på:false, speilvend:true,
-  glød:0, visX:null
+  glød:0, visX:null, visY:null
 };
 const VINK_B=32, VINK_H=24;          // arbeidsoppløsning
 const VINK_INTERVALL=60;             // ms mellom frames (~16 fps)
@@ -7526,6 +7526,8 @@ const VINK_VINDU=700;                // ms sporet holdes
 const VINK_REISE=0.30;               // andel av bredden tyngdepunktet må flytte seg
 const VINK_MINTID=180;               // ms — raskere enn dette er flimmer, ikke et vink
 const VINK_PAUSE=1200;               // ms sperre etter et utløst vink
+const VINK_DOMINANS=1.3;             // hvor mye større den ene aksen må være
+const VINK_RULL=0.7;                 // andel av synlig høyde per rulling
 
 // Tar en ferdig MediaStream. Skilt fra kameratilgangen med vilje: da kan en
 // test mate detektoren med canvas.captureStream() og bevise at den finner
@@ -7539,7 +7541,7 @@ function vinkStart(strøm){
   const c=document.createElement('canvas');
   c.width=VINK_B; c.height=VINK_H;
   VINK.ctx=c.getContext('2d',{willReadFrequently:true});
-  VINK.forrige=null; VINK.spor=[]; VINK.på=true; VINK.glød=0; VINK.visX=null;
+  VINK.forrige=null; VINK.spor=[]; VINK.på=true; VINK.glød=0; VINK.visX=null; VINK.visY=null;
   const start=()=>{ VINK.timer=setInterval(vinkTikk, VINK_INTERVALL); };
   const p=v.play();
   if(p && p.then) p.then(start).catch(start); else start();
@@ -7550,7 +7552,7 @@ function vinkStopp(){
   try{ if(VINK.strøm) VINK.strøm.getTracks().forEach(t=>t.stop()); }catch(e){}
   if(VINK.video){ try{ VINK.video.srcObject=null; }catch(e){} }
   VINK.strøm=null; VINK.video=null; VINK.ctx=null;
-  VINK.forrige=null; VINK.spor=[]; VINK.på=false; VINK.glød=0; VINK.visX=null;
+  VINK.forrige=null; VINK.spor=[]; VINK.på=false; VINK.glød=0; VINK.visX=null; VINK.visY=null;
 }
 // Ett bilde: tegn ned, mål bevegelse per kolonne, finn tyngdepunktet.
 // Returnerer tyngdepunktet 0..1, eller null når det er for lite bevegelse.
@@ -7569,19 +7571,20 @@ function vinkMål(){
   const f=VINK.forrige;
   VINK.forrige=grå;
   if(!f) return null;
-  const kol=new Float64Array(VINK_B);
+  const kol=new Float64Array(VINK_B), rad=new Float64Array(VINK_H);
   let sum=0;
   for(let y=0;y<VINK_H;y++) for(let x=0;x<VINK_B;x++){
     const diff=Math.abs(grå[y*VINK_B+x]-f[y*VINK_B+x]);
-    kol[x]+=diff; sum+=diff;
+    kol[x]+=diff; rad[y]+=diff; sum+=diff;
   }
   const energi=sum/(VINK_B*VINK_H);
   // Energien returneres ALLTID, også under støygulvet: hånden i panelet skal
   // falme jevnt tilbake til hvile, ikke slukke brått i det målingen forkastes.
-  if(energi < VINK_STØY) return {x:null, energi};
-  let vekt=0;
-  for(let x=0;x<VINK_B;x++) vekt+=x*kol[x];
-  return {x:(vekt/sum)/(VINK_B-1), energi};
+  if(energi < VINK_STØY) return {x:null, y:null, energi};
+  let vx=0, vy=0;
+  for(let x=0;x<VINK_B;x++) vx+=x*kol[x];
+  for(let y=0;y<VINK_H;y++) vy+=y*rad[y];
+  return {x:(vx/sum)/(VINK_B-1), y:(vy/sum)/(VINK_H-1), energi};
 }
 function vinkTikk(){
   const nå=Date.now();
@@ -7590,7 +7593,10 @@ function vinkTikk(){
   // ødelegger roen i Fokus-modus — den skal gløde og falme, ikke strobe.
   const rå=m?Math.min(1,Math.max(0,(m.energi-VINK_STØY/2)/36)):0;
   VINK.glød = VINK.glød*0.7 + rå*0.3;
-  if(m && m.x!==null) VINK.visX = (VINK.visX==null) ? m.x : VINK.visX*0.6 + m.x*0.4;
+  if(m && m.x!==null){
+    VINK.visX = (VINK.visX==null) ? m.x : VINK.visX*0.6 + m.x*0.4;
+    VINK.visY = (VINK.visY==null) ? m.y : VINK.visY*0.6 + m.y*0.4;
+  }
   vinkMaling();
   const x=m?m.x:null;
   if(x===null){
@@ -7609,26 +7615,56 @@ function vinkTikk(){
     }
     return;
   }
-  VINK.spor.push({t:nå, x});
+  VINK.spor.push({t:nå, x, y:m.y});
   while(VINK.spor.length && nå-VINK.spor[0].t > VINK_VINDU) VINK.spor.shift();
   if(nå-VINK.sistUtløst < VINK_PAUSE) return;
   if(VINK.spor.length<4) return;
   const a=VINK.spor[0], b=VINK.spor[VINK.spor.length-1];
-  const reise=b.x-a.x, tid=b.t-a.t;
-  if(tid<VINK_MINTID || Math.abs(reise)<VINK_REISE) return;
+  const dx=b.x-a.x, dy=b.y-a.y, tid=b.t-a.t;
+  if(tid<VINK_MINTID) return;
+  // v0.769: to akser. Vannrett blar mellom steg, loddrett ruller i teksten.
+  // En diagonal er ikke et vink — den ene aksen må være TYDELIG størst, ellers
+  // gjetter vi på hva du mente. Uten dette blir hver skrå bevegelse til en
+  // tilfeldig av fire handlinger.
+  const vannrett = Math.abs(dx) >= Math.abs(dy)*VINK_DOMINANS;
+  const loddrett = Math.abs(dy) >= Math.abs(dx)*VINK_DOMINANS;
+  if(!vannrett && !loddrett) return;
+  const akse = vannrett ? 'x' : 'y';
+  const reise = vannrett ? dx : dy;
+  if(Math.abs(reise) < VINK_REISE) return;
   // Retningen må være konsekvent. Uten dette utløser en hånd som går fram og
   // tilbake — eller en person som passerer bak deg — på tilfeldig støy.
   const tegn=Math.sign(reise);
   let medstrøms=0;
   for(let i=1;i<VINK.spor.length;i++)
-    if(Math.sign(VINK.spor[i].x-VINK.spor[i-1].x)===tegn) medstrøms++;
+    if(Math.sign(VINK.spor[i][akse]-VINK.spor[i-1][akse])===tegn) medstrøms++;
   if(medstrøms < (VINK.spor.length-1)*0.7) return;
   VINK.sistUtløst=nå; VINK.spor=[];
-  vinkUtløst(tegn>0 ? 'neste' : 'forrige');
+  if(vannrett) vinkUtløst(tegn>0 ? 'neste' : 'forrige');
+  else vinkUtløst(tegn>0 ? 'ned' : 'opp');
 }
 function vinkUtløst(retning){
   const ov=document.getElementById('focus-overlay');
   if(!ov || ov.style.display!=='flex'){ vinkStopp(); return; }
+  // v0.769: hånd opp/ned ruller i stegteksten. Retningen er KOMMANDO, ikke
+  // direkte manipulasjon: opp betyr opp. På en berøringsskjerm drar du innholdet
+  // motsatt vei av der du vil, men her tar du ikke på noe — og vannrett er
+  // allerede kommando («høyre = framover»). Å blande de to metaforene i samme
+  // funksjon ville vært verre enn å velge feil metafor.
+  if(retning==='opp' || retning==='ned'){
+    const sc=document.getElementById('focus-scroll');
+    if(!sc) return;
+    const steg=Math.max(80, Math.round(sc.clientHeight*VINK_RULL));
+    const fra=sc.scrollTop;
+    sc.scrollBy({top: retning==='ned'?steg:-steg, behavior:'smooth'});
+    // Sier fra når det ikke er mer å rulle — ellers ser det ut som om vinket
+    // ikke ble oppfattet, og man vinker hardere på noe som allerede er i bunn.
+    const bunn = sc.scrollHeight - sc.clientHeight;
+    const iEnden = (retning==='ned' && fra >= bunn-2) || (retning==='opp' && fra <= 2);
+    vinkMelding(iEnden ? (retning==='ned'?L('↓ alt lest','↓ all read'):L('↑ på toppen','↑ at the top'))
+                       : (retning==='ned'?L('↓ Ruller','↓ Scrolling'):L('↑ Ruller','↑ Scrolling')));
+    return;
+  }
   const total=(window._steps||[]).length;
   if(retning==='neste'){ if((window._focusIdx||0) < total-1) focusGoto((window._focusIdx||0)+1); }
   else focusPrev();
@@ -7649,7 +7685,9 @@ function vinkMaling(){
   const p=document.getElementById('vink-prikk');
   if(p){
     const x = VINK.visX==null ? 0.5 : VINK.visX;
+    const y = VINK.visY==null ? 0.5 : VINK.visY;
     p.style.left = (x*100).toFixed(1)+'%';
+    p.style.top  = (y*100).toFixed(1)+'%';
     p.style.opacity = (0.25 + 0.75*VINK.glød).toFixed(3);
   }
 }
@@ -7932,17 +7970,17 @@ function renderFocus(){
     <div style="height:6px;background:var(--forno-bg-raised);border-radius:3px;margin:12px 18px 0;overflow:hidden"><div style="height:100%;width:${Math.round((i+1)/total*100)}%;background:var(--forno-accent)"></div></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;min-height:16px">
       ${window._focusWake?`<span style="font-size:10.5px;font-weight:700;color:var(--forno-text-faint)">🔆 ${L('Skjermen holdes våken','Screen stays awake')}</span>`:''}
-      ${vinkStøttes()?`<span onclick="vinkToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${VINK.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${VINK.på?L('👋 Vink: på','👋 Wave: on'):L('👋 Bla med vink','👋 Flip with a wave')}</span>`:''}
+      ${vinkStøttes()?`<span onclick="vinkToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${VINK.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${VINK.på?L('👋 Vink: på — sideveis blar, opp/ned ruller','👋 Wave: on — sideways flips, up/down scrolls'):L('👋 Bla med vink','👋 Flip with a wave')}</span>`:''}
       ${klappStøttes()?`<span onclick="klappToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${KLAPP.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${KLAPP.på?L('👏 Klapp: på — 1 neste, 2 forrige','👏 Clap: on — 1 next, 2 previous'):L('👏 Bla med klapp','👏 Flip with a clap')}</span>`:''}
     </div>
     ${(VINK.på||KLAPP.på)?`<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;min-height:22px">
       <span id="vink-hand" style="font-size:19px;line-height:1;opacity:.3;display:${VINK.på?'inline':'none'};transition:opacity .12s linear,transform .12s linear;will-change:opacity,transform">👋</span>
-      <span style="display:${VINK.på?'inline-block':'none'};position:relative;flex:0 1 120px;height:4px;border-radius:2px;background:var(--forno-bg-raised);overflow:visible">
-        <span id="vink-prikk" style="position:absolute;top:-3px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--forno-accent);opacity:.25;transition:left .1s linear,opacity .12s linear;will-change:left,opacity"></span>
+      <span style="display:${VINK.på?'inline-block':'none'};position:relative;flex:0 0 auto;width:56px;height:34px;border-radius:8px;background:var(--forno-bg-raised);overflow:hidden">
+        <span id="vink-prikk" style="position:absolute;top:50%;left:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--forno-accent);opacity:.25;transition:left .1s linear,top .1s linear,opacity .12s linear;will-change:left,top,opacity"></span>
       </span>
       <span id="vink-kvittering" style="font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;color:var(--forno-accent-text);min-width:56px;text-align:left"></span>
     </div>`:''}
-    <div style="flex:1;overflow-y:auto;padding:14px 18px 8px;text-align:left;display:flex;flex-direction:column">
+    <div id="focus-scroll" style="flex:1;overflow-y:auto;padding:14px 18px 8px;text-align:left;display:flex;flex-direction:column">
       <div style="font-size:15px;font-weight:700;color:var(--forno-accent-text)">${escH(timeTxt)}${escH(durTxt)}</div>
       <div style="font-weight:800;font-size:21px;line-height:1.14;margin:6px 0 2px;color:var(--forno-text)">${escH(title)}${done?' <span style="color:var(--forno-accent-text)">✓</span>':''}</div>
       ${midHtml}

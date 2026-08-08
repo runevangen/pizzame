@@ -5285,6 +5285,66 @@ def run_behavioral_tests(page):
                     ['startet', 'ettKlappGirNeste', 'toKlappGirForrige', 'slipperMikrofonen'])
         results.append(('clap_end_to_end_through_real_audio', ok138, r138))
 
+    # v0.769: to akser. Sideveis blar mellom steg, opp/ned ruller i stegteksten
+    # — et langt steg får ikke plass på skjermen, og da hjelper det lite å
+    # kunne bla videre uten å kunne lese ferdig.
+    #
+    # Det farlige med to akser er at ALT plutselig betyr noe. En skrå bevegelse
+    # ville blitt en tilfeldig av fire handlinger. Derfor må den ene aksen være
+    # tydelig størst (1,3×), ellers gjør vi ingenting — det er bedre å ikke
+    # svare enn å gjette feil.
+    #
+    # Kravene: loddrett ruller UTEN å bytte steg, vannrett bytter steg UTEN å
+    # rulle, og diagonalen gjør ingen av delene.
+    r139 = page.evaluate("""async () => {
+      try{ localStorage.setItem('pizzaSensorInfo','1'); }catch(e){}
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      const c=document.createElement('canvas'); c.width=320; c.height=240;
+      const g=c.getContext('2d'); let hx=null, hy=120;
+      const tegn=()=>{ g.fillStyle='#eee'; g.fillRect(0,0,320,240);
+        if(hx!==null){ g.fillStyle='#111'; g.fillRect(hx-45,hy-40,90,80); } };
+      tegn();
+      openFocus();
+      // Finn et steg som faktisk KAN rulle, ellers tester vi ingenting.
+      let sc=null;
+      for(let i=0;i<(window._steps||[]).length;i++){
+        focusGoto(i);
+        sc=document.getElementById('focus-scroll');
+        if(sc && sc.scrollHeight > sc.clientHeight+60) break;
+      }
+      const kanRulle = sc && sc.scrollHeight > sc.clientHeight+60;
+      vinkStart(c.captureStream(30));
+      await new Promise(r=>setTimeout(r,400));
+      const sveip=async (x0,y0,x1,y1)=>{
+        for(let i=0;i<=14;i++){ hx=x0+(x1-x0)*i/14; hy=y0+(y1-y0)*i/14; tegn();
+          await new Promise(r=>setTimeout(r,45)); }
+        hx=null; tegn(); await new Promise(r=>setTimeout(r,500));
+        await new Promise(r=>setTimeout(r,900));
+      };
+
+      const s0={t:sc.scrollTop, i:window._focusIdx};
+      await sveip(160,50,160,210);                    // rett ned
+      const s1={t:sc.scrollTop, i:window._focusIdx};
+      await sveip(160,210,160,50);                    // rett opp
+      const s2={t:sc.scrollTop, i:window._focusIdx};
+      await sveip(290,120,30,120);                    // rett sideveis
+      const s3={t:sc.scrollTop, i:window._focusIdx};
+      await sveip(40,40,280,200);                     // diagonal — 45 grader
+      const s4={t:sc.scrollTop, i:window._focusIdx};
+
+      vinkStopp(); closeFocus();
+      return {kanRulle, s0, s1, s2, s3, s4,
+              nedRuller: s1.t > s0.t + 40 && s1.i === s0.i,
+              oppRullerTilbake: s2.t < s1.t - 40 && s2.i === s1.i,
+              sideveisBlarUtenÅRulle: s3.i === s2.i + 1 && Math.abs(s3.t - s2.t) < 5,
+              diagonalGjørIngenting: s4.i === s3.i && Math.abs(s4.t - s3.t) < 5};
+    }""")
+    ok139 = all(r139.get(k) for k in
+                ['kanRulle', 'nedRuller', 'oppRullerTilbake',
+                 'sideveisBlarUtenÅRulle', 'diagonalGjørIngenting'])
+    results.append(('wave_scrolls_vertically_and_flips_horizontally', ok139, r139))
+
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
     # Fem ting må holde, og den første er den viktigste:

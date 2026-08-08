@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.769",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Vinkestyringen har fått en akse til: hånd opp og ned ruller i stegteksten. Et langt steg får ikke plass på skjermen, og da hjalp det lite å kunne bla videre uten å kunne lese ferdig.",
+      "Sideveis blar mellom steg som før, opp og ned ruller. Opp betyr opp — som en kommando, ikke som å dra i en skjerm. Sideveis er allerede «høyre er framover», og å blande de to metaforene i samme håndbevegelse ville vært verre enn å velge feil.",
+      "En skrå bevegelse gjør ingenting. Med to akser betyr plutselig alt noe, og en diagonal ville blitt en tilfeldig av fire handlinger — så den ene retningen må være tydelig størst, ellers svarer appen ikke. Bedre å la være enn å gjette feil.",
+      "Er du allerede nederst i teksten, sier den «↓ alt lest» i stedet for å se ut som om vinket ikke ble oppfattet.",
+      "Og prikken som viser hva kameraet ser er nå en liten flate i stedet for en strek, siden den har to retninger å vise."
+    ],
+    "changes_en": [
+      "The wave control has gained another axis: hand up and down scrolls the step text. A long step does not fit on the screen, and being able to move on without being able to finish reading was not much help.",
+      "Sideways moves between steps as before, up and down scrolls. Up means up — as a command, not as dragging a screen. Sideways is already “right is forward”, and mixing the two metaphors in the same hand movement would have been worse than picking the wrong one.",
+      "A diagonal movement does nothing. With two axes everything suddenly means something, and a diagonal would have become a random one of four actions — so one direction has to be clearly the larger, otherwise the app does not answer. Better to stay silent than to guess wrong.",
+      "If you are already at the bottom of the text it says “↓ all read” rather than looking as though the wave went unnoticed.",
+      "And the dot showing what the camera sees is now a small pad rather than a line, since it has two directions to show."
+    ]
+  },
+  {
     "v": "0.768",
     "d": "august 2026",
     "d_en": "August 2026",
