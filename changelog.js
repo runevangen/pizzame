@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.763",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Poolish og Biga oppga hvor mye vann, men ikke hvor varmt. Nå står det «250g vann (18–21°C)» — også i ingredienslista for steget.",
+      "Det er nettopp i en forgjæring det betyr mest. En poolish står 12–16 timer uten elting, så vannets temperatur er forgjæringens starttemperatur — det finnes ingen eltefriksjon som retter den opp igjen, slik det gjør i en hoveddeig som eltes i ti minutter.",
+      "Mania-metoden sa det allerede, siden originaloppskriften gjør det. Så appen ga to ulike svar på samme spørsmål avhengig av hvilken metode du sto i.",
+      "Ny invariant-test: det første steget som tilsetter vann må oppgi en temperatur. Senere steg slipper — «de 20 g vannet du holdt av» er samme vann, målt opp med temperatur ett steg tidligere, og å gjenta den ville bare vært støy."
+    ],
+    "changes_en": [
+      "Poolish and Biga stated how much water, but not how warm. It now reads “250g water (18–21°C)” — including in the step's own ingredient list.",
+      "A preferment is exactly where this matters most. A poolish sits for 12–16 hours without kneading, so the water temperature is the preferment's starting temperature — there is no kneading friction to correct it afterwards, as there is in a main dough kneaded for ten minutes.",
+      "The Mania method already said so, because the original recipe does. So the app gave two different answers to the same question depending on which method you were in.",
+      "New invariant test: the first step that adds water must state a temperature. Later steps need not — “the 20g of water you held back” is the same water, measured out with a temperature one step earlier, and repeating it would only be noise."
+    ]
+  },
+  {
     "v": "0.762",
     "d": "august 2026",
     "d_en": "August 2026",

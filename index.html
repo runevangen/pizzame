@@ -2202,6 +2202,18 @@ function rtW(actualMins){
 // varme per kjøkkenmaskin innbakt. Ingen elting beholder den kvalitative
 // teksten: der blandes det med skje (ingen maskinfriksjon) og deigen står
 // uansett 15 timer i romtemperatur, så starttemperaturen betyr lite.
+// v0.763: forgjæringene oppga hvor mye vann, men ikke hvor varmt. Det er
+// nettopp der det betyr mest: en poolish eller biga står 12–18 timer uten
+// elting, så vannets temperatur ER forgjæringens starttemperatur — det finnes
+// ingen eltefriksjon som retter den opp etterpå, slik det gjør i en hoveddeig.
+// Mania sa det allerede («18–21°C», rett fra kilden), Poolish og Biga ikke.
+// Samme opplysning, to ulike svar i samme app.
+//
+// Mania beholder sin egen literal med vilje. Den er en AVSKRIFT, frosset av
+// test (v0.759), og skal ikke kunne endres av at en delt hjelpefunksjon
+// justeres senere. Tallene er de samme i dag; det er koblingen som ikke skal
+// finnes.
+const PREF_VANN=' (18–21°C) ';
 function waterTempPhrase(){
   if(S.type==='ingenelting') return L('kjølig eller romtemperert vann (ikke iskaldt)','cool or room-temperature water (not ice-cold)');
   const t=calcWaterTempC(23);
@@ -2472,11 +2484,11 @@ function rawSteps(a){
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
-          ?L(`Ta av deigrulle og skraper. Hell ${poolishSplit(r2).pool}g vann i bollen, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${poolishSplit(r2).pool}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,`Take off the dough roller and scraper. Pour ${poolishSplit(r2).pool}g water into the bowl, dissolve ${r2.yDry}g dry yeast — all the yeast for the whole recipe goes in here, nothing is added later. Add ${poolishSplit(r2).pool}g flour and stir until smooth with a spatula. Cover the bowl with a lid or plastic wrap.`)
-          :L(`Hell ${poolishSplit(r2).pool}g vann i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${poolishSplit(r2).pool}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,`Pour ${poolishSplit(r2).pool}g water into a bowl, dissolve ${r2.yDry}g dry yeast — all the yeast for the whole recipe goes in here, nothing is added later. Add ${poolishSplit(r2).pool}g flour and stir until smooth with a spatula. Cover the bowl with a lid or plastic wrap.`))+langpanneHintText(),
-        needs:[L(`💧 ${poolishSplit(r2).pool}g vann`,`💧 ${poolishSplit(r2).pool}g water`), L(`🫙 ${r2.yDry}g tørrgjær`,`🫙 ${r2.yDry}g dry yeast`), L(`🌾 ${poolishSplit(r2).pool}g mel`,`🌾 ${poolishSplit(r2).pool}g flour`)],
+          ?L(`Ta av deigrulle og skraper. Hell ${poolishSplit(r2).pool}g vann${PREF_VANN}i bollen, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${poolishSplit(r2).pool}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,`Take off the dough roller and scraper. Pour ${poolishSplit(r2).pool}g water${PREF_VANN}into the bowl, dissolve ${r2.yDry}g dry yeast — all the yeast for the whole recipe goes in here, nothing is added later. Add ${poolishSplit(r2).pool}g flour and stir until smooth with a spatula. Cover the bowl with a lid or plastic wrap.`)
+          :L(`Hell ${poolishSplit(r2).pool}g vann${PREF_VANN}i en bolle, løs opp ${r2.yDry}g tørrgjær — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Tilsett ${poolishSplit(r2).pool}g mel og rør til glatt med en slikkepott. Dekk bollen med lokk eller plastfolie.`,`Pour ${poolishSplit(r2).pool}g water${PREF_VANN}into a bowl, dissolve ${r2.yDry}g dry yeast — all the yeast for the whole recipe goes in here, nothing is added later. Add ${poolishSplit(r2).pool}g flour and stir until smooth with a spatula. Cover the bowl with a lid or plastic wrap.`))+langpanneHintText(),
+        needs:[L(`💧 ${poolishSplit(r2).pool}g vann (18–21°C)`,`💧 ${poolishSplit(r2).pool}g water (18–21°C)`), L(`🫙 ${r2.yDry}g tørrgjær`,`🫙 ${r2.yDry}g dry yeast`), L(`🌾 ${poolishSplit(r2).pool}g mel`,`🌾 ${poolishSplit(r2).pool}g flour`)],
         substeps:[
-          L(`Hell ${poolishSplit(r2).pool}g vann i bollen, løs opp ${r2.yDry}g tørrgjær`,`Pour ${poolishSplit(r2).pool}g water into the bowl, dissolve ${r2.yDry}g dry yeast`),
+          L(`Hell ${poolishSplit(r2).pool}g vann${PREF_VANN}i bollen, løs opp ${r2.yDry}g tørrgjær`,`Pour ${poolishSplit(r2).pool}g water${PREF_VANN}into the bowl, dissolve ${r2.yDry}g dry yeast`),
           L(`Tilsett ${poolishSplit(r2).pool}g mel, rør til glatt med en slikkepott`,`Add ${poolishSplit(r2).pool}g flour, stir until smooth with a spatula`),
           L(`Dekk bollen med lokk eller plastfolie`,`Cover the bowl with a lid or plastic wrap`)
         ],
@@ -2521,10 +2533,10 @@ function rawSteps(a){
     const rdy=aM(ba2,S.bigaH*60);
     return[
       {title:'Lag biga (for hånd)',loc:'benk',at:ba2,dur:15,
-        desc:L(`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann og ${r3.yDry}g tørrgjær til klumpete, tørr konsistens — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Ikke bland for mye.${langpanneHintText()}`,`Biga is always made by hand, regardless of machine — the consistency is too dry and lumpy for machine kneading. Mix ${bm}g flour, ${bv}g water and ${r3.yDry}g dry yeast to a lumpy, dry consistency — all the yeast for the whole recipe goes in here, nothing is added later. Don't mix too much.${langpanneHintText()}`),
-        needs:[L(`🌾 ${bm}g mel`,`🌾 ${bm}g flour`), L(`💧 ${bv}g vann`,`💧 ${bv}g water`), L(`🫙 ${r3.yDry}g tørrgjær`,`🫙 ${r3.yDry}g dry yeast`)],
+        desc:L(`Biga lages alltid for hånd, uansett kjøkkenmaskin — konsistensen er for tørr og klumpete for maskinelting. Bland ${bm}g mel, ${bv}g vann${PREF_VANN}og ${r3.yDry}g tørrgjær til klumpete, tørr konsistens — all gjæren for hele oppskriften skal inn her, ingenting tilsettes senere. Ikke bland for mye.${langpanneHintText()}`,`Biga is always made by hand, regardless of machine — the consistency is too dry and lumpy for machine kneading. Mix ${bm}g flour, ${bv}g water${PREF_VANN}and ${r3.yDry}g dry yeast to a lumpy, dry consistency — all the yeast for the whole recipe goes in here, nothing is added later. Don't mix too much.${langpanneHintText()}`),
+        needs:[L(`🌾 ${bm}g mel`,`🌾 ${bm}g flour`), L(`💧 ${bv}g vann (18–21°C)`,`💧 ${bv}g water (18–21°C)`), L(`🫙 ${r3.yDry}g tørrgjær`,`🫙 ${r3.yDry}g dry yeast`)],
         substeps:[
-          L(`Bland ${bm}g mel, ${bv}g vann og ${r3.yDry}g tørrgjær for hånd`,`Mix ${bm}g flour, ${bv}g water and ${r3.yDry}g dry yeast by hand`),
+          L(`Bland ${bm}g mel, ${bv}g vann${PREF_VANN}og ${r3.yDry}g tørrgjær for hånd`,`Mix ${bm}g flour, ${bv}g water${PREF_VANN}and ${r3.yDry}g dry yeast by hand`),
           L(`Bland kun til klumpete, tørr konsistens — ikke bland for mye`,`Mix only to a lumpy, dry consistency — don't mix too much`)
         ],
         why:WHY.bi,

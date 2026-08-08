@@ -4662,6 +4662,37 @@ def run_behavioral_tests(page):
                     {'utenTegn': sorted(set(missing_cue))[:12],
                      'antall': len(missing_cue)}))
 
+    # --- G: vannet skal ha en temperatur der det først tilsettes ---
+    # v0.763: forgjæringene oppga hvor mye vann, men ikke hvor varmt. En poolish
+    # eller biga står 12–18 timer uten elting, så vannets temperatur ER
+    # forgjæringens starttemperatur — det finnes ingen eltefriksjon som retter
+    # den opp etterpå. Mania sa det allerede («18–21°C», fra kilden), Poolish og
+    # Biga ikke: samme opplysning, to ulike svar i samme app.
+    #
+    # Regelen gjelder FØRSTE steg som tilsetter vann. Senere steg kan vise
+    # tilbake — «de 20g vannet du holdt av» er samme vann, målt opp med
+    # temperatur i steget før, og å gjenta den ville vært støy.
+    VANN_MENGDE = re.compile(r"\d+(?:[.,]\d+)?\s*g\s+(?:kaldt\s+|kjølig\s+|romtemperert\s+)*vann", re.I)
+    VANN_TEMP = re.compile(r"\d+\s*(?:–|-)\s*\d+\s*°C|ca\.\s*\d+\s*°C|iskaldt|romtemperert|kjølig|lunkent", re.I)
+
+    water_no_temp = []
+    for d in sweep:
+        if d.get("err"):
+            continue
+        for st in (d.get("steps") or []):
+            biter = [st.get("desc")] + list(st.get("substeps") or [])
+            tekst = " ".join(str(x or "") for x in biter)
+            if not VANN_MENGDE.search(tekst):
+                continue
+            if not VANN_TEMP.search(tekst):
+                water_no_temp.append(
+                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {st.get('title')}")
+            break   # kun første vannsteg per plan
+    ok118d = not water_no_temp
+    results.append(('invariant_water_states_its_temperature_where_added', ok118d,
+                    {'utenTemp': sorted(set(water_no_temp))[:12],
+                     'antall': len(water_no_temp)}))
+
     # v0.759: Mania er en AVSKRIFT, ikke en beregning. Kilden er «Lørdagspizza
     # med poolish tilpasset tidsklemma», René Munthe Eik, pizzamani.no,
     # 5. januar 2020. Appen sier selv at gjæren i Mania ikke skal justeres —
