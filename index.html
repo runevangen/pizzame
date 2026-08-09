@@ -7340,14 +7340,19 @@ function renderWindowPicker(){
       const short=c.minSpan-windowMin;
       const mangler=fmtSessionDur(short);
       const nå=new Date();
-      let altStart=new Date(startAt.getTime()-short*60000);
-      // Natt-start skyves til 22:00 kvelden før — tidligere er alltid gyldig —
-      // men aldri forbi «nå»: da beholdes den nattlige (mulig slår pen).
-      if(isNightHour(altStart.getHours())){
-        const s=new Date(altStart);
-        if(s.getHours()<6) s.setDate(s.getDate()-1);
-        s.setHours(22,0,0,0);
-        if(s.getTime()>=nå.getTime()) altStart=s;
+      const råStart=new Date(startAt.getTime()-short*60000);
+      let altStart=new Date(råStart);
+      // v0.780: en start utenfor Pizzatid skyves TIDLIGERE til siste tidspunkt
+      // innenfor (tidligere er alltid gyldig — større vindu), aldri forbi «nå».
+      // Erstatter 22:00-regelen fra v0.777: med Pizzatid avslått er predikatet
+      // «ikke natt», så oppførselen der er praktisk talt den samme.
+      if(altStart.getTime()>=nå.getTime()
+         && !inPizzatidWindow(altStart.getHours(),altStart.getMinutes(),altStart.getDay())){
+        for(let t=altStart.getTime()-15*60000; t>=altStart.getTime()-48*3600000; t-=15*60000){
+          if(t<nå.getTime()) break;                    // aldri forbi nå
+          const s=new Date(t);
+          if(inPizzatidWindow(s.getHours(),s.getMinutes(),s.getDay())){ altStart=s; break; }
+        }
       }
       const startMulig=altStart.getTime()>=nå.getTime();
       const startShift=Math.round((startAt.getTime()-altStart.getTime())/60000);
@@ -7364,9 +7369,9 @@ function renderWindowPicker(){
         <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:4px;line-height:1.45">${L(`Trenger ${fmtSessionDur(c.minSpan)} — slik får du den til:`,`Needs ${fmtSessionDur(c.minSpan)} — here's how to make it fit:`)}</div>
         <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
           ${startMulig?`<span onclick="applyWindowShiftStart('${c.method}','${c.key}',${c.minVal},${startShift})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Start','Start')} <b>${fDT(altStart)}</b><br><span style="font-weight:500;opacity:.8">${L('i stedet','instead')}</span></span>`:''}
-          <span onclick="applyWindowShiftBake('${c.method}','${c.key}',${c.minVal},${bakeShift})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Stek','Bake')} <b>${fDT(altBake)}</b><br><span style="font-weight:500;opacity:.8">${L('samme klokkeslett, senere dag','same time, a later day')}</span></span>
+          <span onclick="applyWindowShiftBake('${c.method}','${c.key}',${c.minVal},${bakeShift})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Stek','Bake')} <b>${fDT(altBake)}</b><br><span style="font-weight:500;opacity:.8">${L('da rekker den','that\'s enough time')}</span></span>
         </div>
-        ${startMulig?'':`<div style="font-size:10px;color:var(--forno-text-faint);margin-top:5px;line-height:1.4">${L(`For sent å rekke ved å starte tidligere — den trengte oppstart ${escH(fDT(new Date(startAt.getTime()-short*60000)))}.`,`Too late to make it by starting earlier — it needed to start ${escH(fDT(new Date(startAt.getTime()-short*60000)))}.`)}</div>`}
+        ${startMulig?'':`<div style="font-size:10px;color:var(--forno-text-faint);margin-top:5px;line-height:1.4">${L(`For sent å rekke ved å starte tidligere — den måtte vært i gang for ${fmtSessionDur(Math.max(1,Math.round((nå.getTime()-råStart.getTime())/60000)))} siden.`,`Too late to make it by starting earlier — it needed to be underway ${fmtSessionDur(Math.max(1,Math.round((nå.getTime()-råStart.getTime())/60000)))} ago.`)}</div>`}
       </div>`;
       return;
     }
@@ -7386,11 +7391,22 @@ function renderWindowPicker(){
     // Klar-tidspunktet derimot har INGEN valgt; det må alltid være utenfor
     // natta. Finnes ingen slik plassering, vises ingen utvei — ærligere enn å
     // tilby noe like ille som problemet.
+    // v0.780: plasseringssøket foretrekker PIZZATID, ikke bare «ikke natt».
+    // inPizzatidWindow() er appens felles «er du ledig»-predikat — Smart-plan
+    // rangerer etter det, men Fra–til sjekket kun den hardkodede natta (23–06).
+    // To pass: først en plassering der både begynn og stek ligger innenfor
+    // Pizzatid (med Pizzatid avslått ER det ikke-natt-regelen), deretter
+    // ikke-natt som fallback, så vindusstart-unntaket som før.
     let tidlig=null;
     if(c.night && ubrukt>0){
-      for(let t=startsAt.getTime()-15*60000; t>startAt.getTime(); t-=15*60000){
-        const s=new Date(t), r=new Date(t+span*60000);
-        if(!isNightHour(s.getHours()) && !isNightHour(r.getHours())){ tidlig={s,r}; break; }
+      const inne=d=>inPizzatidWindow(d.getHours(),d.getMinutes(),d.getDay());
+      const ikkeNatt=d=>!isNightHour(d.getHours());
+      for(const krav of [inne, ikkeNatt]){
+        for(let t=startsAt.getTime()-15*60000; t>startAt.getTime(); t-=15*60000){
+          const s=new Date(t), r=new Date(t+span*60000);
+          if(krav(s) && krav(r)){ tidlig={s,r}; break; }
+        }
+        if(tidlig) break;
       }
       if(!tidlig){
         const r=new Date(startAt.getTime()+span*60000);

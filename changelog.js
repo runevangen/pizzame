@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.780",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fra–til foreslår ikke lenger oppstart på tider du ikke er ledig. Plasseringssøket brukte bare den faste natt-regelen (23–06) — mens Pizzatid, planen din over når du faktisk kan drive med pizza, lå ubrukt rett ved siden av. Nå letes det først etter en plassering der både «begynn» og «stek» ligger innenfor Pizzatid; natt-regelen er bare reserven. Med Pizzatid avslått er alt som før.",
+      "Samme regel for «start tidligere»-forslagene på metodene som ikke får plass: en foreslått start utenfor Pizzatid skyves til siste ledige tidspunkt i planen din — tidligere start er alltid gyldig, så det koster ingenting.",
+      "«Den trengte oppstart søn kl. 02:40» er borte. Et klokkeslett som både er passert og midt på natta er dobbelt ubrukelig. Nå står det hvor mye for sent du er ute: «den måtte vært i gang for 8t 25m siden» — relativt, sant uansett når du leser det.",
+      "Og underteksten «samme klokkeslett, senere dag» — som kunne leses som «senere i dag» — er byttet med svaret på kortets eget spørsmål: «da rekker den»."
+    ],
+    "changes_en": [
+      "From–to no longer suggests starting at times you are not available. The placement search only used the fixed night rule (23–06) — while Pizzatid, your plan for when you can actually do pizza work, sat unused right next to it. It now first looks for a placement where both \"begin\" and \"bake\" fall within Pizzatid; the night rule is only the fallback. With Pizzatid off, everything behaves as before.",
+      "The same rule applies to the \"start earlier\" suggestions on methods that don't fit: a proposed start outside Pizzatid is pushed to the latest available time in your plan — starting earlier is always valid, so it costs nothing.",
+      "\"It needed to start Sun at 02:40\" is gone. A time that is both in the past and in the middle of the night is doubly useless. It now says how late you are: \"it needed to be underway 8h 25m ago\" — relative, and true whenever you read it.",
+      "And the subtext \"same time, a later day\" — which could be read as \"later today\" — is replaced with the answer to the card's own question: \"that's enough time\"."
+    ]
+  },
+  {
     "v": "0.779",
     "d": "august 2026",
     "d_en": "August 2026",

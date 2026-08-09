@@ -6058,9 +6058,17 @@ def run_behavioral_tests(page):
         ed.value='2026-08-10'; et.value='18:00';
         renderWindowPicker();
         const hk=kortFor('Hurtigdeig');
-        const lederMenneskelig = /Begynn[^<]*<b[^>]*>[^<]*22:55/.test(hk)
-                              && /stek/.test(hk)
-                              && hk.indexOf('applyWindowCandidateEarly')<hk.indexOf('applyWindowCandidate(');
+        // v0.780: plasseringen skal ligge innenfor PIZZATID (begge endene) —
+        // ikke et hardkodet klokkeslett. Argumentene til applyWindowCandidateEarly
+        // (span, startMs) er fasiten; teksten kan ikke sjekkes mot et tall som
+        // med rette flytter seg når Pizzatid-planen endres.
+        const mEarly=hk.match(/applyWindowCandidateEarly\([^)]*?,(\d+),(\d+)\)/);
+        const iPizzatid=d=>inPizzatidWindow(d.getHours(),d.getMinutes(),d.getDay());
+        const lederMenneskelig = !!mEarly
+                              && /Begynn/.test(hk) && /stek/.test(hk)
+                              && hk.indexOf('applyWindowCandidateEarly')<hk.indexOf('applyWindowCandidate(')
+                              && iPizzatid(new Date(+mEarly[2]))
+                              && iPizzatid(new Date(+mEarly[2]+(+mEarly[1])*60000));
         const nattErSekundær = /midt på natten/.test(hk)
                               && (hk.match(/midt på natten/g)||[]).length===1;
 
@@ -6181,6 +6189,102 @@ def run_behavioral_tests(page):
              and r147.get('stekOrd') is True)
     results.append(('window_asks_two_questions_and_cards_answer_in_the_same_words',
                     ok147, r147))
+
+    # v0.780: «Hva med å ikke foreslå oppstart på natta? Spesielt hvis det
+    # finnes alternativ innenfor Pizzatid.» Fire deler:
+    #  1) plasseringssøket foretrekker Pizzatid (begge endene), ikke bare
+    #     «ikke natt» — testes med en KONSTRUERT plan (11–14 + 19–22) der de to
+    #     regelsettene gir målbart ulike svar: ikke-natt-plasseringen (22:55 →
+    #     15:15) har klar-tid UTENFOR planen, pizzatid-plasseringen må ha begge
+    #     innenfor
+    #  2) «start tidligere»-forslag skyves inn i Pizzatid når de er mulige
+    #  3) ærlig-linja er relativ («i gang for … siden») — ingen natteklokkeslett
+    #  4) knappe-underteksten er «da rekker den»
+    r148 = page.evaluate("""() => {
+      const saved={...S}, D0=window.Date, sched0=window._pizzatidSchedule;
+      const savedFilter=localStorage.getItem('pizzaBetaMethods');
+      try{
+        const FAST=new D0(2026,7,9,10,15).getTime(); const t0=D0.now();
+        window.Date=class extends D0{
+          constructor(...a){ if(!a.length) super(FAST+(D0.now()-t0)); else super(...a); }
+          static now(){ return FAST+(D0.now()-t0); }
+        };
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        try{ localStorage.setItem('pizzaBetaMethods', JSON.stringify(
+          {standard:false,poolish:true,biga:true,mania:false,hurtig:true,kveld:false})); }catch(e){}
+        _betaMethods=null;
+        const per=()=>[['11:00','14:00'],['19:00','22:00']];
+        window._pizzatidSchedule={mon:per(),tue:per(),wed:per(),thu:per(),fri:per(),sat:per(),sun:per()};
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+        S.gjaer='torr'; S.oven='pizza'; S.mode='end';
+        S.winStart='2026-08-09T10:30';
+        const wd=document.getElementById('mob-wd'), wt=document.getElementById('mob-wt');
+        if(wd) wd.value='2026-08-09'; if(wt) wt.value='10:30';
+        const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+        ed.value='2026-08-10'; et.value='18:00';
+        renderWindowPicker();
+        const host=document.getElementById('mob-winres');
+        const h=host.innerHTML, t=host.innerText;
+        const inne=d=>inPizzatidWindow(d.getHours(),d.getMinutes(),d.getDay());
+
+        // 1) hurtig-kortet (natt bakover) leder med en plassering i Pizzatid
+        const dEl=document.createElement('div'); dEl.innerHTML=h;
+        const hk=[...dEl.children].map(x=>x.outerHTML)
+          .find(x=>/font-weight:800[^>]*>Hurtigdeig/.test(x))||'';
+        const mE=hk.match(/applyWindowCandidateEarly\\([^)]*?,(\\d+),(\\d+)\\)/);
+        let beggeIPizzatid=false, ikkeNattFasit=false;
+        if(mE){
+          const s=new Date(+mE[2]), r=new Date(+mE[2]+(+mE[1])*60000);
+          beggeIPizzatid = inne(s) && inne(r);
+          // og dette er IKKE bare ikke-natt-svaret: 15:15-klar ligger utenfor
+          // planen, så pizzatid-passet må ha valgt noe annet
+          ikkeNattFasit = r.getHours()===15;
+        }
+
+        // 2) «start tidligere» innenfor Pizzatid der den er mulig: senere vindu
+        ed.value='2026-08-12'; et.value='18:00';
+        S.winStart='2026-08-11T18:00';
+        if(wd) wd.value='2026-08-11'; if(wt) wt.value='18:00';
+        renderWindowPicker();
+        const h2=host.innerHTML;
+        const startAt2=new Date(2026,7,11,18,0);
+        const mS=[...h2.matchAll(/applyWindowShiftStart\\([^)]*,(\\d+)\\)/g)].map(x=>+x[1]);
+        const nå=new Date();
+        const startForslagOk = mS.length>0 && mS.every(sh=>{
+          const d2=new Date(startAt2.getTime()-sh*60000);
+          return d2.getTime()>=nå.getTime() && inne(d2);
+        });
+
+        // 3) + 4) tilbake til det umulige scenariet
+        ed.value='2026-08-10'; et.value='18:00';
+        S.winStart='2026-08-09T10:30';
+        if(wd) wd.value='2026-08-09'; if(wt) wt.value='10:30';
+        renderWindowPicker();
+        const t3=host.innerText;
+        const relativLinje=/i gang for .+ siden/.test(t3);
+        const ingenNatteklokke=!/trengte oppstart/.test(t3);
+        const daRekker=/da rekker den/.test(t3) && !/samme klokkeslett/.test(t3);
+
+        return {fantEarly:!!mE, beggeIPizzatid, ikkeNattFasit,
+                nStartForslag:mS.length, startForslagOk,
+                relativLinje, ingenNatteklokke, daRekker};
+      } finally {
+        window.Date=D0; Object.assign(S,saved); S.winStart=null;
+        window._pizzatidSchedule=sched0; _betaMethods=null;
+        if(savedFilter===null){ try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){} }
+        else { try{ localStorage.setItem('pizzaBetaMethods',savedFilter); }catch(e){} }
+        try{ mobSetMode(uiMode()); }catch(e){}
+        _q10Memo={k:null,v:null};
+      }
+    }""")
+    ok148 = (r148.get('fantEarly') is True
+             and r148.get('beggeIPizzatid') is True
+             and r148.get('ikkeNattFasit') is False
+             and r148.get('startForslagOk') is True
+             and r148.get('relativLinje') is True
+             and r148.get('ingenNatteklokke') is True
+             and r148.get('daRekker') is True)
+    results.append(('window_prefers_pizzatid_and_speaks_relative_time', ok148, r148))
 
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —
