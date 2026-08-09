@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.776",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Varselet om at et steg havner i natta tilbød to like oransje knapper og oppførte seg som om en av dem var fasiten. Det er den ikke. Målt på en poolish med Caputo Doppio Zero: uansett hvilken du trykker, blir planen liggende 13–17 timer over det melet er ment for. Problemet er ikke løsbart — det er bare flyttbart. Nå står det øverst i kortet, i stedet for at en fylt knapp antyder at planen blir hel.",
+      "Og «Flytt til …» hadde en pris ingen kunne se: gjæren gikk fra 0,74 g til 1,35 g. Kortere heving må kompenseres med mer gjær, og appen regnet det om i stillhet mens knappen bare snakket om klokkeslett. Du trodde du flyttet en tid — du endret oppskriften. Nå står den endringen på knappen, med begge tallene.",
+      "Hvert valg oppgir nå prisen sin på tre akser: tid, mel og deig. Pluss for det du vinner, minus for det du gir, likhetstegn for det som står stille. «Deigen er uendret — samme gjær, samme gjæringstid» er like mye informasjon som «+82 % gjær», og det viste seg å være kjøleskapspausens største fordel — noe som aldri har stått noe sted.",
+      "Kjøleskapspausen tilbys ikke lenger når ingen pauselengde hjelper. Den valgte beste av 6, 12 og 18 timer, men null var ikke et alternativ, så den satte alltid inn en pause. Brukte du den på en plan som allerede gikk opp, gikk konfliktene fra 0 til 4 — knappen var en felle, ikke en utvei. Bryteren under Planlegging gir fortsatt en ekte pause når du selv ber om en."
+    ],
+    "changes_en": [
+      "The warning that a step lands at night offered two identical orange buttons and behaved as though one of them was the answer. It is not. Measured on a poolish with Caputo Doppio Zero: whichever you press, the plan stays 13–17 hours beyond what the flour is meant for. The problem is not solvable — only movable. That now says so at the top of the card, instead of a filled button implying the plan can be made whole.",
+      "And \"Move to …\" had a price nobody could see: the yeast went from 0.74 g to 1.35 g. A shorter rise has to be compensated with more yeast, and the app recalculated it silently while the button only talked about clock times. You thought you were moving a time — you were changing the recipe. That change is now stated on the button, with both numbers.",
+      "Every option now states its price on three axes: time, flour and dough. Plus for what you gain, minus for what you give, equals for what stays put. \"The dough is unchanged — same yeast, same fermentation time\" is just as much information as \"+82% yeast\", and it turned out to be the cold pause's biggest advantage — something that had never been stated anywhere.",
+      "The cold pause is no longer offered when no pause length helps. It picked the best of 6, 12 and 18 hours, but zero was not an option, so it always inserted one. Used on a plan that already worked out, conflicts went from 0 to 4 — the button was a trap, not a way out. The switch under Planning still gives you a real pause when you ask for one yourself."
+    ]
+  },
+  {
     "v": "0.775",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -362,6 +362,9 @@ body.mob-mode .mob-daylbl.today .ddot{background:var(--forno-accent);box-shadow:
    (skjul varselet), men leselig som en faktisk knapp. */
 .warn-dismiss-btn{position:absolute;top:6px;right:7px;padding:3px 10px;border:1px solid rgba(138,90,0,.32);border-radius:999px;background:rgba(255,255,255,.55);color:#8a5a00;font-size:11px;font-weight:700;cursor:pointer;line-height:1.5;font-family:inherit;white-space:nowrap}
 .warn-dismiss-btn:hover{background:#fff;border-color:rgba(138,90,0,.5)}
+/* v0.776: et valg i varselet er knapp + pris. Blokken må stable, ikke ligge på
+   rad — prislinjene hører til knappen over seg og må ikke flyte inntil neste. */
+.warn-opt{margin-top:.6rem}
 .mob-section-lbl{font-size:10px;font-weight:600;color:#6E6E73;text-transform:uppercase;letter-spacing:.07em;padding:.65rem 1rem .2rem}
 .wiz-qhead{display:flex;align-items:center;gap:7px;padding:.65rem 1rem .3rem}
 .wiz-qnum{width:18px;height:18px;border-radius:50%;background:#e8590c;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -4930,6 +4933,113 @@ function pastStartWarningHTML(){
     ${btn}
   </div>`);
 }
+// ===== v0.776: hva et valg i varselet KOSTER =====
+// Utveiene i nattvarselet ble presentert som fasit. De er handler. «Flytt til
+// 21:00 — poolish 12t» høres ut som en klokke som flyttes, men målt gikk gjæren
+// fra 0,74g til 1,35g (+82 %) — det er en annen oppskrift, ikke en detalj. Og
+// ingen av valgene fikk planen innenfor melets tåleevne: beste utfall lå 13
+// timer over, dårligste 17. Kortet oppførte seg som om melvarselet ikke fantes.
+//
+// varselPris() måler ett valg på tre akser: TID (det varselet handler om), MEL
+// (tåler melet den gjæringstida?) og DEIG (endres gjæren?). leverEscape() ser
+// bare på den første — derfor kan den love «planen går opp» mens de to andre
+// blir verre.
+function varselPris(endringer){
+  const lagret={};
+  for(const k in endringer) lagret[k]=S[k];
+  try{
+    Object.assign(S, endringer); _q10Memo={k:null,v:null};
+    const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
+    let steps=null;
+    try{ steps=stepsForAnchor(anchor); }catch(e){ return null; }
+    if(!steps||!steps.length) return null;
+    const natt=steps.filter(s=>{
+      if(s.passive && !s.needsPresence) return false;
+      let at=s.at; if(!(at instanceof Date)) at=new Date(at);
+      if(isNaN(at.getTime())) return false;
+      const h=at.getHours(); return h>=23||h<6;
+    }).length;
+    const timer=totalFermentHours();
+    const mel=MELTYPER.find(m=>m.v===S.meltype);
+    const har=!!(mel && mel.ferm);
+    const r=recipeFor();
+    return {konf:scorePizzatidWindows(steps), natt, timer:Math.round(timer),
+            over: har?Math.max(0,Math.round(timer-mel.ferm.mx)):0,
+            under: har?Math.max(0,Math.round(mel.ferm.mn-timer)):0,
+            melNavn: har?mel.t:'', harMel: har,
+            gjaer: S.gjaer==='torr'?r.yDry:r.yFresh,
+            enhet: S.gjaer==='torr'?L('tørrgjær','dry yeast'):L('fersk gjær','fresh yeast')};
+  } finally { Object.assign(S, lagret); _q10Memo={k:null,v:null}; }
+}
+// Én linje per akse, med fortegn. «=» er like mye informasjon som «−»: at
+// kjøleskapspausen lar deigen være HELT i fred er dens største fordel, og den
+// har aldri stått noe sted.
+function varselPrisHTML(nå, etter){
+  if(!nå||!etter) return '';
+  const rad=(tegn,farge,tekst)=>`<div style="display:flex;gap:6px;font-size:11px;line-height:1.4;margin-top:3px;color:${farge}"><span style="flex:0 0 auto;font-weight:700;width:11px;text-align:center">${tegn}</span><span>${tekst}</span></div>`;
+  const GRØNN='#2c5c3c', BRUN='#8a4a12', GRÅ='#6a6257';
+  let ut='';
+  // TID — to ulike fakta, og de må ha hvert sitt navn. Samme kort brukes både
+  // for nattkonflikt og for «tid du ikke har satt av til pizza», så en linje som
+  // alltid sier «om natta» lyver på halvparten av varslene. N() teller EMNER og
+  // kan ikke brukes til å bøye disse tallene.
+  if(etter.natt===0 && etter.konf===0)
+    ut+=rad('+',GRØNN,L('Alle steg innenfor tiden din, ingen om natta','All steps within your time, none at night'));
+  else{
+    if(etter.natt===0 && nå.natt>0)
+      ut+=rad('+',GRØNN,L('Ingen steg om natta','No steps at night'));
+    else if(etter.natt<nå.natt)
+      ut+=rad('+',GRØNN,L(`Færre steg om natta (${nå.natt} → ${etter.natt})`,`Fewer steps at night (${nå.natt} → ${etter.natt})`));
+    else if(etter.natt>nå.natt)
+      ut+=rad('−',BRUN,L(`Flere steg om natta (${nå.natt} → ${etter.natt})`,`More steps at night (${nå.natt} → ${etter.natt})`));
+    else if(etter.natt>0)
+      ut+=rad('−',BRUN,L(`Fortsatt ${etter.natt} steg om natta`,`Still ${etter.natt} steps at night`));
+    if(etter.konf===0 && nå.konf>0)
+      ut+=rad('+',GRØNN,L('Alle steg innenfor pizzatiden din','All steps within your pizza time'));
+    else if(etter.konf>0)
+      ut+=rad('−',BRUN,L(`${etter.konf} steg utenfor pizzatiden din`,`${etter.konf} step${etter.konf===1?'':'s'} outside your pizza time`));
+  }
+  // MEL — usynlig for leverEscape(), og ofte det som egentlig avgjør
+  if(etter.harMel){
+    if(etter.over>0)
+      ut+=rad('−',BRUN,L(`${etter.over}t over det ${escH(etter.melNavn)} er ment for`,`${etter.over}h beyond what ${escH(etter.melNavn)} is meant for`));
+    else if(etter.under>0)
+      ut+=rad('−',BRUN,L(`${etter.under}t kortere enn ${escH(etter.melNavn)} er ment for`,`${etter.under}h shorter than ${escH(etter.melNavn)} is meant for`));
+    else if(nå.over>0||nå.under>0)
+      ut+=rad('+',GRØNN,L(`Innenfor det ${escH(etter.melNavn)} er ment for`,`Within what ${escH(etter.melNavn)} is meant for`));
+  }
+  // DEIG — endrer du hevetid, regner appen om gjæren i stillhet
+  if(etter.gjaer===nå.gjaer && etter.timer===nå.timer)
+    ut+=rad('=',GRÅ,L('Deigen er uendret — samme gjær, samme gjæringstid','The dough is unchanged — same yeast, same fermentation time'));
+  else if(etter.gjaer!==nå.gjaer){
+    const pst=Math.round((etter.gjaer/nå.gjaer-1)*100);
+    ut+=rad('−',BRUN,L(`Gjæren endres: ${nå.gjaer}g → ${etter.gjaer}g ${escH(etter.enhet)} (${pst>0?'+':''}${pst} %)`,`The yeast changes: ${nå.gjaer}g → ${etter.gjaer}g ${escH(etter.enhet)} (${pst>0?'+':''}${pst} %)`));
+  }
+  return ut;
+}
+// Ærlighetslinja øverst: ingen av valgene får deigen innenfor melet. Da skal
+// kortet si det, i stedet for å la en fylt oransje knapp antyde at planen blir
+// hel. Nattvarselet vet ellers ingenting om melvarselet.
+function varselMelvirkelighetHTML(priser){
+  const gode=priser.filter(Boolean);
+  if(gode.length<2 || !gode[0].harMel) return '';
+  if(gode.some(p=>p.over===0 && p.under===0)) return '';   // ett av valgene løser det
+  const over=gode.filter(p=>p.over>0).map(p=>p.over);
+  const under=gode.filter(p=>p.under>0).map(p=>p.under);
+  if(over.length!==gode.length && under.length!==gode.length) return '';
+  const v=over.length===gode.length?over:under;
+  const lo=Math.min(...v), hi=Math.max(...v);
+  const spenn=lo===hi?`${lo}t`:`${lo}–${hi}t`;
+  const retning=over.length===gode.length
+    ? L(`over det ${escH(gode[0].melNavn)} er ment for`,`beyond what ${escH(gode[0].melNavn)} is meant for`)
+    : L(`kortere enn ${escH(gode[0].melNavn)} er ment for`,`shorter than ${escH(gode[0].melNavn)} is meant for`);
+  const råd=over.length===gode.length
+    ? L('det retter du bare med et sterkere mel eller en kortere plan','only a stronger flour or a shorter plan fixes that')
+    : L('det retter du bare med et svakere mel eller en lengre plan','only a weaker flour or a longer plan fixes that');
+  return `<div style="background:rgba(160,60,20,.09);border:1px solid rgba(160,60,20,.3);border-radius:7px;padding:7px 9px;margin-top:.55rem;font-size:11.5px;color:#7a2f14;line-height:1.45">${L(
+    `Ingen av valgene løser alt. Planen blir liggende <b>${spenn}</b> ${retning} uansett — ${råd}.`,
+    `None of the options solves everything. The plan stays <b>${spenn}</b> ${retning} regardless — ${råd}.`)}</div>`;
+}
 function activeStepTimeWarningHTML(){
   const steps=window._steps||[];
   if(!steps.length) return '';
@@ -4983,7 +5093,11 @@ function activeStepTimeWarningHTML(){
     const kveldBtn=(S.method==='poolish'||S.method==='biga') ? `<button onclick="activeStepWarnTryKveld()" style="${btnOutline}">${L('Prøv Kveldsdeig i stedet','Try Evening dough instead')}</button>` : '';
     // Poolish-spesifikk hjelpespak: sett inn en kald pause som skyver planen inn i
     // ledig tid uten å endre middagen. Vises kun for poolish når pausen er av.
-    const pauseBtn=(S.method==='poolish' && (S.poolishPauseH||0)===0) ? `<button onclick="activeStepWarnPoolishPause()" style="${btnSolid}">${L('🧊 Sett inn kjøleskapspause','🧊 Insert a cold pause')}</button>` : '';
+    // v0.776: pausen tilbys bare når den faktisk hjelper. `true` lar
+    // autoPoolishPause() svare 0 — «ingen pause er best» — og da er knappen en
+    // felle, ikke en utvei.
+    const bestePause=(S.method==='poolish' && (S.poolishPauseH||0)===0) ? autoPoolishPause(true) : 0;
+    const pauseBtn=bestePause>0 ? `<button onclick="activeStepWarnPoolishPause()" style="${btnOutline}">${L(`🧊 Kjøleskapspause — ${bestePause}t`,`🧊 Cold pause — ${bestePause}h`)}</button>` : '';
     const pizzatidBtn=(win.id==='busy') ? `<button onclick="openPizzatidFromWarning()" style="${btnOutline}">${L('Rediger pizzatiden din','Edit your pizza time')}</button>` : '';
     const conflictKey=warnKey(`activestep|${win.id}|${s.title}|${dt}`);
     const acceptBtn=(win.id==='busy'||win.id==='night') ? `<button onclick="acceptStepConflict('${conflictKey}')" style="padding:6px 12px;border:none;background:transparent;color:#8a5a05;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline">${L('Dette er greit — fortsett likevel','This is fine — continue anyway')}</button>` : '';
@@ -5014,18 +5128,38 @@ function activeStepTimeWarningHTML(){
     // «Andre måter», der den som vil styre selv finner spakene.
     // Finner appen ingen utvei, står de gamle knappene fram som før: da er det
     // ingenting å folde bort, og du skal fortsatt få vite at steget ligger der.
+    // v0.776: hvert valg oppgir prisen sin. Bare de to som faktisk SETTER en
+    // verdi kan prises — «Juster kjøleskapstid» o.l. hopper bare til en glider,
+    // så det finnes ingen tilstand å måle.
+    const nåPris=varselPris({});
+    const escPris=esc?varselPris({[esc.field]:esc.value}):null;
+    const pausePris=bestePause>0?varselPris({poolishPauseH:bestePause}):null;
+    const virkelighet=varselMelvirkelighetHTML([escPris, pausePris].filter(Boolean));
+    const pris=p=>varselPrisHTML(nåPris, p);
+    const velgLbl=(escPris&&pausePris)
+      ? `<div style="font-size:11.5px;font-weight:700;color:#633806;margin-top:.7rem">${L('Velg hva du heller vil gi opp:','Choose what you would rather give up:')}</div>`
+      : '';
+
     const andre=`${prefBtn}${coldBtn}${findBestBtn}`;
+    // Hovedvalget står med pris under seg; pausen og de manuelle spakene ligger
+    // under «Andre måter». Uten en utvei står alt fram som før — da er det
+    // ingenting å folde bort.
     const row1=esc
-      ? `${escBtn}${pauseBtn}`
-      : `${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}${pauseBtn}`;
-    const merBtn=(esc && (shiftBtn||andre))
-      ? `<details style="margin-top:6px"><summary style="font-size:12px;font-weight:600;color:#8a5a00;cursor:pointer">${L('Andre måter','Other ways')}</summary><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${shiftBtn}${andre}</div></details>`
+      ? `<div class="warn-opt">${escBtn}${pris(escPris)}</div>`
+      : `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${shiftBtn}${prefBtn}${coldBtn}${findBestBtn}</div>${pauseBtn?`<div class="warn-opt">${pauseBtn}${pris(pausePris)}</div>`:''}`;
+    const foldet=esc
+      ? `${pauseBtn?`<div class="warn-opt" style="margin-top:0">${pauseBtn}${pris(pausePris)}</div>`:''}${(shiftBtn||andre)?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:${pauseBtn?'8px':'0'}">${shiftBtn}${andre}</div>`:''}`
+      : '';
+    const merBtn=foldet
+      ? `<details style="margin-top:8px"><summary style="font-size:12px;font-weight:600;color:#8a5a00;cursor:pointer">${L('Andre måter','Other ways')}</summary><div style="border-left:2px solid rgba(138,90,0,.28);padding-left:10px;margin-top:7px">${foldet}</div></details>`
       : '';
     const row2=`${pizzatidBtn}${stuck?kveldBtn:''}${acceptBtn}`;
     return warningWrapHTML(`activestep|${win.id}|${s.title}|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
       <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${win.icon} ${L(`Et steg havner i ${win.label}`,`A step lands in ${win.labelEn}`)}</div>
       <div style="font-size:12px;color:#4a2a05;line-height:1.5">${L(`<b>${escH(dispTitle(s.title))}</b> er satt til <b>${dt}</b> — sannsynligvis ikke et tidspunkt du vil bli forstyrret på.`,`<b>${escH(dispTitle(s.title))}</b> is set to <b>${dt}</b> — probably not a time you want to be disturbed.`)}${lockedNote}</div>
-      ${row1?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${row1}</div>`:''}
+      ${virkelighet}
+      ${velgLbl}
+      ${row1}
       ${merBtn}
       ${row2?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${row2}</div>`:''}
     </div>`);
@@ -6827,11 +6961,20 @@ function stepPoolishCold(delta){
 }
 // Poolish kjøleskapspause: velg den korteste pausen (6/12/18t, tak 18) som gir
 // færrest steg utenfor «Når er du ledig?»-vinduene — middagen holdes fast.
-function autoPoolishPause(){
+// v0.776: `tillatIngen` legger 0 inn blant kandidatene, slik at funksjonen kan
+// svare «ingen pause er best». Uten den kunne den ikke det — den valgte beste av
+// [6,12,18] og satte ALLTID inn en pause. Målt: brukt på en plan som allerede var
+// konfliktfri gikk konfliktene fra 0 til 4. Derfor spør varselet med `true` og
+// skjuler knappen når svaret er 0.
+//
+// Den manuelle bryteren under Planlegging spør UTEN. Der har du bedt om en pause,
+// og da skal du få den beste — ikke et trykk som ikke gjør noe.
+function autoPoolishPause(tillatIngen){
   const orig=S.poolishPauseH;
   const anchor=mobGetAnchor(S.mode==='end'?'e':'s');
-  let best={h:6, v:Infinity};
-  for(const hh of [6,12,18]){
+  const kandidater = tillatIngen ? [0,6,12,18] : [6,12,18];
+  let best={h:kandidater[0], v:Infinity};
+  for(const hh of kandidater){
     S.poolishPauseH=hh;
     let v=Infinity; try{ v=scorePizzatidWindows(stepsForAnchor(anchor)); }catch(e){}
     if(v<best.v){ best={h:hh, v}; }   // ascending → minste vinner ved likhet

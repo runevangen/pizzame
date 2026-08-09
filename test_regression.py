@@ -5698,6 +5698,158 @@ def run_behavioral_tests(page):
              and r143.get('løftetAvBeta') is True)
     results.append(('smartplan_is_never_greyed_and_using_it_lifts_the_veil', ok143, r143))
 
+    # v0.776: varselet tilbød to like oransje knapper og kalte dem utveier. Målt
+    # på et poolish-oppsett med Caputo Doppio Zero (tåler 6–24t):
+    #
+    #   valg               konflikt  natt  gjæring  over melet  gjær
+    #   ingenting                 4     4      41t        +17t   0,74g
+    #   «Flytt til …»             0     0      37t        +13t   1,35g
+    #   kjøleskapspause           1     0      41t        +17t   0,74g
+    #
+    # Ingen av dem får deigen innenfor melet — problemet er ikke løsbart, bare
+    # forflyttbart. Og «Flytt til …» øker gjæren 82 % mens knappen bare snakker
+    # om klokkeslett: du tror du flytter en tid, du endrer oppskriften.
+    # leverEscape() ser kun på tidskonflikter, så den kan love «planen går opp»
+    # mens mel og deig blir verre.
+    #
+    # Fire krav, og de tre siste er hver sin klasse som kan ryke stille:
+    #  1) hvert prisbart valg har prislinjer
+    #  2) gjærendringen STÅR der når den skjer (den skjulte kostnaden)
+    #  3) melet nevnes når ingen av valgene løser det (nattvarselet visste
+    #     ellers ingenting om melvarselet)
+    #  4) ordlyden passer varseltypen — samme kort brukes for natt OG for
+    #     pizzatid, så en linje som alltid sier «om natta» lyver på halvparten
+    r144b = page.evaluate("""() => {
+      const saved={...S}, _wsa=window._warnShowAll;
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        S.method='poolish'; S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22;
+        S.fridgeC=3; S.gjaer='torr'; S.oven='pizza'; S.mode='start';
+        S.meltype='doppio_zero'; S.poolishCold=false; S.poolishPauseH=0;
+        S.poolishH=16; S.cold=24;
+        const sd=document.getElementById('mob-sd'), st=document.getElementById('mob-st');
+        if(sd) sd.value=fd(new Date(2026,7,9,9,0));
+        if(st) st.value='09:00';
+        window._warnShowAll=true;
+        const h=activeStepTimeWarningHTML();
+        if(!h) return {ingenVarsel:true};
+        const d=document.createElement('div'); d.innerHTML=h;
+        const t=d.innerText;
+        const knapper=[...d.querySelectorAll('button')].map(x=>x.textContent.trim());
+        // Fasit hentes fra motoren, ikke skrevet inn i testen — da kan ikke
+        // teksten og tallene gli fra hverandre.
+        const nå=varselPris({});
+        const esc=stepEscapePlan(
+          (stepsForAnchor(mobGetAnchor('s'))||[]).find(s=>{
+            if(s.passive && !s.needsPresence) return false;
+            const at=new Date(s.at), hh=at.getHours();
+            return hh>=23||hh<6||!inPizzatidWindow(hh,at.getMinutes(),at.getDay());
+          }).title, mobGetAnchor('s'));
+        const escP=esc?varselPris({[esc.field]:esc.value}):null;
+        const pause=autoPoolishPause(true);
+        const pauseP=pause>0?varselPris({poolishPauseH:pause}):null;
+
+        return {
+          // 1) prislinjer i det hele tatt
+          harPris: /[+−=]/.test(t) && /Gjæren endres|Deigen er uendret/.test(t),
+          // 2) den skjulte kostnaden står der, med motorens egne tall
+          gjaerStår: !!escP && escP.gjaer!==nå.gjaer
+                     && t.includes(`${nå.gjaer}g → ${escP.gjaer}g`),
+          // 3) melet: ingen av valgene løser det → si det
+          ingenLøserMel: !!escP && !!pauseP && escP.over>0 && pauseP.over>0,
+          melNevnt: /Ingen av valgene løser alt/.test(t)
+                 && t.includes('Caputo Doppio Zero'),
+          // 4) ordlyd som passer varseltypen
+          erPizzatidVarsel: /ikke har satt av til pizza/.test(t),
+          ikkeBareNatt: !/^\\s*$/.test(t) && /pizzatiden din|innenfor tiden din/.test(t),
+          // pausen skal ikke tilbys når ingen pauselengde hjelper
+          pauseTilbudt: knapper.some(k=>/Kjøleskapspause/.test(k)),
+          pauseBest: pause,
+          fasit:{nå, escP, pauseP}
+        };
+      } finally { Object.assign(S,saved); window._warnShowAll=_wsa; _q10Memo={k:null,v:null}; }
+    }""")
+    ok144b = (not r144b.get('ingenVarsel')
+              and r144b.get('harPris') is True
+              and r144b.get('gjaerStår') is True
+              and r144b.get('ingenLøserMel') is True
+              and r144b.get('melNevnt') is True
+              and r144b.get('ikkeBareNatt') is True
+              and r144b.get('pauseTilbudt') is True)
+    results.append(('warning_options_state_their_price_on_time_flour_and_dough',
+                    ok144b, r144b))
+
+    # v0.776: og pausen skal IKKE tilbys når ingen pauselengde forbedrer planen.
+    # autoPoolishPause() valgte beste av [6,12,18] — 0 var ikke en kandidat, så
+    # den satte alltid inn en pause. Brukt på en allerede løst plan gikk
+    # konfliktene fra 0 til 4: knappen var en felle, ikke en utvei.
+    # TO scenarier, med vilje. Første utkast hadde bare ett — der HJALP en pause
+    # (autoPoolishPause(true) ga 18), så 0-grenen ble aldri kjørt og sjekkene
+    # var sanne via en ELLER-gren. Testen bestod uten å teste fiksen.
+    # Nå må funksjonen svare 0 der ingen pause hjelper OG >0 der en gjør det;
+    # en implementasjon som alltid svarer det ene feiler på det andre.
+    r144c = page.evaluate("""() => {
+      const saved={...S};
+      try{
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        S.method='poolish'; S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22;
+        S.fridgeC=3; S.gjaer='torr'; S.oven='pizza'; S.mode='start';
+        S.poolishCold=false; S.poolishPauseH=0;
+        const sett=(t,ph,cold)=>{ S.poolishH=ph; S.cold=cold; S.poolishPauseH=0;
+          const sd=document.getElementById('mob-sd'), st=document.getElementById('mob-st');
+          if(sd) sd.value=fd(new Date(2026,7,9,t,0));
+          if(st) st.value=String(t).padStart(2,'0')+':00';
+          return mobGetAnchor('s'); };
+        const konf=a=>scorePizzatidWindows(stepsForAnchor(a));
+
+        // A: en plan som ALLEREDE går opp. Da kan ingen pause forbedre noe.
+        let A=null;
+        for(const t of [7,8,9,10,11,12]) for(const ph of [12,13,14,15,16]) for(const cold of [24,30,36,42,48]){
+          const a=sett(t,ph,cold);
+          if(konf(a)===0){ A={t,ph,cold,a}; break; }
+        }
+        // B: en plan der en pause FAKTISK hjelper.
+        let B=null;
+        for(const t of [7,8,9,10,11,12]) for(const ph of [12,13,14,15,16]) for(const cold of [24,30,36,42,48]){
+          const a=sett(t,ph,cold);
+          const f=konf(a); if(!f) continue;
+          const p=autoPoolishPause(false);
+          S.poolishPauseH=p; const e=konf(a); S.poolishPauseH=0;
+          if(e<f){ B={t,ph,cold,a,før:f,etter:e,p}; break; }
+        }
+        if(!A||!B) return {fantIkkeBegge:!!A+'/'+!!B};
+
+        const aA=sett(A.t,A.ph,A.cold);
+        const A_medNull=autoPoolishPause(true);
+        const A_utenNull=autoPoolishPause(false);
+        S.poolishPauseH=A_utenNull;
+        const A_påtvunget=konf(aA);
+        S.poolishPauseH=0;
+        const A_før=konf(aA);
+
+        const aB=sett(B.t,B.ph,B.cold);
+        const B_medNull=autoPoolishPause(true);
+
+        return {A:{...A, a:undefined, før:A_før, medNull:A_medNull,
+                   utenNull:A_utenNull, påtvunget:A_påtvunget},
+                B:{...B, a:undefined, medNull:B_medNull},
+                // 0 MÅ vinne når planen alt går opp — kjernen i fiksen
+                nullVinnerNårIngenPauseHjelper: A_medNull===0,
+                // og påtvunget pause der er beviselig verre → 0 var riktig svar
+                påtvungetErVerre: A_påtvunget>A_før,
+                // men funksjonen skal ikke bare alltid svare 0
+                pauseTilbysNårDenHjelper: B_medNull>0,
+                // den manuelle bryteren gir fortsatt en EKTE pause
+                manuellGirAlltidPause: A_utenNull>0};
+      } finally { Object.assign(S,saved); _q10Memo={k:null,v:null}; }
+    }""")
+    ok144c = (r144c.get('nullVinnerNårIngenPauseHjelper') is True
+              and r144c.get('påtvungetErVerre') is True
+              and r144c.get('pauseTilbysNårDenHjelper') is True
+              and r144c.get('manuellGirAlltidPause') is True)
+    results.append(('cold_pause_is_only_offered_when_some_pause_actually_helps',
+                    ok144c, r144c))
+
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —
     # mens Poolish 43t og Langtidsdeig 25t lå på plass 4 og 6. Samme metode
