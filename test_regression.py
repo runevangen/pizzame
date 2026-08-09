@@ -3869,10 +3869,15 @@ def run_behavioral_tests(page):
       const hNight=document.getElementById('mob-winres').innerHTML;
       const allNight=cNight.length>1 && cNight.every(x=>x.night);
       const flaggedInUI=/midt på natten/.test(hNight);
-      // v0.777: utveien oppgir nå dag+klokkeslett (den kan peke på en annen dag
-      // enn i dag), og vindusstart-varianten vises fordi 23:30 er brukerens
-      // egen oppgitte ledighet — mens klar-tida (~14:30, dagtid) er sjekket.
-      const earlyOffered=/Start heller [^<]*23:30/.test(hNight);
+      // v0.778 (A): den menneskelige plasseringen er ikke lenger en «utvei» —
+      // den LEDER kortet. «Oppstart: … 23:30 · klar …» (23:30 er brukerens egen
+      // oppgitte ledighet; klar-tida ~15:00 er dagtid og sjekket), og natt-
+      // varianten («klar nøyaktig 18:00 → start midt på natten») er sekundæren,
+      // fortsatt ett trykk unna via applyWindowCandidate.
+      const earlyOffered=/Oppstart[^<]*<b>[^<]*23:30/.test(hNight)
+                      && /klar/.test(hNight)
+                      && /midt på natten/.test(hNight)
+                      && /applyWindowCandidate\(/.test(hNight);
       // hver kandidat bærer riktig startAt (steketid − brukt tid)
       const startAtOk=cNight.every(x=>Math.abs(x.startAt.getTime()-(new Date('2026-08-06T18:00').getTime()-x.best.span*60000))<1000);
       // (c) «Start heller» flytter steketiden til oppstart + brukt tid
@@ -6008,6 +6013,91 @@ def run_behavioral_tests(page):
              and r145.get('r3',{}).get('alleUtenforNatta') is True)
     results.append(('window_suggestions_are_humanly_possible_not_just_arithmetically',
                     ok145, r145))
+
+    # v0.778: «Fikk nattforslag på samme scenario … og da jeg klikket på
+    # hurtigdeig kommer det inne på tidsplanen at hurtigdeig er dårlig bruk av
+    # tiden.» To feil:
+    #  (A) v0.777 fikset utveiene, men kortets HOVEDFORSLAG var fortsatt
+    #      «Oppstart 01:40 🌙» — den menneskelige plasseringen sto som stiplet
+    #      boks under. Nå leder den menneskelige; natt-varianten er sekundæren.
+    #  (B+C) velgeren sa nøytralt «38t 40m ubrukt» og tilbød «Bruk denne» —
+    #      hvorpå tidsplanens metodevarsel skjente «går til spille» og anbefalte
+    #      Langtidsdeig, en ANNEN metode enn velgerens egen vinner. To dommere,
+    #      to dommer. Nå priser kortet slakket med varselets egne ord og peker
+    #      på velgerens vinner (B), og varselet tier i Fra–til-modus (C).
+    r146 = page.evaluate("""() => {
+      const saved={...S}, D0=window.Date;
+      const savedFilter=localStorage.getItem('pizzaBetaMethods');
+      try{
+        const FAST=new D0(2026,7,9,10,15).getTime(); const t0=D0.now();
+        window.Date=class extends D0{
+          constructor(...a){ if(!a.length) super(FAST+(D0.now()-t0)); else super(...a); }
+          static now(){ return FAST+(D0.now()-t0); }
+        };
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        try{ localStorage.setItem('pizzaBetaMethods', JSON.stringify(
+          {standard:false,poolish:true,biga:true,mania:false,hurtig:true,kveld:false})); }catch(e){}
+        _betaMethods=null;
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+        S.gjaer='torr'; S.oven='pizza'; S.mode='end';
+        S.winStart='2026-08-09T10:30';
+        const wd=document.getElementById('mob-wd'), wt=document.getElementById('mob-wt');
+        if(wd) wd.value='2026-08-09'; if(wt) wt.value='10:30';
+        const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+        const host=document.getElementById('mob-winres');
+        const kortFor=navn=>{
+          // kortene er søsken-diver; finn den som nevner metoden i tittelen
+          const d=document.createElement('div'); d.innerHTML=host.innerHTML;
+          return [...d.children].map(x=>x.outerHTML)
+            .find(h=>new RegExp('font-weight:800[^>]*>'+navn).test(h))||'';
+        };
+
+        // (A) brukerens vindu: hurtig-kortet leder med den menneskelige
+        ed.value='2026-08-10'; et.value='18:00';
+        renderWindowPicker();
+        const hk=kortFor('Hurtigdeig');
+        const lederMenneskelig = /Oppstart[^<]*<b>[^<]*22:55/.test(hk)
+                              && /klar/.test(hk)
+                              && hk.indexOf('applyWindowCandidateEarly')<hk.indexOf('applyWindowCandidate(');
+        const nattErSekundær = /midt på natten/.test(hk)
+                              && (hk.match(/midt på natten/g)||[]).length===1;
+
+        // (B) brukerens andre vindu (55t): slakket prises med varselets ord
+        ed.value='2026-08-11'; et.value='18:00';
+        renderWindowPicker();
+        const hk2=kortFor('Hurtigdeig');
+        const fits=windowCandidates(new Date(2026,7,11,18,0),
+                     Math.round((new Date(2026,7,11,18,0)-new Date(2026,7,9,10,30))/60000))
+                     .filter(x=>x.best);
+        const vinnerNavn=fits.length?mN(fits[0].method):'';
+        const spillePrist = /går til spille/.test(hk2)
+                         && vinnerNavn && hk2.includes(vinnerNavn);
+
+        // (C) varselet tier i Fra–til, taler i Steketid — samme oppsett ellers
+        S.method='hurtig'; S.hurtigH=16; _q10Memo={k:null,v:null};
+        const iVindu=methodTimeWarningHTML();
+        const win0=S.winStart; S.winStart=null;
+        const iSteketid=methodTimeWarningHTML();
+        S.winStart=win0;
+        const varselTier = iVindu==='' && /går til spille|dårlig/.test(iSteketid||'');
+
+        return {lederMenneskelig, nattErSekundær, spillePrist, varselTier,
+                vinnerNavn, harHurtigkort:!!hk && !!hk2};
+      } finally {
+        window.Date=D0; Object.assign(S,saved); S.winStart=null;
+        _betaMethods=null;
+        if(savedFilter===null){ try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){} }
+        else { try{ localStorage.setItem('pizzaBetaMethods',savedFilter); }catch(e){} }
+        _q10Memo={k:null,v:null};
+      }
+    }""")
+    ok146 = (r146.get('harHurtigkort') is True
+             and r146.get('lederMenneskelig') is True
+             and r146.get('nattErSekundær') is True
+             and r146.get('spillePrist') is True
+             and r146.get('varselTier') is True)
+    results.append(('window_night_cards_lead_with_humane_and_app_speaks_with_one_voice',
+                    ok146, r146))
 
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —

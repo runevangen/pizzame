@@ -5440,6 +5440,13 @@ function highlightWizEl(id){
 }
 function methodTimeWarningHTML(){
   if(S.mode!=='end') return ''; // kun relevant når man planlegger bakover fra et spisetidspunkt
+  // v0.778 (C): i Fra–til-modus er velgeren autoriteten — den har allerede
+  // priset slakket på selve kortet («går til spille — mer smak med …») og
+  // rangert metodene. Å i tillegg skjenne på valget den selv inviterte til, og
+  // anbefale Langtidsdeig når velgerens egen vinner var Kveldsdeig, er to
+  // dommere med hver sin dom. I Steketid-modus (der Hurtigdeig kan være valgt
+  // manuelt uten at noen pris er vist) står varselet som før.
+  if(typeof uiMode==='function' && uiMode()==='window') return '';
   if(S.method!=='hurtig' && S.method!=='kveld') return '';
   const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
   if(!dEl || !dEl.value) return '';
@@ -7390,6 +7397,24 @@ function renderWindowPicker(){
         if(!isNightHour(r.getHours())) tidlig={s:new Date(startAt), r};
       }
     }
+    // v0.778 (A): starter den bakoverfylte plasseringen om natta OG en
+    // menneskelig finnes, LEDER kortet med den menneskelige. v0.777 fikset
+    // utveiene, men hovedforslaget på kortet var fortsatt «Oppstart 01:40 🌙»
+    // med den fornuftige plasseringen nedgradert til stiplet boks. Natt-
+    // varianten («klar nøyaktig til steketiden») blir sekundæren i stedet —
+    // begge fortsatt ett trykk.
+    const menneskelig = !!(c.night && tidlig);
+    // v0.778 (B): tidsplanens metodevarsel slår inn ved ≥20t slakk og sier «går
+    // til spille» — mens dette kortet sa nøytralt «ubrukt» om samme tall, og
+    // etterpå skjente varselet på valget kortet selv inviterte til. Nå bruker
+    // kortet varselets egne ord, FØR du velger, og peker på velgerens egen
+    // vinner (ikke en tredje metode).
+    const topFit=fits[0];
+    const spille=(c.method==='hurtig'||c.method==='kveld') && !isWin && ubrukt>=20*60
+      && topFit && topFit.method!==c.method;
+    const slakkChip = spille
+      ? `<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} går til spille — mer smak med ${mN(topFit.method)}`,`${fmtSessionDur(ubrukt)} goes to waste — more flavour with ${mN(topFit.method)}`)}</span>`
+      : (!isWin&&ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'');
     html+=`<div style="border:${isWin?'1.5px solid var(--forno-accent)':'1px solid var(--forno-border-soft)'};border-radius:10px;padding:9px 10px;margin-bottom:6px;background:${isWin?'var(--forno-accent-soft)':'var(--forno-bg)'}">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
         <span style="font-size:13px;font-weight:800;${isWin?'color:var(--forno-accent-text)':''}">${mN(c.method)} · ${winValText(c.method,c.best.val)}</span>
@@ -7397,16 +7422,20 @@ function renderWindowPicker(){
       </div>
       <div style="height:7px;border-radius:4px;background:var(--forno-bg-sunken,#e8dcc4);margin-top:6px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;border-radius:4px;background:${isWin?'var(--forno-accent)':'#c9b48a'}"></i></div>
       <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:5px;line-height:1.45">
-        ${L('Oppstart','Start')}: <b>${fDT(startsAt)}</b>${lbl?` · ${lbl}`:''}
+        ${menneskelig
+          ? `${L('Oppstart','Start')}: <b>${fDT(tidlig.s)}</b> · ${L('klar','ready')} <b>${fDT(tidlig.r)}</b>${lbl?` · ${lbl}`:''}`
+          : `${L('Oppstart','Start')}: <b>${fDT(startsAt)}</b>${lbl?` · ${lbl}`:''}`}
         ${c.fav?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#efe4f7;color:#6b4a9a;border:1px solid #d3c0e8;margin-left:4px">${L('⭐ din favoritt','⭐ your favourite')}</span>`:''}
-        ${c.night?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e8e2f5;color:#5b4a8a;border:1px solid #c9bde6;margin-left:4px">${L('🌙 midt på natten','🌙 middle of the night')}</span>`:''}
+        ${c.night&&!menneskelig?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e8e2f5;color:#5b4a8a;border:1px solid #c9bde6;margin-left:4px">${L('🌙 midt på natten','🌙 middle of the night')}</span>`:''}
         ${c.costMin?`<br><span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#faeeda;color:#8a5a00;border:1px solid #efc27f;margin-top:4px">${L(`${fmtSessionDur(c.costMin)} mindre gjæring enn ${mN(c.costVs)}`,`${fmtSessionDur(c.costMin)} less fermentation than ${mN(c.costVs)}`)}</span>`:''}
         ${isWin&&!c.night?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab;margin-left:4px">${L('✓ maks smak','✓ most flavor')}</span>`
-               :(!isWin&&ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'')}
+               :slakkChip}
       </div>
-      <div onclick="applyWindowCandidate('${c.method}','${c.key}',${c.best.val})" style="margin-top:7px;height:34px;border-radius:8px;background:${isWin?'var(--forno-accent)':'transparent'};border:${isWin?'none':'1.5px solid var(--forno-accent)'};color:${isWin?'#fff':'var(--forno-accent-text)'};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer">${L('Bruk denne','Use this')}</div>
-      ${tidlig?`<div onclick="applyWindowCandidateEarly('${c.method}','${c.key}',${c.best.val},${span},${tidlig.s.getTime()})" style="margin-top:6px;padding:7px 9px;border-radius:8px;background:var(--forno-bg-raised);border:1px dashed var(--forno-accent);font-size:10.5px;color:var(--forno-text-muted);line-height:1.45;cursor:pointer">
-        <b style="color:var(--forno-accent-text)">${L(`Start heller ${fDT(tidlig.s)}`,`Start ${fDT(tidlig.s)} instead`)}</b> — ${L(`samme gjæring, men du slipper å stå opp. Klar <b>${fDT(tidlig.r)}</b> i stedet for ${fT(bakeAt)}.`,`same fermentation, but you don't have to get up. Ready at <b>${fDT(tidlig.r)}</b> instead of ${fT(bakeAt)}.`)}
+      <div onclick="${menneskelig
+          ? `applyWindowCandidateEarly('${c.method}','${c.key}',${c.best.val},${span},${tidlig.s.getTime()})`
+          : `applyWindowCandidate('${c.method}','${c.key}',${c.best.val})`}" style="margin-top:7px;height:34px;border-radius:8px;background:${isWin?'var(--forno-accent)':'transparent'};border:${isWin?'none':'1.5px solid var(--forno-accent)'};color:${isWin?'#fff':'var(--forno-accent-text)'};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer">${L('Bruk denne','Use this')}</div>
+      ${menneskelig?`<div onclick="applyWindowCandidate('${c.method}','${c.key}',${c.best.val})" style="margin-top:6px;padding:7px 9px;border-radius:8px;background:var(--forno-bg-raised);border:1px dashed var(--forno-accent);font-size:10.5px;color:var(--forno-text-muted);line-height:1.45;cursor:pointer">
+        ${L(`Vil du ha den klar nøyaktig <b>${fT(bakeAt)}</b>? Da må du starte <b>${fDT(startsAt)}</b> — midt på natten.`,`Want it ready exactly at <b>${fT(bakeAt)}</b>? Then you have to start <b>${fDT(startsAt)}</b> — in the middle of the night.`)}
       </div>`:''}
     </div>`;
   });

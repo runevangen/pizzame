@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.778",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nattkortene i Fra–til ledet fortsatt med natta. v0.777 fikset utveiene, men hovedforslaget på kortet var «Oppstart tir kl. 01:40 🌙» — mens den fornuftige plasseringen sto nedgradert i en stiplet boks under. Nå er rekkefølgen snudd: kortet leder med «Oppstart man kl. 22:55 · klar tir kl. 15:15», og natt-varianten er sekundæren: «Vil du ha den klar nøyaktig 18:00? Da må du starte 01:40 — midt på natten.» Begge fortsatt ett trykk.",
+      "Og appen snakket mot seg selv: velgeren tilbød Hurtigdeig med «Bruk denne» og nøytralt «38t 40m ubrukt» — hvorpå tidsplanen skjente «passer dårlig, resten av tiden går til spille» og anbefalte Langtidsdeig. En annen metode enn velgerens egen vinner, til og med. Appen inviterte til et valg, kjeftet for at du takket ja, og anbefalte så noe tredje.",
+      "Nå sier begge stedene det samme, og de sier det FØR du velger: kortet priser slakket med varselets egne ord — «39t 10m går til spille — mer smak med Poolish» — og peker på velgerens faktiske vinner, ikke en hardkodet metode.",
+      "Selve varselet tier i Fra–til-modus, der velgeren er autoriteten og prisen allerede står på kortet. I Steketid-modus, der Hurtigdeig kan være valgt manuelt uten at noen pris er vist, står varselet som før."
+    ],
+    "changes_en": [
+      "The night cards in From–to still led with the night. v0.777 fixed the escapes, but the card's main proposal was \"Start Tue 01:40 🌙\" — while the sensible placement sat demoted in a dashed box below. The order is now flipped: the card leads with \"Start Mon 22:55 · ready Tue 15:15\", and the night variant is the secondary: \"Want it ready exactly at 18:00? Then you have to start at 01:40 — in the middle of the night.\" Both still one tap.",
+      "And the app argued with itself: the picker offered Quick dough with \"Use this\" and a neutral \"38h 40m unused\" — whereupon the schedule scolded \"poor fit, the rest of the time is wasted\" and recommended Long-ferment dough. A different method than the picker's own winner, no less. The app invited a choice, told you off for accepting, and then recommended a third thing.",
+      "Both places now say the same thing, and they say it BEFORE you choose: the card prices the slack in the warning's own words — \"39h 10m goes to waste — more flavour with Poolish\" — and points at the picker's actual winner, not a hardcoded method.",
+      "The warning itself stays quiet in From–to mode, where the picker is the authority and the price is already on the card. In Bake-time mode, where Quick dough may have been chosen manually with no price shown, the warning stands as before."
+    ]
+  },
+  {
     "v": "0.777",
     "d": "august 2026",
     "d_en": "August 2026",
