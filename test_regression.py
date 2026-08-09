@@ -6388,6 +6388,99 @@ def run_behavioral_tests(page):
     results.append(('flour_fix_button_only_shown_when_it_delivers_and_cards_price_the_flour',
                     ok149, r149))
 
+    # v0.782: «Ingen som treffer. Men om jeg flytter steketid til 1900 samme dag
+    # så treffer den.» Målt (søn 21:44, stek man 18:00): ingen konfliktfri
+    # kandidat — men 18:30 ga null konflikter. Appen visste svaret og sa det
+    # ikke. Nå: «Stek heller …»-forslag når ingenting treffer, OG Smart-plan-
+    # kortene bruker Fra–til-språket (Beste alternativ / eller dette valget).
+    #
+    # Tre feller testen må ta:
+    #  - forslaget skal VERIFISERE null konflikter, ikke blindt foreslå +30
+    #    (testes med en bitteliten Pizzatid der ingenting innen ±3t treffer —
+    #    da skal forslaget UTEBLI)
+    #  - forslaget skal ikke vises når søket alt treffer
+    #  - klikket skal føre til et resultat som faktisk treffer
+    r150 = page.evaluate("""() => {
+      const saved={...S}, D0=window.Date, sched0=window._pizzatidSchedule;
+      const savedFilter=localStorage.getItem('pizzaBetaMethods');
+      const boks=document.createElement('div');
+      try{
+        const FAST=new D0(2026,7,9,21,44).getTime(); const t0=D0.now();
+        window.Date=class extends D0{
+          constructor(...a){ if(!a.length) super(FAST+(D0.now()-t0)); else super(...a); }
+          static now(){ return FAST+(D0.now()-t0); }
+        };
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        _betaMethods=null; try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){}
+        window._pizzatidSchedule=defaultPizzatidSchedule();
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+        S.gjaer='torr'; S.oven='pizza'; _q10Memo={k:null,v:null};
+        boks.id='t-stekheller'; boks.style.cssText='position:fixed;left:-9999px;width:360px';
+        document.body.appendChild(boks);
+        const vis=(h,mm)=>{ const a=new Date(2026,7,10,h,mm||0);
+          renderResultBlock('t-stekheller', fDT(a), a.toISOString());
+          return {html:boks.innerHTML, txt:boks.innerText}; };
+
+        // 1) 18:00: ingenting treffer → forslag med VERIFISERT tidspunkt
+        const v18=vis(18,0);
+        const mIso=v18.html.match(/betaStekHeller\\('([^']+)'\\)/);
+        let forslagTreffer=null, foreslått=null;
+        if(mIso){
+          foreslått=new Date(mIso[1]);
+          const res2=searchAllMethods(foreslått);
+          forslagTreffer=res2.some(c=>c.violations===0 && c.feasible!==false)
+                      && foreslått.getTime()>Date.now()
+                      && !isNightHour(foreslått.getHours());
+        }
+        // og klikket leverer: sett feltene som betaStekHeller gjør, søk på nytt
+        let klikkTreffer=null;
+        if(mIso){
+          const res3=searchAllMethods(new Date(mIso[1]));
+          klikkTreffer=res3.length>0 && res3[0].violations===0;
+        }
+
+        // 2) 20:00: treffer allerede → ikke noe forslag
+        const v20=vis(20,0);
+        const ingenNårOk=!/Stek heller/.test(v20.txt);
+
+        // 3) bitteliten Pizzatid: ingenting innen ±3t treffer → forslaget UTEBLIR.
+        //    En blind «+30»-variant ville foreslått noe her og blitt avslørt.
+        const per=()=>[['12:00','12:30']];
+        window._pizzatidSchedule={mon:per(),tue:per(),wed:per(),thu:per(),fri:per(),sat:per(),sun:per()};
+        const vTrang=vis(18,0);
+        const ingenNårUmulig=!/Stek heller/.test(vTrang.txt);
+        window._pizzatidSchedule=defaultPizzatidSchedule();
+
+        // 4) likhet med Fra–til: Beste alternativ + skiller mellom kortene
+        const v18b=vis(18,0);
+        const antallKort=(v18b.html.match(/class="beta-card/g)||[]).length;
+        const antallSkiller=(v18b.txt.match(/eller dette valget/gi)||[]).length;
+        // innerText er uppercase via CSS text-transform — søk uavhengig av det
+        const lo=v18b.txt.toLowerCase();
+        const likhet=lo.includes('beste alternativ')
+                  && antallKort>1 && antallSkiller===antallKort-1
+                  && lo.indexOf('beste alternativ')<lo.indexOf('eller dette valget');
+
+        return {fantForslag:!!mIso, foreslått:foreslått?fDT(foreslått):null,
+                forslagTreffer, klikkTreffer, ingenNårOk, ingenNårUmulig,
+                antallKort, antallSkiller, likhet};
+      } finally {
+        boks.remove(); window.Date=D0; Object.assign(S,saved);
+        window._pizzatidSchedule=sched0; _betaMethods=null;
+        if(savedFilter===null){ try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){} }
+        else { try{ localStorage.setItem('pizzaBetaMethods',savedFilter); }catch(e){} }
+        _q10Memo={k:null,v:null};
+      }
+    }""")
+    ok150 = (r150.get('fantForslag') is True
+             and r150.get('forslagTreffer') is True
+             and r150.get('klikkTreffer') is True
+             and r150.get('ingenNårOk') is True
+             and r150.get('ingenNårUmulig') is True
+             and r150.get('likhet') is True)
+    results.append(('smartplan_offers_a_verified_bake_shift_and_ranks_like_fra_til',
+                    ok150, r150))
+
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —
     # mens Poolish 43t og Langtidsdeig 25t lå på plass 4 og 6. Samme metode

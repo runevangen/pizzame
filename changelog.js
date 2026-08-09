@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.782",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Treffer ingen av Smart-plan-forslagene, sier appen nå fra om det finnes et tidspunkt like ved som treffer: «Stek heller man kl. 18:30 — da treffer alt innenfor tiden din.» Målt på et ekte søk: ved 18:00 fantes ingen konfliktfri kandidat, ved 18:30 gikk alt opp — en halvtime unna, og appen sa ingenting. Du måtte finne det ved prøving. Mekanismen har eksistert i tidsplan-varslene siden v0.753 («Spis … i stedet»); nå finnes den der tidspunktet faktisk velges.",
+      "Forslaget er verifisert, ikke gjettet: appen prøver nærliggende steketider (±3 timer, nærmeste først, aldri i fortid, aldri natt) og foreslår bare et tidspunkt der søket faktisk gir null konflikter. Finnes ingen slik tid, vises ingenting — samme regel som kjøleskapspausen og melknappen fikk tidligere.",
+      "Ett trykk på forslaget setter feltene og kjører søket på nytt — samme vei som å endre tiden selv, så feltene og resultatet kan aldri vise hver sin sannhet.",
+      "Og Smart-plan-kortene bruker nå samme rangeringsspråk som Fra–til: «✓ Beste alternativ» over vinneren, «eller dette valget» som skille foran hvert av de neste. To steder som gjør samme jobb ser nå like ut."
+    ],
+    "changes_en": [
+      "When none of the Smart plan suggestions fit, the app now tells you if a nearby time does: \"Bake Mon 18:30 instead — then everything lands within your time.\" Measured on a real search: at 18:00 no conflict-free candidate existed, at 18:30 everything worked — half an hour away, and the app said nothing. You had to find it by trial. The mechanism has existed in the schedule warnings since v0.753 (\"Eat at … instead\"); now it exists where the time is actually chosen.",
+      "The suggestion is verified, not guessed: the app probes nearby bake times (±3 hours, nearest first, never in the past, never at night) and only proposes a time where the search actually yields zero conflicts. If no such time exists, nothing is shown — the same rule the cold pause and the flour button got earlier.",
+      "One tap on the suggestion sets the fields and reruns the search — the same path as changing the time yourself, so the fields and the result can never tell different truths.",
+      "And the Smart plan cards now use the same ranking language as From–to: \"✓ Best option\" above the winner, \"or this option\" as a divider before each of the rest. Two places doing the same job now look the same."
+    ]
+  },
+  {
     "v": "0.781",
     "d": "august 2026",
     "d_en": "August 2026",

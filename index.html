@@ -4414,15 +4414,26 @@ function renderResultBlock(containerId, label, anchorIso){
     // mye: en differanse i timer betyr noe, et absolutt timetall gjør det ikke
     // for den som ikke har bakt før.
     const dt=Math.round(c.totalHrs-top.totalHrs);
-    const flav = isWin ? L('Anbefalt','Recommended')
+    // v0.782: samme rangeringsspråk som Fra–til (Runes design): vinneren bærer
+    // «✓ Beste alternativ» som egen linje over kortet, og hvert påfølgende kort
+    // innledes med skillet «eller dette valget». «Anbefalt»-etiketten inne i
+    // kortet utgår — den sa det samme som linja over nå sier.
+    const flav = isWin ? ''
              : dt>1 ? L(`+${dt}t · mer smak`,`+${dt}h · more flavour`)
              : dt<-1 ? L(`${dt}t · raskere`,`${dt}h · faster`)
              : L('Alternativ','Alternative');
     const deig=betaDeig(c.snapshot);
+    const topp = isWin
+      ? `<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#3f7d34;margin:8px 0 4px">✓ ${L('Beste alternativ','Best option')}</div>`
+      : `<div style="display:flex;align-items:center;gap:10px;margin:10px 0 6px">
+          <span style="flex:1;border-top:1px solid var(--forno-border-soft)"></span>
+          <span style="font-size:10.5px;font-weight:800;color:var(--forno-text-faint);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${L('eller dette valget','or this option')}</span>
+          <span style="flex:1;border-top:1px solid var(--forno-border-soft)"></span>
+        </div>`;
     // Hvert valg er et kort med egen «Bruk denne»-knapp: fylt for anbefalt, omriss
     // for alternativene. «mer smak» på egen linje så gjæringstallet holder seg kort
     // og ikke flyter ut av kortet ved siden av et langt, wrappet metodenavn.
-    return `<div class="beta-card${isWin?' beta-win':''}">
+    return `${topp}<div class="beta-card${isWin?' beta-win':''}" style="margin-top:0">
       <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">~${Math.round(c.totalHrs)}${L('t','h')}</span></div>
       ${flav?`<div class="beta-sub">${flav}</div>`:''}
       <div class="beta-sub" style="opacity:.85">🫙 ${escH(deig.gjaer)}</div>
@@ -4463,6 +4474,30 @@ function renderResultBlock(containerId, label, anchorIso){
   let startTxt='', bakeTxt='';
   try{ startTxt=fDT(new Date(top.startIso)); }catch(e){}
   try{ bakeTxt=fDT(new Date(top.bakeIso)); }catch(e){}
+  // v0.782: treffer ingenting på ønsket tidspunkt, let etter et nærliggende som
+  // treffer HELT. Målt (søn 21:44, stek man 18:00): ingen konfliktfri kandidat
+  // fantes — men 30 minutter senere gikk alt opp. Appen visste svaret og sa det
+  // ikke; brukeren fant 19:00 ved prøving. Mekanismen har eksistert i
+  // tidsplan-varslene siden v0.753 («Spis … i stedet») — Smart-plan, stedet der
+  // tidspunktet faktisk velges, manglet den. Nærmeste avvik først, aldri i
+  // fortid, aldri natt, og bare når et probetidspunkt gir NULL konflikter —
+  // samme «tilbys bare når den leverer»-regel som v0.776/0.781.
+  let stekHeller='';
+  if(!ok && top.feasible!==false){
+    const a0=new Date(anchorIso), nå=Date.now();
+    for(const dlt of [30,-30,60,-60,90,-90,120,-120,150,-150,180,-180]){
+      const a=new Date(a0.getTime()+dlt*60000);
+      if(a.getTime()<=nå) continue;
+      if(isNightHour(a.getHours())) continue;
+      let res2=null; try{ res2=searchAllMethods(a); }catch(e){ continue; }
+      if(res2 && res2.some(c=>c.violations===0 && c.feasible!==false)){
+        stekHeller=`<div onclick="betaStekHeller('${a.toISOString()}')" style="margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--forno-bg);border:1px dashed var(--forno-accent);font-size:11px;color:var(--forno-text-muted);line-height:1.5;cursor:pointer">
+          <b style="color:var(--forno-accent-text)">${L(`Stek heller ${escH(fDT(a))}`,`Bake ${escH(fDT(a))} instead`)}</b> — ${L('da treffer alt innenfor tiden din.','then everything lands within your time.')}
+        </div>`;
+        break;
+      }
+    }
+  }
   // v0.662: Smart-plan-varselet får sin egen «Ignorer» (fyller hullet fra
   // varsel-debatten). Det bor i beta-panelet, ikke i tidsplanen, og re-rendres
   // kun ved et nytt søk — så en enkel «skjul denne» holder; ingen persistering.
@@ -4483,6 +4518,7 @@ function renderResultBlock(containerId, label, anchorIso){
     <div style="font-size:12px;color:var(--forno-accent-text);font-weight:600">${escH(top.label)} <span style="font-size:10.5px;color:var(--forno-text-faint);font-weight:600">— ${L('anbefalt','recommended')}</span></div>
     <div style="font-size:11px;color:var(--forno-text-faint);margin-top:4px">${L('🚀 Oppstartstid:','🚀 Start time:')} <b style="color:var(--forno-text)">${escH(startTxt)}</b></div>
     <div style="font-size:11px;color:var(--forno-text-faint);margin-top:1px">${L('🍕 Planlagt steketid:','🍕 Planned baking time:')} <b style="color:var(--forno-text)">${escH(bakeTxt)}</b></div>
+    ${stekHeller}
     ${compTable}
     ${whyLine}
     <div style="font-size:10.5px;color:var(--forno-text-faint);margin-top:8px">${L('Mel som passer:','Flour that fits:')} ${escH(flourTxt)}</div>
@@ -4548,6 +4584,18 @@ function useBetaShortcut(iso){
 }
 // noScroll: v0.735 — når pausen slås av/på tegnes resultatet på nytt der du
 // allerede står. Å scrolle da ville rykket skjermen bort under fingeren din.
+// v0.782: «Stek heller …»-knappen i Smart-plan-resultatet. Setter feltene til
+// det foreslåtte tidspunktet og kjører søket på nytt — samme sti som å endre
+// tiden selv, så feltene og resultatet kan aldri vise hver sin sannhet.
+function betaStekHeller(iso){
+  const a=new Date(iso);
+  if(isNaN(a.getTime())) return;
+  const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
+  if(dEl) dEl.value=fd(a);
+  if(tEl) tEl.value=String(a.getHours()).padStart(2,'0')+':'+String(a.getMinutes()).padStart(2,'0');
+  try{ betaSyncFieldLabels(); }catch(e){}
+  runBetaSearch(true);
+}
 function runBetaSearch(noScroll){
   const dEl=document.getElementById('mob-beta-ed'), tEl=document.getElementById('mob-beta-et');
   const resultEl=document.getElementById('mob-beta-result');
