@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.777",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fra–til-forslagene var ren regning mot vinduskantene: start nøyaktig så mye tidligere som det mangler, eller stek nøyaktig så mye senere. Målt på et ekte vindu foreslo de «Start lør kl. 22:10» — i går — og «Stek tir kl. 01:50» — pizza midt på natta. Appen har både nattbegrepet og «starter-før-nå er ikke en løsning»-regelen andre steder; her gjaldt ingen av dem.",
+      "Nå må «Start tidligere» være fysisk mulig. Er tidspunktet passert, forsvinner knappen, og det står i stedet ærlig hva som skulle til: «For sent å rekke ved å starte tidligere — den trengte oppstart lør 8. aug kl. 22:10.» Et forslag du ikke kan trykke på uten tidsmaskin er ikke et forslag.",
+      "«Stek senere» snapper til ditt eget klokkeslett. I stedet for tir kl. 02:26: «Stek tir 11. aug kl. 18:00 — samme klokkeslett, senere dag.» Senere steking er alltid gyldig, så da velger vi den senere stekingen et menneske faktisk vil ha.",
+      "Og «Start heller»-utveien på nattkortene lovet «klar 02:50» — den byttet én natt-vekking mot en annen. Nå letes det etter siste plassering i vinduet der både oppstart og klar-tidspunkt er utenfor natta: «Start heller søn kl. 22:55 — klar man kl. 15:15.» Ett unntak består med vilje: har du selv oppgitt at du er ledig fra 23:30, er 23:30 ikke en natt-vekking appen påfører deg — men klar-tida sjekkes alltid, for den har ingen valgt."
+    ],
+    "changes_en": [
+      "The From–to suggestions were pure arithmetic against the window edges: start exactly as much earlier as is missing, or bake exactly as much later. Measured on a real window they proposed \"Start Sat 22:10\" — yesterday — and \"Bake Tue 01:50\" — pizza in the middle of the night. The app has both the night concept and the \"starting-before-now is not a solution\" rule elsewhere; neither applied here.",
+      "\"Start earlier\" now has to be physically possible. If the time has passed, the button disappears, and instead it honestly states what it would have taken: \"Too late to make it by starting earlier — it needed to start Sat 8 Aug at 22:10.\" A suggestion you cannot press without a time machine is not a suggestion.",
+      "\"Bake later\" snaps to your own clock time. Instead of Tue 02:26: \"Bake Tue 11 Aug at 18:00 — same time, a later day.\" Baking later is always valid, so we pick the later bake a human actually wants.",
+      "And the \"Start earlier instead\" escape on the night cards promised \"ready at 02:50\" — it traded one night wake-up for another. It now searches for the last placement in the window where both the start and the ready time are outside the night: \"Start Sun 22:55 instead — ready Mon 15:15.\" One exception remains on purpose: if you yourself said you are free from 23:30, then 23:30 is not a night wake-up the app imposes on you — but the ready time is always checked, because nobody chose that."
+    ]
+  },
+  {
     "v": "0.776",
     "d": "august 2026",
     "d_en": "August 2026",

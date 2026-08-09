@@ -3869,7 +3869,10 @@ def run_behavioral_tests(page):
       const hNight=document.getElementById('mob-winres').innerHTML;
       const allNight=cNight.length>1 && cNight.every(x=>x.night);
       const flaggedInUI=/midt på natten/.test(hNight);
-      const earlyOffered=/Start heller 23:30/.test(hNight);
+      // v0.777: utveien oppgir nå dag+klokkeslett (den kan peke på en annen dag
+      // enn i dag), og vindusstart-varianten vises fordi 23:30 er brukerens
+      // egen oppgitte ledighet — mens klar-tida (~14:30, dagtid) er sjekket.
+      const earlyOffered=/Start heller [^<]*23:30/.test(hNight);
       // hver kandidat bærer riktig startAt (steketid − brukt tid)
       const startAtOk=cNight.every(x=>Math.abs(x.startAt.getTime()-(new Date('2026-08-06T18:00').getTime()-x.best.span*60000))<1000);
       // (c) «Start heller» flytter steketiden til oppstart + brukt tid
@@ -3975,6 +3978,10 @@ def run_behavioral_tests(page):
     # (3) Passer favoritten ikke, er det nyttigste svaret hva du må FLYTTE —
     #     favoritten sorteres først blant de som ikke passer, og begge utveier
     #     (start tidligere / stek senere) er ett trykk unna.
+    # v0.777: datoene flyttet 2026→2027. De var hardkodet i nær framtid og ble
+    # passert av veggklokka — og da skjuler den nye «start tidligere må være
+    # mulig»-regelen knappen helt riktig, siden forslaget peker på fortida.
+    # Scenariet må ligge i framtida for å teste det det skal teste.
     r107 = page.evaluate("""() => {
       const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,win:S.winStart,fav:S.favMethod,
                    cold:S.cold,hurtigH:S.hurtigH,kveldH:S.kveldH,poolishH:S.poolishH,bigaH:S.bigaH};
@@ -3982,13 +3989,13 @@ def run_behavioral_tests(page):
       window._planChosen=true; setLayout('mob');
       S.type='napoletana'; S.temp=22; S.favMethod=null;
       mobShowTab('settings'); wizGoto(1);
-      document.getElementById('mob-ed').value='2026-08-08';
+      document.getElementById('mob-ed').value='2027-08-08';
       document.getElementById('mob-et').value='18:00';
       mobSetMode('window');
-      document.getElementById('mob-wd').value='2026-08-06';
+      document.getElementById('mob-wd').value='2027-08-06';
       document.getElementById('mob-wt').value='16:00';
       renderWindowPicker();
-      const bake=new Date('2026-08-08T18:00'), win=50*60;
+      const bake=new Date('2027-08-08T18:00'), win=50*60;
       const names=c=>c.map(x=>x.method);
       // (C) poolish/biga er med, og filteret virker
       const all=windowCandidates(bake,win);
@@ -4011,10 +4018,10 @@ def run_behavioral_tests(page):
       const weakFavNotTop = weakFav[0].method!=='hurtig';
       // (3) trangt vindu: favoritten passer ikke -> først blant dem, med utveier
       S.favMethod='biga';
-      document.getElementById('mob-ed').value='2026-08-07';
+      document.getElementById('mob-ed').value='2027-08-07';
       document.getElementById('mob-wt').value='10:00';
       renderWindowPicker();
-      const tight=windowCandidates(new Date('2026-08-07T18:00'),32*60);
+      const tight=windowCandidates(new Date('2027-08-07T18:00'),32*60);
       const noFit=tight.filter(c=>!c.best);
       const favFirstAmongNoFit = noFit.length>1 && noFit[0].method==='biga';
       const hasMinVal = noFit.every(c=>typeof c.minVal==='number');
@@ -5892,6 +5899,115 @@ def run_behavioral_tests(page):
               and r144c.get('manuellGirAlltidPause') is True)
     results.append(('cold_pause_is_only_offered_when_some_pause_actually_helps',
                     ok144c, r144c))
+
+    # v0.777: Fra–til-forslagene var ren aritmetikk mot vinduskantene. Målt på
+    # brukerens eget vindu (søn 10:30 → man 18:00, klokka søn 10:15):
+    #   Biga  «Start lør 21:16 i stedet»  — I GÅR
+    #   Poolish «Stek tir 02:26 i stedet» — pizza kl. halv tre om natta
+    #   Hurtig «Start heller 10:30 — klar 02:50» — bytter én natt mot en annen
+    # Tre regler nå: start-knappen må være FYSISK mulig (framtid), stek-knappen
+    # snapper til brukerens eget klokkeslett første dag som rekker, og «Start
+    # heller»-utveien viser bare plasseringer der både start og klar er utenfor
+    # natta.
+    #
+    # Klokka FRYSES inne i testen (samme klasse-triks som tidstest-proben) —
+    # dette er nøyaktig scenariet som avslørte at r144b/c var bundet til
+    # veggklokka, så denne skal aldri få sjansen til å gjøre det samme.
+    r145 = page.evaluate("""() => {
+      const saved={...S}, D0=window.Date;
+      const savedFilter=localStorage.getItem('pizzaBetaMethods');
+      try{
+        const FAST=new D0(2026,7,9,10,15).getTime(); const t0=D0.now();
+        window.Date=class extends D0{
+          constructor(...a){ if(!a.length) super(FAST+(D0.now()-t0)); else super(...a); }
+          static now(){ return FAST+(D0.now()-t0); }
+        };
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        _betaMethods=null; try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){}
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=18; S.fridgeC=3;
+        S.gjaer='torr'; S.oven='pizza'; S.mode='end';
+        S.winStart='2026-08-09T10:30';
+        const wd=document.getElementById('mob-wd'), wt=document.getElementById('mob-wt');
+        if(wd) wd.value='2026-08-09'; if(wt) wt.value='10:30';
+        const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+        ed.value='2026-08-10'; et.value='18:00';
+        renderWindowPicker();
+        const host=document.getElementById('mob-winres');
+        const t=host.innerText;
+        // Alle tidspunkter i knappene, parset tilbake til Date via teksten:
+        // «Start <b>dag dd. mmm kl. hh:mm</b>» — les rå datoer fra onclick i
+        // stedet: applyWindowShiftStart(...,shift) → altStart=startAt−shift.
+        const startAt=new Date(2026,7,9,10,30), bakeAt=new Date(2026,7,10,18,0);
+        const nå=new Date();
+        const startShifts=[...host.innerHTML.matchAll(/applyWindowShiftStart\\([^)]*,(\\d+)\\)/g)].map(m=>+m[1]);
+        const bakeShifts=[...host.innerHTML.matchAll(/applyWindowShiftBake\\([^)]*,(\\d+)\\)/g)].map(m=>+m[1]);
+        // R1: ingen start-knapp peker på fortida
+        const startTider=startShifts.map(sh=>new Date(startAt.getTime()-sh*60000));
+        const ingenIFortid=startTider.every(d=>d.getTime()>=nå.getTime());
+        // …og de umulige sier det med ord i stedet
+        const ærligTekst=/For sent å rekke ved å starte tidligere/.test(t);
+        // R2: hver stek-knapp lander på brukerens eget klokkeslett, aldri natt
+        const bakeTider=bakeShifts.map(sh=>new Date(bakeAt.getTime()+sh*60000));
+        const stekPåEgetKlokkeslett=bakeTider.length>0
+          && bakeTider.every(d=>d.getHours()===18 && d.getMinutes()===0);
+        const stekAldriNatt=bakeTider.every(d=>!isNightHour(d.getHours()));
+        // R3: «Start heller»-utveier lover ALDRI natt-klar deig. Starten kan
+        // være natt bare når den ER vindusstarten — brukerens egen oppgitte
+        // ledighet (v0.728-unntaket). Nattkortet fra brukerens skjermbilde
+        // oppstår med metodefilteret PÅ (kveld/standard skjuler det ellers ved
+        // å vinne med dagstart), så filteret settes som deres: hurtig, poolish
+        // og biga. Flere vinduer prøves — kravet er at minst ett nattkort
+        // finnes OG at hver utvei som tilbys består begge sjekkene.
+        try{ localStorage.setItem('pizzaBetaMethods', JSON.stringify(
+          {standard:false,poolish:true,biga:true,mania:false,hurtig:true,kveld:false})); }catch(e){}
+        _betaMethods=null;
+        // Temperaturen er avgjørende: brukerens skjermbilde sa «Kjølig kjøkken
+        // (~18°C)», men det er VARIANTENS etikett (hurtig h=16), ikke rommet.
+        // Fella — hurtig 16t20m, start 01:40, blind klar 02:50 — oppstår ved
+        // S.temp=22. Ved 18° blir spannet 25t47m og starter på dagtid.
+        let r3={fantNattkort:false, utveier:0, alleOk:true, prøvd:[]};
+        for(const [wd2,wt2,bd,bt,tmp] of [
+              ['2026-08-09','10:30','2026-08-10','18:00',22], // brukerens eget vindu → B-plassering
+              ['2026-08-09','23:30','2026-08-10','18:00',18], // v0.728: natt-ledighet → vindusstart-unntaket
+              ['2026-08-09','08:00','2026-08-10','20:00',22]]){
+          S.temp=tmp; _q10Memo={k:null,v:null};
+          if(wd){ wd.value=wd2; } if(wt){ wt.value=wt2; }
+          S.winStart=wd2+'T'+wt2;
+          ed.value=bd; et.value=bt;
+          renderWindowPicker();
+          const html=host.innerHTML;
+          if(!/midt på natten/.test(host.innerText)) continue;
+          r3.fantNattkort=true;
+          const vs=new Date(wd2+'T'+wt2);
+          for(const m of html.matchAll(/applyWindowCandidateEarly\\([^)]*?,(\\d+),(\\d+)\\)/g)){
+            const span=+m[1], s=new Date(+m[2]), r=new Date(+m[2]+span*60000);
+            r3.utveier++;
+            const startOk=!isNightHour(s.getHours()) || Math.abs(s.getTime()-vs.getTime())<60000;
+            const klarOk=!isNightHour(r.getHours());
+            if(!(startOk&&klarOk)) r3.alleOk=false;
+            r3.prøvd.push(`${wt2}→${bt}: start ${s.getHours()}:${String(s.getMinutes()).padStart(2,'0')} klar ${r.getHours()}:${String(r.getMinutes()).padStart(2,'0')} ${startOk&&klarOk?'ok':'BRUDD'}`);
+          }
+        }
+        r3.alleUtenforNatta=r3.alleOk && r3.utveier>0;
+        return {startKnapper:startShifts.length, ingenIFortid, ærligTekst,
+                stekKnapper:bakeShifts.length, stekPåEgetKlokkeslett, stekAldriNatt,
+                r3, tekstUtdrag:t.replace(/\\s+/g,' ').slice(0,200)};
+      } finally {
+        window.Date=D0; Object.assign(S,saved); S.winStart=null;
+        _betaMethods=null;
+        if(savedFilter===null){ try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){} }
+        else { try{ localStorage.setItem('pizzaBetaMethods',savedFilter); }catch(e){} }
+        _q10Memo={k:null,v:null};
+      }
+    }""")
+    ok145 = (r145.get('ingenIFortid') is True
+             and r145.get('ærligTekst') is True
+             and r145.get('stekPåEgetKlokkeslett') is True
+             and r145.get('stekAldriNatt') is True
+             and r145.get('r3',{}).get('fantNattkort') is True
+             and r145.get('r3',{}).get('alleUtenforNatta') is True)
+    results.append(('window_suggestions_are_humanly_possible_not_just_arithmetically',
+                    ok145, r145))
 
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —

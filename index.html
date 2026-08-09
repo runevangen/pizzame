@@ -7321,10 +7321,34 @@ function renderWindowPicker(){
       // er HVA du må flytte for å få lage den likevel — og begge veier er ett
       // trykk unna. Favoritten din får ekstra tydelig merking, siden det er
       // nettopp den du helst vil ha til å passe.
+      //
+      // v0.777: forslagene var ren aritmetikk mot vinduskantene — start nøyaktig
+      // `mangler` tidligere, stek nøyaktig `mangler` senere. Målt på et ekte
+      // vindu foreslo de oppstart I GÅR (Biga: lør 21:16, klokka var søn 10:15)
+      // og steking kl. 02:26 om natta. Appen har både isNightHour() og
+      // «starter-før-nå er ikke en løsning»-regelen andre steder; her gjaldt
+      // ingen av dem. Nå: start-knappen må være FYSISK mulig (framtid), og
+      // stek-knappen snapper til brukerens eget klokkeslett første dag som
+      // rekker — senere steking er alltid gyldig, den gir bare større vindu.
       const short=c.minSpan-windowMin;
       const mangler=fmtSessionDur(short);
-      const altStart=new Date(startAt.getTime()-short*60000);
-      const altBake=new Date(bakeAt.getTime()+short*60000);
+      const nå=new Date();
+      let altStart=new Date(startAt.getTime()-short*60000);
+      // Natt-start skyves til 22:00 kvelden før — tidligere er alltid gyldig —
+      // men aldri forbi «nå»: da beholdes den nattlige (mulig slår pen).
+      if(isNightHour(altStart.getHours())){
+        const s=new Date(altStart);
+        if(s.getHours()<6) s.setDate(s.getDate()-1);
+        s.setHours(22,0,0,0);
+        if(s.getTime()>=nå.getTime()) altStart=s;
+      }
+      const startMulig=altStart.getTime()>=nå.getTime();
+      const startShift=Math.round((startAt.getTime()-altStart.getTime())/60000);
+      const minBake=new Date(bakeAt.getTime()+short*60000);
+      const altBake=new Date(minBake);
+      altBake.setHours(bakeAt.getHours(),bakeAt.getMinutes(),0,0);
+      while(altBake.getTime()<minBake.getTime()) altBake.setDate(altBake.getDate()+1);
+      const bakeShift=Math.round((altBake.getTime()-bakeAt.getTime())/60000);
       html+=`<div style="border:1px ${c.fav?'solid var(--forno-accent)':'solid var(--forno-border-soft)'};border-radius:10px;padding:9px 10px;margin-bottom:6px;background:var(--forno-bg)">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
           <span style="font-size:12.5px;font-weight:700;${c.fav?'color:var(--forno-accent-text)':'color:var(--forno-text-muted)'}">${mN(c.method)}${c.fav?' ⭐':''}</span>
@@ -7332,9 +7356,10 @@ function renderWindowPicker(){
         </div>
         <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:4px;line-height:1.45">${L(`Trenger ${fmtSessionDur(c.minSpan)} — slik får du den til:`,`Needs ${fmtSessionDur(c.minSpan)} — here's how to make it fit:`)}</div>
         <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
-          <span onclick="applyWindowShiftStart('${c.method}','${c.key}',${c.minVal},${short})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Start','Start')} <b>${fDT(altStart)}</b><br><span style="font-weight:500;opacity:.8">${L('i stedet','instead')}</span></span>
-          <span onclick="applyWindowShiftBake('${c.method}','${c.key}',${c.minVal},${short})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Stek','Bake')} <b>${fDT(altBake)}</b><br><span style="font-weight:500;opacity:.8">${L('i stedet','instead')}</span></span>
+          ${startMulig?`<span onclick="applyWindowShiftStart('${c.method}','${c.key}',${c.minVal},${startShift})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Start','Start')} <b>${fDT(altStart)}</b><br><span style="font-weight:500;opacity:.8">${L('i stedet','instead')}</span></span>`:''}
+          <span onclick="applyWindowShiftBake('${c.method}','${c.key}',${c.minVal},${bakeShift})" style="flex:1;min-width:130px;text-align:center;padding:7px 8px;border:1.5px solid var(--forno-accent);border-radius:8px;font-size:11px;font-weight:700;color:var(--forno-accent-text);cursor:pointer;line-height:1.35">${L('Stek','Bake')} <b>${fDT(altBake)}</b><br><span style="font-weight:500;opacity:.8">${L('samme klokkeslett, senere dag','same time, a later day')}</span></span>
         </div>
+        ${startMulig?'':`<div style="font-size:10px;color:var(--forno-text-faint);margin-top:5px;line-height:1.4">${L(`For sent å rekke ved å starte tidligere — den trengte oppstart ${escH(fDT(new Date(startAt.getTime()-short*60000)))}.`,`Too late to make it by starting earlier — it needed to start ${escH(fDT(new Date(startAt.getTime()-short*60000)))}.`)}</div>`}
       </div>`;
       return;
     }
@@ -7343,6 +7368,28 @@ function renderWindowPicker(){
     const startsAt=new Date(bakeAt.getTime()-span*60000);
     const ubrukt=windowMin-span;
     const lbl=winOptLabel(c.method,c.best.val);
+    // v0.777: utveien fylte vinduet FORFRA, blindt — «Start heller 10:30, klar
+    // 02:50». Å bytte én natt-vekking mot en annen er ingen utvei. Blokka kan
+    // ligge hvor som helst i vinduet, så let bakfra etter siste plassering der
+    // både oppstart og klar-tidspunkt er utenfor natta.
+    //
+    // ETT unntak, og det er ikke et smutthull: VINDUSSTARTEN er brukerens egen
+    // oppgitte ledighet. Sier du «jeg kan tidligst starte 23:30», er 23:30 ikke
+    // en natt-vekking appen påfører deg — det er derfor v0.728-utveien fantes.
+    // Klar-tidspunktet derimot har INGEN valgt; det må alltid være utenfor
+    // natta. Finnes ingen slik plassering, vises ingen utvei — ærligere enn å
+    // tilby noe like ille som problemet.
+    let tidlig=null;
+    if(c.night && ubrukt>0){
+      for(let t=startsAt.getTime()-15*60000; t>startAt.getTime(); t-=15*60000){
+        const s=new Date(t), r=new Date(t+span*60000);
+        if(!isNightHour(s.getHours()) && !isNightHour(r.getHours())){ tidlig={s,r}; break; }
+      }
+      if(!tidlig){
+        const r=new Date(startAt.getTime()+span*60000);
+        if(!isNightHour(r.getHours())) tidlig={s:new Date(startAt), r};
+      }
+    }
     html+=`<div style="border:${isWin?'1.5px solid var(--forno-accent)':'1px solid var(--forno-border-soft)'};border-radius:10px;padding:9px 10px;margin-bottom:6px;background:${isWin?'var(--forno-accent-soft)':'var(--forno-bg)'}">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
         <span style="font-size:13px;font-weight:800;${isWin?'color:var(--forno-accent-text)':''}">${mN(c.method)} · ${winValText(c.method,c.best.val)}</span>
@@ -7358,8 +7405,8 @@ function renderWindowPicker(){
                :(!isWin&&ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'')}
       </div>
       <div onclick="applyWindowCandidate('${c.method}','${c.key}',${c.best.val})" style="margin-top:7px;height:34px;border-radius:8px;background:${isWin?'var(--forno-accent)':'transparent'};border:${isWin?'none':'1.5px solid var(--forno-accent)'};color:${isWin?'#fff':'var(--forno-accent-text)'};font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer">${L('Bruk denne','Use this')}</div>
-      ${c.night&&ubrukt>0?`<div onclick="applyWindowCandidateEarly('${c.method}','${c.key}',${c.best.val},${span})" style="margin-top:6px;padding:7px 9px;border-radius:8px;background:var(--forno-bg-raised);border:1px dashed var(--forno-accent);font-size:10.5px;color:var(--forno-text-muted);line-height:1.45;cursor:pointer">
-        <b style="color:var(--forno-accent-text)">${L(`Start heller ${fT(startAt)}`,`Start at ${fT(startAt)} instead`)}</b> — ${L(`samme gjæring, men du slipper å stå opp. Klar <b>${fT(new Date(startAt.getTime()+span*60000))}</b> i stedet for ${fT(bakeAt)}.`,`same fermentation, but you don't have to get up. Ready at <b>${fT(new Date(startAt.getTime()+span*60000))}</b> instead of ${fT(bakeAt)}.`)}
+      ${tidlig?`<div onclick="applyWindowCandidateEarly('${c.method}','${c.key}',${c.best.val},${span},${tidlig.s.getTime()})" style="margin-top:6px;padding:7px 9px;border-radius:8px;background:var(--forno-bg-raised);border:1px dashed var(--forno-accent);font-size:10.5px;color:var(--forno-text-muted);line-height:1.45;cursor:pointer">
+        <b style="color:var(--forno-accent-text)">${L(`Start heller ${fDT(tidlig.s)}`,`Start ${fDT(tidlig.s)} instead`)}</b> — ${L(`samme gjæring, men du slipper å stå opp. Klar <b>${fDT(tidlig.r)}</b> i stedet for ${fT(bakeAt)}.`,`same fermentation, but you don't have to get up. Ready at <b>${fDT(tidlig.r)}</b> instead of ${fT(bakeAt)}.`)}
       </div>`:''}
     </div>`;
   });
@@ -7418,8 +7465,10 @@ function applyWindowShiftBake(method,key,val,shortMin){
   }
   applyWindowCandidate(method,key,val);
 }
-function applyWindowCandidateEarly(method,key,val,spanMin){
-  const startAt=S.winStart?new Date(S.winStart):null;
+// v0.777: valgfri startMs — utveien peker ikke lenger nødvendigvis på vindus-
+// starten, men på siste plassering der både start og klar er utenfor natta.
+function applyWindowCandidateEarly(method,key,val,spanMin,startMs){
+  const startAt=startMs?new Date(startMs):(S.winStart?new Date(S.winStart):null);
   if(startAt&&!isNaN(startAt.getTime())){
     const newBake=new Date(startAt.getTime()+spanMin*60000);
     const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
