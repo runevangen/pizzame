@@ -5719,37 +5719,69 @@ def run_behavioral_tests(page):
     #     ellers ingenting om melvarselet)
     #  4) ordlyden passer varseltypen — samme kort brukes for natt OG for
     #     pizzatid, så en linje som alltid sier «om natta» lyver på halvparten
+    # FAST anker i `end`-modus. Første utkast satte mob-sd/mob-st og brukte
+    # mode='start' — men mobGetAnchor('s') returnerer ALLTID new Date() og ser
+    # aldri på feltene. Testene var dermed bundet til veggklokka: de bestod
+    # kl. 07 og feilet kl. 08 samme morgen. Nøyaktig samme felle som r120 gikk i
+    # (v0.753, pinnet i v0.761) — bare mode='end' leser faktisk datofeltene.
+    # Konfigurasjonen SØKES fram i stedet for å hardkodes, så testen ikke ryker
+    # av en kalibreringsendring som flytter hvilke timer som kolliderer.
     r144b = page.evaluate("""() => {
-      const saved={...S}, _wsa=window._warnShowAll;
+      const saved={...S}, _wsa=window._warnShowAll, _steps0=window._steps;
       try{
         window._lang='no'; window._planChosen=true; setLayout('mob');
-        S.method='poolish'; S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22;
-        S.fridgeC=3; S.gjaer='torr'; S.oven='pizza'; S.mode='start';
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+        S.gjaer='torr'; S.oven='pizza'; S.method='poolish'; S.mode='end';
         S.meltype='doppio_zero'; S.poolishCold=false; S.poolishPauseH=0;
-        S.poolishH=16; S.cold=24;
-        const sd=document.getElementById('mob-sd'), st=document.getElementById('mob-st');
-        if(sd) sd.value=fd(new Date(2026,7,9,9,0));
-        if(st) st.value='09:00';
+        const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+        if(!ed||!et) return {ingenFelter:true};
         window._warnShowAll=true;
-        const h=activeStepTimeWarningHTML();
-        if(!h) return {ingenVarsel:true};
+        // Let etter et oppsett der kortet tilbyr BEGGE prisbare valgene.
+        // Klokkeslettet MÅ være med i søket — det er den aksen som avgjør om et
+        // steg lander i natta eller utenfor pizzatiden i det hele tatt.
+        let h='', funnet=null, sett=0, medVarsel=0;
+        for(const time of [12,14,16,17,18,19,20,21]){
+          for(const ph of [12,13,14,15,16]){
+            for(const cold of [24,30,36,42,48]){
+              ed.value=fd(new Date(2027,2,20,time,0));
+              et.value=String(time).padStart(2,'0')+':00';
+              S.poolishH=ph; S.cold=cold; S.poolishPauseH=0; _q10Memo={k:null,v:null};
+              sett++;
+              // AVGJØRENDE: activeStepTimeWarningHTML() leser window._steps —
+              // den globalt rendrede planen — ikke ankeret. Uten denne linja
+              // varsler den om planen som lå der ved sideinnlasting, bygget fra
+              // veggklokka. Det var den EGENTLIGE årsaken til at testen bestod
+              // kl. 07 og feilet kl. 08; å pinne ankeret alene holdt ikke.
+              try{ window._steps=stepsForAnchor(mobGetAnchor('e')); }catch(e){ continue; }
+              const kandidat=activeStepTimeWarningHTML();
+              if(!kandidat) continue;
+              medVarsel++;
+              if(!/Flytt til/.test(kandidat) || !/Kjøleskapspause/.test(kandidat)) continue;
+              h=kandidat; funnet={time,ph,cold}; break;
+            }
+            if(funnet) break;
+          }
+          if(funnet) break;
+        }
+        if(!funnet) return {fantIkkeOppsett:true, sett, medVarsel};
         const d=document.createElement('div'); d.innerHTML=h;
         const t=d.innerText;
         const knapper=[...d.querySelectorAll('button')].map(x=>x.textContent.trim());
         // Fasit hentes fra motoren, ikke skrevet inn i testen — da kan ikke
         // teksten og tallene gli fra hverandre.
+        const anchor=mobGetAnchor('e');
         const nå=varselPris({});
         const esc=stepEscapePlan(
-          (stepsForAnchor(mobGetAnchor('s'))||[]).find(s=>{
+          (stepsForAnchor(anchor)||[]).find(s=>{
             if(s.passive && !s.needsPresence) return false;
             const at=new Date(s.at), hh=at.getHours();
             return hh>=23||hh<6||!inPizzatidWindow(hh,at.getMinutes(),at.getDay());
-          }).title, mobGetAnchor('s'));
+          }).title, anchor);
         const escP=esc?varselPris({[esc.field]:esc.value}):null;
         const pause=autoPoolishPause(true);
         const pauseP=pause>0?varselPris({poolishPauseH:pause}):null;
 
-        return {
+        return {funnet,
           // 1) prislinjer i det hele tatt
           harPris: /[+−=]/.test(t) && /Gjæren endres|Deigen er uendret/.test(t),
           // 2) den skjulte kostnaden står der, med motorens egne tall
@@ -5759,22 +5791,29 @@ def run_behavioral_tests(page):
           ingenLøserMel: !!escP && !!pauseP && escP.over>0 && pauseP.over>0,
           melNevnt: /Ingen av valgene løser alt/.test(t)
                  && t.includes('Caputo Doppio Zero'),
-          // 4) ordlyd som passer varseltypen
-          erPizzatidVarsel: /ikke har satt av til pizza/.test(t),
-          ikkeBareNatt: !/^\\s*$/.test(t) && /pizzatiden din|innenfor tiden din/.test(t),
+          // 4) ordlyd som passer varseltypen. Oppsettet søkes fram, så det kan
+          // like gjerne bli et natt- som et pizzatid-varsel — kravet er at
+          // teksten navngir det RIKTIGE, ikke at den alltid sier «om natta».
+          varselType: /ikke har satt av til pizza/.test(t) ? 'pizzatid'
+                    : /havner i natten/.test(t) ? 'natt' : 'ukjent',
+          ordlydPasser: (/ikke har satt av til pizza/.test(t)
+                          ? /pizzatiden din|innenfor tiden din/.test(t)
+                          : /om natta|innenfor tiden din/.test(t)),
           // pausen skal ikke tilbys når ingen pauselengde hjelper
           pauseTilbudt: knapper.some(k=>/Kjøleskapspause/.test(k)),
           pauseBest: pause,
           fasit:{nå, escP, pauseP}
         };
-      } finally { Object.assign(S,saved); window._warnShowAll=_wsa; _q10Memo={k:null,v:null}; }
+      } finally { Object.assign(S,saved); window._warnShowAll=_wsa;
+                  window._steps=_steps0; _q10Memo={k:null,v:null}; }
     }""")
-    ok144b = (not r144b.get('ingenVarsel')
+    ok144b = (not r144b.get('fantIkkeOppsett') and not r144b.get('ingenFelter')
               and r144b.get('harPris') is True
               and r144b.get('gjaerStår') is True
               and r144b.get('ingenLøserMel') is True
               and r144b.get('melNevnt') is True
-              and r144b.get('ikkeBareNatt') is True
+              and r144b.get('ordlydPasser') is True
+              and r144b.get('varselType') != 'ukjent'
               and r144b.get('pauseTilbudt') is True)
     results.append(('warning_options_state_their_price_on_time_flour_and_dough',
                     ok144b, r144b))
@@ -5793,24 +5832,28 @@ def run_behavioral_tests(page):
       try{
         window._lang='no'; window._planChosen=true; setLayout('mob');
         S.method='poolish'; S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22;
-        S.fridgeC=3; S.gjaer='torr'; S.oven='pizza'; S.mode='start';
+        S.fridgeC=3; S.gjaer='torr'; S.oven='pizza'; S.mode='end';
         S.poolishCold=false; S.poolishPauseH=0;
+        const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+        if(!ed||!et) return {ingenFelter:true};
+        // FAST anker: mobGetAnchor('s') ser aldri på feltene (den returnerer
+        // alltid new Date()), så bare 'end'-modus gir en tid som står stille.
         const sett=(t,ph,cold)=>{ S.poolishH=ph; S.cold=cold; S.poolishPauseH=0;
-          const sd=document.getElementById('mob-sd'), st=document.getElementById('mob-st');
-          if(sd) sd.value=fd(new Date(2026,7,9,t,0));
-          if(st) st.value=String(t).padStart(2,'0')+':00';
-          return mobGetAnchor('s'); };
+          ed.value=fd(new Date(2027,2,20,t,0));
+          et.value=String(t).padStart(2,'0')+':00';
+          _q10Memo={k:null,v:null};
+          return mobGetAnchor('e'); };
         const konf=a=>scorePizzatidWindows(stepsForAnchor(a));
 
         // A: en plan som ALLEREDE går opp. Da kan ingen pause forbedre noe.
         let A=null;
-        for(const t of [7,8,9,10,11,12]) for(const ph of [12,13,14,15,16]) for(const cold of [24,30,36,42,48]){
+        for(const t of [12,14,16,17,18,19,20]) for(const ph of [12,13,14,15,16]) for(const cold of [24,30,36,42,48]){
           const a=sett(t,ph,cold);
           if(konf(a)===0){ A={t,ph,cold,a}; break; }
         }
         // B: en plan der en pause FAKTISK hjelper.
         let B=null;
-        for(const t of [7,8,9,10,11,12]) for(const ph of [12,13,14,15,16]) for(const cold of [24,30,36,42,48]){
+        for(const t of [12,14,16,17,18,19,20]) for(const ph of [12,13,14,15,16]) for(const cold of [24,30,36,42,48]){
           const a=sett(t,ph,cold);
           const f=konf(a); if(!f) continue;
           const p=autoPoolishPause(false);
