@@ -3874,8 +3874,10 @@ def run_behavioral_tests(page):
       // oppgitte ledighet; klar-tida ~15:00 er dagtid og sjekket), og natt-
       // varianten («klar nøyaktig 18:00 → start midt på natten») er sekundæren,
       // fortsatt ett trykk unna via applyWindowCandidate.
-      const earlyOffered=/Oppstart[^<]*<b>[^<]*23:30/.test(hNight)
-                      && /klar/.test(hNight)
+      // v0.779 (skisse B): kortet leder med «Begynn … → stek …» — feltenes to
+      // spørsmål besvart med samme ord. 23:30 skal stå i Begynn-linja.
+      const earlyOffered=/Begynn[^<]*<b[^>]*>[^<]*23:30/.test(hNight)
+                      && /stek/.test(hNight)
                       && /midt på natten/.test(hNight)
                       && /applyWindowCandidate\(/.test(hNight);
       // hver kandidat bærer riktig startAt (steketid − brukt tid)
@@ -6056,8 +6058,8 @@ def run_behavioral_tests(page):
         ed.value='2026-08-10'; et.value='18:00';
         renderWindowPicker();
         const hk=kortFor('Hurtigdeig');
-        const lederMenneskelig = /Oppstart[^<]*<b>[^<]*22:55/.test(hk)
-                              && /klar/.test(hk)
+        const lederMenneskelig = /Begynn[^<]*<b[^>]*>[^<]*22:55/.test(hk)
+                              && /stek/.test(hk)
                               && hk.indexOf('applyWindowCandidateEarly')<hk.indexOf('applyWindowCandidate(');
         const nattErSekundær = /midt på natten/.test(hk)
                               && (hk.match(/midt på natten/g)||[]).length===1;
@@ -6098,6 +6100,87 @@ def run_behavioral_tests(page):
              and r146.get('varselTier') is True)
     results.append(('window_night_cards_lead_with_humane_and_app_speaks_with_one_voice',
                     ok146, r146))
+
+    # v0.779 (skisse B, brukerens design): Fra–til stiller to spørsmål og
+    # svarene bruker samme ord.
+    #  1) Feltene har spørsmåls-overskrifter: «Når vil du begynne å lage
+    #     deigen?» / «Når vil du steke?»
+    #  2) Vinnerkortet bærer «✓ Beste alternativ»
+    #  3) Hvert påfølgende kort som passer innledes med «eller dette valget»
+    #  4) Hvert kort som passer leder med «Begynn … → stek …» — og tidene der
+    #     er IKKE pynt: de må stemme med kandidatens faktiske plassering fra
+    #     windowCandidates, ellers er linja bare en ny løgn med bedre overskrift.
+    r147 = page.evaluate("""() => {
+      const saved={...S}, D0=window.Date;
+      const savedFilter=localStorage.getItem('pizzaBetaMethods');
+      try{
+        const FAST=new D0(2026,7,9,10,15).getTime(); const t0=D0.now();
+        window.Date=class extends D0{
+          constructor(...a){ if(!a.length) super(FAST+(D0.now()-t0)); else super(...a); }
+          static now(){ return FAST+(D0.now()-t0); }
+        };
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        _betaMethods=null; try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){}
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+        S.gjaer='torr'; S.oven='pizza'; S.mode='end';
+        S.winStart='2026-08-09T10:30';
+        const wd=document.getElementById('mob-wd'), wt=document.getElementById('mob-wt');
+        if(wd) wd.value='2026-08-09'; if(wt) wt.value='10:30';
+        const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+        ed.value='2026-08-11'; et.value='18:00';
+        try{ mobSetMode('window'); }catch(e){}
+        renderWindowPicker();
+        const host=document.getElementById('mob-winres');
+        const h=host.innerHTML, t=host.innerText;
+
+        // 1) overskriftene — lest fra DOM-en, ikke fra kildekoden
+        const lbl1=(document.getElementById('mob-bw-lbl')||{}).textContent||'';
+        const lbl2=(document.getElementById('mob-be-lbl')||{}).textContent||'';
+        const overskrifter = /Når vil du begynne å lage deigen\\?/.test(lbl1)
+                          && /Når vil du steke\\?/.test(lbl2);
+        // 2) + 3)
+        const besteFørst = t.indexOf('Beste alternativ')>=0
+                        && t.indexOf('Beste alternativ')<t.indexOf('eller dette valget');
+        const bakeAt=new Date(2026,7,11,18,0);
+        const win=Math.round((bakeAt-new Date(2026,7,9,10,30))/60000);
+        const fits=windowCandidates(bakeAt,win).filter(x=>x.best);
+        const antallSkiller=(t.match(/eller dette valget/g)||[]).length;
+        const skillerPerKort = fits.length>1 && antallSkiller===fits.length-1;
+        // 4) Begynn-linja per kort, sjekket mot motorens egne tall
+        const d=document.createElement('div'); d.innerHTML=h;
+        const kort=[...d.children].filter(x=>/Begynn/.test(x.textContent||''));
+        const HH=x=>String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0');
+        let linjerStemmer = kort.length===fits.length && kort.length>0;
+        const detalj=[];
+        fits.forEach(c=>{
+          const st=new Date(bakeAt.getTime()-c.best.span*60000);
+          // menneskelig plassering kan flytte tidene — da må klokkeslettet i
+          // linja være ETT av de to gyldige parene (bakover eller flyttet)
+          const kortH=kort.map(x=>x.textContent).find(x=>new RegExp(mN(c.method)).test(x))||'';
+          const harBakover = kortH.includes(HH(st)) && kortH.includes('18:00');
+          const harFlyttet = /ca\\./.test(kortH);
+          detalj.push(`${c.method}: ${harBakover?'bakover':(harFlyttet?'flyttet':'MANGLER')}`);
+          if(!harBakover && !harFlyttet) linjerStemmer=false;
+        });
+        const stekOrd = /→\\s*stek/.test(t) && !/→\\s*spis/.test(t);
+        return {overskrifter, lbl1, lbl2, besteFørst, antallSkiller,
+                nFits:fits.length, skillerPerKort, linjerStemmer, stekOrd, detalj};
+      } finally {
+        window.Date=D0; Object.assign(S,saved); S.winStart=null;
+        _betaMethods=null;
+        if(savedFilter===null){ try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){} }
+        else { try{ localStorage.setItem('pizzaBetaMethods',savedFilter); }catch(e){} }
+        try{ mobSetMode(uiMode()); }catch(e){}
+        _q10Memo={k:null,v:null};
+      }
+    }""")
+    ok147 = (r147.get('overskrifter') is True
+             and r147.get('besteFørst') is True
+             and r147.get('skillerPerKort') is True
+             and r147.get('linjerStemmer') is True
+             and r147.get('stekOrd') is True)
+    results.append(('window_asks_two_questions_and_cards_answer_in_the_same_words',
+                    ok147, r147))
 
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —

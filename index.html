@@ -1170,8 +1170,8 @@ function syncStaticI18nUI(){
   st('mob-me-lbl','Steketid','Bake time');
   st('mob-mw-lbl','Fra–til','From–to');
   st('mob-ms-lbl','Nå','Now');
-  st('mob-bw-lbl','Jeg kan tidligst starte','I can start at the earliest');
-  st('mob-be-lbl','Jeg vil steke','I want to bake');
+  st('mob-bw-lbl','Når vil du begynne å lage deigen?','When do you want to start making the dough?');
+  st('mob-be-lbl','Når vil du steke?','When do you want to bake?');
   st('mob-bs-hint','Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.','The dough is planned from now. The baking time is calculated automatically and shown in the status bar once you have chosen a method.');
   st('wiz-s1-next','Neste →','Next →');
   // Wizard step 2
@@ -7415,16 +7415,31 @@ function renderWindowPicker(){
     const slakkChip = spille
       ? `<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} går til spille — mer smak med ${mN(topFit.method)}`,`${fmtSessionDur(ubrukt)} goes to waste — more flavour with ${mN(topFit.method)}`)}</span>`
       : (!isWin&&ubrukt>30?`<span style="color:#8a5a00;font-weight:700"> · ${L(`${fmtSessionDur(ubrukt)} ubrukt`,`${fmtSessionDur(ubrukt)} unused`)}</span>`:'');
+    // v0.779 (skisse B): kortet svarer på feltenes to spørsmål med samme ord,
+    // som FØRSTE linje — «Begynn … → stek …». Da står konsekvensen av valget
+    // øverst: at Hurtigdeig-plasseringen flytter steketiden til 15:15 sto før
+    // lenger ned i liten skrift. Vinneren bærer «✓ Beste alternativ», og hvert
+    // påfølgende kort som passer skilles med «eller dette valget».
+    const begynn = menneskelig ? tidlig.s : startsAt;
+    const stek   = menneskelig ? tidlig.r : bakeAt;
+    if(isWin){
+      html+=`<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#3f7d34;margin:2px 0 4px">✓ ${L('Beste alternativ','Best option')}</div>`;
+    } else {
+      html+=`<div style="display:flex;align-items:center;gap:10px;margin:10px 0 6px">
+        <span style="flex:1;border-top:1px solid var(--forno-border-soft)"></span>
+        <span style="font-size:10.5px;font-weight:800;color:var(--forno-text-faint);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${L('eller dette valget','or this option')}</span>
+        <span style="flex:1;border-top:1px solid var(--forno-border-soft)"></span>
+      </div>`;
+    }
     html+=`<div style="border:${isWin?'1.5px solid var(--forno-accent)':'1px solid var(--forno-border-soft)'};border-radius:10px;padding:9px 10px;margin-bottom:6px;background:${isWin?'var(--forno-accent-soft)':'var(--forno-bg)'}">
+      <div style="font-size:11.5px;color:var(--forno-text-muted);line-height:1.45;margin-bottom:4px">${L('Begynn','Begin')} <b style="color:var(--forno-text)">${fDT(begynn)}</b> → ${L('stek','bake')} <b style="color:var(--forno-text)">${menneskelig?L('ca. ','approx. '):''}${fDT(stek)}</b></div>
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
         <span style="font-size:13px;font-weight:800;${isWin?'color:var(--forno-accent-text)':''}">${mN(c.method)} · ${winValText(c.method,c.best.val)}</span>
         <span style="font-size:10.5px;color:var(--forno-text-faint);font-weight:700;white-space:nowrap">${L(`bruker ${fmtSessionDur(span)}`,`uses ${fmtSessionDur(span)}`)}</span>
       </div>
       <div style="height:7px;border-radius:4px;background:var(--forno-bg-sunken,#e8dcc4);margin-top:6px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;border-radius:4px;background:${isWin?'var(--forno-accent)':'#c9b48a'}"></i></div>
       <div style="font-size:10.5px;color:var(--forno-text-muted);margin-top:5px;line-height:1.45">
-        ${menneskelig
-          ? `${L('Oppstart','Start')}: <b>${fDT(tidlig.s)}</b> · ${L('klar','ready')} <b>${fDT(tidlig.r)}</b>${lbl?` · ${lbl}`:''}`
-          : `${L('Oppstart','Start')}: <b>${fDT(startsAt)}</b>${lbl?` · ${lbl}`:''}`}
+        ${lbl?`${lbl}`:''}
         ${c.fav?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#efe4f7;color:#6b4a9a;border:1px solid #d3c0e8;margin-left:4px">${L('⭐ din favoritt','⭐ your favourite')}</span>`:''}
         ${c.night&&!menneskelig?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e8e2f5;color:#5b4a8a;border:1px solid #c9bde6;margin-left:4px">${L('🌙 midt på natten','🌙 middle of the night')}</span>`:''}
         ${c.costMin?`<br><span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#faeeda;color:#8a5a00;border:1px solid #efc27f;margin-top:4px">${L(`${fmtSessionDur(c.costMin)} mindre gjæring enn ${mN(c.costVs)}`,`${fmtSessionDur(c.costMin)} less fermentation than ${mN(c.costVs)}`)}</span>`:''}
@@ -9311,14 +9326,14 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div id="mob-bs-hint" style="font-size:11px;color:var(--forno-text-faint);line-height:1.5">Deigen planlegges fra nå. Steketiden regnes ut automatisk og vises i statuslinjen når du har valgt metode.</div>
       </div>
       <div id="mob-bw" style="display:none;padding:.5rem 1rem .1rem;background:var(--forno-bg-raised)">
-        <div id="mob-bw-lbl" style="font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Jeg kan tidligst starte</div>
+        <div id="mob-bw-lbl" style="font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Når vil du begynne å lage deigen?</div>
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
           <input type="date" id="mob-wd" onchange="renderWindowPicker()">
           <input type="time" id="mob-wt" value="20:00" onchange="renderWindowPicker()">
         </div>
       </div>
       <div id="mob-be" style="display:none;padding:.5rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
-        <div id="mob-be-lbl" style="display:none;font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Jeg vil steke</div>
+        <div id="mob-be-lbl" style="display:none;font-size:10px;color:var(--forno-text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Når vil du steke?</div>
         <div style="display:grid;grid-template-columns:1fr 110px;gap:6px">
           <input type="date" id="mob-ed">
           <input type="time" id="mob-et" value="18:00">

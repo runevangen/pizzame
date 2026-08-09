@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.779",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fra–til stiller nå to spørsmål med ren tekst: «Når vil du begynne å lage deigen?» og «Når vil du steke?» — i stedet for etikettene «Jeg kan tidligst starte» og «Jeg vil steke».",
+      "Og kortene svarer på spørsmålene med samme ord, som første linje: «Begynn søn kl. 14:40 → stek tir kl. 18:00». Tidene er kandidatens faktiske plassering, ikke pynt — for Hurtigdeig-kortet ser du dermed med én gang at valget flytter steketiden til ca. 15:15, noe som før sto lenger ned i liten skrift.",
+      "Vinnerkortet bærer «✓ Beste alternativ», og hvert av de neste kortene innledes med et skille: «eller dette valget». Før var fargen på vinnerkortet det eneste som rangerte listen.",
+      "Designet er Runes, fra brukertesting — tegnet som skisser først, så bygget."
+    ],
+    "changes_en": [
+      "From–to now asks two plain questions: \"When do you want to start making the dough?\" and \"When do you want to bake?\" — instead of the labels \"I can start at the earliest\" and \"I want to bake\".",
+      "And the cards answer the questions in the same words, as their first line: \"Begin Sun 14:40 → bake Tue 18:00\". The times are the candidate's actual placement, not decoration — so on the Quick dough card you immediately see that the choice moves the bake time to about 15:15, which used to sit further down in small print.",
+      "The winning card carries \"✓ Best option\", and each following card is introduced with a divider: \"or this option\". Previously the winner's colour was the only thing ranking the list.",
+      "The design is Rune's, from user testing — sketched first, then built."
+    ]
+  },
+  {
     "v": "0.778",
     "d": "august 2026",
     "d_en": "August 2026",
