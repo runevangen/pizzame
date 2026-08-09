@@ -4607,37 +4607,72 @@ function meltypeWarnOpenFinjuster(){
   mobShowTab('settings');
   wizGoto('finjuster', targetId ? highlight : null);
 }
-function meltypeWarnReduceFerment(){
+// v0.781: kan «Reduser/Øk hevetiden» faktisk nå melets spenn? Samme regnestykke
+// som knappen bruker, men uten å røre noe. Målt: for Langtidsdeig + Doppio Zero
+// (tak 24t) var knappen en ren NO-OP — målet krevde 18t kjøl, metodens minimum
+// er 24t, klampen ga verdien man alt sto på, og varselet ble stående etter
+// trykket. Knappen vises nå bare når resultatet lander INNENFOR melets spenn —
+// samme regel som kjøleskapspausen fikk i v0.776: tilbys bare når den hjelper.
+//
+// Én regnefeil rettet i samme slengen: Øk-siden (for kort tid) rundet NED til
+// nærmeste 6t og kunne lande under melets minimum — «Øk» som ikke økte nok.
+// For lite → rund opp; for mye → rund ned.
+function meltypeFermentFix(){
   const flour=MELTYPER.find(m=>m.v===S.meltype);
-  if(!flour) return;
-  if(S.method==='mania') return; // fast, ikke-justerbar gjæringstid — ingen kjøleskapstid å skru på
-  const hrs=totalFermentHours();
-  const target = hrs<flour.ferm.mn ? flour.ferm.mn : flour.ferm.mx;
+  if(!flour || !flour.ferm || !Number.isFinite(flour.ferm.mn)) return null;
+  if(S.method==='mania' || S.type==='ingenelting') return null;
+  const lagret={method:S.method,cold:S.cold,hurtigH:S.hurtigH,kveldH:S.kveldH};
+  try{
+    const hrs=totalFermentHours();
+    if(hrs>=flour.ferm.mn && hrs<=flour.ferm.mx) return null;   // ikke noe å fikse
+    const forKort = hrs<flour.ferm.mn;
+    const target = forKort ? flour.ferm.mn : flour.ferm.mx;
+    if(S.method==='hurtig'){
+      const best=[...HOPTS].reverse().find(o=>o.h<=target) || HOPTS[0];
+      S.hurtigH=best.h;
+    }else if(S.method==='kveld'){
+      const best=[...KOPTS].reverse().find(o=>o.h<=target) || KOPTS[0];
+      S.kveldH=best.h;
+    }else{
+      const rund = forKort ? Math.ceil : Math.floor;
+      let method=S.method;
+      let hours=rund((target-fixedFermOverheadHours(method))/6)*6;
+      if(hours<24 && !forKort){
+        // Forspillet alene bruker mer tid enn målet tillater — bytt til
+        // standardmetoden (uten fordeig) så kjøletiden faktisk kan nå målet.
+        method='standard';
+        hours=rund((target-fixedFermOverheadHours(method))/6)*6;
+      }
+      hours=Math.max(24,Math.min(COLD_MAX,hours));
+      S.method=method; S.cold=hours;
+    }
+    _q10Memo={k:null,v:null};
+    const etter=totalFermentHours();
+    const innenfor = etter>=flour.ferm.mn && etter<=flour.ferm.mx;
+    const endret = S.method!==lagret.method || S.cold!==lagret.cold
+                || S.hurtigH!==lagret.hurtigH || S.kveldH!==lagret.kveldH;
+    if(!innenfor || !endret) return null;
+    return {method:S.method, cold:S.cold, hurtigH:S.hurtigH, kveldH:S.kveldH,
+            total:etter, forKort};
+  } finally { Object.assign(S,lagret); _q10Memo={k:null,v:null}; }
+}
+function meltypeWarnReduceFerment(){
+  const fix=meltypeFermentFix();
+  if(!fix) return;   // knappen skal ikke vises da — men vær ufarlig uansett
   if(S.method==='hurtig'){
-    const best=[...HOPTS].reverse().find(o=>o.h<=target) || HOPTS[0];
-    S.hurtigH=best.h;
+    S.hurtigH=fix.hurtigH;
     try{ buildHrows(); }catch(e){}
     try{ mobBuildHrows(); }catch(e){}
   }else if(S.method==='kveld'){
-    const best=[...KOPTS].reverse().find(o=>o.h<=target) || KOPTS[0];
-    S.kveldH=best.h;
+    S.kveldH=fix.kveldH;
     try{ buildKrows(); }catch(e){}
     try{ mobBuildKrows(); }catch(e){}
-  }else if(S.method!=='ingenelting'){
-    let method=S.method;
-    let hours=Math.floor((target-fixedFermOverheadHours(method))/6)*6;
-    if(hours<24){
-      // Forspillet alene bruker mer tid enn målet tillater — bytt til standardmetoden
-      // (uten fordeig) så selve kjøleskaps-tiden faktisk kan nå målet.
-      method='standard';
-      hours=Math.floor((target-fixedFermOverheadHours(method))/6)*6;
-    }
-    hours=Math.max(24,Math.min(COLD_MAX,hours));
-    S.method=method;
-    S.cold=hours;
-    const t=coldTimeLabel(hours);
-    const csl=document.getElementById('csl'); if(csl) csl.value=hours;
-    const mobCsl=document.getElementById('mob-csl'); if(mobCsl) mobCsl.value=hours;
+  }else{
+    S.method=fix.method;
+    S.cold=fix.cold;
+    const t=coldTimeLabel(fix.cold);
+    const csl=document.getElementById('csl'); if(csl) csl.value=fix.cold;
+    const mobCsl=document.getElementById('mob-csl'); if(mobCsl) mobCsl.value=fix.cold;
     const cdisp=document.getElementById('cdisp'); if(cdisp) cdisp.textContent=t;
     const clbl=document.getElementById('clbl'); if(clbl) clbl.textContent=t;
     const mobClbl=document.getElementById('mob-clbl'); if(mobClbl) mobClbl.textContent=t;
@@ -4745,7 +4780,13 @@ function meltypeWarningHTML(){
   // så resultatet blir identisk uansett hvor endringen gjøres fra.
   const actions=[];
   if(!fermOk && S.type!=='ingenelting' && S.method!=='mania'){
-    actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?L('Øk hevetiden','Increase rise time'):L('Reduser hevetiden','Reduce rise time')}</button>`);
+    // v0.781: vises bare når den faktisk kan levere. meltypeFermentFix()===null
+    // betyr at ingen justering innenfor metoden lander i melets spenn — da er
+    // knappen en felle (målt som ren no-op for Langtidsdeig + Doppio Zero), og
+    // de ærlige valgene er melbytte eller metodebytte, som står ved siden av.
+    if(meltypeFermentFix()){
+      actions.push(`<button onclick="meltypeWarnReduceFerment()" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${hrs<flour.ferm.mn?L('Øk hevetiden','Increase rise time'):L('Reduser hevetiden','Reduce rise time')}</button>`);
+    }
   }
   if(!hydroOk){
     const tooLow = S.hydro<flour.hydroRange.mn;
@@ -7438,6 +7479,24 @@ function renderWindowPicker(){
     // påfølgende kort som passer skilles med «eller dette valget».
     const begynn = menneskelig ? tidlig.s : startsAt;
     const stek   = menneskelig ? tidlig.r : bakeAt;
+    // v0.781: kortet priser MELET ditt. windowCandidates sjekket bare det
+    // globale taket (120t, sterkeste mel) — aldri melet du faktisk har valgt.
+    // Målt: alle tre kaldhevingskortene lå over Doppio Zeros tak (6–24t), og
+    // melvarselet skjente rett etter «Bruk denne». Fjerde forekomst av
+    // to-dommere-mønsteret. Samme ord som varselet, men FØR du velger.
+    let melPris='';
+    {
+      const fl=MELTYPER.find(m=>m.v===S.meltype);
+      if(fl && fl.ferm && Number.isFinite(fl.ferm.mn)){
+        const l2={method:S.method, val:S[c.key]};
+        S.method=c.method; S[c.key]=c.best.val; _q10Memo={k:null,v:null};
+        const th=totalFermentHours();
+        S.method=l2.method; S[c.key]=l2.val; _q10Memo={k:null,v:null};
+        const over=Math.round(th-fl.ferm.mx), under=Math.round(fl.ferm.mn-th);
+        if(over>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${over}t over det ${escH(fl.t)} er ment for`,`${over}h beyond what ${escH(fl.t)} is meant for`)}</span>`;
+        else if(under>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${under}t kortere enn ${escH(fl.t)} er ment for`,`${under}h shorter than ${escH(fl.t)} is meant for`)}</span>`;
+      }
+    }
     if(isWin){
       html+=`<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#3f7d34;margin:2px 0 4px">✓ ${L('Beste alternativ','Best option')}</div>`;
     } else {
@@ -7460,7 +7519,7 @@ function renderWindowPicker(){
         ${c.night&&!menneskelig?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e8e2f5;color:#5b4a8a;border:1px solid #c9bde6;margin-left:4px">${L('🌙 midt på natten','🌙 middle of the night')}</span>`:''}
         ${c.costMin?`<br><span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#faeeda;color:#8a5a00;border:1px solid #efc27f;margin-top:4px">${L(`${fmtSessionDur(c.costMin)} mindre gjæring enn ${mN(c.costVs)}`,`${fmtSessionDur(c.costMin)} less fermentation than ${mN(c.costVs)}`)}</span>`:''}
         ${isWin&&!c.night?`<span style="display:inline-block;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#e6f0e0;color:#3f7d34;border:1px solid #b9d6ab;margin-left:4px">${L('✓ maks smak','✓ most flavor')}</span>`
-               :slakkChip}
+               :slakkChip}${melPris}
       </div>
       <div onclick="${menneskelig
           ? `applyWindowCandidateEarly('${c.method}','${c.key}',${c.best.val},${span},${tidlig.s.getTime()})`

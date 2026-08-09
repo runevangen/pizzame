@@ -6286,6 +6286,108 @@ def run_behavioral_tests(page):
              and r148.get('daRekker') is True)
     results.append(('window_prefers_pizzatid_and_speaks_relative_time', ok148, r148))
 
+    # v0.781: «Reduser hevetiden. Hva gjør den her?» Målt svar: INGENTING.
+    # Målet (Doppio Zeros tak, 24t) krever 18t kjøl; Langtidsdeigens minimum er
+    # 24t; klampen ga verdien man alt sto på, og varselet ble stående. Tre krav:
+    #  1) knappen vises IKKE når ingen justering kan lande i melets spenn
+    #  2) når den VISES, leverer den: klikket lander innenfor, varselet
+    #     forsvinner. Øk-siden rundet før NED og kunne lande under minimum —
+    #     «Øk» som ikke økte nok; nå rundes det opp for kort tid
+    #  3) Fra–til-kortene priser melet FØR du velger — windowCandidates sjekket
+    #     bare det globale taket (120t), aldri melet ditt. Målt: alle tre
+    #     kaldhevingskortene over Doppio Zeros tak, og varselet skjente rett
+    #     etter «Bruk denne». Fjerde forekomst av to-dommere-mønsteret.
+    r149 = page.evaluate("""() => {
+      const saved={...S}, D0=window.Date;
+      const savedFilter=localStorage.getItem('pizzaBetaMethods');
+      try{
+        const FAST=new D0(2026,7,9,10,15).getTime(); const t0=D0.now();
+        window.Date=class extends D0{
+          constructor(...a){ if(!a.length) super(FAST+(D0.now()-t0)); else super(...a); }
+          static now(){ return FAST+(D0.now()-t0); }
+        };
+        window._lang='no'; window._planChosen=true; setLayout('mob');
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+        S.gjaer='torr'; S.oven='pizza'; S.mode='end'; S.winStart=null;
+        const ed=document.getElementById('mob-ed'), et=document.getElementById('mob-et');
+        ed.value='2026-08-11'; et.value='18:00';
+
+        // 1) no-op-tilfellet: standard + Doppio Zero + cold 24 → 25t mot tak 24
+        S.method='standard'; S.meltype='doppio_zero'; S.cold=24; _q10Memo={k:null,v:null};
+        const h1=meltypeWarningHTML();
+        const knappSkjult = !!h1 && !/Reduser hevetiden|Øk hevetiden/.test(h1);
+        const melbytteStår = /Bytt til/.test(h1||'');
+        const fixNull = meltypeFermentFix()===null;
+
+        // 2a) Reduser-siden leverer: standard + cold 96 (~97t) mot Pizzeria
+        //     (12–48) → 42t kjøl er mulig → innenfor → knapp vises og virker
+        S.method='standard'; S.cold=96; S.meltype='pizzeria'; _q10Memo={k:null,v:null};
+        const h2=meltypeWarningHTML();
+        const redTilbys=/Reduser hevetiden/.test(h2||'');
+        let redLeverer=null;
+        if(redTilbys){
+          meltypeWarnReduceFerment(); _q10Memo={k:null,v:null};
+          const th=totalFermentHours();
+          const fl=MELTYPER.find(m=>m.v==='pizzeria');
+          redLeverer = th>=fl.ferm.mn && th<=fl.ferm.mx && !meltypeWarningHTML();
+        }
+        // 2b) Øk-siden + ceil-fiksen: syntetisk mel mn 48. floor ville gitt 42t
+        //     kjøl → ~43t total < 48 → «Øk» som ikke økte nok. Ceil gir 48t →
+        //     ~49t → innenfor. Seed-melene kan ikke treffe denne grenen (høyeste
+        //     mn er 24 og standard-total er alltid ≥25), derfor syntetisk.
+        MELTYPER.push({v:'__testmel',t:'Testmel',ferm:{mn:48,mx:120},hydroRange:{mn:50,mx:80}});
+        S.method='standard'; S.cold=24; S.meltype='__testmel'; _q10Memo={k:null,v:null};
+        const h3=meltypeWarningHTML();
+        const økTilbys=/Øk hevetiden/.test(h3||'');
+        let økLeverer=null, økTimer=null;
+        if(økTilbys){
+          meltypeWarnReduceFerment(); _q10Memo={k:null,v:null};
+          økTimer=totalFermentHours();
+          økLeverer = økTimer>=48 && økTimer<=120 && !meltypeWarningHTML();
+        }
+
+        // 3) Fra–til-kortene priser melet
+        S.method='standard'; S.meltype='doppio_zero'; S.cold=24; _q10Memo={k:null,v:null};
+        S.winStart='2026-08-09T10:30';
+        const wd=document.getElementById('mob-wd'), wt=document.getElementById('mob-wt');
+        if(wd) wd.value='2026-08-09'; if(wt) wt.value='10:30';
+        _betaMethods=null; try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){}
+        renderWindowPicker();
+        const t3=document.getElementById('mob-winres').innerText;
+        const melPrist = /over det Caputo Doppio Zero er ment for/.test(t3);
+        // og med et mel som tåler alt skal prisen IKKE stå der
+        S.meltype='manitoba'; _q10Memo={k:null,v:null};
+        renderWindowPicker();
+        const t4=document.getElementById('mob-winres').innerText;
+        const ingenPrisNårOk = !/ er ment for/.test(t4) || /kortere enn/.test(t4);
+
+        return {knappSkjult, melbytteStår, fixNull,
+                redTilbys, redLeverer, økTilbys, økLeverer,
+                økTimer:økTimer==null?null:Math.round(økTimer*10)/10,
+                melPrist, ingenPrisNårOk};
+      } finally {
+        window.Date=D0; Object.assign(S,saved); S.winStart=null;
+        _betaMethods=null;
+        const ti=MELTYPER.findIndex(m=>m.v==='__testmel');
+        if(ti>=0) MELTYPER.splice(ti,1);
+        if(savedFilter===null){ try{ localStorage.removeItem('pizzaBetaMethods'); }catch(e){} }
+        else { try{ localStorage.setItem('pizzaBetaMethods',savedFilter); }catch(e){} }
+        try{ mobSetMode(uiMode()); }catch(e){}
+        _q10Memo={k:null,v:null};
+      }
+    }""")
+    ok149 = (r149.get('knappSkjult') is True
+             and r149.get('melbytteStår') is True
+             and r149.get('fixNull') is True
+             and r149.get('redTilbys') is True
+             and r149.get('redLeverer') is True
+             and r149.get('økTilbys') is True
+             and r149.get('økLeverer') is True
+             and r149.get('melPrist') is True
+             and r149.get('ingenPrisNårOk') is True)
+    results.append(('flour_fix_button_only_shown_when_it_delivers_and_cards_price_the_flour',
+                    ok149, r149))
+
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —
     # mens Poolish 43t og Langtidsdeig 25t lå på plass 4 og 6. Samme metode

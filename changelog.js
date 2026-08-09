@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.781",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Reduser hevetiden»-knappen i melvarselet gjorde ingenting i situasjonen der den oftest vises. Målt: Langtidsdeig med Caputo Doppio Zero — målet krever 18 timers kjøletid, metodens minimum er 24, så koden klampet tilbake til verdien du allerede sto på. Trykket tegnet planen på nytt, ellers null. Knappen vises nå bare når justeringen faktisk lander innenfor melets spenn — samme regel som kjøleskapspausen fikk i v0.776. Kan den ikke levere, står de ærlige valgene igjen: bytt mel eller bytt metode.",
+      "En regnefeil på motsatt side rettet i samme slengen: «Øk hevetiden» rundet ned til nærmeste 6 timer og kunne lande under melets minimum — en økning som ikke økte nok. For kort tid rundes nå opp, for lang tid ned.",
+      "Og roten: Fra–til-velgeren sjekket aldri melet ditt. Den tilbød Poolish, Biga og Langtidsdeig med «Bruk denne» selv når alle tre lå over det valgte melets tåleevne — og melvarselet skjente i det du landet på tidsplanen. Kortene priser nå melet før du velger: «🌾 27t over det Caputo Doppio Zero er ment for». Med et mel som tåler tiden, står det ingenting.",
+      "Prisen avslører noe nyttig: med et svakt mel kan «Beste alternativ» være det dårligste valget for melet ditt — og det korteste kortet det eneste uten konflikt. Nå ser du det på kortene, ikke i et varsel etterpå."
+    ],
+    "changes_en": [
+      "The \"Reduce rise time\" button in the flour warning did nothing in the situation where it most often appears. Measured: Long-ferment dough with Caputo Doppio Zero — the target requires 18 hours of cold time, the method's minimum is 24, so the code clamped back to the value you were already on. The press re-rendered the plan, otherwise nothing. The button now only appears when the adjustment actually lands within the flour's range — the same rule the cold pause got in v0.776. If it cannot deliver, the honest choices remain: switch flour or switch method.",
+      "A rounding error on the opposite side fixed in the same pass: \"Increase rise time\" rounded down to the nearest 6 hours and could land below the flour's minimum — an increase that didn't increase enough. Too short now rounds up, too long rounds down.",
+      "And the root: the From–to picker never checked your flour. It offered Poolish, Biga and Long-ferment with \"Use this\" even when all three exceeded the selected flour's tolerance — and the flour warning scolded you the moment you landed on the schedule. The cards now price the flour before you choose: \"🌾 27h beyond what Caputo Doppio Zero is meant for\". With a flour that handles the time, nothing is shown.",
+      "The price reveals something useful: with a weak flour, the \"Best option\" can be the worst choice for your flour — and the shortest card the only one without a conflict. You now see that on the cards, not in a warning afterwards."
+    ]
+  },
+  {
     "v": "0.780",
     "d": "august 2026",
     "d_en": "August 2026",
