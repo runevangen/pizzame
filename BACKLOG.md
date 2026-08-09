@@ -1179,3 +1179,92 @@ var rekkefølge-avhengige.
   helt.
 - Se etter samme mønster i andre `scrollIntoView`-kall som utløses av en
   innstillingsendring i stedet for av et bevisst «vis meg»-trykk.
+
+### F32. Bilder til stegene — skuddliste, nøkling og de fire som må skytes om
+
+- **I klartekst:** stegtekstene beskriver vurderinger som er vanskelige å sette
+  ord på — «bobler aktivt», «fjærer sakte halvveis tilbake», «vokst 30–50 %».
+  Det er der et bilde gjør jobben bedre enn en setning. Første serie er laget
+  (Poolish, 8 bilder, KI-generert) og mappet mot planen.
+
+#### Hvor stor er jobben egentlig
+Målt over metode × ovnstype × kjøkkenmaskin (6 × 2 × 3):
+
+| | Antall |
+|---|---:|
+| Distinkte stegtitler | **38** |
+| Distinkte tittel × tekstvariant | **51** |
+
+Merk: en tidligere telling ga 29 titler. Den varierte ikke kjøkkenmaskin, og
+maskinvalget lager egne titler («Lag poolish i Ankarsrum-bollen» / «…i en bolle»
+/ «…i kjøkkenmaskin-bolle»). 38 er tallet å planlegge etter.
+
+#### Gjenbruken er svært ujevn — prioriter etter den
+| Steg | Metoder | Tekstvarianter | Kommentar |
+|---|---:|---:|---|
+| Kjøleskapsheving | 3 | **1** | ett bilde dekker alt |
+| Ta ut av kjøleskap | 3 | **1** | ett bilde dekker alt |
+| Form emner → kjøleskap | 4 | 2 | nest best |
+| Sett på ovnen 🔥 | 5 | 2 | pizzaovn / vanlig ovn |
+| Strekk og stek 🔥 | **6** | 4 | mest brukte steg i appen |
+| Romtemperaturheving | 3 | 3 | |
+| Blandestegene | 1–2 | 3 maskiner hver | dyrest, gjelder færrest |
+
+**Rekkefølge:** kjøleskapsheving + ta ut (ferdig for tre metoder på to bilder) →
+form emner → vanlig-ovn-versjon av de to ovnsstegene → blandestegene sist.
+
+#### Serie 1: Poolish, 8 bilder — status
+Filene er ikke i repoet ennå; de ligger i chatten og må legges i en `bilder/`-mappe.
+
+| # | Steg | Motiv | Dom |
+|---|---|---|---|
+| 1 | Lag poolish i Ankarsrum-bollen | boblete poolish, hånd med slikkepott | ❌ skyt om |
+| 2 | Ankarsrum — bland ferdig deig | shaggy deig med mel i maskinbolle | ✅ |
+| 3 | Romtemperaturheving | hevet deig i klar boks | ❌ skyt om |
+| 4 | Form emner → kjøleskap | tre emner på benk, hånd i oljet boks | ✅ |
+| 5 | Kjøleskapsheving | stablede bokser i kjøleskap | ⚠️ juster |
+| 6 | Ta ut av kjøleskap | tre bokser på benken med kondens | ✅ |
+| 7 | Sett på ovnen 🔥 | Ooni + IR-termometer «425» | ⚠️ juster |
+| 8 | Strekk og stek 🔥 | pizza i Ooni med leopardmønster | ✅ |
+
+**De fire som må rettes, med årsak fra stegteksten:**
+1. **Bilde 1** viser to øyeblikk som ikke kan skje samtidig: boblene er 14 timer
+   gamle, hånda med slikkepotten er minutt én. Steget sier «rør til **glatt**».
+   Rører du i en ferdig hevet poolish, slår du ut boblene. Skyt den enten glatt
+   og blek (handlingen) eller boblete uten hånd (tipsets «klar når overflaten
+   bobler aktivt»).
+2. **Bilde 3 er den farligste.** Tipset sier «regn med ca. 30–50 % … **ikke vent
+   på at den dobler seg**», og hevingen varer **60 min**. Bildet viser en full
+   bulkheving. Brukt som fasit lærer det bort overgjæring — stikk motsatt av
+   det teksten advarer mot.
+3. **Bilde 5:** tipset sier «bakerst og nederst, over grønnsakskuffen». Bildet
+   viser boksene fremst på en midthylle, stablet tre i høyden — stablingen
+   isolerer, og hele gjærberegningen bygger på kjøleskapstemperaturen.
+   Antallet drifter også: bilde 4 viser 3 emner (riktig for 500 g mel), bilde 5
+   ser ut til å vise 6. Appen skriver «Del i **3** emner» rett over.
+4. **Bilde 7:** termometeret viser **425 °C**, teksten sier **430–450 °C**.
+   Komposisjonen er ellers perfekt — steg 7 sitt tips ber deg bokstavelig talt
+   sikte IR-termometeret på steinen. Be om 440.
+
+#### Nøkkelen er ikke stegtittelen
+«Sett på ovnen 🔥» og «Strekk og stek 🔥» heter **det samme** for pizzaovn og
+vanlig ovn — bare teksten under skiller. Kobler man bilder på tittel, får den
+som steker på 250 °C i stekeovnen se en vedfyrt Ooni. Nøkkelen må være
+**metode + kjøkkenmaskin + ovnstype**, samme tre akser som lager de 51
+variantene.
+
+Naturlig hjem: `METHODS`-registeret (F21) eller samme sted som `uses:{}` i F29 —
+begge åpner uansett samtlige stegdefinisjoner. Å legge bildenøkler på i samme
+runde koster lite; to runder gjennom de samme strengene koster dobbelt.
+
+- **Test når den bygges:** samme mønster som invariant D og F30 sin ordliste-test.
+  1. Ingen døde bilder — hver bildenøkkel må treffe et steg som faktisk finnes i
+     minst én konfigurasjon.
+  2. Ingen bilde vist utenfor sin egen kombinasjon — et Ooni-bilde skal aldri
+     rendres når `S.oven==='vanlig'`. Denne er den viktigste; den fanger nettopp
+     tittelkollisjonen over.
+  3. Mutasjonssjekk: fjern ovnsaksen fra nøkkelen, og test 2 må feile. Ellers
+     tester den ingenting.
+- **Åpent spørsmål:** KI-genererte bilder av mat viser gjerne tilstander som
+  ikke finnes (bilde 1 og 3 her). Ett foto av en ekte bakst slår ti genererte
+  på de stegene der bildet skal være en fasit å måle mot.
