@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.785",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kjøleskapspausen hadde nøyaktig samme feil som kjøleskaps-poolishen: en romtemperert poolish som har stått kaldt, er like kald i det den går i maskinen. Målt til 12,7°C ferdig deig mot de 22–24 planen oppgir. Pausen får nå det samme tempereringssteget, og tiden tas av pausen i stedet for å legges oppå — velger du 12 timers pause, står poolishen 9 timer kaldt og 3 timer på benken.",
+      "Etter de to siste rettelsene lander kald poolish på 22,1°C mot 12,7 før. Fem av åtte metoder treffer nå båndet appen selv oppgir, mot tre før."
+    ],
+    "changes_en": [
+      "The fridge pause had exactly the same flaw as the fridge poolish: a room-temperature poolish that has been sitting cold is just as cold when it goes into the mixer. Measured at 12.7°C finished dough against the 22–24 the plan states. The pause now gets the same warm-up step, and the time is taken from the pause rather than added on top — choose a 12-hour pause and the poolish sits 9 hours cold and 3 hours on the counter.",
+      "After the last two fixes, cold poolish lands at 22.1°C against 12.7 before. Five of eight methods now hit the band the app itself states, up from three."
+    ]
+  },
+  {
     "v": "0.784",
     "d": "august 2026",
     "d_en": "August 2026",

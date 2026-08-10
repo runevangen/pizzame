@@ -1578,6 +1578,13 @@ def run_behavioral_tests(page):
       S.poolishPauseH=0; const a=stepsForAnchor(anchor);
       S.poolishPauseH=12; const c=stepsForAnchor(anchor);
       const pauseStep=c.find(s=>String(s.title).includes('Kjøleskapspause'));
+      // v0.785: pausen setter poolishen kaldt, og da må den tempereres før
+      // blanding — ellers går to tredeler av deigmassen 3-gradig i maskinen.
+      // Tempereringen tas AV pausen, ikke i tillegg: kald tid + temperering
+      // skal fortsatt være de 12 timene brukeren valgte.
+      const tempStep=c.find(s=>/ta poolish ut/i.test(String(s.title)));
+      const mixStep=c.find(s=>/bland ferdig deig|elt ferdig deig/i.test(String(s.title)));
+      const temperMin=(tempStep&&mixStep)?Math.round((new Date(mixStep.at)-new Date(tempStep.at))/60000):null;
       const firstDeltaMin=Math.round((new Date(a[0].at)-new Date(c[0].at))/60000);
       // auto-pause skal aldri være verre enn uten pause
       window._pizzatidSchedule=null;
@@ -1588,14 +1595,19 @@ def run_behavioral_tests(page):
         bakeUnchanged: iso(a[a.length-1].at)===iso(c[c.length-1].at),
         pauseStepDur: pauseStep?pauseStep.dur:null,
         poolishStartsEarlierMin: firstDeltaMin,
-        extraStep: c.length===a.length+1,
+        extraStep: c.length===a.length+2,   // pause + temperering
+        temperMin,
+        // Kald tid + temperering = de 12 timene som ble valgt. Legges
+        // tempereringen oppå i stedet, sprekker denne.
+        pausenBleIkkeLengre: (pauseStep&&temperMin!=null) ? (pauseStep.dur+temperMin)===720 : false,
         autoInRange: [6,12,18].includes(best),
         autoNotWorse: vAuto<=vBase
       };
     }""")
     ok33 = (
       r33['bakeUnchanged'] is True and
-      r33['pauseStepDur'] == 720 and
+      r33['pauseStepDur'] == 720 - r33['temperMin'] and
+      r33['pausenBleIkkeLengre'] is True and
       r33['poolishStartsEarlierMin'] == 720 and
       r33['extraStep'] is True and
       r33['autoInRange'] is True and
@@ -5234,7 +5246,14 @@ def run_behavioral_tests(page):
         if(VINK.spor.length>sporLen) sporLen=VINK.spor.length;
         if(VINK.spor.length>1) sporMaks=Math.max(sporMaks,
           Math.abs(VINK.spor[VINK.spor.length-1].x-VINK.spor[0].x)); }
-      handX=null; tegn(); await new Promise(r=>setTimeout(r,500));
+      // v0.785: her ble hånda FJERNET (handX=null), og det er i seg selv en stor
+      // bildeendring. Noen ganger leste detektoren den som et retningsskifte og
+      // nullstilte sporet, slik at den akkumulerte reisen falt under hint-grensen
+      // og hintet uteble — testen flakket omtrent hver tredje kjøring, med
+      // sporMaks 0,26 og tomt hint. Nå holdes hånda i ro i stedet: identiske
+      // bilder gir null differanse, som er nettopp den stillheten hint-grenen
+      // skal reagere på. Vi tester samme oppførsel, uten transienten.
+      for(let i=0;i<12;i++){ tegn(); await new Promise(r=>setTimeout(r,50)); }
       const forLite={tekst:kv.textContent, synlig:+kv.style.opacity>0.5,
                      bladdeIkke: window._focusIdx===idxFør};
 

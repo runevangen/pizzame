@@ -2520,13 +2520,21 @@ function rawSteps(a){
     // leser `loc`) regner de kalde timene som kalde. Tempereringen ender presis
     // når blandingen begynner, så den tar av poolishens timer og ikke av planen.
     const kald=!!S.poolishCold;
-    const temperMin=kald?poolishTemperMin():0;
+    // v0.785: tempereringen gjelder enhver poolish som kommer RETT UT AV
+    // KJØLESKAPET når den skal blandes — ikke bare kjøleskapsvarianten. En
+    // romtemperert poolish med kald pause er like kald i det den går i maskinen,
+    // og ga nøyaktig samme måling: 12,7°C deig mot oppgitte 22-24.
+    const kaldFor=kald||pauseMin>0;
+    const temperMin=kaldFor?poolishTemperMin():0;
     const kjolFra=aM(pa,POOLISH_ROMSTART_MIN);
     const temperAt=sM(mixAt,temperMin);
     // En «kald pause» på en poolish som allerede står kaldt er ikke et eget steg —
     // den forlenger bare kjøleskapsfasen. Tidene er de samme; vi viser bare ett
     // kjøleskapssteg i stedet for to som ser ut som ulike ting.
     const visPause=pauseMin>0 && !kald;
+    // Tempereringen spiser den siste delen av pausen — den forlenger den ikke.
+    // Bruker du 12 timers pause, står poolishen 9 timer kaldt og 3 på benken.
+    const pauseKaldMin=Math.max(0,pauseMin-temperMin);
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
@@ -2550,7 +2558,18 @@ function rawSteps(a){
             L(`La stå urørt`,`Leave it undisturbed`)
           ],
           why:L('Kulda bremser gjæren kraftig, mens enzymene jobber videre nesten uforstyrret. Det er den forskjellen i tempo som gjør en kald poolish tilgivende: modningsvinduet blir timer bredt i stedet for minutter, så det spiller mindre rolle nøyaktig når på dagen du kommer tilbake til den.','The cold slows the yeast down sharply while the enzymes carry on almost undisturbed. That difference in pace is what makes a cold poolish forgiving: the ripeness window becomes hours wide instead of minutes, so it matters much less exactly when in the day you come back to it.'),
-          tip:L('Sjekk gjennom lokket, ikke ved å åpne: den skal ha reist seg, være full av små bobler og lukte lett syrlig. En kald poolish går ikke like tydelig i taket som en romtemperert — det er normalt.','Check through the lid rather than opening it: it should have risen, be full of small bubbles and smell slightly sour. A cold poolish doesn\'t climb as dramatically as a room-temperature one — that\'s normal.')},
+          tip:L('Sjekk gjennom lokket, ikke ved å åpne: den skal ha reist seg, være full av små bobler og lukte lett syrlig. En kald poolish går ikke like tydelig i taket som en romtemperert — det er normalt.','Check through the lid rather than opening it: it should have risen, be full of small bubbles and smell slightly sour. A cold poolish doesn\'t climb as dramatically as a room-temperature one — that\'s normal.')}
+      ]:[]),
+      ...(visPause?[{title:'🧊 Kjøleskapspause',loc:'kjol',at:rdy,dur:pauseKaldMin,passive:true,needsPresence:true,
+        desc:L(`Sett poolish-bollen i kjøleskapet i ca. ${fmtDur(pauseKaldMin)}. Kulda bremser gjæringen kraftig ned uten å stoppe den — poolishen «venter» på deg til du er klar til å blande ferdig deig. Middagstiden er den samme.`,`Put the poolish bowl in the fridge for about ${durEn(fmtDur(pauseKaldMin))}. The cold slows the fermentation down sharply without stopping it — the poolish "waits" for you until you're ready to mix the final dough. Dinnertime stays the same.`),
+        substeps:[
+          L(`Sett poolish-bollen i kjøleskapet`,`Put the poolish bowl in the fridge`),
+          L(`La stå ca. ${fmtDur(pauseKaldMin)} — gjæringen bremses, ikke stoppes`,`Let sit about ${durEn(fmtDur(pauseKaldMin))} — the fermentation slows, doesn't stop`),
+          L(`Ta ut til temperering i neste steg`,`Take out for the warm-up in the next step`)
+        ],
+        why:L('Pausen skyver resten av planen inn i tiden du faktisk er ledig, uten å endre når du spiser. I kjøleskapet nærmest pauses gjæringen — en moden poolish holder seg godt kaldt en god stund, men ikke i det uendelige, derfor er pausen begrenset til maks 18 timer.',`The pause shifts the rest of the plan into the time you're actually free, without changing when you eat. In the fridge the fermentation is all but paused — a mature poolish keeps well cold for a good while, but not indefinitely, so the pause is limited to a maximum of 18 hours.`),
+        tip:L('At den er litt mer boblete og moden etter pausen er helt greit. Tempereringen etterpå er ikke valgfri — en poolish rett fra kjøleskapet er over to tredeler av deigmassen og trekker ferdig deig ned mot 13°C.',`It being a bit more bubbly and mature after the pause is perfectly fine. The warm-up afterwards is not optional — a poolish straight from the fridge is over two thirds of the dough mass and pulls the finished dough down towards 13°C.`)}]:[]),
+      ...(kaldFor?[
         {title:'🌡 Ta poolish ut — temperer',loc:'benk',at:temperAt,dur:0,passive:true,
           desc:L(`Ta poolish-bollen ut av kjøleskapet ca. ${fmtDur(temperMin)} før du skal blande, og la den stå tildekket på benken. Du gjør ingenting med den — den skal bare miste kulda.`,`Take the poolish bowl out of the fridge about ${durEn(fmtDur(temperMin))} before you mix, and leave it covered on the counter. You do nothing to it — it just needs to lose the chill.`),
           substeps:[
@@ -2560,15 +2579,6 @@ function rawSteps(a){
           why:L('Poolishen er halvparten av melet og over to tredeler av deigens varmekapasitet. Går den rett fra kjøleskapet i maskinen, lander ferdig deig rundt 13°C i stedet for 22–24 — og det kan ikke rettes med varmere vann, for det er bare noen få desiliter vann igjen å skru på. Da gjærer den første hevingen omtrent halvt tempo, og timen på benken leverer ikke det planen lover.','The poolish is half the flour and more than two thirds of the dough\'s heat capacity. Straight from the fridge into the mixer, the finished dough lands around 13°C instead of 22–24 — and warmer water cannot fix it, because only a few decilitres of water are left to adjust. The first rise then ferments at roughly half speed, and the hour on the counter doesn\'t deliver what the plan promises.'),
           tip:L('Kjenn på bollen framfor å se på klokka: den skal ikke lenger kjennes kald mot håndbaken. Er den fortsatt kjølig, gi den litt lenger — et varmt kjøkken går raskere enn tida her sier, et kaldt går tregere. Har du termometer, sikt på 16–18°C i poolishen.','Feel the bowl rather than watching the clock: it should no longer feel cold against the back of your hand. If it still feels chilly, give it a little longer — a warm kitchen goes faster than the time here says, a cold one slower. With a thermometer, aim for 16–18°C in the poolish.')}
       ]:[]),
-      ...(visPause?[{title:'🧊 Kjøleskapspause',loc:'kjol',at:rdy,dur:pauseMin,passive:true,needsPresence:true,
-        desc:L(`Sett poolish-bollen i kjøleskapet i ca. ${fmtDur(pauseMin)}. Kulda bremser gjæringen kraftig ned uten å stoppe den — poolishen «venter» på deg til du er klar til å blande ferdig deig. Middagstiden er den samme.`,`Put the poolish bowl in the fridge for about ${durEn(fmtDur(pauseMin))}. The cold slows the fermentation down sharply without stopping it — the poolish "waits" for you until you're ready to mix the final dough. Dinnertime stays the same.`),
-        substeps:[
-          L(`Sett poolish-bollen i kjøleskapet`,`Put the poolish bowl in the fridge`),
-          L(`La stå ca. ${fmtDur(pauseMin)} — gjæringen bremses, ikke stoppes`,`Let sit about ${durEn(fmtDur(pauseMin))} — the fermentation slows, doesn't stop`),
-          L(`Ta ut når du skal blande ferdig deig`,`Take out when you're ready to mix the final dough`)
-        ],
-        why:L('Pausen skyver resten av planen inn i tiden du faktisk er ledig, uten å endre når du spiser. I kjøleskapet nærmest pauses gjæringen — en moden poolish holder seg godt kaldt en god stund, men ikke i det uendelige, derfor er pausen begrenset til maks 18 timer.',`The pause shifts the rest of the plan into the time you're actually free, without changing when you eat. In the fridge the fermentation is all but paused — a mature poolish keeps well cold for a good while, but not indefinitely, so the pause is limited to a maximum of 18 hours.`),
-        tip:L('Er poolishen veldig kald når du tar den ut, la den stå 20–30 min i romtemperatur før du blander. At den er litt mer boblete/moden etter pausen er helt greit.',`If the poolish is very cold when you take it out, let it sit 20–30 min at room temperature before mixing. It being a bit more bubbly/mature after the pause is perfectly fine.`)}]:[]),
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:mixAt,dur:20,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(35+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(35+rt)} of uninterrupted time — the next three steps are done in one go.`),
         desc:(S.kjokkenmaskin==='ankarsrum'
