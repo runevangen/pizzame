@@ -3027,6 +3027,44 @@ def run_behavioral_tests(page):
              and r152.get('tempererFor') and r152.get('kaldTellerKaldt'))
     results.append(('cold_poolish_is_modelled_where_the_dough_actually_stands', ok152, r152))
 
+    # v0.786: kald poolish gikk i 6-timerssteg, og kjøleskapstiden gjør det også.
+    # To 6-timersrastre summerer til ett 6-timersraster, så uansett hvor mange
+    # kombinasjoner Smart-plan prøvde, fantes det bare FIRE klokkeslett i døgnet
+    # å begynne poolishen på. Målt på steketid fredag 19:00: 05:40, 11:40, 17:40
+    # og 23:40 — to av dem ubrukelige. Det så ut som en dum planlegger; det var
+    # et for grovt raster.
+    #
+    # Testen spør appen selv hvilke starttider som er nåbare, og krever at
+    # rasteret er finere enn 6 timer. Settes steget tilbake til 6, faller
+    # avstanden mellom naboene til 6 timer og antallet til fire.
+    r153 = page.evaluate("""() => {
+      const orig={m:S.method,c:S.poolishCold,ph:S.poolishH,pp:S.poolishPauseH,cold:S.cold,mo:S.mode};
+      S.method='poolish'; S.poolishCold=true; S.poolishPauseH=0; S.mode='end';
+      const anchor=new Date('2026-08-14T19:00:00');   // fredag 19:00 — verste målte
+      const min=new Set();
+      for(const p of poolishColdHours()){
+        for(let c=24;c<=96;c+=6){
+          S.poolishH=p; S.cold=c;
+          let st=null; try{ st=stepsForAnchor(anchor); }catch(e){ continue; }
+          if(!st||!st.length) continue;
+          const d=new Date(st[0].at);
+          min.add(d.getHours()*60+d.getMinutes());
+        }
+      }
+      S.method=orig.m; S.poolishCold=orig.c; S.poolishH=orig.ph;
+      S.poolishPauseH=orig.pp; S.cold=orig.cold; S.mode=orig.mo;
+      const sortert=[...min].sort((a,b)=>a-b);
+      let minsteGap=Infinity;
+      for(let i=1;i<sortert.length;i++) minsteGap=Math.min(minsteGap,sortert[i]-sortert[i-1]);
+      const brukbare=sortert.filter(m=>m>=7*60 && m<23*60);
+      return {antall:sortert.length, minsteGapMin:minsteGap, brukbare:brukbare.length,
+              klokke:sortert.map(m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'))};
+    }""")
+    ok153 = (r153.get('antall',0) >= 8
+             and r153.get('minsteGapMin',999) <= 180      # finere enn 6-timersrasteret
+             and r153.get('brukbare',0) >= 5)             # var 2 før
+    results.append(('cold_poolish_start_times_are_finer_than_a_six_hour_grid', ok153, r153))
+
     # v0.697 (Claude-oppskriftsgjennomgang): fire funn.
     # Funn 4: forme-steget og kald-heving-steget delte ordrett WHY.fk. Forme-steget
     #   har nå egen WHY.form (om runding/emner), ulik kald-hevingens WHY.fk.

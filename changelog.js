@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.786",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kjøleskaps-poolish kunne bare begynne på fire klokkeslett i døgnet, og det var grunnen til at Smart-plan stadig foreslo oppstart midt på natta. Både poolishtiden og kjøleskapstiden gikk i seks-timerssteg, og to seks-timersrutenett summerer til ett seks-timersrutenett — så uansett hvor mange kombinasjoner planleggeren prøvde, fantes det bare fire ruter å velge mellom.",
+      "Poolishtiden går nå i tre-timerssteg. Målt på steketid fredag kl. 19: før fantes 05:40, 11:40, 17:40 og 23:40 — bare to av dem brukbare. Nå er det åtte tidspunkt, fem av dem på dagtid. Lørdag og onsdag går fra tre brukbare til seks.",
+      "Ingen ny kalibrering var nødvendig: gjærkurven for kald poolish regner mellom timene fra før, så 15 og 21 timer har allerede riktige tall."
+    ],
+    "changes_en": [
+      "A fridge poolish could only start at four times of day, and that was why Smart plan kept suggesting you begin in the middle of the night. Both the poolish time and the fridge time moved in six-hour steps, and two six-hour grids add up to one six-hour grid — so no matter how many combinations the planner tried, there were only four slots to choose from.",
+      "The poolish time now moves in three-hour steps. Measured for a Friday 7pm bake: before there were 05:40, 11:40, 17:40 and 23:40 — only two of them usable. Now there are eight times, five of them during the day. Saturday and Wednesday go from three usable to six.",
+      "No new calibration was needed: the yeast curve for cold poolish already interpolates between the hours, so 15 and 21 hours already have the right numbers."
+    ]
+  },
+  {
     "v": "0.785",
     "d": "august 2026",
     "d_en": "August 2026",
