@@ -8036,8 +8036,20 @@ const VINK = {
 const VINK_B=32, VINK_H=24;          // arbeidsoppløsning
 const VINK_INTERVALL=60;             // ms mellom frames (~16 fps)
 const VINK_STØY=8;                   // snitt |differanse| per piksel før noe telles som bevegelse
-const VINK_VINDU=700;                // ms sporet holdes
-const VINK_REISE=0.30;               // andel av bredden tyngdepunktet må flytte seg
+// v0.783: 700 → 2500, og betydningen er endret. 700 ms var et RULLERENDE vindu
+// reisen ble målt innenfor — og da ble kravet fartsavhengig: målt trengte en
+// 400 ms-flick 41 % reise, et 700 ms-vink 59 %, et 1000 ms-vink 81 %, og over
+// ~1,2 s var det UMULIG å treffe uansett størrelse. Den som bommet vinket
+// instinktivt større og roligere — som senket treffsjansen ytterligere.
+// Nå klippes sporet av RETNINGSSKIFTE (se vinkTikk), og VINK_VINDU er bare et
+// tak. Målt: 5 s drift (forbipasserende) dør på STØYGULVET før taket biter —
+// så gulvet er det reelle drift-vernet; taket står som belte-og-seler mot en
+// framtidig følsomhets-økning.
+const VINK_VINDU=2500;               // ms — maks alder på sporet (drift-vern)
+// v0.783: 0.30 → 0.28. Målt: 41 %-vink vippet mellom treff og bom — reisen er
+// bare 11 poeng over terskelen, og sentroide-støyen avgjorde. 0.28 gir margin,
+// og 25 %-vink ligger fortsatt trygt under (aldri treff i målematrisen).
+const VINK_REISE=0.28;               // andel av bredden tyngdepunktet må flytte seg
 const VINK_MINTID=180;               // ms — raskere enn dette er flimmer, ikke et vink
 const VINK_PAUSE=1200;               // ms sperre etter et utløst vink
 const VINK_DOMINANS=1.3;             // hvor mye større den ene aksen må være
@@ -8055,7 +8067,7 @@ function vinkStart(strøm){
   const c=document.createElement('canvas');
   c.width=VINK_B; c.height=VINK_H;
   VINK.ctx=c.getContext('2d',{willReadFrequently:true});
-  VINK.forrige=null; VINK.spor=[]; VINK.på=true; VINK.glød=0; VINK.visX=null; VINK.visY=null;
+  VINK.ring=[]; VINK.spor=[]; VINK.på=true; VINK.glød=0; VINK.visX=null; VINK.visY=null;
   const start=()=>{ VINK.timer=setInterval(vinkTikk, VINK_INTERVALL); };
   const p=v.play();
   if(p && p.then) p.then(start).catch(start); else start();
@@ -8066,7 +8078,7 @@ function vinkStopp(){
   try{ if(VINK.strøm) VINK.strøm.getTracks().forEach(t=>t.stop()); }catch(e){}
   if(VINK.video){ try{ VINK.video.srcObject=null; }catch(e){} }
   VINK.strøm=null; VINK.video=null; VINK.ctx=null;
-  VINK.forrige=null; VINK.spor=[]; VINK.på=false; VINK.glød=0; VINK.visX=null; VINK.visY=null;
+  VINK.ring=[]; VINK.spor=[]; VINK.på=false; VINK.glød=0; VINK.visX=null; VINK.visY=null;
 }
 // Ett bilde: tegn ned, mål bevegelse per kolonne, finn tyngdepunktet.
 // Returnerer tyngdepunktet 0..1, eller null når det er for lite bevegelse.
@@ -8082,23 +8094,54 @@ function vinkMål(){
   const d=c.getImageData(0,0,VINK_B,VINK_H).data;
   const grå=new Uint8Array(VINK_B*VINK_H);
   for(let i=0,j=0;i<d.length;i+=4,j++) grå[j]=(d[i]+d[i+1]+d[i+2])/3;
-  const f=VINK.forrige;
-  VINK.forrige=grå;
-  if(!f) return null;
-  const kol=new Float64Array(VINK_B), rad=new Float64Array(VINK_H);
-  let sum=0;
-  for(let y=0;y<VINK_H;y++) for(let x=0;x<VINK_B;x++){
-    const diff=Math.abs(grå[y*VINK_B+x]-f[y*VINK_B+x]);
-    kol[x]+=diff; rad[y]+=diff; sum+=diff;
+  // v0.783: to referanseframes — fersk (forrige) og gammel (~240 ms). Ved rolig
+  // vinking flytter hånda seg under én piksel per frame i 32×24, og den ferske
+  // differansen faller under støyterskelen: sporet «døde av stillhet» midt i
+  // vinket. Målt: over ~1,2 s varighet traff ingenting, uansett størrelse.
+  // Mot en eldre frame akkumuleres rolig bevegelse til tydelig signal — men
+  // den smører sentroiden for RASKE vink (håndas spøkelse står igjen i
+  // differansen; målt: 400 ms-flicken sluttet å treffe). Derfor: fersk først,
+  // for ren sentroide; gammel KUN når fersk er under gulvet — da er
+  // bevegelsen rolig, spøkelset står tett på hånda, og sentroiden er ren nok.
+  // En stille scene gir ~null i begge, så støygulvet flytter seg ikke.
+  VINK.ring=VINK.ring||[];
+  VINK.ring.push(grå);
+  if(VINK.ring.length>5) VINK.ring.shift();
+  if(VINK.ring.length<2) return null;
+  const mål=f=>{
+    const kol=new Float64Array(VINK_B), rad=new Float64Array(VINK_H);
+    let sum=0;
+    for(let y=0;y<VINK_H;y++) for(let x=0;x<VINK_B;x++){
+      const diff=Math.abs(grå[y*VINK_B+x]-f[y*VINK_B+x]);
+      kol[x]+=diff; rad[y]+=diff; sum+=diff;
+    }
+    const energi=sum/(VINK_B*VINK_H);
+    if(energi < VINK_STØY) return {x:null, y:null, energi};
+    let vx=0, vy=0;
+    for(let x=0;x<VINK_B;x++) vx+=x*kol[x];
+    for(let y=0;y<VINK_H;y++) vy+=y*rad[y];
+    return {x:(vx/sum)/(VINK_B-1), y:(vy/sum)/(VINK_H-1), energi};
+  };
+  // Referansen LÅSES per spor. Å velge fritt per frame ga sentroide-hopp når
+  // målingen byttet referanse midt i vinket — hoppet bakover mot spøkelset
+  // leses av flip-resetten som retningsskifte, og sporet ble revet midt i
+  // bevegelsen (målt: 700 ms-vink på 59 % sluttet å treffe). Nå velges
+  // referanse når sporet STARTER — fersk hvis den har signal, ellers rolig —
+  // og holdes til sporet dør.
+  const fersk=mål(VINK.ring[VINK.ring.length-2]);
+  const rolig=(VINK.ring.length>=5)?mål(VINK.ring[0]):null;
+  const glødE=Math.max(fersk.energi, rolig?rolig.energi:0);
+  let valgt;
+  if(!VINK.spor.length){
+    if(fersk.x!==null){ valgt=fersk; VINK.sporRef='fersk'; }
+    else if(rolig && rolig.x!==null){ valgt=rolig; VINK.sporRef='rolig'; }
+    else valgt={x:null,y:null};
+  } else {
+    valgt=(VINK.sporRef==='rolig') ? (rolig||{x:null,y:null}) : fersk;
   }
-  const energi=sum/(VINK_B*VINK_H);
-  // Energien returneres ALLTID, også under støygulvet: hånden i panelet skal
-  // falme jevnt tilbake til hvile, ikke slukke brått i det målingen forkastes.
-  if(energi < VINK_STØY) return {x:null, y:null, energi};
-  let vx=0, vy=0;
-  for(let x=0;x<VINK_B;x++) vx+=x*kol[x];
-  for(let y=0;y<VINK_H;y++) vy+=y*rad[y];
-  return {x:(vx/sum)/(VINK_B-1), y:(vy/sum)/(VINK_H-1), energi};
+  // Energien (til glød-visningen) er alltid den sterkeste av de to — hånden i
+  // panelet skal falme jevnt, ikke slukke brått i det målingen forkastes.
+  return {x:valgt.x, y:valgt.y, energi:glødE};
 }
 function vinkTikk(){
   const nå=Date.now();
@@ -8129,7 +8172,29 @@ function vinkTikk(){
     }
     return;
   }
+  // v0.783: sporet klippes av RETNINGSSKIFTE, ikke av klokka. Snur bevegelsen
+  // på sporets dominerende akse (mer enn jitter), startes et nytt spor fra
+  // snupunktet — hvert strøk vurderes for seg. Da er et rolig, stort vink like
+  // treffsikkert som en rask flick: reisen er den samme, den tar bare lengre
+  // tid. Små motsatte skjelv (< JITTER) river ikke sporet.
+  const forrigePkt=VINK.spor.length?VINK.spor[VINK.spor.length-1]:null;
   VINK.spor.push({t:nå, x, y:m.y});
+  if(forrigePkt && VINK.spor.length>2){
+    const a0=VINK.spor[0];
+    const accDx=x-a0.x, accDy=m.y-a0.y;
+    const akkAkse=Math.abs(accDx)>=Math.abs(accDy)?'x':'y';
+    const akk=akkAkse==='x'?accDx:accDy;
+    const steg=akkAkse==='x'?(x-forrigePkt.x):(m.y-forrigePkt.y);
+    const JITTER=0.07;   // v0.783: 0.05 rev grensespor på rene støyskjelv
+    if(Math.abs(akk)>JITTER && Math.abs(steg)>JITTER && Math.sign(steg)===-Math.sign(akk)){
+      // Strøket som forkastes var kanskje et ærlig forsøk — si det samme som
+      // stillhets-grenen sier, med samme terskel, så tilbakemeldingen ikke
+      // avhenger av OM du stopper hånda eller trekker den tilbake.
+      if(Math.abs(akk)>0.08 && nå-VINK.sistUtløst>VINK_PAUSE)
+        vinkMelding(L('litt større','a bit bigger'));
+      VINK.spor=[forrigePkt,{t:nå, x, y:m.y}];
+    }
+  }
   while(VINK.spor.length && nå-VINK.spor[0].t > VINK_VINDU) VINK.spor.shift();
   if(nå-VINK.sistUtløst < VINK_PAUSE) return;
   if(VINK.spor.length<4) return;

@@ -6481,6 +6481,60 @@ def run_behavioral_tests(page):
     results.append(('smartplan_offers_a_verified_bake_shift_and_ranks_like_fra_til',
                     ok150, r150))
 
+    # v0.783: «virker, men er litt vanskelig å treffe». Målt: kravet var
+    # FARTSAVHENGIG — 400 ms-flick trengte 41 % reise, 700 ms-vink 59 %,
+    # 1000 ms-vink 81 %, og over ~1,2 s var det UMULIG uansett størrelse.
+    # To årsaker, begge fikset:
+    #  - sporet ble klippet av et 700 ms rullerende vindu → klippes nå av
+    #    RETNINGSSKIFTE, med 2,5 s tak (drift-vern)
+    #  - rolig bevegelse flytter hånda <1 px/frame i 32×24, og fersk
+    #    frame-differanse falt under støygulvet → «rolig» referanse ~240 ms
+    #    bak, LÅST per spor (fritt valg per frame ga sentroide-hopp som
+    #    flip-resetten leste som retningsskifte)
+    # Tre porter: rask flick virker fortsatt, rolig stort vink virker NÅ, og
+    # 5 sekunders drift (forbipasserende) utløser fortsatt ingenting.
+    r151 = page.evaluate("""async () => {
+      try{ localStorage.setItem('pizzaSensorInfo','1'); }catch(e){}
+      window._lang='no'; window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      const c=document.createElement('canvas'); c.width=320; c.height=240;
+      const g=c.getContext('2d'); let hx=null, hy=120;
+      const tegn=()=>{ g.fillStyle='#eee'; g.fillRect(0,0,320,240);
+        if(hx!==null){ g.fillStyle='#111'; g.fillRect(hx-45,hy-40,90,80); } };
+      tegn();
+      openFocus(); focusGoto(0);
+      const org=window.vinkUtløst; let truffet=null;
+      window.vinkUtløst=r=>{ truffet=r; };
+      try{
+        vinkStart(c.captureStream(30));
+        await new Promise(r=>setTimeout(r,400));
+        const vink=async(x0,x1,varighet)=>{
+          const steg=Math.max(6,Math.round(varighet/45));
+          VINK.spor=[]; VINK.sistUtløst=0; truffet=null;
+          for(let i=0;i<=steg;i++){
+            hx=x0+(x1-x0)*i/steg; tegn();
+            await new Promise(r=>setTimeout(r,varighet/steg));
+          }
+          hx=null; tegn();
+          await new Promise(r=>setTimeout(r,350));
+          return truffet!==null;
+        };
+        const raskFlick   = await vink(60,260,400);    // 63 % på 400 ms
+        // 2,0 s: utenfor gammelt vindu SELV med ny terskel (0,63×0,7/2,0=0,22
+        // < 0,28) — 1,4 s var det ikke lenger etter terskeljusteringen, og
+        // vindus-mutasjonen slapp gjennom.
+        const roligVink   = await vink(60,260,2000);   // 63 % på 2 s — FØR: umulig
+        const drift       = await vink(60,260,5000);   // 63 % på 5 s — forbipasserende
+        return {raskFlick, roligVink, driftUtløste:drift};
+      } finally {
+        window.vinkUtløst=org; vinkStopp(); closeFocus();
+      }
+    }""")
+    ok151 = (r151.get('raskFlick') is True
+             and r151.get('roligVink') is True
+             and r151.get('driftUtløste') is False)
+    results.append(('wave_accepts_calm_waves_but_not_passersby_drift', ok151, r151))
+
     # v0.774: «Fikk bare biga som alternativ.» Målt for et anker 7 døgn frem:
     # topp 3 var Biga 48t / 46t / 44t — vinnerens egne naboer fra søkegitteret —
     # mens Poolish 43t og Langtidsdeig 25t lå på plass 4 og 6. Samme metode

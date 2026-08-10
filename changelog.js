@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.783",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Vinkestyringen i Fokus var vanskelig å treffe, og målingen viste hvorfor: kravet var i praksis fartsavhengig. En rask flick på 0,4 sekunder trengte at hånda krysset 41 % av bildet, et vink på 0,7 sekunder trengte 59 %, ett sekund trengte 81 % — og over ~1,2 sekunder var det umulig å treffe uansett hvor stort du vinket. Den som bommet, vinket instinktivt større og roligere. Det gjorde vondt verre.",
+      "To årsaker, begge fikset. Sporet ble klippet av et 700 millisekunders rullerende vindu — nå klippes det av at bevegelsen snur retning, så et rolig, stort vink er like treffsikkert som en rask flick: reisen er den samme, den tar bare lengre tid. Og rolig bevegelse flytter hånda under én piksel per frame i den nedskalerte analysen, så signalet druknet i støygulvet — nå sammenlignes bildet også mot en kvart sekund gammel referanse, som lar rolig bevegelse samle seg opp til tydelig signal.",
+      "Etter fiksene treffer vink på 41 % av bildet i hele spennet fra rask flick til halvannet sekunds rolig sveip. En stille scene og sakte forbipasserende utløser fortsatt ingenting — støygulvet står urørt, målt med fem sekunders drift over hele bildet.",
+      "Underveis ble to mellomløsninger målt og forkastet: én gammel referanse alene ødela den raske flicken (håndas «spøkelse» smørte målingen), og fritt valg av referanse per bilde rev sporet midt i vinket. Løsningen er at referansen låses når sporet starter."
+    ],
+    "changes_en": [
+      "The wave control in Focus was hard to hit, and measurement showed why: the requirement was effectively speed-dependent. A quick 0.4-second flick needed the hand to cross 41% of the frame, a 0.7-second wave needed 59%, one second needed 81% — and beyond ~1.2 seconds it was impossible no matter how big you waved. Whoever missed would instinctively wave bigger and slower. That made it worse.",
+      "Two causes, both fixed. The track was clipped by a 700-millisecond rolling window — it is now clipped by the motion reversing direction, so a calm, large wave is exactly as reliable as a quick flick: the travel is the same, it just takes longer. And calm motion moves the hand less than one pixel per frame in the downscaled analysis, so the signal drowned in the noise floor — the image is now also compared against a quarter-second-old reference, which lets calm motion accumulate into a clear signal.",
+      "After the fixes, waves crossing 41% of the frame register across the whole range from quick flick to a one-and-a-half-second calm sweep. A still scene and slow passers-by still trigger nothing — the noise floor is untouched, verified with a five-second drift across the entire frame.",
+      "Two intermediate solutions were measured and discarded along the way: an old reference alone broke the quick flick (the hand's \"ghost\" smeared the measurement), and choosing the reference freely per frame tore the track mid-wave. The solution is that the reference locks when the track starts."
+    ]
+  },
+  {
     "v": "0.782",
     "d": "august 2026",
     "d_en": "August 2026",
