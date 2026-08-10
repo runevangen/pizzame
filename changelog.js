@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.784",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kjøleskaps-poolishen sto oppført som ett steg på kjøkkenbenken, selv om den tilbringer det meste av tiden i kjøleskapet. Det var ikke bare en etikett: motoren leser nettopp det feltet for å vite hvor kaldt deigen har det. Alle 18 timene ble derfor regnet som romtemperatur, og med gjærtesten på ga det omtrent halv gjærmengde — målt til 27,4 timer gjæringsbelastning der riktig svar er 14,3.",
+      "Poolishen er nå delt i de tre fasene den faktisk har: halvannen time framme på benken, så kjøleskapet, så temperering. Blandetidspunktet og resten av planen står stille — fasene er de samme timene, bare plassert der deigen virkelig står.",
+      "Nytt steg: ta poolishen ut av kjøleskapet før du blander. Uten det går to tredeler av deigmassen kald i maskinen, og ferdig deig lander rundt 13°C i stedet for de 22–24 oppskriften oppgir. Det kan ikke rettes med varmere vann — når poolishen er halvparten av melet, er det bare noen få desiliter vann igjen å skru på. Tempereringstiden tas av poolishens egne timer, så planen blir ikke lengre av å bli riktig.",
+      "Poolish som allerede står kaldt får ikke lenger et eget «kjøleskapspause»-steg oppå kjøleskapsfasen. Tidene er de samme; det er bare ett kjøleskap, så det vises som ett."
+    ],
+    "changes_en": [
+      "The fridge poolish was listed as a single step on the kitchen counter, even though it spends most of its time in the fridge. That was not just a label: the engine reads exactly that field to know how cold the dough is. All 18 hours were therefore counted as room temperature, and with the yeast test on that gave roughly half the yeast — measured at 27.4 hours of fermentation load where the correct answer is 14.3.",
+      "The poolish is now split into the three phases it actually has: an hour and a half out on the counter, then the fridge, then warming up. The mixing time and the rest of the plan stay put — the phases are the same hours, only placed where the dough really stands.",
+      "New step: take the poolish out of the fridge before you mix. Without it two thirds of the dough mass goes into the mixer cold, and the finished dough lands around 13°C instead of the 22–24 the recipe states. Warmer water cannot fix it — when the poolish is half the flour, only a few decilitres of water are left to adjust. The warm-up time is taken from the poolish's own hours, so the plan does not get longer by becoming right.",
+      "A poolish that is already sitting cold no longer gets a separate \"fridge pause\" step on top of the fridge phase. The times are the same; there is only one fridge, so it shows as one."
+    ]
+  },
+  {
     "v": "0.783",
     "d": "august 2026",
     "d_en": "August 2026",

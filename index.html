@@ -1060,6 +1060,8 @@ const TITLES_EN = {
   'Bland for hånd og autolyse':'Mix by hand and autolyse',
   'Kjøkkenmaskin — bland og autolyse':'Stand mixer — mix and autolyse',
   'Lag biga (for hånd)':'Make biga (by hand)',
+  '❄️ Poolish i kjøleskapet':'❄️ Poolish in the fridge',
+  '🌡 Ta poolish ut — temperer':'🌡 Take the poolish out — let it warm up',
   'Lag poolish i Ankarsrum-bollen':'Make poolish in the Ankarsrum bowl',
   'Lag poolish i en bolle':'Make poolish in a bowl',
   'Lag poolish i kjøkkenmaskin-bollen':'Make poolish in the stand mixer bowl',
@@ -1415,9 +1417,27 @@ function poolishSplit(r){
   const pool=Math.round(r.flour/2);
   return {pool, rest:Math.round(r.water-pool)};
 }
+// v0.784: en kald poolish er ikke ett steg på benken. Den starter i romtemperatur,
+// modnes i kjøleskapet, og må TEMPERERES før den blandes. Målt før delingen:
+// Q10-modellen leste `loc:'benk'` og regnet alle 18 timene som 22°C, og deigen
+// landet på 12,7°C mot de 22–24°C oppskriften selv oppgir. Vannet kan ikke rette
+// det — bare 75 av 325 gram vann er igjen å skru på når poolishen er 66 % av
+// deigens varmekapasitet. Tempereringen er den eneste spaken som er koblet til noe.
+const POOLISH_ROMSTART_MIN=90;
+// Tempereringstiden tas AV poolishens egne timer, ikke i tillegg, så planen blir
+// ikke lengre av å bli riktig. Anslaget er masse-styrt: 500g bruker ~3t fra 3°C
+// til ~17°C i et 22°C rom, 300g ~2t. Dette er en PLANLEGGINGSverdi — bolle, form
+// og kjøkken flytter det reelle tallet mer enn en formel kan fange, så teksten i
+// steget forteller brukeren hva han skal kjenne etter.
+function poolishTemperMin(){
+  const masse=Math.round(S.mel/2)*2;   // mel + vann; poolishen er 100 % hydrert
+  return Math.max(60, Math.min(240, Math.round((30+masse*0.3)/15)*15));
+}
 function poolishRestText(){
   if(S.poolishCold){
-    return L(`La stå i romtemperatur i ca. 1,5 time til den bobler litt, sett den så i kjøleskapet i resten av tiden (til sammen ca. ${S.poolishH} timer fra start). Klar når overflaten bobler aktivt og lukter lett syrlig.`,`Let sit at room temperature for about 1.5 hours until it bubbles a little, then put it in the fridge for the rest of the time (about ${S.poolishH} hours from start in total). Ready when the surface bubbles actively and smells slightly sour.`);
+    // Fasene er egne steg nå, så tipset skal ikke gjenta timeplanen. Det som IKKE
+    // står i stegene er hvordan en poolish som er i gang faktisk ser ut.
+    return L(`La den stå framme her — den skal i kjøleskapet i neste steg. Den er i gang når overflaten begynner å boble og lukte lett syrlig.`,`Leave it out here — it goes into the fridge in the next step. It's under way when the surface starts to bubble and smells slightly sour.`);
   }
   return L(`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`,`Let sit about ${S.poolishH} hours at room temperature. Ready when the surface bubbles actively and smells slightly sour.`)+poolishWindowText();
 }
@@ -2494,6 +2514,19 @@ function rawSteps(a){
     const pa=ie?sM(a,TOTAL_PL):a;
     const rdy=aM(pa,S.poolishH*60);
     const mixAt=aM(rdy,pauseMin);
+    // v0.784: kald poolish deles i tre faser slik Mania alt gjorde — romstart,
+    // kjøleskap, temperering. Ingen av tidene nedstrøms flytter seg; delingen
+    // legger bare stegene der deigen faktisk står, slik at Q10-modellen (som
+    // leser `loc`) regner de kalde timene som kalde. Tempereringen ender presis
+    // når blandingen begynner, så den tar av poolishens timer og ikke av planen.
+    const kald=!!S.poolishCold;
+    const temperMin=kald?poolishTemperMin():0;
+    const kjolFra=aM(pa,POOLISH_ROMSTART_MIN);
+    const temperAt=sM(mixAt,temperMin);
+    // En «kald pause» på en poolish som allerede står kaldt er ikke et eget steg —
+    // den forlenger bare kjøleskapsfasen. Tidene er de samme; vi viser bare ett
+    // kjøleskapssteg i stedet for to som ser ut som ulike ting.
+    const visPause=pauseMin>0 && !kald;
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
@@ -2509,7 +2542,25 @@ function rawSteps(a){
         tip:S.kjokkenmaskin==='ankarsrum'
           ?L(`Ingen ekstra bolle å vaske — poolishen fermenterer rett i Ankarsrum-bollen. ${poolishRestText()}`,`No extra bowl to wash — the poolish ferments right in the Ankarsrum bowl. ${poolishRestText()}`)
           :poolishRestText()},
-      ...(pauseMin>0?[{title:'🧊 Kjøleskapspause',loc:'kjol',at:rdy,dur:pauseMin,passive:true,needsPresence:true,
+      ...(kald?[
+        {title:'❄️ Poolish i kjøleskapet',loc:'kjol',at:kjolFra,dur:0,passive:true,
+          desc:L(`Sett poolish-bollen i kjøleskapet. Her modnes den videre helt til du tar den ut igjen. Ikke rør den underveis.`,`Put the poolish bowl in the fridge. Here it keeps maturing right up until you take it out again. Don't disturb it along the way.`),
+          substeps:[
+            L(`Sett bollen i kjøleskapet`,`Put the bowl in the fridge`),
+            L(`La stå urørt`,`Leave it undisturbed`)
+          ],
+          why:L('Kulda bremser gjæren kraftig, mens enzymene jobber videre nesten uforstyrret. Det er den forskjellen i tempo som gjør en kald poolish tilgivende: modningsvinduet blir timer bredt i stedet for minutter, så det spiller mindre rolle nøyaktig når på dagen du kommer tilbake til den.','The cold slows the yeast down sharply while the enzymes carry on almost undisturbed. That difference in pace is what makes a cold poolish forgiving: the ripeness window becomes hours wide instead of minutes, so it matters much less exactly when in the day you come back to it.'),
+          tip:L('Sjekk gjennom lokket, ikke ved å åpne: den skal ha reist seg, være full av små bobler og lukte lett syrlig. En kald poolish går ikke like tydelig i taket som en romtemperert — det er normalt.','Check through the lid rather than opening it: it should have risen, be full of small bubbles and smell slightly sour. A cold poolish doesn\'t climb as dramatically as a room-temperature one — that\'s normal.')},
+        {title:'🌡 Ta poolish ut — temperer',loc:'benk',at:temperAt,dur:0,passive:true,
+          desc:L(`Ta poolish-bollen ut av kjøleskapet ca. ${fmtDur(temperMin)} før du skal blande, og la den stå tildekket på benken. Du gjør ingenting med den — den skal bare miste kulda.`,`Take the poolish bowl out of the fridge about ${durEn(fmtDur(temperMin))} before you mix, and leave it covered on the counter. You do nothing to it — it just needs to lose the chill.`),
+          substeps:[
+            L(`Ta bollen ut av kjøleskapet`,`Take the bowl out of the fridge`),
+            L(`La stå tildekket på benken ca. ${fmtDur(temperMin)}`,`Leave it covered on the counter for about ${durEn(fmtDur(temperMin))}`)
+          ],
+          why:L('Poolishen er halvparten av melet og over to tredeler av deigens varmekapasitet. Går den rett fra kjøleskapet i maskinen, lander ferdig deig rundt 13°C i stedet for 22–24 — og det kan ikke rettes med varmere vann, for det er bare noen få desiliter vann igjen å skru på. Da gjærer den første hevingen omtrent halvt tempo, og timen på benken leverer ikke det planen lover.','The poolish is half the flour and more than two thirds of the dough\'s heat capacity. Straight from the fridge into the mixer, the finished dough lands around 13°C instead of 22–24 — and warmer water cannot fix it, because only a few decilitres of water are left to adjust. The first rise then ferments at roughly half speed, and the hour on the counter doesn\'t deliver what the plan promises.'),
+          tip:L('Kjenn på bollen framfor å se på klokka: den skal ikke lenger kjennes kald mot håndbaken. Er den fortsatt kjølig, gi den litt lenger — et varmt kjøkken går raskere enn tida her sier, et kaldt går tregere. Har du termometer, sikt på 16–18°C i poolishen.','Feel the bowl rather than watching the clock: it should no longer feel cold against the back of your hand. If it still feels chilly, give it a little longer — a warm kitchen goes faster than the time here says, a cold one slower. With a thermometer, aim for 16–18°C in the poolish.')}
+      ]:[]),
+      ...(visPause?[{title:'🧊 Kjøleskapspause',loc:'kjol',at:rdy,dur:pauseMin,passive:true,needsPresence:true,
         desc:L(`Sett poolish-bollen i kjøleskapet i ca. ${fmtDur(pauseMin)}. Kulda bremser gjæringen kraftig ned uten å stoppe den — poolishen «venter» på deg til du er klar til å blande ferdig deig. Middagstiden er den samme.`,`Put the poolish bowl in the fridge for about ${durEn(fmtDur(pauseMin))}. The cold slows the fermentation down sharply without stopping it — the poolish "waits" for you until you're ready to mix the final dough. Dinnertime stays the same.`),
         substeps:[
           L(`Sett poolish-bollen i kjøleskapet`,`Put the poolish bowl in the fridge`),
@@ -3266,8 +3317,19 @@ function waitRow(s,next){
   if(sTitle.includes('lag poolish')||sTitle.includes('lag biga')){
     const fh=Math.round(mins/60), fd=Math.round(mins/60/24);
     val=fh>=48?L(`${fd} dag${fd>1?'er':''}`,`${fd} day${fd>1?'s':''}`):fh>=1?L(`${fh} time${fh>1?'r':''}`,`${fh} hour${fh>1?'s':''}`):mins+' min';
-    if(sTitle.includes('poolish') && S.poolishCold){ icon='❄️'; txt=L('Poolish modnes kaldt','Poolish matures cold'); }
+    // v0.784: etter delingen er gapet under «Lag poolish» romstarten, ikke den
+    // kalde modningen — den har fått sitt eget steg med sitt eget kjøleskapsmerke.
+    // Sa dette fortsatt «modnes kaldt», ville kortet påstått kjøleskap for halvannen
+    // time på benken, som er nøyaktig feilen delingen ble gjort for å bli kvitt.
+    if(sTitle.includes('poolish') && S.poolishCold){ icon='🫧'; txt=L('Poolish starter i romtemperatur','Poolish starts at room temperature'); }
     else { icon='🫧'; txt=sTitle.includes('biga')?L('Biga gjærer i romtemperatur','Biga ferments at room temperature'):L('Poolish gjærer i romtemperatur','Poolish ferments at room temperature'); }
+  } else if(sTitle.includes('ta poolish ut')){
+    // v0.784: egen gren framfor å håpe på delstrengen «ta ut» — den fantes i
+    // ovnsgrenen under og traff ikke denne tittelen, så steget falt gjennom til
+    // «La hvile / heve». Tempereringen er ikke en heving; den er en oppvarming.
+    const hrs=Math.round(mins/60);
+    icon='🌡';txt=L('La poolishen temperere på benken','Let the poolish warm up on the counter');
+    val=hrs>=1?L(`${hrs} time${hrs>1?'r':''}`,`${hrs} hour${hrs>1?'s':''}`):mins+' min';
   } else if(s.loc==='kjol'||next.loc==='kjol'){
     const days=Math.round(mins/60/24);
     const hrs=Math.round(mins/60);

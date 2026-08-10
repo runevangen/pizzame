@@ -2936,22 +2936,84 @@ def run_behavioral_tests(page):
       const poolishStep=steps.find(st=>/lag poolish/i.test(titleOf(st)));
       const hasPause=steps.some(st=>/kjøleskapspause/i.test(titleOf(st)));
       const wRoom=poolishStep?((poolishStep.querySelector('.mob-swait')||{}).textContent||''):'';
-      // Kald poolish: samme steg skal nå si «modnes kaldt».
-      S.poolishCold=true; mobGen();
+      // v0.784: kald poolish er delt i tre faser, så «modnes kaldt» skal IKKE
+      // lenger stå under «Lag poolish» — gapet der er romstarten. Kjøleskapet har
+      // fått sitt eget steg, og det er DET som skal bære kjøleskapsmerket.
+      S.poolishCold=true; S.poolishPauseH=0; mobGen();
       const steps2=[...document.querySelectorAll('#mob-plan-content .mob-step')];
-      const poolishStep2=steps2.find(st=>/lag poolish/i.test((st.querySelector('.mob-stit')||{}).textContent||''));
-      const wCold=poolishStep2?((poolishStep2.querySelector('.mob-swait')||{}).textContent||''):'';
+      const t2=st=>(st.querySelector('.mob-stit')||{}).textContent||'';
+      const w2=st=>(st.querySelector('.mob-swait')||{}).textContent||'';
+      const poolishStep2=steps2.find(st=>/lag poolish/i.test(t2(st)));
+      const kjolStep=steps2.find(st=>/poolish i kjøleskapet/i.test(t2(st)));
+      const tempStep=steps2.find(st=>/ta poolish ut/i.test(t2(st)));
+      const wCold=poolishStep2?w2(poolishStep2):'';
       S.method=orig.method; S.poolishCold=orig.cold; S.poolishPauseH=orig.pause; S.poolishH=orig.ph;
       window._planChosen=true; mobGen();
       return {
         hadPoolishStep:!!poolishStep, hasPause,
         roomSaysRoom: wRoom.toLowerCase().includes('romtemperatur'),
         roomNotFridge: !wRoom.toLowerCase().includes('kjøleskap'),
-        coldSaysCold: wCold.toLowerCase().includes('kaldt')
+        // Romstarten skal merkes som romtemperatur, ikke som kulde.
+        coldStartSaysRoom: wCold.toLowerCase().includes('romtemperatur'),
+        // ...og de to nye fasene skal finnes, med kjøleskapet på sitt eget steg.
+        hasFridgeStep: !!kjolStep,
+        fridgeStepSaysFridge: kjolStep ? w2(kjolStep).toLowerCase().includes('kjøleskap') : false,
+        hasTemperStep: !!tempStep,
+        temperStepSaysBench: tempStep ? w2(tempStep).toLowerCase().includes('temperer') : false
       };
     }""")
-    ok80 = all(r80.get(k) for k in ['hadPoolishStep','hasPause','roomSaysRoom','roomNotFridge','coldSaysCold'])
+    ok80 = all(r80.get(k) for k in ['hadPoolishStep','hasPause','roomSaysRoom','roomNotFridge',
+                                    'coldStartSaysRoom','hasFridgeStep','fridgeStepSaysFridge',
+                                    'hasTemperStep','temperStepSaysBench'])
     results.append(('poolish_ferment_wait_labelled_room_temp_not_fridge', ok80, r80))
+
+    # v0.784: kald poolish sto som ETT steg med loc:'benk'. Q10-modellen leser
+    # nettopp `loc` (engine.js: stepTempC), så alle 18 timene ble regnet som 22°C
+    # der 13,5 av dem er 3°C — belastningen ble ~2× for høy, og med gjærtesten på
+    # ga det omtrent halv gjærmengde. Målt før fiksen: 27,4 t mot 14,3 t riktig.
+    #
+    # Testen regner den GAMLE feilen side om side med den nye kjeden: samme steg,
+    # men med kjøleskapsfasen satt tilbake til 'benk'. Setter noen loc tilbake,
+    # faller differansen til null og testen ryker. Den sjekker også at
+    # tempereringen tas AV poolishens timer — legges den oppå, blir planen lengre
+    # enn brukeren valgte, og fasesummen sprekker.
+    r152 = page.evaluate("""() => {
+      const orig={m:S.method,c:S.poolishCold,ph:S.poolishH,pp:S.poolishPauseH,cold:S.cold,temp:S.temp,fr:S.fridgeC,mo:S.mode};
+      S.method='poolish'; S.poolishCold=true; S.poolishH=18; S.poolishPauseH=0;
+      S.cold=24; S.temp=22; S.fridgeC=3; S.mode='start';
+      const steps=rawSteps(new Date(2026,7,1,12,0));
+      const idx=re=>steps.findIndex(s=>re.test(s.title));
+      const iLag=idx(/lag poolish/i), iKjol=idx(/poolish i kjøleskapet/i),
+            iTemp=idx(/ta poolish ut/i), iMix=idx(/bland ferdig deig|elt ferdig deig/i);
+      let res={funnetAlle:false};
+      if(iLag>=0&&iKjol>=0&&iTemp>=0&&iMix>=0){
+        const t=i=>new Date(steps[i].at).getTime();
+        const romH=(t(iKjol)-t(iLag))/36e5, kjolH=(t(iTemp)-t(iKjol))/36e5, tempH=(t(iMix)-t(iTemp))/36e5;
+        const ekte=fermentLoadHours(steps);
+        // Nøyaktig den gamle feilen: kjøleskapsfasen tilbake på benken.
+        const somFor=fermentLoadHours(steps.map(s=>
+          /poolish i kjøleskapet/i.test(s.title) ? {...s, loc:'benk'} : s));
+        res={
+          funnetAlle:true, romH, kjolH, tempH, ekte, somFor,
+          rekkefolge: iLag<iKjol && iKjol<iTemp && iTemp<iMix,
+          locKjede: [steps[iLag].loc,steps[iKjol].loc,steps[iTemp].loc].join(','),
+          // Fasene summerer til poolishH: tempereringen tas AV timene, ikke i tillegg.
+          fasesumStemmer: Math.abs((romH+kjolH+tempH)-S.poolishH)<0.02,
+          kjolFasenErEkte: kjolH>4,
+          tempererFor: tempH>=1,
+          // De kalde timene skal faktisk telle kaldt i Q10-modellen.
+          kaldTellerKaldt: (somFor-ekte)>8
+        };
+      }
+      S.method=orig.m; S.poolishCold=orig.c; S.poolishH=orig.ph; S.poolishPauseH=orig.pp;
+      S.cold=orig.cold; S.temp=orig.temp; S.fridgeC=orig.fr; S.mode=orig.mo;
+      return res;
+    }""")
+    ok152 = (r152.get('funnetAlle') and r152.get('rekkefolge')
+             and r152.get('locKjede') == 'benk,kjol,benk'
+             and r152.get('fasesumStemmer') and r152.get('kjolFasenErEkte')
+             and r152.get('tempererFor') and r152.get('kaldTellerKaldt'))
+    results.append(('cold_poolish_is_modelled_where_the_dough_actually_stands', ok152, r152))
 
     # v0.697 (Claude-oppskriftsgjennomgang): fire funn.
     # Funn 4: forme-steget og kald-heving-steget delte ordrett WHY.fk. Forme-steget
