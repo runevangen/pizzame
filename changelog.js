@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.787",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny valgmulighet under Poolish: hvor mye av melet som forgjæres. 50 % er som før — mest aroma og mest strekkbar deig. 30 % er der de fleste publiserte oppskriftene ligger: sterkere gluten, mildere smak, og kortere temperering (2 timer mot 3).",
+      "Vanntemperaturen regnes nå av en varmebalanse i stedet for bakerformelen appen brukte før. Den gamle formelen hadde ikke noe ledd for fordeigen, og en fordeig er halve deigen — målt over åtte metoder traff den eksakt på hver metode uten fordeig og bommet på hver eneste metode med. Nå lander alle på 23 grader. Direktedeig får samme anbefaling som før.",
+      "Et varmt kjøkken fikk også feil svar før: ved 26°C rom foreslo den gamle formelen 9°C vann, som i praksis gir 20 graders deig. Formelen vektet rom, mel og vann likt, men vannet er rundt 60 % av varmen i en deig. Riktig svar er 14°C.",
+      "«Deigtemperatur: 22–24°C» sto som en fast setning i blandesteget, uansett hva planen faktisk ville gi. Nå står tallet appen leverer — og der fysikken ikke rekker fram, som en romtemperert poolish i et 26-graders kjøkken, sier setningen det og peker på den spaken som faktisk flytter tallet."
+    ],
+    "changes_en": [
+      "New choice under Poolish: how much of the flour is pre-fermented. 50 % is as before — most aroma and the most extensible dough. 30 % is where most published recipes sit: stronger gluten, milder flavour, and a shorter warm-up (2 hours instead of 3).",
+      "The water temperature is now calculated from a heat balance instead of the baker's formula the app used before. The old formula had no term for the preferment, and a preferment is half the dough — measured across eight methods it hit exactly on every method without one and missed on every single method with one. Now they all land at 23 degrees. Direct dough gets the same recommendation as before.",
+      "A warm kitchen got the wrong answer too: at 26°C room the old formula suggested 9°C water, which in practice gives a 20-degree dough. The formula weighted room, flour and water equally, but water is around 60 % of the heat in a dough. The right answer is 14°C.",
+      "\"Dough temperature: 22–24°C\" was a fixed sentence in the mixing step, regardless of what the plan would actually give. Now it states the figure the app delivers — and where the physics falls short, such as a room-temperature poolish in a 26-degree kitchen, the sentence says so and points at the lever that actually moves the number."
+    ]
+  },
+  {
     "v": "0.786",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -3065,6 +3065,120 @@ def run_behavioral_tests(page):
              and r153.get('brukbare',0) >= 5)             # var 2 før
     results.append(('cold_poolish_start_times_are_finer_than_a_six_hour_grid', ok153, r153))
 
+    # v0.787: den gamle vannformelen (3×maal − rom − mel − friksjon) hadde ikke
+    # noe ledd for fordeigen, og en fordeig er halve deigen. Maalt over de aatte
+    # metodene: den traff EKSAKT paa hver metode uten fordeig og bommet paa hver
+    # metode med — poolish rom +2,3°, biga +1,2°, mania −4,3°, kald poolish −10,3°.
+    # Ingen test fanget det, fordi ingen test regnet ut hva anbefalingen faktisk
+    # foerer til.
+    #
+    # Denne gjor nettopp det: den tar appens egen vannanbefaling, regner
+    # varmebalansen UAVHENGIG av calcWaterTempC (masse × varmekapasitet ×
+    # temperatur, vann holder 4,186 mot melets 1,8 kJ/kg·K), og krever at
+    # resultatet lander i baandet. Settes formelen tilbake, faller fordeigs-
+    # metodene ut med en gang.
+    r154 = page.evaluate("""() => {
+      const sv={m:S.method,t:S.type,mo:S.mode,tp:S.temp,km:S.kjokkenmaskin,mel:S.mel,
+                hy:S.hydro,pc:S.poolishCold,ph:S.poolishH,pa:S.poolishAndel,pp:S.poolishPauseH,c:S.cold};
+      const CF=1.8, CW=4.186;
+      const scen=[];
+      for(const km of ['ankarsrum','manuell','annen'])
+        for(const tp of [18,22,26]){
+          scen.push({navn:'standard',   km, tp, s:{method:'standard',cold:48}});
+          scen.push({navn:'poolish rom 50',km,tp,s:{method:'poolish',poolishCold:false,poolishH:14,poolishAndel:0.5,cold:24}});
+          scen.push({navn:'poolish rom 30',km,tp,s:{method:'poolish',poolishCold:false,poolishH:14,poolishAndel:0.3,cold:24}});
+          scen.push({navn:'poolish kald 50',km,tp,s:{method:'poolish',poolishCold:true,poolishH:18,poolishAndel:0.5,cold:24}});
+          scen.push({navn:'poolish kald 30',km,tp,s:{method:'poolish',poolishCold:true,poolishH:18,poolishAndel:0.3,cold:24}});
+          scen.push({navn:'biga',       km, tp, s:{method:'biga',bigaH:18,cold:48}});
+        }
+      const bom=[];
+      for(const sc of scen){
+        Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+        S.type='napoletana'; S.mode='start'; S.mel=500; S.hydro=65;
+        S.kjokkenmaskin=sc.km; S.temp=sc.tp; Object.assign(S,sc.s);
+        const vann=calcWaterTempC(23);
+        const fd=fordeigVedBlanding();
+        const totMel=S.mel, totVann=Math.round(S.mel*S.hydro/100);
+        const k=[];
+        if(fd){
+          k.push([fd.melG/1000,CF,fd.tempC],[fd.vannG/1000,CW,fd.tempC],
+                 [(totMel-fd.melG)/1000,CF,S.temp],[(totVann-fd.vannG)/1000,CW,vann]);
+        }else{
+          k.push([totMel/1000,CF,S.temp],[totVann/1000,CW,vann]);
+        }
+        const C=k.reduce((a,[m,c])=>a+m*c,0), E=k.reduce((a,[m,c,t])=>a+m*c*t,0);
+        const deig=E/C+friksjonC();
+        const iBaand=(deig>=21 && deig<=25);
+        // Naar fysikken ikke rekker fram, er kravet at appen SIER det — ikke at
+        // den skriver et tall som later som den traff. To hjorner av 54 er ekte
+        // grenser: 50 % romtemperert poolish i et 26°C kjokken, og haandelting i
+        // et 18°C kjokken. Der skal setningen navne avviket.
+        const sier=deigTempSetning();
+        const sierFra=/varmere enn|kjøligere enn|warmer than|cooler than/.test(sier);
+        // Forbeholdet er BARE gyldig naar ingen tillatt vanntemperatur (4-38°C)
+        // kunne truffet. Uten dette kravet blir setningen en bakvei: en hvilken
+        // som helst gal vannanbefaling ville bestaatt saa lenge appen beklaget seg.
+        let fantesBedre=false;
+        for(let w=4; w<=38 && !fantesBedre; w++){
+          const kk=k.slice(0,-1).concat([[k[k.length-1][0],CW,w]]);
+          const CC=kk.reduce((a,x)=>a+x[0]*x[1],0), EE=kk.reduce((a,x)=>a+x[0]*x[1]*x[2],0);
+          const d2=EE/CC+friksjonC();
+          if(d2>=22 && d2<=24) fantesBedre=true;
+        }
+        if(!iBaand && fantesBedre) bom.push(`${sc.navn} ${sc.km} ${sc.tp}°: ${deig.toFixed(1)}° men et vann i 4-38 traff (valgte ${vann}°)`);
+        if(!iBaand && !fantesBedre && !sierFra) bom.push(`${sc.navn} ${sc.km} ${sc.tp}°: ${deig.toFixed(1)}° uten forbehold (vann ${vann}°)`);
+        // ...og motsatt: staar forbeholdet der uten grunn, er det en falsk alarm.
+        if(iBaand && sierFra && Math.abs(deig-23)<1.4) bom.push(`${sc.navn} ${sc.km} ${sc.tp}°: falskt forbehold ved ${deig.toFixed(1)}°`);
+      }
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      S.method=sv.m;S.type=sv.t;S.mode=sv.mo;S.temp=sv.tp;S.kjokkenmaskin=sv.km;
+      S.mel=sv.mel;S.hydro=sv.hy;S.poolishCold=sv.pc;S.poolishH=sv.ph;
+      S.poolishAndel=sv.pa;S.poolishPauseH=sv.pp;S.cold=sv.c;
+      return {antall:scen.length, bom:bom.slice(0,8), antallBom:bom.length};
+    }""")
+    ok154 = (r154.get('antall',0) >= 50 and r154.get('antallBom',1) == 0)
+    results.append(('recommended_water_lands_the_dough_in_band_for_every_method', ok154, r154))
+
+    # v0.787: poolish-andelen ble variabel. Ved 50 % er poolishens mel og det
+    # gjenvaerende melet like store, og steg-teksten brukte derfor SAMME tall til
+    # begge - en likhet som holdt saa lenge andelen var laast. Ved 30 % ville det
+    # bedt om 150g mel i blandesteget der svaret er 350g, og oppskriften ville
+    # mistet 200 gram mel uten at noen sum sa fra.
+    r155 = page.evaluate("""() => {
+      const sv={m:S.method,pa:S.poolishAndel,pc:S.poolishCold,ph:S.poolishH,c:S.cold,mo:S.mode};
+      const ut={};
+      for(const a of [0.5,0.3]){
+        Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+        S.mode='start'; S.method='poolish'; S.poolishCold=true; S.poolishH=18;
+        S.cold=24; S.mel=500; S.hydro=65; S.temp=22; S.type='napoletana'; S.poolishAndel=a;
+        const r=R(), sp=poolishSplit(r);
+        const steps=rawSteps(new Date(2026,7,1,12,0));
+        const mix=steps.find(s=>/bland ferdig deig/i.test(s.title));
+        const lag=steps.find(s=>/lag poolish/i.test(s.title));
+        ut[a]={pool:sp.pool, restMel:sp.restMel, rest:sp.rest,
+               melSum:sp.pool+sp.restMel, vannSum:sp.pool+sp.rest,
+               totMel:r.flour, totVann:r.water, temperMin:poolishTemperMin(),
+               // Blandesteget skal be om RESTEN av melet, poolishsteget om sin egen andel.
+               mixNevnerRest: mix ? mix.desc.includes(sp.restMel+'g mel') : false,
+               mixNevnerIkkePool: mix ? !mix.desc.includes(sp.pool+'g mel') : false,
+               lagNevnerPool: lag ? lag.desc.includes(sp.pool+'g mel') : false};
+      }
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      S.method=sv.m;S.poolishAndel=sv.pa;S.poolishCold=sv.pc;S.poolishH=sv.ph;S.cold=sv.c;S.mode=sv.mo;
+      return ut;
+    }""")
+    def _andelOK(d, pool, restMel):
+        # mixNevnerIkkePool kan bare kreves der de to tallene FAKTISK er ulike —
+        # ved 50 % er begge 250, og det er nettopp den likheten som skjulte feilen.
+        skiller = (d['mixNevnerIkkePool'] if pool != restMel else True)
+        return (d and d['pool']==pool and d['restMel']==restMel
+                and d['melSum']==d['totMel'] and d['vannSum']==d['totVann']
+                and d['mixNevnerRest'] and skiller and d['lagNevnerPool'])
+    ok155 = (_andelOK(r155.get('0.5'), 250, 250) and _andelOK(r155.get('0.3'), 150, 350)
+             and r155.get('0.5',{}).get('temperMin')==180
+             and r155.get('0.3',{}).get('temperMin')==120)
+    results.append(('poolish_share_splits_flour_and_water_without_losing_any', ok155, r155))
+
     # v0.697 (Claude-oppskriftsgjennomgang): fire funn.
     # Funn 4: forme-steget og kald-heving-steget delte ordrett WHY.fk. Forme-steget
     #   har nå egen WHY.form (om runding/emner), ulik kald-hevingens WHY.fk.
@@ -3703,16 +3817,24 @@ def run_behavioral_tests(page):
       const ie=descOf('standard','Bland alt i bollen');
       S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.temp=saved.temp;S.kjokkenmaskin=saved.km;
       return {
+        // v0.787: tallene er ikke lenger like paa tvers av metodene, fordi
+        // vannet naa regnes av en varmebalanse som teller fordeigen med.
+        // Direktedeig staar stille paa 17°C; poolish (halve melet forgjaeret,
+        // romtemperert) trenger iskaldt vann, biga 14°C.
         std22Has17: std22.includes('anbefalt ca. 17°C'),
-        pl22Has17: pl22.includes('anbefalt ca. 17°C'),
-        bg22Has17: bg22.includes('anbefalt ca. 17°C'),
-        std26Has9: std26.includes('anbefalt ca. 9°C'),
-        annenHas9: stdAnnen.includes('anbefalt ca. 9°C') && stdAnnen.includes('rett fra kjøleskapet'),
-        hurtigUnchanged: hu22.includes('20°C'),
+        pl22Has4: pl22.includes('anbefalt ca. 4°C'),
+        bg22Has14: bg22.includes('anbefalt ca. 14°C'),
+        // 26°C rom ga 9°C med den gamle formelen. Den vektet rom, mel og vann
+        // likt (1/3 hver), men vannet er ~60 % av varmekapasiteten i en 65 %
+        // deig — saa den overkompenserte i et varmt kjokken: 9°C vann gir
+        // faktisk 19,8°C deig, ikke 23. 14°C treffer.
+        std26Has14: std26.includes('anbefalt ca. 14°C'),
+        annenHas10: stdAnnen.includes('anbefalt ca. 10°C') && stdAnnen.includes('rett fra kjøleskapet'),
+        hurtig19: hu22.includes('19°C'),
         ingeneltingQualitative: ie.includes('ikke iskaldt') && !ie.includes('anbefalt')
       };
     }""")
-    ok99 = all(r99.get(k) for k in ['std22Has17','pl22Has17','bg22Has17','std26Has9','annenHas9','hurtigUnchanged','ingeneltingQualitative'])
+    ok99 = all(r99.get(k) for k in ['std22Has17','pl22Has4','bg22Has14','std26Has14','annenHas10','hurtig19','ingeneltingQualitative'])
     results.append(('mix_steps_recommend_concrete_water_temp_c_std_poolish_biga', ok99, r99))
 
     # v0.722 (F13): kjøleskapstemperatur som inndata (Finjuster) med automatisk
@@ -5261,9 +5383,16 @@ def run_behavioral_tests(page):
       // denne canvasen gjør ikke. Fjernes glattingen, består testen likevel.
       // En sjekk som ikke kan feile er verre enn ingen: den later som dekning
       // som ikke finnes. Derfor står det her i stedet.
+      // v0.787: `midt` ble lest på ETT bestemt bilde (i===8). Detektoren tikker
+      // hvert 60. ms mens testen tegner hvert 45., så det øyeblikket landet
+      // tidvis mellom to tikk — indikatoren sto udnetonet og testen feilet uten
+      // at noe var galt. Nå tas det sterkeste utslaget under hele bevegelsen:
+      // samme påstand («den lyser når den ser deg»), uten å henge på ett bilde.
       let midt=null;
       for(let i=0;i<=14;i++){ handX=290-260*i/14; tegn();
-        await new Promise(r=>setTimeout(r,45)); if(i===8) midt=les(); }
+        await new Promise(r=>setTimeout(r,45));
+        if(i>=3){ const n=les(); if(midt===null || (n.o||0)>(midt.o||0)) midt=n; } }
+      if(midt===null) midt=les();
       handX=null; tegn(); await new Promise(r=>setTimeout(r,400));
       const kv=document.getElementById('vink-kvittering');
       const etterVink={tekst:kv.textContent, synlig:+kv.style.opacity>0.5};

@@ -976,7 +976,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="engine.js?v=1"></script>
 <script src="guide.js?v=1"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishAndel:0.5,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -1181,6 +1181,9 @@ function syncStaticI18nUI(){
   st('wiz-s2-sub','Langtidsdeig fungerer fint om du er usikker','Long-ferment dough works fine if you are unsure');
   st('wiz-s2-q1','Metode','Method');
   st('mob-psub-lbl','Poolish-varighet','Poolish duration');
+  st('mob-p-andel-lbl','Hvor mye av melet forgjæres','How much of the flour is pre-fermented');
+  st('mob-p-a50','50 % — mest smak','50 % — most flavour');
+  st('mob-p-a30','30 % — sterkere deig','30 % — stronger dough');
   st('mob-p-rt-btn','🌡️ Romtemperatur','🌡️ Room temperature');
   st('mob-p-cold-btn','❄️ Kjøleskap','❄️ Fridge');
   st('mob-p-cold-hint','Bland når det passer deg — 1,5t romtemperatur for å sette i gang gjæren, deretter kjøleskap. Mye friere tidspunkt enn ren romtemperatur.','Mix when it suits you — 1.5h at room temperature to get the yeast going, then the fridge. A much more flexible schedule than pure room temperature.');
@@ -1426,9 +1429,14 @@ function fmtSessionDur(mins){
 // HREC går aldri lavere — så her legges det ikke inn en vakt som ville skjult
 // en ødelagt tilstand bak en pen null. Invariant-sveipet dekker nå
 // hydreringsaksen (v0.752), så gulvet er under overvåkning i stedet.
+// v0.787: andelen er ikke lenger låst til halvparten. `pool` er melet OG vannet
+// i poolishen (100 % hydrering), `restMel` er melet som tilsettes i blandesteget,
+// `rest` er vannet som tilsettes der. Ved 50 % er pool og restMel like store, og
+// derfor sto det `pool` begge steder tidligere — en likhet som holdt så lenge
+// andelen var fast, og som ville gitt 150g mel i stedet for 350g ved 30 %.
 function poolishSplit(r){
-  const pool=Math.round(r.flour/2);
-  return {pool, rest:Math.round(r.water-pool)};
+  const pool=Math.round(r.flour*poolishAndel());
+  return {pool, restMel:r.flour-pool, rest:Math.round(r.water-pool)};
 }
 // v0.784: en kald poolish er ikke ett steg på benken. Den starter i romtemperatur,
 // modnes i kjøleskapet, og må TEMPERERES før den blandes. Målt før delingen:
@@ -1443,7 +1451,7 @@ const POOLISH_ROMSTART_MIN=90;
 // og kjøkken flytter det reelle tallet mer enn en formel kan fange, så teksten i
 // steget forteller brukeren hva han skal kjenne etter.
 function poolishTemperMin(){
-  const masse=Math.round(S.mel/2)*2;   // mel + vann; poolishen er 100 % hydrert
+  const masse=Math.round(S.mel*poolishAndel())*2;   // mel + vann; poolishen er 100 % hydrert
   return Math.max(60, Math.min(240, Math.round((30+masse*0.3)/15)*15));
 }
 function poolishRestText(){
@@ -2281,10 +2289,103 @@ function mixWorkNote(){
 // ikke vanntemperaturen, som skal styre farten på gjæringen.
 // F15: target-parameter — Hurtigdeig sikter mot 24°C ferdig deig (standard),
 // standard/poolish/biga-blandestegene mot 23°C (midt i 22–24-målet deres).
+// v0.787: formelen over har intet ledd for FORDEIGEN, og en fordeig er halve
+// deigen. Målt over alle åtte metodene: den traff eksakt på hver metode UTEN
+// fordeig (23,0°) og bommet på hver metode MED — poolish rom +2,3°, biga +1,2°,
+// mania −4,3°, kald poolish −10,3°. Det er ikke en slurvete konstant; det er en
+// formel brukt utenfor sitt gyldighetsområde.
+//
+// Erstattet med den varmebalansen formelen er en tilnærming til: hver komponent
+// bidrar med masse × varmekapasitet × temperatur, og vannet løses ut. De fysiske
+// friksjonstallene er valgt slik at DIREKTEDEIG får samme anbefaling som før
+// (17 / 21 / 10 °C mot gamle 17 / 21 / 9) — endringen gjelder fordeigene, som er
+// der formelen faktisk var gal.
+const C_MEL=1.8, C_VANN=4.186;                          // kJ/kg·K
+const FRIKSJON_C={ankarsrum:4, manuell:1.5, annen:8};   // reell oppvarming fra elting
+function friksjonC(){ return FRIKSJON_C[S.kjokkenmaskin] ?? 5; }
+// Newton: en bolle nærmer seg omgivelsene eksponentielt, og tidskonstanten følger
+// massen. 2,2 timer for 500g er anslaget tempereringstiden er bygget på — samme
+// tall begge steder, så de to ikke kan sprike.
+function fordeigTempC(startC, omgivelseC, timer, masseG){
+  return omgivelseC+(startC-omgivelseC)*Math.exp(-timer/(2.2*Math.pow(masseG/500,1/3)));
+}
+// Fordeigen slik den er I DET DEN GÅR I MASKINEN. null = direktedeig.
+// Mania står bevisst utenfor: den har egne, publiserte vannmengder og bruker
+// ikke denne anbefalingen i det hele tatt.
+function fordeigVedBlanding(){
+  const fridge=(S.fridgeC==null?3:S.fridgeC);
+  if(S.method==='poolish'){
+    const mel=Math.round(S.mel*poolishAndel());
+    const kaldFor=!!S.poolishCold||(S.poolishPauseH||0)>0;
+    const temp=kaldFor
+      ? fordeigTempC(fridge, S.temp, poolishTemperMin()/60, mel*2)
+      : S.temp;
+    return {melG:mel, vannG:mel, tempC:temp};
+  }
+  if(S.method==='biga'){
+    const mel=Math.round(S.mel*0.6);
+    return {melG:mel, vannG:Math.round(mel*0.44), tempC:S.temp};
+  }
+  return null;
+}
+// F15: target-parameter — Hurtigdeig sikter mot 24°C ferdig deig (standard),
+// standard/poolish/biga-blandestegene mot 23°C (midt i 22–24-målet deres).
+// Alt som går i bollen, som [masse kg, varmekapasitet, temperatur]. Én kilde,
+// brukt både til å løse ut vannet og til å regne hva et gitt vann faktisk gir.
+function deigKomponenter(vannC){
+  const melG=S.mel, vannG=Math.round(S.mel*S.hydro/100);
+  const fd=fordeigVedBlanding();
+  if(fd) return [[fd.melG/1000,C_MEL,fd.tempC],[fd.vannG/1000,C_VANN,fd.tempC],
+                 [(melG-fd.melG)/1000,C_MEL,S.temp],
+                 [Math.max(0,vannG-fd.vannG)/1000,C_VANN,vannC]];
+  return [[melG/1000,C_MEL,S.temp],[vannG/1000,C_VANN,vannC]];
+}
+function deigTempC(vannC){
+  const k=deigKomponenter(vannC);
+  const C=k.reduce((a,x)=>a+x[0]*x[1],0), E=k.reduce((a,x)=>a+x[0]*x[1]*x[2],0);
+  return C>0 ? E/C+friksjonC() : S.temp;
+}
 function calcWaterTempC(target=24){
-  const FF = {ankarsrum:8, manuell:4, annen:16}[S.kjokkenmaskin] ?? 10;
-  const t = Math.round(3*target - S.temp - S.temp - FF);
-  return Math.max(4, Math.min(t, 38)); // fornuftige grenser: fra kaldt kjøleskapsvann til lunkent
+  const k=deigKomponenter(0);
+  const siste=k[k.length-1];
+  const Cv=siste[0]*siste[1];                      // vannleddets varmekapasitet
+  const fast=k.slice(0,-1);
+  const C=fast.reduce((a,x)=>a+x[0]*x[1],0), E=fast.reduce((a,x)=>a+x[0]*x[1]*x[2],0);
+  // Er alt vannet bundet i fordeigen, finnes det ingen spak — da er et presist
+  // tall en løgn, og romtemperert er det ærligste svaret.
+  if(Cv<=0) return Math.max(4, Math.min(38, Math.round(S.temp)));
+  const t=Math.round(((target-friksjonC())*(C+Cv)-E)/Cv);
+  return Math.max(4, Math.min(t, 38)); // fra kaldt kjøleskapsvann til lunkent
+}
+// v0.787: når vannet er klemt mot grensen og deigen likevel ikke når målet, er
+// et presist tall en halv sannhet. Sveipet fant to slike hjørner av 54: en 50 %
+// romtemperert poolish i et 26°C kjøkken lander på 26,9° selv med iskaldt vann
+// (poolishen ER deigen, og den holder romtemperatur), og håndelting i et 18°C
+// kjøkken kommer ikke høyere enn 19,7°. Begge er fysikk, ikke feil — men da skal
+// det stå, sammen med den spaken som faktisk flytter tallet.
+// Dette tallet sto hardkodet som «Deigtemperatur: 22–24°C» i blandesteget — et
+// løfte planen ikke kunne innfri. Med kald poolish leverte den 12,7°C mens
+// setningen fortsatt sa 22–24. Nå står det appen faktisk gir, regnet av samme
+// varmebalanse som vanntemperaturen, og når fysikken ikke rekker fram sier
+// setningen hvilken spak som faktisk flytter tallet.
+function deigTempSetning(){
+  const v=calcWaterTempC(23), av=deigTempAvvik(v), grad=Math.round(deigTempC(v));
+  if(!av) return L(`Deigtemperatur: ca. ${grad}°C.`,`Dough temperature: about ${grad}°C.`);
+  if(av.for==='varm'){
+    const utvei=(S.method==='poolish'&&!S.poolishCold)
+      ? L(' Vil du ned, er det kjøleskaps-poolish eller 30 %-varianten som flytter tallet — ikke vannet.',' To bring it down it is the fridge poolish or the 30 % variant that moves the number — not the water.')
+      : L(' Bare et kjøligere kjøkken flytter dette nevneverdig.',' Only a cooler kitchen moves this appreciably.');
+    return L(`Deigtemperatur: ca. ${grad}°C — varmere enn de 22–24 vi sikter mot, og vannet er allerede så kaldt det kan bli.${utvei}`,
+             `Dough temperature: about ${grad}°C — warmer than the 22–24 we aim for, and the water is already as cold as it can be.${utvei}`);
+  }
+  return L(`Deigtemperatur: ca. ${grad}°C — kjøligere enn de 22–24 vi sikter mot. Den gjærer litt saktere enn planen antar, så la deigen og ikke klokka avgjøre når hevingen er ferdig.`,
+           `Dough temperature: about ${grad}°C — cooler than the 22–24 we aim for. It ferments a little slower than the plan assumes, so let the dough rather than the clock decide when the rise is done.`);
+}
+function deigTempAvvik(vannC){
+  const d=deigTempC(vannC);
+  if(d>24.5) return {d, for:'varm'};
+  if(d<21.5) return {d, for:'kald'};
+  return null;
 }
 function machineLabel(){
   const m = window._lang==='en'
@@ -2595,19 +2696,19 @@ function rawSteps(a){
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:mixAt,dur:20,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(35+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(35+rt)} of uninterrupted time — the next three steps are done in one go.`),
         desc:(S.kjokkenmaskin==='ankarsrum'
-          ?L(`Sett deigrulle og skraper tilbake i bollen. Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${poolishSplit(r2).pool}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`,`Put the dough roller and scraper back in the bowl. Add ${poolishSplit(r2).rest}g ${waterTempPhrase()}. Start on speed 1. Add ${poolishSplit(r2).pool}g flour gradually in 3–4 batches${r2.oil?` and ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}. Increase to speed 2–3. Add ${r2.salt}g salt after 5 min — no extra yeast needed, the poolish has everything you need. Increase to speed 3–4. Knead 10–12 min total.`)
+          ?L(`Sett deigrulle og skraper tilbake i bollen. Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()}. Start trinn 1. Tilsett ${poolishSplit(r2).restMel}g mel gradvis i 3–4 omganger${r2.oil?` og ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}. Øk til trinn 2–3. Tilsett ${r2.salt}g salt etter 5 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til trinn 3–4. Elt totalt 10–12 min.`,`Put the dough roller and scraper back in the bowl. Add ${poolishSplit(r2).rest}g ${waterTempPhrase()}. Start on speed 1. Add ${poolishSplit(r2).restMel}g flour gradually in 3–4 batches${r2.oil?` and ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}. Increase to speed 2–3. Add ${r2.salt}g salt after 5 min — no extra yeast needed, the poolish has everything you need. Increase to speed 3–4. Knead 10–12 min total.`)
           :S.kjokkenmaskin==='manuell'
-          ?L(`Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${poolishSplit(r2).pool}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`,`Add ${poolishSplit(r2).rest}g ${waterTempPhrase()} to the bowl with the poolish. Mix in ${poolishSplit(r2).pool}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}, ${r2.salt}g salt — no extra yeast needed, the poolish has everything you need. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) since the dough is wet: lift, stretch out, slap down, repeat for 10–15 min.':'press, fold, turn for 8–12 min until smooth and supple.'}`)
-          :L(`Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${poolishSplit(r2).pool}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,`Add ${poolishSplit(r2).rest}g ${waterTempPhrase()} to the bowl with the poolish. Run the dough hook on low speed while you add ${poolishSplit(r2).pool}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}. Add ${r2.salt}g salt after 2–3 min — no extra yeast needed, the poolish has everything you need. Increase to medium-low speed. Knead 6–9 min total.`))+mixWorkNote(),
-        needs:[L(`💧 ${poolishSplit(r2).rest}g vann`,`💧 ${poolishSplit(r2).rest}g water`), L(`🌾 ${poolishSplit(r2).pool}g mel`,`🌾 ${poolishSplit(r2).pool}g flour`), `🧂 ${r2.salt}g salt`, ...(r2.oil?[L(`🫒 ${r2.oil}g olje`,`🫒 ${r2.oil}g oil`)]:[]), ...(r2.butter?[L(`🧈 ${r2.butter}g smør`,`🧈 ${r2.butter}g butter`)]:[]), ...(r2.sugar?[L(`🍯 ${r2.sugar}g sukker`,`🍯 ${r2.sugar}g sugar`)]:[])],
+          ?L(`Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()} i bollen med poolishen. Bland inn ${poolishSplit(r2).restMel}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}, ${r2.salt}g salt — ingen ekstra gjær trengs, poolishen har alt du trenger. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) siden deigen er våt: løft, dra ut, slå ned, gjenta i 10–15 min.':'press, brett, drei i 8–12 min til glatt og smidig.'}`,`Add ${poolishSplit(r2).rest}g ${waterTempPhrase()} to the bowl with the poolish. Mix in ${poolishSplit(r2).restMel}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}, ${r2.salt}g salt — no extra yeast needed, the poolish has everything you need. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) since the dough is wet: lift, stretch out, slap down, repeat for 10–15 min.':'press, fold, turn for 8–12 min until smooth and supple.'}`)
+          :L(`Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${poolishSplit(r2).restMel}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,`Add ${poolishSplit(r2).rest}g ${waterTempPhrase()} to the bowl with the poolish. Run the dough hook on low speed while you add ${poolishSplit(r2).restMel}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}. Add ${r2.salt}g salt after 2–3 min — no extra yeast needed, the poolish has everything you need. Increase to medium-low speed. Knead 6–9 min total.`))+mixWorkNote(),
+        needs:[L(`💧 ${poolishSplit(r2).rest}g vann`,`💧 ${poolishSplit(r2).rest}g water`), L(`🌾 ${poolishSplit(r2).restMel}g mel`,`🌾 ${poolishSplit(r2).restMel}g flour`), `🧂 ${r2.salt}g salt`, ...(r2.oil?[L(`🫒 ${r2.oil}g olje`,`🫒 ${r2.oil}g oil`)]:[]), ...(r2.butter?[L(`🧈 ${r2.butter}g smør`,`🧈 ${r2.butter}g butter`)]:[]), ...(r2.sugar?[L(`🍯 ${r2.sugar}g sukker`,`🍯 ${r2.sugar}g sugar`)]:[])],
         substeps:[
           L(`Tilsett ${poolishSplit(r2).rest}g vann i bollen med poolishen`,`Add ${poolishSplit(r2).rest}g water to the bowl with the poolish`),
-          L(`Bland inn ${poolishSplit(r2).pool}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}`,`Mix in ${poolishSplit(r2).pool}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}`),
+          L(`Bland inn ${poolishSplit(r2).restMel}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}`,`Mix in ${poolishSplit(r2).restMel}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}`),
           L(`Tilsett ${r2.salt}g salt — ingen ekstra gjær trengs`,`Add ${r2.salt}g salt — no extra yeast needed`),
           L(`Elt til deigen er glatt og smidig`,`Knead until the dough is smooth and supple`)
         ],
         why:L('Poolishen har allerede fermentert halvparten av melet og bidrar med mye av smak- og aromautviklingen — resten inkorporeres effektivt uansett metode.',`The poolish has already fermented half the flour and contributes much of the flavor and aroma development — the rest is incorporated efficiently regardless of method.`),
-        tip:L('Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. Deigtemperatur: 22–24°C.',`The dough will feel more active and lightly sticky than standard. That's normal — poolish makes the dough more extensible (easier to stretch) while it develops flavor. Dough temperature: 22–24°C.`)},
+        tip:L(`Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. ${deigTempSetning()}`,`The dough will feel more active and lightly sticky than standard. That's normal — poolish makes the dough more extensible (easier to stretch) while it develops flavor. ${deigTempSetning()}`)},
       {title:'Romtemperaturheving',loc:'rom',at:aM(mixAt,20),dur:rt,passive:true,desc:L(`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,`Let rise about ${rt} min at ${S.temp}°C, covered.`),substeps:[L(`Dekk til`,`Cover`),L(`La heve ca. ${rt} min ved ${S.temp}°C`,`Let rise about ${rt} min at ${S.temp}°C`)],why:rtW(rt),tip:TIP.roomRise},
       ...tailSteps(aM(mixAt,20+rt))
     ];
@@ -3592,7 +3693,7 @@ function machineSeqHTML(){
   return L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — generell sekvens</div><div class="sdesc">Alltid: <b>væske først</b> i bollen. Løs gjæren i litt av vannet. Start trinn 1–2 og tilsett mel gradvis i 3–4 omganger. Salt tilsettes etter ca. 3–5 min. Øk til trinn 3–4 etter melet er inkorporert. Aldri over trinn 4 for pizzadeig. Sjekk deigtemperatur med termometer.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">🤖 Ankarsrum — general sequence</div><div class="sdesc">Always: <b>liquid first</b> in the bowl. Dissolve the yeast in a little of the water. Start on setting 1–2 and add the flour gradually in 3–4 rounds. Add the salt after about 3–5 min. Increase to setting 3–4 once the flour is incorporated. Never above setting 4 for pizza dough. Check the dough temperature with a thermometer.</div></div>`);
 }
 function waterTempTechHTML(){
-  return L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Vanntemperatur — tilpasset kjøkkenmaskin</div><div class="sdesc">Ulike maskiner tilfører ulik mengde friksjonsvarme under elting. Vanlige kjøkkenmaskiner med eltekrok (f.eks. KitchenAid) kan tilføre <b>10–13°C</b> gjennom selve eltingen — bruk derfor kaldt vann, gjerne rett fra kjøleskapet. Ankarsrum og håndelting tilfører mye mindre varme (nær hverandre i friksjon), så bruk kjølig eller romtemperert vann for å nå samme sluttemperatur på 22–24°C. Mål deigtemperaturen med termometer til du kjenner din egen maskin/teknikk godt.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Water temperature — adjusted for your mixer</div><div class="sdesc">Different machines add different amounts of friction heat during kneading. Ordinary stand mixers with a dough hook (e.g. KitchenAid) can add <b>10–13°C</b> through the kneading itself — so use cold water, ideally straight from the fridge. The Ankarsrum and hand kneading add much less heat (close to each other in friction), so use cool or room-temperature water to reach the same final temperature of 22–24°C. Measure the dough temperature with a thermometer until you know your own machine/technique well.</div></div>`);
+  return L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Vanntemperatur — tilpasset kjøkkenmaskin</div><div class="sdesc">Ulike maskiner tilfører ulik mengde friksjonsvarme under elting. En vanlig kjøkkenmaskin med eltekrok (f.eks. KitchenAid) varmer deigen rundt <b>8°C</b> gjennom selve eltingen, Ankarsrum rundt <b>4°C</b> og håndelting <b>1–2°C</b>. Derfor trenger kjøkkenmaskinen kaldt vann der håndelting trenger nesten romtemperert — for å lande på de samme 22–24°C. Bruker du poolish eller biga, teller fordeigen med i regnestykket: den er halve deigen, og temperaturen DEN har når den går i bollen betyr mer enn vannet. Mål deigtemperaturen med termometer til du kjenner din egen maskin godt.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Water temperature — adjusted for your mixer</div><div class="sdesc">Different machines add different amounts of friction heat during kneading. An ordinary stand mixer with a dough hook (e.g. KitchenAid) warms the dough by about <b>8°C</b> through the kneading itself, the Ankarsrum about <b>4°C</b> and hand kneading <b>1–2°C</b>. That is why the stand mixer needs cold water where hand kneading needs almost room-temperature — to land on the same 22–24°C. If you use poolish or biga, the preferment counts in the calculation: it is half the dough, and the temperature IT has going into the bowl matters more than the water. Measure the dough temperature with a thermometer until you know your own machine well.</div></div>`);
 }
 
 function chicagoButterHTML(){
@@ -5701,7 +5802,7 @@ function buildTechHTML(){
   if(S.method==='hurtig'){
     return `
     ${machineSeqHTML()}
-    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor regnet vanntemperatur, ikke bare "lunkent"?</div><div class="sdesc">Vanntemperaturen er beregnet ut fra en formel bakere bruker for å styre sluttdeigens temperatur uansett hvor lenge den skal gjære: <b>3 × ønsket deigtemperatur − (romtemperatur × 2 + friksjon fra eltemetoden)</b>. Målet er ca. 24°C ferdig deig. Ved ${S.temp}°C rom med ${machineLabel()} lander det på ca. ${calcWaterTempC()}°C vann akkurat nå — endrer du romtemperatur eller kjøkkenmaskin i sidepanelet, endrer tallet seg med. Et kaldere rom trenger varmere vann for å nå samme sluttemperatur, og omvendt.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Why a calculated water temperature, not just "lukewarm"?</div><div class="sdesc">The water temperature is calculated from a formula bakers use to control the final dough temperature no matter how long it will ferment: <b>3 × desired dough temperature − (room temperature × 2 + friction from the kneading method)</b>. The target is about 24°C finished dough. At ${S.temp}°C room with ${machineLabel()} it lands at about ${calcWaterTempC()}°C water right now — change the room temperature or mixer in the side panel and the number changes with it. A colder room needs warmer water to reach the same final temperature, and vice versa.</div></div>`)}
+    ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hvorfor regnet vanntemperatur, ikke bare "lunkent"?</div><div class="sdesc">Vanntemperaturen er regnet ut fra en varmebalanse: hver ingrediens bidrar med sin masse, sin temperatur og hvor lett den lar seg varme — vann holder mer enn dobbelt så mye varme per gram som mel — og så løses vanntemperaturen ut av regnestykket. Målet er ca. 24°C ferdig deig. Har du en fordeig, teller den med der den faktisk er: en poolish rett fra kjøleskapet trekker hele deigen ned, og da er det tempereringen, ikke vannet, som gjør jobben. Ved ${S.temp}°C rom med ${machineLabel()} lander det på ca. ${calcWaterTempC()}°C vann akkurat nå — endrer du romtemperatur eller kjøkkenmaskin i sidepanelet, endrer tallet seg med. Et kaldere rom trenger varmere vann for å nå samme sluttemperatur, og omvendt.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Why a calculated water temperature, not just "lukewarm"?</div><div class="sdesc">The water temperature is calculated from a heat balance: every ingredient contributes its mass, its temperature and how easily it warms — water holds more than twice as much heat per gram as flour — and the water temperature is then solved out of the equation. The target is about 24°C finished dough. If you have a preferment it counts where it actually is: a poolish straight from the fridge pulls the whole dough down, and then it is the warm-up, not the water, that does the job. At ${S.temp}°C room with ${machineLabel()} it lands at about ${calcWaterTempC()}°C water right now — change the room temperature or mixer in the side panel and the number changes with it. A colder room needs warmer water to reach the same final temperature, and vice versa.</div></div>`)}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane-test</div><div class="sdesc">Ta en liten bit deig og strekk den forsiktig mellom fingrene. Hvis den blir tynn og gjennomsiktig uten å rive — som et vindu — er glutennettverket godt utviklet og deigen er klar.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Windowpane test</div><div class="sdesc">Take a small piece of dough and gently stretch it between your fingers. If it turns thin and translucent without tearing — like a windowpane — the gluten network is well developed and the dough is ready.</div></div>`)}
     ${L(`<div class="step"><div class="stit" style="margin-bottom:.3rem">Hurtigdeig — hva du ofrer</div><div class="sdesc">Kort fermentering gir mindre smaksutvikling og noe dårligere fordøyelighet enn kald heving over flere dager. Det er <b>gjærmengden</b> som kompenserer for tiden, ikke vanntemperaturen — vanntemperaturen er beregnet for å treffe ca. 24°C ferdig deig uansett hvilket timevalg du velger, akkurat som ved lengre gjæringer. Resultatet blir godt, men ikke like komplekst i smaken.</div></div>`,`<div class="step"><div class="stit" style="margin-bottom:.3rem">Quick dough — what you sacrifice</div><div class="sdesc">A short fermentation gives less flavor development and somewhat poorer digestibility than a cold rise over several days. It's the <b>amount of yeast</b> that compensates for the time, not the water temperature — the water temperature is calculated to land the finished dough at about 24°C no matter which hour option you choose, just as with longer ferments. The result is good, but not as complex in flavor.</div></div>`)}
     <div class="step"><div class="stit" style="margin-bottom:.3rem">${L('Gjærtype: ','Yeast type: ')}${S.gjaer==='torr'?L('tørrgjær','dry yeast'):L('fersk gjær','fresh yeast')}</div><div class="sdesc">${S.gjaer==='torr'?L('Tørrgjær er stabil og enkel. Løs i en skje av vannet, hell i bollen, tilsett resten av vannet og start.','Dry yeast is stable and easy. Dissolve it in a spoonful of the water, pour it into the bowl, add the rest of the water and start.'):L('Fersk gjær gir mer aroma. Løs opp en liten del av vannmengden litt lunkent (rundt 35°C) for å få gjæren til å løse seg lett, tilsett så resten av vannet ved den beregnede temperaturen. Bruk 3× mengden av tørrgjær.','Fresh yeast gives more aroma. Dissolve the yeast in a small part of the water made slightly lukewarm (around 35°C) so it dissolves easily, then add the rest of the water at the calculated temperature. Use 3× the amount of dry yeast.')}</div></div>
@@ -6932,6 +7033,7 @@ function syncMobControls(){
   mobBuildKrows();
   mobBuildSrows();
   setPoolishCold(S.poolishCold);
+  syncPoolishAndelUI();
   mobBuildBrows();
   applyMobTypeUI();
   mobSetMode(uiMode());
@@ -7132,6 +7234,27 @@ function setPoolishCold(cold){
   const d=document.getElementById('mob-p-cold-disp'); if(d) d.textContent=S.poolishH+L(' timer',' hours');
   mobBuildProws();
   mobGen();
+}
+// v0.787: poolish-andelen er et DEIG-valg, ikke en tidsspak. Smart-plan bytter
+// den derfor aldri på egen hånd — den flytter tider og kan bytte metode for å få
+// planen til å gå opp, men den skal ikke stille om hva slags deig du har bedt om.
+function setPoolishAndel(a){
+  armStartDelta();
+  S.poolishAndel=a;
+  syncPoolishAndelUI();
+  mobGen();
+  try{ wizCheckRefresh(); }catch(e){}
+}
+function syncPoolishAndelUI(){
+  const halv=document.getElementById('mob-p-a50'), tredel=document.getElementById('mob-p-a30');
+  if(!halv||!tredel) return;
+  const stil=(el,valgt)=>el.style.cssText=`flex:1;padding:8px;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;${valgt?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)'}`;
+  const er30=poolishAndel()===0.3;
+  stil(halv,!er30); stil(tredel,er30);
+  const h=document.getElementById('mob-p-andel-hint');
+  if(h) h.textContent=er30
+    ? L('30 % av melet forgjæres — der de fleste publiserte oppskriftene ligger. Sterkere gluten, mildere smak, og kortere temperering (2t mot 3t).','30 % of the flour is pre-fermented — where most published recipes sit. Stronger gluten, milder flavour, and a shorter warm-up (2h instead of 3h).')
+    : L('Halvparten av melet forgjæres. Mest aroma og mest strekkbar deig, men svakere gluten — flere kilder setter 50 % som taket.','Half the flour is pre-fermented. Most aroma and the most extensible dough, but weaker gluten — several sources put 50 % as the ceiling.');
 }
 function stepPoolishCold(delta){
   armStartDelta();
@@ -9650,6 +9773,12 @@ document.addEventListener('change', firstInteractionCheck, true);
           <button onclick="stepPoolishCold(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);cursor:pointer;font-size:15px;color:var(--forno-text-muted)">+</button>
         </div>
         <div id="mob-p-early-hint" style="display:none;padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.4"></div>
+        <div id="mob-p-andel-lbl" style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Hvor mye av melet forgjæres</div>
+        <div style="display:flex;gap:6px;padding:.3rem 1rem .4rem">
+          <div id="mob-p-a50" onclick="setPoolishAndel(0.5)" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:600;font-size:12px;text-align:center;cursor:pointer">50 % — mest smak</div>
+          <div id="mob-p-a30" onclick="setPoolishAndel(0.3)" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer">30 % — sterkere deig</div>
+        </div>
+        <div id="mob-p-andel-hint" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint);line-height:1.4">Halvparten av melet forgjæres. Mest aroma og mest strekkbar deig, men svakere gluten — flere kilder setter 50 % som taket.</div>
         <div id="mob-ppause-lbl" style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish kjøleskapspause</div>
         <div style="padding:.3rem 1rem .6rem">
           <div id="mob-ppause-btn" onclick="togglePoolishPause()" style="padding:9px 10px;border-radius:8px;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint);font-size:12px;text-align:center;cursor:pointer;line-height:1.35">🧊 Slå på — la poolishen vente i kjøleskapet</div>

@@ -48,9 +48,31 @@ function fridgeYeastMult(){ return interpLin(CALIBRATION.fridgeMult,(S.fridgeC==
 // Per i dag er newyork eneste type med sukker, så dette er i praksis en
 // NY+pizzaovn-regel — men den er skrevet generelt via BSUGAR-tabellen.
 function effSugarPct(){ return S.oven==='pizza' ? 0 : (BSUGAR[S.type]||0); }
+// v0.787: hvor mye av melet som forgjæres. 50 % var appens eneste variant.
+// Feltet er derimot kalibrert rundt 30 % — Vito, Ooni og de fleste publiserte
+// oppskriftene ligger der, og både 4-faktor-vannformelen og tommelfingerregelen
+// «ta poolishen ut en time før» er tilpasset den andelen. Målt mot fysikken:
+// 4-faktor-formelen bommer +0,9° ved 30 % og −6,5° ved 50 %.
+// 50 % gir mest aroma og mest ekstensibel deig; flere kilder setter det som
+// taket før deigen blir for syrlig og for svak. 30 % gir sterkere gluten,
+// kortere temperering (2t mot 3t) og et vann som igjen er en reell spak
+// (175g å skru på mot 75g).
+const POOLISH_ANDEL_REF=0.5;
+function poolishAndel(){ return S.poolishAndel||POOLISH_ANDEL_REF; }
+// Kurvene under er satt for en poolish på halvparten av melet. En mindre poolish
+// forgjærer mindre av melet og bidrar tilsvarende mindre, så AVVIKET fra 1,0
+// skaleres med andelen: ved 30 % blir 12-timers 1,20 til 1,12, og 48-timers
+// 0,50 til 0,70. Dette er en resonnert skalering, ikke et bakt tall — samme
+// status som fridgeMult-kurven har, og den bør etterprøves med kontrollbak.
+function prefermentShareScale(mult){
+  const andel=poolishAndel();
+  if(andel===POOLISH_ANDEL_REF) return mult;
+  return Math.round((1+(mult-1)*(andel/POOLISH_ANDEL_REF))*1000)/1000;
+}
 function prefermentYeastMult(){
   if(S.method==='poolish'){
-    return interpLin(S.poolishCold?CALIBRATION.poolishCold:CALIBRATION.poolishRoom,S.poolishH);
+    return prefermentShareScale(
+      interpLin(S.poolishCold?CALIBRATION.poolishCold:CALIBRATION.poolishRoom,S.poolishH));
   }
   if(S.method==='biga'){
     return interpLin(CALIBRATION.biga,S.bigaH);

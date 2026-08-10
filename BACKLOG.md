@@ -742,6 +742,25 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
+### F33. Etterprøv gjærskaleringen for 30 % poolish — 🧪 VENTER PÅ BAKST (v0.787)
+
+30 %-varianten bruker `prefermentShareScale()`: kurvene i CALIBRATION er satt for
+en poolish på halvparten av melet, og avviket fra 1,0 skaleres med andelen. Ved
+30 % blir 12-timers 1,20 til 1,12 og 48-timers 0,50 til 0,70.
+
+**Dette er en resonnert skalering, ikke et bakt tall.** Resonnementet er at en
+mindre poolish forgjærer mindre av melet og derfor bidrar tilsvarende mindre —
+men det er lineært antatt, og gjæring er ikke lineær. Samme status som
+`fridgeMult`-kurven har.
+
+**Hva som må måles:** bak samme oppskrift med 50 % og 30 % poolish, samme timer,
+samme kjøleskap. Er 30 %-deigen merkbart under- eller overhevet ved samme
+tidspunkt, ligger skaleringen feil. Kjør gjerne sammen med F24-kontrollbaket —
+det er samme aksen (hvor mye gjær trengs egentlig), bare fra en annen kant.
+
+**Ikke rør noe før det:** deigtemperaturen og melsplitten er målt og verifisert
+(r154, r155). Det er kun gjærmengden som står på et anslag.
+
 ### F24. Vurder Q10 også for Poolish og Biga — 🧪 FØRSTE BAKST-RESULTAT (v0.761)
 > ⚠️ **Første ekte data, og de peker mot NEI for Kveldsdeig.**
 >
