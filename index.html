@@ -2094,7 +2094,7 @@ function preheatSteps(bakeAt, roomMin, type){
     // eller en løs stein å måle — den har et dekke. Å gi den termostat-rådet
     // ville vært et tips om utstyr brukeren ikke har.
     tip:S.oven==='pizza'
-      ? L('Dekket er varmt lenge før det er gjennomvarmt. Har du et IR-termometer, sikt på stedet pizzaen skal ligge — det er den temperaturen som avgjør bunnen, ikke flammen.','The deck is hot long before it is heated through. If you have an IR thermometer, point it at the spot the pizza will sit — that is the temperature that decides the base, not the flame.')
+      ? L('Stekedekket er varmt lenge før det er gjennomvarmt. Har du et IR-termometer, sikt på stedet pizzaen skal ligge — det er den temperaturen som avgjør bunnen, ikke flammen.','The deck is hot long before it is heated through. If you have an IR thermometer, point it at the spot the pizza will sit — that is the temperature that decides the base, not the flame.')
       : stone
       ? L('Ovnstermostaten måler luften, ikke steinen — og luften er varm lenge før steinen er det. Har du et IR-termometer, sikt på steinen og vent til den er nær måltemperaturen.','The oven thermostat measures the air, not the stone — and the air is hot long before the stone is. If you have an IR thermometer, point it at the stone and wait until it is close to the target temperature.')
       : L('Ovnen er gjennomvarm først når termostaten har slått av og på et par ganger. Første gang den piper er ikke det samme som at den er klar.','The oven is heated through only once the thermostat has cycled on and off a couple of times. The first beep is not the same as being ready.')}];
@@ -2108,7 +2108,7 @@ function preheatSteps(bakeAt, roomMin, type){
 function bakeTip(t){
   if(t!=='napoletana') return oT(t);
   return S.oven==='pizza'
-    ? L('Dra pizzaen ut og drei den en halv omgang etter ~30 sek — dekket er kaldest der pizzaen nettopp lå. Blir kanten mørk før bunnen er ferdig, senk temperaturen litt til neste.','Pull the pizza out and turn it half a turn after ~30 sec — the deck is coolest where the pizza has just been. If the rim darkens before the base is done, lower the temperature a little for the next one.')
+    ? L('Dra pizzaen ut og drei den en halv omgang etter ~30 sek — stekedekket er kaldest der pizzaen nettopp lå. Blir kanten mørk før bunnen er ferdig, senk temperaturen litt til neste.','Pull the pizza out and turn it half a turn after ~30 sec — the deck is coolest where the pizza has just been. If the rim darkens before the base is done, lower the temperature a little for the next one.')
     : L('Stek på øverste rille. Er bunnen blek når kanten er ferdig, flytt pizzaen ned et hakk de siste par minuttene.','Bake on the top rack. If the base is pale when the rim is done, move the pizza down a level for the last couple of minutes.');
 }
 // v5.99: understeg for det delte stekestegetet — samme gren-logikk (type ×
@@ -2165,7 +2165,7 @@ const WHY_NO={
   fk:'Kald fermentering (2–4°C) bremser gjæren slik at enzymer bryter ned stivelse over tid. Gir dyp smak, god fordøyelighet og lang holdbarhet. Kulda er også tilgivende — siden den bremser hele prosessen, tåler en kald deig litt mer gjær enn du skulle tro før det blir et problem.',
   form:'Tette, godt rundede emner holder på gassen og formen gjennom hele kjøleskapshevingen. Et løst, dårlig rundet emne flyter utover og gir en flat, ustrukturert pizza. Rundingen bygger også overflatespenning som får emnet til å heve oppover i stedet for utover — grunnlaget for en luftig kant.',
   tu:'Benktida etter kjøleskapet gjør to ting på én gang. Glutenet slapper av — kald deig er stiv og seig ved 2–4°C, og noen timer i romtemperatur gjør den strekkbar så du kan åpne emnet uten at det river. Og gjæren, som lå nesten i dvale i kulda, våkner igjen og gir en siste, kort heving som gjør skorpa luftig og lett. Hopper du over benktida, blir deigen både vanskelig å strekke og tettere når den er stekt. Hvor lenge den trenger avhenger av hvor varmt rommet er — varmere rom går raskere, så bruk tiden som en pekepinn og deigen selv som fasit.',
-  st:'Høy varme gir rask "oven spring" — pizzaen hever lynraskt for luftige kanter og sprø bunn.',
+  st:'Høy varme gir raskt ovnsløft — det bakerne kaller «oven spring». Pizzaen hever lynraskt, og det er der de luftige kantene og den sprø bunnen kommer fra.',
   pl:'Poolish fermenterer lenge med lite gjær. Enzymer bryter ned stivelse til sukker som gjæren fermenterer, og det utvikles aromastoffer og milde organiske syrer som gir mer kompleks smak og bedre fordøyelighet.',
   bi:'Fast fordeig med lav hydrasjon. Langsom fermentering gir nøtteaktig smak og seigere deig.',
 };

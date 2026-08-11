@@ -7756,6 +7756,66 @@ def _atferd_7(page, results):
                  'endrerNoe', 'avviserUendret', 'utførte', 'angret'])
     results.append(('night_warning_offers_a_fix_that_actually_works', ok129, r129))
 
+    # F30 trinn 1 (v0.790): appen brukte fagord den aldri forklarte. Maalt over
+    # matrisen: «emne» 275 ganger, «gluten» 106, «oven spring» 30, «autolyse» 20
+    # - ingen av dem definert noe sted. Ordlista i guide.js retter det.
+    #
+    # En ordliste raatner i stillhet: tekstene endres, oppslagene blir staaende.
+    # Denne holder den aerlig i BEGGE retninger - ingen doede oppslag, og ingen
+    # kjente fagord i stegtekstene uten oppslag. Vaktlista bor i TESTEN, ikke i
+    # guide.js, slik at den ikke kan gaas rundt ved aa redigere ordlista.
+    r157 = page.evaluate("""() => {
+      const saved={method:S.method,type:S.type,oven:S.oven,mode:S.mode,mel:S.mel,
+                   hydro:S.hydro,cold:S.cold,temp:S.temp,poolishCold:S.poolishCold,
+                   poolishAndel:S.poolishAndel,poolishH:S.poolishH,bigaH:S.bigaH,
+                   hurtigH:S.hurtigH,kveldH:S.kveldH};
+      const _lang0=window._lang; window._lang='no';
+      let tekst='';
+      for(const m of ['standard','poolish','biga','mania','hurtig','kveld'])
+      for(const t of ['napoletana','newyork','langpanne','chicago','ingenelting']){
+        S.method=m; S.type=t; S.oven='pizza'; S.mode='start'; S.mel=500; S.hydro=65;
+        S.cold=48; S.temp=22; S.poolishCold=false; S.poolishAndel=0.5;
+        S.poolishH=14; S.bigaH=18; S.hurtigH=4; S.kveldH=10;
+        let steps=null;
+        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ continue; }
+        for(const s of (steps||[]))
+          tekst += ' ' + [s.title,s.desc,s.why,s.tip].join(' ') + ' ' + (s.substeps||[]).join(' ');
+      }
+      Object.assign(S,saved); window._lang=_lang0;
+      const lav=tekst.toLowerCase();
+      const dekkerOrd = v => ORDLISTE.some(o => o.treff.some(t => {
+        const tt=t.toLowerCase().trim();
+        return tt.includes(v) || v.includes(tt);
+      }));
+      const doede = ORDLISTE.filter(o => !o.treff.some(t => lav.includes(t.toLowerCase())))
+                            .map(o => o.ord);
+      const VAKT = ['gluten','autolyse','poolish','biga','ferment','hydrer','emne',
+                    'overflatespenning','leopard','ovnsløft','etterheving','bulk',
+                    'temperer','extensibel','ekstensibel','strekkbar'];
+      const uforklart = VAKT.filter(v => lav.includes(v) && !dekkerOrd(v));
+      return {
+        doede, uforklart, antallOppslag: ORDLISTE.length, tegn: tekst.length,
+        ovnsloftForst: !lav.includes('oven spring') || lav.includes('ovnsløft'),
+        // Med ledende mellomrom: «stekedekket er varmt lenge» inneholder
+        // «dekket er varmt lenge» som delstreng, saa sjekken maa se paa ordet
+        // og ikke bare tegnrekka. Min egen forste versjon feilet paa nettopp det.
+        dekketEntydig: !lav.includes(' dekket er varmt lenge') &&
+                       !lav.includes(' dekket er kaldest'),
+        iManualNo: (()=>{ const l=window._lang; window._lang='no';
+                          const h=buildManualHTML(); window._lang=l;
+                          return h.includes('Ordliste') && h.includes(ORDLISTE[0].f.slice(0,40)); })(),
+        iManualEn: (()=>{ const l=window._lang; window._lang='en';
+                          const h=buildManualHTML(); window._lang=l;
+                          return h.includes('Glossary') && h.includes(ORDLISTE[0].fEn.slice(0,40)); })()
+      };
+    }""")
+    ok157 = (r157.get('doede') == [] and r157.get('uforklart') == []
+             and r157.get('antallOppslag', 0) >= 12
+             and r157.get('ovnsloftForst') is True
+             and r157.get('dekketEntydig') is True
+             and r157.get('iManualNo') is True and r157.get('iManualEn') is True)
+    results.append(('glossary_explains_the_jargon_the_steps_actually_use', ok157, r157))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

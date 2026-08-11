@@ -11,6 +11,64 @@
 //   {t:'tip',     x:'💡-boks (praktisk tips)'}
 //   {t:'smart',   x:'✨-boks (framhever en smart funksjon)'}
 
+// F30 trinn 1: appen bruker fagord den aldri forklarer. Målt over hele matrisen
+// (metode × type, ~148 000 tegn stegtekst): «emne» 275 ganger, «gluten» 106,
+// «oven spring» 30, «autolyse» 20 — ingen av dem definert noe sted. Den som
+// aldri har bakt før leser «rund godt med begge hender» og «bygger
+// overflatespenning» uten noen mulighet til å vite hva det betyr.
+//
+// `treff` er ordformene som skal finnes igjen i stegtekstene. Den lista er ikke
+// pynt: en invariant-test bruker den til å holde ordlista ærlig i begge
+// retninger — ingen oppslag som ikke brukes noe sted, og ingen kjente fagord i
+// stegtekstene uten oppslag her. Uten den råtner ordlista i stillhet så snart
+// tekstene endres.
+const ORDLISTE = [
+  { ord:'Emne', ordEn:'Dough ball', treff:['emne','emnene','emner'],
+    f:'Én ferdig rundet klump deig — den som blir én pizza. Appen regner i emner hele veien: emnevekt, antall emner, «del i 3 emner».',
+    fEn:'One finished, rounded lump of dough — the one that becomes a single pizza. The app counts in dough balls throughout: ball weight, number of balls, "divide into 3 balls".' },
+  { ord:'Gluten', ordEn:'Gluten', treff:['gluten'],
+    f:'Nettverket av proteintråder som dannes når mel og vann møtes og eltes. Det er dette som holder på gassen gjæren lager, og som gjør at deigen kan strekkes uten å rive.',
+    fEn:'The network of protein strands that forms when flour meets water and is kneaded. It is what holds on to the gas the yeast makes, and what lets the dough stretch without tearing.' },
+  { ord:'Fordeig', ordEn:'Preferment', treff:['fordeig','poolish','biga'],
+    f:'En liten deig du lager på forhånd og lar gjære lenge, før du blander den inn i hoveddeigen. Poolish er en flytende fordeig, biga en fast. Begge gir smak du ikke rekker å bygge på noen timer.',
+    fEn:'A small dough you make in advance and let ferment for a long time, before mixing it into the main dough. Poolish is a liquid preferment, biga a stiff one. Both give flavour you cannot build in a few hours.' },
+  { ord:'Fermentering', ordEn:'Fermentation', treff:['ferment'],
+    f:'Gjæringen. Gjæren spiser sukker og lager gass som hever deigen, mens enzymer og syrer bygger smak. Kulde bremser gjæren mer enn enzymene — derfor smaker en kald, lang heving mer enn en rask, varm.',
+    fEn:'The rise. The yeast eats sugar and makes gas that lifts the dough, while enzymes and acids build flavour. Cold slows the yeast more than the enzymes — which is why a long cold rise tastes deeper than a quick warm one.' },
+  { ord:'Autolyse', ordEn:'Autolyse', treff:['autolyse'],
+    f:'En hvil med bare mel og vann, før gjær og salt går i. Glutenet begynner å danne seg helt av seg selv, så du trenger å elte mindre etterpå.',
+    fEn:'A rest with only flour and water, before yeast and salt go in. The gluten starts forming on its own, so you need to knead less afterwards.' },
+  { ord:'Bulkheving', ordEn:'Bulk rise', treff:['bulk'],
+    f:'Hevingen mens deigen fortsatt er én samlet klump, før du deler den i emner.',
+    fEn:'The rise while the dough is still one single mass, before you divide it into balls.' },
+  { ord:'Runding', ordEn:'Shaping / rounding', treff:['rund godt','runding','rundet','rund '],
+    f:'Å forme emnet til en stram kule ved å dra overflaten under seg selv. Ikke pynt: det er rundingen som bygger overflatespenning.',
+    fEn:'Forming the ball into a taut sphere by drawing the surface under itself. Not cosmetic: the rounding is what builds surface tension.' },
+  { ord:'Overflatespenning', ordEn:'Surface tension', treff:['overflatespenning'],
+    f:'Den stramme «huden» rundingen lager. Den får emnet til å heve oppover i stedet for å flyte utover — grunnlaget for en høy, luftig kant.',
+    fEn:'The taut "skin" the rounding creates. It makes the ball rise upwards instead of spreading outwards — the basis for a tall, airy rim.' },
+  { ord:'Temperering (benketid)', ordEn:'Warming up (bench rest)', treff:['temperer','benketid','benktid'],
+    f:'Tiden deigen står på benken etter kjøleskapet, før steking. Kald deig er stiv og river seg; noen timer i romtemperatur gjør den strekkbar igjen, og gjæren våkner til en siste heving.',
+    fEn:'The time the dough sits on the counter after the fridge, before baking. Cold dough is stiff and tears; a few hours at room temperature make it stretchable again, and the yeast wakes for a final rise.' },
+  { ord:'Etterheving', ordEn:'Final proof', treff:['etterheving'],
+    f:'Den siste hevingen, etter at emnene er formet og før de skal i ovnen.',
+    fEn:'The last rise, after the balls are shaped and before they go in the oven.' },
+  { ord:'Ekstensibel', ordEn:'Extensible', treff:['extensibel','ekstensibel','strekkbar'],
+    f:'Lett å strekke. En ekstensibel deig lar seg dra ut uten å trekke seg tilbake — motsatt av en stram, elastisk deig som spretter tilbake.',
+    fEn:'Easy to stretch. An extensible dough pulls out without springing back — the opposite of a tight, elastic dough that snaps back.' },
+  { ord:'Ovnsløft («oven spring»)', ordEn:'Oven spring', treff:['ovnsløft'],
+    f:'Det raske løftet pizzaen får de første sekundene i ovnen, når gassen i deigen utvider seg av varmen. Høy varme gir kraftig ovnsløft — og det er det som lager den høye, boblete kanten.',
+    fEn:'The rapid lift the pizza gets in its first seconds in the oven, as the gas in the dough expands from the heat. High heat gives a strong oven spring — and that is what makes the tall, bubbly rim.' },
+  { ord:'Stekedekket', ordEn:'The deck', treff:['stekedekket','dekket/steinen'],
+    f:'Flaten pizzaen ligger på i ovnen — stein, stål eller ovnsdekket selv. Den blir varm lenge før den er gjennomvarm, og det er temperaturen i den, ikke i flammen, som avgjør bunnen.',
+    fEn:'The surface the pizza sits on in the oven — stone, steel, or the oven deck itself. It gets hot long before it is hot all the way through, and it is its temperature, not the flame, that decides the base.' },
+  { ord:'Leopardmønster', ordEn:'Leopard spotting', treff:['leopardmønster','leopard'],
+    f:'De mørke flekkene på kanten av en napoletansk pizza. De kommer av veldig høy varme på kort tid, og er et tegn på riktig steking — ikke på at noe har brent seg.',
+    fEn:'The dark spots on the rim of a Neapolitan pizza. They come from very high heat over a short time, and are a sign of correct baking — not of something burning.' }
+];
+const ORDLISTE_LINJER = ORDLISTE.map(o=>`<b>${o.ord}</b> — ${o.f}`);
+const ORDLISTE_LINJER_EN = ORDLISTE.map(o=>`<b>${o.ordEn}</b> — ${o.fEn}`);
+
 const GUIDE_INTRO = 'UltimatePizza regner <b>baklengs</b>: du sier når pizzaen skal være ferdig, så viser appen nøyaktig når og hvordan du må jobbe for å treffe. Denne bruksanvisningen går gjennom hele mobilappen — trykk et emne i lista under for å hoppe rett dit.';
 
 const GUIDE = [
@@ -252,8 +310,16 @@ const GUIDE = [
       ]},
       {t:'tip', x:'Denne bruksanvisningen holdes oppdatert i takt med appen — kommer det nye funksjoner, oppdateres teksten her også.'}
     ]
-  }
+  },
 
+  {
+    icon: '📖', title: 'Ordliste',
+    body: [
+      {t:'p', x:'Stegtekstene bruker en del bakespråk. Her står ordene forklart — du trenger ikke kunne dem for å følge planen, men de gjør det lettere å skjønne <i>hvorfor</i> et steg er som det er.'},
+      {t:'bullets', x: ORDLISTE_LINJER},
+      {t:'tip', x:'Ordlista holdes ærlig av en test: hvert oppslag her må faktisk brukes i minst én stegtekst, og kjente fagord kan ikke stå i stegtekstene uten å ha et oppslag. Så den kan ikke bli utdatert i det stille.'}
+    ]
+  }
 ];
 
 const GUIDE_INTRO_EN = 'UltimatePizza works <b>backwards</b>: you say when the pizza should be ready, and the app shows exactly when and how you need to work to hit that. This user manual walks through the entire mobile app — tap a topic in the list below to jump straight there.';
@@ -497,6 +563,14 @@ const GUIDE_EN = [
       ]},
       {t:'tip', x:'This user manual is kept updated in step with the app — when new features arrive, the text here is updated too.'}
     ]
-  }
+  },
 
+  {
+    icon: '📖', title: 'Glossary',
+    body: [
+      {t:'p', x:'The step texts use a fair amount of baking language. Here the words are explained — you do not need to know them to follow the plan, but they make it easier to understand <i>why</i> a step is the way it is.'},
+      {t:'bullets', x: ORDLISTE_LINJER_EN},
+      {t:'tip', x:'The glossary is kept honest by a test: every entry here must actually be used in at least one step text, and known jargon cannot appear in the step texts without an entry. So it cannot go stale quietly.'}
+    ]
+  }
 ];

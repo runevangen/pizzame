@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.790",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny ordliste i bruksanvisningen. Stegtekstene har hele tiden lent seg på bakespråk uten å forklare noe av det — målt over alle metoder og typer sto «emne» 275 ganger, «gluten» 106, «autolyse» 20, uten at et eneste av ordene var definert noe sted i appen. Nå er de fjorten viktigste forklart, med «emne» først: det er enheten hele appen regner i.",
+      "«Oven spring» sto på engelsk midt i norsk tekst. Det heter nå ovnsløft, med fagbegrepet i parentes første gang — du får det norske ordet, og kan fortsatt gjenkjenne uttrykket når du møter det andre steder.",
+      "«Dekket» betydde to helt ulike ting i samme app: å dekke bollen med lokk, og steinen pizzaen ligger på i ovnen. Den siste heter nå stekedekket.",
+      "Ordlista holdes ærlig av en test i begge retninger: hvert oppslag må faktisk brukes i minst én stegtekst, og en vaktliste over kjente fagord kan ikke dukke opp i tekstene uten å ha et oppslag. Den kan altså ikke bli utdatert i stillhet når tekstene endres."
+    ],
+    "changes_en": [
+      "A new glossary in the user manual. The step texts have always leaned on baking language without explaining any of it — measured across every method and type, \"dough ball\" appeared 275 times, \"gluten\" 106, \"autolyse\" 20, without a single one of those words being defined anywhere in the app. The fourteen most important are now explained, starting with the dough ball: it is the unit the whole app counts in.",
+      "\"Oven spring\" stood in English in the middle of Norwegian text. It now uses the Norwegian word, with the baking term in brackets the first time — you get your own language, and can still recognise the expression when you meet it elsewhere.",
+      "\"The cover/deck\" meant two entirely different things in the same app: covering the bowl with a lid, and the stone the pizza sits on in the oven. The latter is now called the baking deck.",
+      "The glossary is kept honest by a test in both directions: every entry must actually be used in at least one step text, and a watch list of known jargon cannot appear in the texts without having an entry. So it cannot go out of date quietly when the texts change."
+    ]
+  },
+  {
     "v": "0.788",
     "d": "august 2026",
     "d_en": "August 2026",
