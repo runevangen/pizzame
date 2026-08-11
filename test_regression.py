@@ -3179,6 +3179,77 @@ def run_behavioral_tests(page):
              and r155.get('0.3',{}).get('temperMin')==120)
     results.append(('poolish_share_splits_flour_and_water_without_losing_any', ok155, r155))
 
+    # v0.788: «litt vanskelig aa treffe» — meldt inn fra kjokkenet. Sveip over
+    # terskel × reise × varighet viste at kravet var dyrere enn det var verdt:
+    # ved 700 ms krevde 0,28 at haanda krysset 41 % av bildet, 0,20 klarte seg
+    # med 31 %, 0,16 med 19 %. Og INGEN av de fire scenariene som ikke skal
+    # utlose (5 s drift, skjelv, haand inn/ut, fram-tilbake 40 px) slo ut helt
+    # ned til 0,12 — stoygulvet er drift-vernet, ikke reisen.
+    #
+    # Testen maaler det brukeren faktisk lovet: samme vink skal bli godtatt paa
+    # en kortere innstilling og avvist paa en lengre. Maalt 3/3 og 0/3 over tre
+    # forsok per rute, saa marginene er ekte og ikke sampling-flaks.
+    r156 = page.evaluate("""async () => {
+      const c=document.createElement('canvas'); c.width=320; c.height=240;
+      const g=c.getContext('2d'); let hx=null;
+      const tegn=()=>{ g.fillStyle='#eee'; g.fillRect(0,0,320,240);
+        if(hx!==null){ g.fillStyle='#111'; g.fillRect(hx-45,80,90,80); } };
+      tegn();
+      try{ localStorage.setItem('pizzaSensorInfo','1'); }catch(e){}
+      const ekteGUM=navigator.mediaDevices.getUserMedia;
+      navigator.mediaDevices.getUserMedia=async()=>c.captureStream(30);
+      const reiseFør=vinkReiseNavn();
+      window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      openFocus(); focusGoto(0);
+      const org=window.vinkUtløst; let truffet=null;
+      window.vinkUtløst=r=>{ truffet=r; };
+      vinkStart(c.captureStream(30));
+      await new Promise(r=>setTimeout(r,400));
+      const vink=async(px)=>{
+        hx=null; tegn(); await new Promise(r=>setTimeout(r,500));
+        VINK.spor=[]; VINK.ring=[]; VINK.sistUtløst=0; truffet=null;
+        const steg=16;
+        for(let i=0;i<=steg;i++){ hx=160-px/2+px*(i/steg); tegn();
+          await new Promise(r=>setTimeout(r,700/steg)); }
+        for(let i=0;i<8;i++){ tegn(); await new Promise(r=>setTimeout(r,50)); }
+        return truffet!==null;
+      };
+      const m={};
+      for(const n of ['kort','normal','lang']){
+        setVinkReise(n);
+        m[n]={verdi:vinkReise(), px80:await vink(80), px100:await vink(100)};
+      }
+      // Valget skal overleve en omstart av detektoren (det ligger i localStorage).
+      setVinkReise('kort'); vinkStopp(); vinkStart(c.captureStream(30));
+      const husket=vinkReiseNavn();
+      // Ugyldig verdi skal ikke kunne velte det til noe udefinert.
+      setVinkReise('tull'); const etterTull=vinkReiseNavn();
+      vinkStopp(); window.vinkUtløst=org; setVinkReise(reiseFør); closeFocus();
+      navigator.mediaDevices.getUserMedia=ekteGUM;
+      return {m, husket, etterTull, standard:VINK_REISER['normal']};
+    }""")
+    _m = r156.get('m', {})
+    ok156 = (
+      # De tre innstillingene er reelt forskjellige, ikke tre navn paa samme tall.
+      _m.get('kort',{}).get('verdi') == 0.16
+      and _m.get('normal',{}).get('verdi') == 0.20
+      and _m.get('lang',{}).get('verdi') == 0.28
+      and r156.get('standard') == 0.20
+      # 100 px (31 %): godtas paa kort og normal, avvises paa lang.
+      and _m.get('kort',{}).get('px100') is True
+      and _m.get('normal',{}).get('px100') is True
+      and _m.get('lang',{}).get('px100') is False
+      # 80 px (25 %): bare kort rekker ned dit.
+      and _m.get('kort',{}).get('px80') is True
+      and _m.get('normal',{}).get('px80') is False
+      and _m.get('lang',{}).get('px80') is False
+      # Valget huskes, og tull velter det ikke.
+      and r156.get('husket') == 'kort'
+      and r156.get('etterTull') == 'kort'
+    )
+    results.append(('wave_travel_setting_actually_changes_what_is_accepted', ok156, r156))
+
     # v0.697 (Claude-oppskriftsgjennomgang): fire funn.
     # Funn 4: forme-steget og kald-heving-steget delte ordrett WHY.fk. Forme-steget
     #   har nå egen WHY.form (om runding/emner), ulik kald-hevingens WHY.fk.
@@ -5400,8 +5471,20 @@ def run_behavioral_tests(page):
       const tilbakeIRo=les();
 
       // Ekte bevegelse, men kortere enn terskelen.
+      // v0.788: reiselengden er blitt et brukervalg, og standarden er senket
+      // 0,28 → 0,20. Dette scenariet måler 0,237 i sporet — altså OVER den nye
+      // standarden. Det utløser fortsatt ikke (minstetiden stopper det først),
+      // men marginen er borte, og en test som består på en annen grunn enn den
+      // påstår er en test som ryker neste gang noe flyttes. Derfor låses
+      // terskelen til «lang» her, som er nøyaktig den verdien scenariet ble
+      // kalibrert mot. Selve valget testes for seg i r156.
+      const reiseFør=vinkReiseNavn(); setVinkReise('lang');
+      // setVinkReise tegner fokusvisningen paa nytt, saa `kv` over peker naa paa
+      // en frakoblet node: hintet skrives til den FRISKE, og testen leste den
+      // gamle. Hent den paa nytt her.
+      const kv2=document.getElementById('vink-kvittering');
       const idxFør=window._focusIdx;
-      kv.textContent=''; kv.style.opacity='0';
+      kv2.textContent=''; kv2.style.opacity='0';
       // Stort nok til å bli sett, for kort til å telle. Må ha nok frames til
       // at sporet fylles (>=3), ellers dør det som «ingen bevegelse» og
       // hintet uteblir av feil grunn.
@@ -5421,9 +5504,10 @@ def run_behavioral_tests(page):
       // bilder gir null differanse, som er nettopp den stillheten hint-grenen
       // skal reagere på. Vi tester samme oppførsel, uten transienten.
       for(let i=0;i<12;i++){ tegn(); await new Promise(r=>setTimeout(r,50)); }
-      const forLite={tekst:kv.textContent, synlig:+kv.style.opacity>0.5,
+      const forLite={tekst:kv2.textContent, synlig:+kv2.style.opacity>0.5,
                      bladdeIkke: window._focusIdx===idxFør};
 
+      setVinkReise(reiseFør);
       closeFocus();
       navigator.mediaDevices.getUserMedia=ekteGUM;
       return {

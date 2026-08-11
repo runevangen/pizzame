@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.788",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Du kan nå velge hvor langt du må vinke. Tre valg dukker opp i Fokus når vinkestyringen er på: Kort, Normal og Lang. Bytt midt i en bakst og kjenn forskjellen med en gang — du trenger ikke velge riktig på forhånd.",
+      "Standarden er senket. Før måtte hånden krysse rundt 41 % av bildet ved vanlig vinketempo; nå holder det med 31 %. Kort krever bare 19 % — under halvparten av det gamle kravet.",
+      "Grunnen til at det er trygt: fire scenarier som aldri skal utløse noe — noen som går forbi i fem sekunder, en hånd som skjelver på stedet, en hånd som strekker seg inn og ut, og en kort nøling fram og tilbake — gikk klar selv ved en terskel langt under den nye. Det er støygulvet i bildet som holder tilfeldig bevegelse ute, ikke kravet til hvor langt du vinker. Kravet kostet altså treffsikkerhet uten å gi beskyttelse tilbake.",
+      "Lang er nøyaktig den gamle oppførselen, og den blir stående. Målingene er gjort på en syntetisk hånd på et rent bilde — mel på benken, folk som går forbi og skiftende lys finnes ikke i en testrigg. Opplever du at noe utløser seg selv, har du et sted å gå tilbake til."
+    ],
+    "changes_en": [
+      "You can now choose how far you have to wave. Three options appear in Focus when wave control is on: Short, Normal and Long. Switch mid-bake and feel the difference right away — you don't have to pick correctly up front.",
+      "The default has been lowered. Before, your hand had to cross about 41 % of the frame at a normal waving pace; now 31 % is enough. Short needs only 19 % — less than half the old requirement.",
+      "Why that is safe: four scenarios that should never trigger anything — someone walking past over five seconds, a hand shaking in place, a hand reaching in and out, and a short back-and-forth hesitation — all stayed clear even at a threshold far below the new one. It is the noise floor in the image that keeps random movement out, not the requirement for how far you wave. The requirement was costing accuracy without buying protection.",
+      "Long is exactly the old behaviour, and it stays. The measurements were made with a synthetic hand on a clean image — flour on the counter, people walking past and changing light do not exist in a test rig. If something triggers on its own, you have somewhere to go back to."
+    ]
+  },
+  {
     "v": "0.787",
     "d": "august 2026",
     "d_en": "August 2026",

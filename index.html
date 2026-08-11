@@ -8257,7 +8257,38 @@ const VINK_VINDU=2500;               // ms — maks alder på sporet (drift-vern
 // v0.783: 0.30 → 0.28. Målt: 41 %-vink vippet mellom treff og bom — reisen er
 // bare 11 poeng over terskelen, og sentroide-støyen avgjorde. 0.28 gir margin,
 // og 25 %-vink ligger fortsatt trygt under (aldri treff i målematrisen).
-const VINK_REISE=0.28;               // andel av bredden tyngdepunktet må flytte seg
+//
+// v0.788: reiselengden er nå et VALG, ikke en fast konstant, og standarden er
+// senket. Sveip over terskel × reise × varighet (syntetisk hånd) ved 700 ms —
+// tempoet et naturlig vink har:
+//     0.28 krevde at hånda krysset 41 % av bildet
+//     0.20 klarte seg med 31 %
+//     0.16 klarte seg med 19 %
+// Og fire scenarier som ALDRI skal utløse — 5 s drift over hele bildet, skjelv
+// ±14 px i 2 s, hånd inn og ut på stedet, og fram-tilbake på 40 px — gikk klar
+// helt ned til 0.12. Terskelen kostet altså treffsikkerhet uten å kjøpe
+// beskyttelse: det er STØYGULVET (VINK_STØY) som vokter mot tilfeldig
+// bevegelse, akkurat som v0.783-kommentaren over allerede påstod.
+//
+// Fire syntetiske scenarier på et rent lerret kan likevel ikke bevise at et
+// ekte kjøkken er trygt — mel, forbipasserende og skiftende lys finnes ikke i
+// riggen. Derfor er «Lang» beholdt som nøyaktig dagens gamle oppførsel, slik at
+// den som opplever noe som utløser seg selv har et sted å gå tilbake til.
+const VINK_REISER={kort:0.16, normal:0.20, lang:0.28};
+function vinkReiseNavn(){
+  try{ const v=localStorage.getItem('pizzaVinkReise'); if(VINK_REISER[v]) return v; }catch(e){}
+  return 'normal';
+}
+function vinkReise(){ return VINK_REISER[vinkReiseNavn()]; }
+function setVinkReise(navn){
+  if(!VINK_REISER[navn]) return;
+  try{ localStorage.setItem('pizzaVinkReise', navn); }catch(e){}
+  // Sporet som ligger der er samlet under den gamle terskelen. Beholdes det,
+  // kan et halvferdig vink utløse i det du bytter — og da måler du bryteren,
+  // ikke bevegelsen.
+  VINK.spor=[];
+  try{ renderFocus(); }catch(e){}
+}
 const VINK_MINTID=180;               // ms — raskere enn dette er flimmer, ikke et vink
 const VINK_PAUSE=1200;               // ms sperre etter et utløst vink
 const VINK_DOMINANS=1.3;             // hvor mye større den ene aksen må være
@@ -8418,7 +8449,7 @@ function vinkTikk(){
   if(!vannrett && !loddrett) return;
   const akse = vannrett ? 'x' : 'y';
   const reise = vannrett ? dx : dy;
-  if(Math.abs(reise) < VINK_REISE) return;
+  if(Math.abs(reise) < vinkReise()) return;
   // Retningen må være konsekvent. Uten dette utløser en hånd som går fram og
   // tilbake — eller en person som passerer bak deg — på tilfeldig støy.
   const tegn=Math.sign(reise);
@@ -8770,6 +8801,14 @@ function renderFocus(){
         <span id="vink-prikk" style="position:absolute;top:50%;left:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--forno-accent);opacity:.25;transition:left .1s linear,top .1s linear,opacity .12s linear;will-change:left,top,opacity"></span>
       </span>
       <span id="vink-kvittering" style="font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;color:var(--forno-accent-text);min-width:56px;text-align:left"></span>
+    </div>`:''}
+    ${VINK.på?`<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;flex-wrap:wrap">
+      <span style="font-size:10px;color:var(--forno-text-faint)">${L('Hvor langt du må vinke','How far you must wave')}</span>
+      ${['kort','normal','lang'].map(n=>{
+        const valgt=vinkReiseNavn()===n;
+        const tekst={kort:L('Kort','Short'),normal:L('Normal','Normal'),lang:L('Lang','Long')}[n];
+        return `<span onclick="setVinkReise('${n}')" style="font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;cursor:pointer;${valgt?'background:var(--forno-accent-soft);color:var(--forno-accent-text);border:1px solid var(--forno-accent)':'background:var(--forno-bg-raised);color:var(--forno-text-faint);border:1px solid var(--forno-border)'}">${tekst}</span>`;
+      }).join('')}
     </div>`:''}
     <div id="focus-scroll" style="flex:1;overflow-y:auto;padding:14px 18px 8px;text-align:left;display:flex;flex-direction:column">
       <div style="font-size:15px;font-weight:700;color:var(--forno-accent-text)">${escH(timeTxt)}${escH(durTxt)}</div>
