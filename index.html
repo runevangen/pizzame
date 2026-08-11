@@ -1579,7 +1579,19 @@ function populateMeltypeSelects(){
   ['gmel','mob-gmel','mob-gmel-fj'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     const cur=el.value||S.meltype;
-    el.innerHTML=MELTYPER.map(f=>`<option value="${escH(f.v)}">${f.generic?L('Annet mel / ikke i listen','Other / not listed'):escH(f.t)}</option>`).join('');
+    // v0.794: gjæringstiden står i lista, ikke bare i varselet du får etterpå.
+    // Uten den måtte man velge mel, se planen, lese varselet, og gå tilbake —
+    // svaret på «hvilket mel tåler dette?» lå ett skritt for sent.
+    //
+    // «Annet mel» holdes utenfor med vilje: den har ferm {mn:999, mx:0}, et
+    // umulig spenn satt nettopp for at ingen varsler skal slå ut på et mel
+    // appen ikke kjenner. Skrevet ut ville det blitt «999–0 t».
+    el.innerHTML=MELTYPER.map(f=>{
+      if(f.generic) return `<option value="${escH(f.v)}">${L('Annet mel / ikke i listen','Other / not listed')}</option>`;
+      const sp=(f.ferm && Number.isFinite(f.ferm.mn) && f.ferm.mx>f.ferm.mn)
+        ? L(` · ${f.ferm.mn}–${f.ferm.mx} t`,` · ${f.ferm.mn}–${f.ferm.mx} h`) : '';
+      return `<option value="${escH(f.v)}">${escH(f.t)}${sp}</option>`;
+    }).join('');
     if(MELTYPER.some(f=>f.v===cur)) el.value=cur;
     else { el.value=MELTYPER[0].v; }
   });

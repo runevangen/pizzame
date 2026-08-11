@@ -8067,6 +8067,63 @@ def _atferd_7(page, results):
       and abs(r160.get('ekteTotalT',0) - 69.3) < 0.5)
     results.append(('window_card_says_which_hours_it_is_talking_about', ok160, r160))
 
+    # v0.794: gjaeringstiden staar naa i selve melnedtrekket. Foer dette maatte
+    # man velge mel, se planen, lese varselet og gaa tilbake for aa faa svar paa
+    # «hvilket mel taaler 69 timer?» - tallet fantes, men laa ett skritt for sent.
+    #
+    # Testen sammenligner teksten med MELTYPER-dataene i stedet for aa fryse en
+    # liste her: nye mel fra serveren skal dekkes automatisk. «Annet mel» har med
+    # vilje et umulig spenn ({mn:999, mx:0}) slik at ingen varsler slaar ut paa et
+    # mel appen ikke kjenner - skrevet ut ville det blitt «999-0 t», saa testen
+    # holder eksplisitt oeye med at det ikke lekker ut i lista.
+    r161 = page.evaluate("""() => {
+      const sv={l:window._lang, mt:S.meltype};
+      const les=id=>{ const el=document.getElementById(id);
+        return el ? [...el.options].map(o=>({v:o.value, t:o.textContent})) : null; };
+      const ut={avvik:[], riktig:true};
+      window._lang='no'; populateMeltypeSelects();
+      const no=les('gmel')||[];
+      ut.antall=no.length; ut.melTall=MELTYPER.length;
+      MELTYPER.forEach(f=>{
+        const rad=no.find(o=>o.v===f.v);
+        if(!rad){ ut.riktig=false; ut.avvik.push('mangler '+f.v); return; }
+        if(f.generic){
+          ut.generisk=rad.t;
+          if(/\\d/.test(rad.t)){ ut.riktig=false; ut.avvik.push('generisk viser tall: '+rad.t); }
+          return;
+        }
+        const vent=`${f.t} · ${f.ferm.mn}–${f.ferm.mx} t`;
+        if(rad.t!==vent){ ut.riktig=false; ut.avvik.push(rad.t+' != '+vent); }
+      });
+      ut.eksempel=(no.find(o=>o.v==='manitoba')||{}).t;
+      window._lang='en'; populateMeltypeSelects();
+      const en=les('gmel')||[];
+      ut.enEksempel=(en.find(o=>o.v==='manitoba')||{}).t;
+      ut.enGenerisk=(en.find(o=>(MELTYPER.find(f=>f.v===o.v)||{}).generic)||{}).t;
+      ut.enTimer=en.filter(o=>!(MELTYPER.find(f=>f.v===o.v)||{}).generic)
+                   .every(o=>/ · \\d+–\\d+ h$/.test(o.t));
+      // Valgt mel skal overleve at lista bygges paa nytt - hele grunnen til at
+      // funksjonen leser `cur` foer den skriver om innmaten.
+      window._lang='no';
+      const el=document.getElementById('gmel'); el.value='couco';
+      populateMeltypeSelects();
+      ut.beholdtValg = el.value==='couco';
+      // Mobilnedtrekkene mates fra samme funksjon og skal ha samme innhold.
+      ut.mobilLik = JSON.stringify(les('mob-gmel')) === JSON.stringify(les('gmel'));
+      window._lang=sv.l; S.meltype=sv.mt; populateMeltypeSelects();
+      return ut;
+    }""")
+    ok161 = (r161.get('riktig') is True
+             and r161.get('antall') == r161.get('melTall')
+             and r161.get('eksempel') == 'Caputo Manitoba Oro · 24–120 t'
+             and r161.get('enEksempel') == 'Caputo Manitoba Oro · 24–120 h'
+             and r161.get('generisk') == 'Annet mel / ikke i listen'
+             and r161.get('enGenerisk') == 'Other / not listed'
+             and r161.get('enTimer') is True
+             and r161.get('beholdtValg') is True
+             and r161.get('mobilLik') is True)
+    results.append(('flour_dropdown_shows_fermentation_range', ok161, r161))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

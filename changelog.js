@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.794",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Melvelgeren viser nå hvor lenge hvert mel er ment å gjære: «Caputo Manitoba Oro · 24–120 t». Tallene har alltid ligget i appen, men de dukket først opp som et varsel etter at du hadde valgt — så spørsmålet «hvilket mel tåler 69 timer?» måtte besvares ved å prøve seg fram.",
+      "«Annet mel / ikke i listen» står fortsatt uten tall. Der kjenner ikke appen melet, og da er det riktigere å tie enn å gjette."
+    ],
+    "changes_en": [
+      "The flour picker now shows how long each flour is meant to ferment: \"Caputo Manitoba Oro · 24–120 h\". The numbers were always in the app, but they only showed up as a warning after you had chosen — so \"which flour handles 69 hours?\" had to be answered by trial and error.",
+      "\"Other / not listed\" still shows no range. There the app does not know the flour, and saying nothing is more honest than guessing."
+    ]
+  },
+  {
     "v": "0.793",
     "d": "august 2026",
     "d_en": "August 2026",
