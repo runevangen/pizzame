@@ -1,0 +1,169 @@
+name: Tester
+
+# Hvorfor denne finnes: testsuiten har til nå kjørt på kommando, skrevet til
+# skjermen og avsluttet. Ingenting ble lagret, så spørsmålet «hvilke tester har
+# feilet den siste måneden?» hadde ikke noe datagrunnlag å svare fra.
+#
+# Den viktigste jobben er derfor ikke `test` — det er `stabilitet`. En test som
+# feiler hver gang oppdager man med en gang. En test som feiler hver tredje
+# kjøring ser man bare hvis man tilfeldigvis kjører suiten mange ganger på rad,
+# og da tolker man den lett som «uflaks» og kjører på nytt. Vinkindikator-testen
+# feilet tilfeldig fire ganger på én dag før noen så mønsteret.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # 03:15 UTC = 05:15 norsk sommertid. Tidspunktet er vilkårlig, men
+    # minuttallet er med vilje ikke 0 — GitHub setter jobber i kø når alle
+    # verdens cron-er fyrer på hel time.
+    - cron: '15 3 * * *'
+
+# En ny push gjør en pågående kjøring på samme gren uinteressant.
+concurrency:
+  group: tester-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Testsuite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Suiten pinner nettleserens tidssone selv (Europe/Oslo i hver
+      # browser-kontekst), men Python-siden leser systemklokka. Uten dette
+      # kjører runneren i UTC og kan drive fra det som er testet lokalt.
+      TZ: Europe/Oslo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer Playwright + Chromium
+        run: |
+          python -m pip install --upgrade pip
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+
+      - name: Kjør testsuiten
+        id: kjor
+        run: |
+          set -o pipefail
+          # MERK: testkjøringen står alene, ikke bak et rør i en &&-kjede.
+          # Den feilen har vi gjort før — `tail` sin exitkode maskerte to
+          # feilende tester, og rødt nådde main. `tee` med pipefail beholder
+          # exitkoden fra python.
+          python test_regression.py 2>&1 | tee resultat.txt
+
+      - name: Oppsummer i kjøringen
+        if: always()
+        run: |
+          {
+            echo "## Testsuite"
+            echo
+            tail -n 1 resultat.txt
+            echo
+            if grep -q '^❌' resultat.txt; then
+              echo "### Feilet"
+              echo
+              echo '| Test | Detalj |'
+              echo '|---|---|'
+              grep '^❌' resultat.txt | while IFS= read -r linje; do
+                navn="${linje#❌ }"; navn="${navn%%:*}"
+                detalj="${linje#*: }"
+                # Rørtegn i detaljteksten ville sprengt tabellen.
+                detalj="$(printf '%s' "$detalj" | tr '|' '/' | cut -c1-300)"
+                echo "| \`$navn\` | $detalj |"
+              done
+            else
+              echo "Alle grønne."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ta vare på logg
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testlogg-${{ github.run_number }}-${{ github.sha }}
+          path: resultat.txt
+          # 90 dager gir god margin til å svare på «siste 30 dager».
+          retention-days: 90
+
+  stabilitet:
+    name: Stabilitetssjekk (nattlig)
+    # Bare på skjema og manuelt — tre kjøringer på hver push ville vært sløsing.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TZ: Europe/Oslo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer Playwright + Chromium
+        run: |
+          python -m pip install --upgrade pip
+          pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+
+      - name: Kjør suiten tre ganger
+        run: |
+          for i in 1 2 3; do
+            echo "=== kjøring $i ==="
+            python test_regression.py > "kjor$i.txt" 2>&1 || true
+            tail -n 1 "kjor$i.txt"
+            grep '^❌' "kjor$i.txt" | sed 's/:.*//; s/^❌ //' > "feil$i.txt" || true
+          done
+
+      - name: Skill ustabile tester fra reelle feil
+        run: |
+          cat feil1.txt feil2.txt feil3.txt | sort | uniq -c | sort -rn > telling.txt
+          # 3 av 3 = reell feil (koden er gal). 1–2 av 3 = ustabil test
+          # (koden er trolig i orden). Skillet er hele poenget: de to krever
+          # helt ulik handling, og uten tre kjøringer ser de helt like ut.
+          awk '$1==3 {print}' telling.txt > ekte.txt
+          awk '$1<3  {print}' telling.txt > ustabile.txt
+          {
+            echo "## Stabilitetssjekk — 3 kjøringer"
+            echo
+            if [ -s ekte.txt ]; then
+              echo "### Feilet i ALLE tre — reell feil"
+              echo
+              awk '{ $1=""; sub(/^ /,""); print "- `" $0 "`" }' ekte.txt
+              echo
+            fi
+            if [ -s ustabile.txt ]; then
+              echo "### Feilet i noen, ikke alle — USTABIL TEST"
+              echo
+              echo '| Test | Feilet i |'
+              echo '|---|---|'
+              awk '{ n=$1; $1=""; sub(/^ /,""); print "| `" $0 "` | " n " av 3 |" }' ustabile.txt
+              echo
+              echo "En test som feiler av og til er verre enn en som feiler alltid: den lærer deg å kjøre på nytt i stedet for å se etter."
+            fi
+            if [ ! -s ekte.txt ] && [ ! -s ustabile.txt ]; then
+              echo "Tre av tre grønne."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          # En ustabil test skal ikke felle bygget — den skal SES. Reelle feil
+          # felles av `test`-jobben over, som kjører på hver push uansett.
+
+      - name: Ta vare på loggene
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stabilitet-${{ github.run_number }}
+          path: |
+            kjor1.txt
+            kjor2.txt
+            kjor3.txt
+            telling.txt
+          retention-days: 90
