@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.791",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Fagordene i stegteksten er nå trykkbare. Ser du «overflatespenning», «ovnsløft» eller «emne» med prikket strek under, kan du trykke og få forklaringen der og da — i stedet for å slå opp i ordlista etterpå, når spørsmålet er glemt.",
+      "Bare første forekomst i hvert avsnitt merkes. Et steg som sier «emne» fire ganger skal ikke se ut som en vegg av understreker.",
+      "Understegene er med vilje holdt utenfor. De er en trykkflate for avhaking, og et trykkbart ord inni ville slåss med den bevegelsen du er der for å gjøre.",
+      "Samtidig rettet: «extensibel» skrives ekstensibel på norsk, og «rundt» (som i «rundt 20 minutter») ble en periode forvekslet med formingsordet «runding»."
+    ],
+    "changes_en": [
+      "The baking terms in the step text are now tappable. If you see \"surface tension\", \"oven spring\" or \"dough ball\" with a dotted underline, you can tap it and get the explanation right there — instead of looking it up in the glossary afterwards, when the question has been forgotten.",
+      "Only the first occurrence in each paragraph is marked. A step that says \"dough ball\" four times should not look like a wall of underlines.",
+      "Sub-steps are deliberately left out. They are a tap surface for ticking off, and a tappable word inside would fight the very gesture you are there to make.",
+      "Also fixed: \"extensible\" is spelled correctly in Norwegian now, and \"around\" (as in \"around 20 minutes\") was briefly confused with the shaping term \"rounding\"."
+    ]
+  },
+  {
     "v": "0.790",
     "d": "august 2026",
     "d_en": "August 2026",

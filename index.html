@@ -338,6 +338,16 @@ body.mob-mode .mob-swait b{color:var(--forno-text)}
 .mob-snote{border-left:2px solid #BA7517;border-radius:0;padding:2px 0 2px 9px;font-size:11px;color:#633806;margin-top:.35rem;line-height:1.5}
 body.mob-mode .mob-snote{border-left-color:#6b4a1f;color:var(--forno-text-muted)}
 .mob-sdesc{font-size:12px;color:#3A3A3C;margin-top:.4rem;line-height:1.6}
+/* F30 trinn 2: fagord skal være synlig trykkbare, men ikke rope. Prikket
+   understrek leses som «her er det mer», mens en heltrukken lenke ville
+sett ut som noe som tar deg vekk fra planen. */
+.fagord{border-bottom:1px dotted currentColor;cursor:pointer;opacity:.92}
+.fagord:focus{outline:2px solid var(--forno-accent);outline-offset:2px;border-radius:2px}
+#fagord-boks{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px}
+.fagord-kort{background:var(--forno-bg-raised,#fff);color:var(--forno-text,#111);border-radius:14px;padding:18px 18px 14px;max-width:340px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.fagord-ord{font-weight:800;font-size:16px;margin-bottom:6px;color:var(--forno-accent-text,#111)}
+.fagord-tekst{font-size:13.5px;line-height:1.55;color:var(--forno-text-muted,#333)}
+.fagord-lukk{margin-top:14px;width:100%;height:40px;border:none;border-radius:9px;background:var(--forno-accent,#c1440e);color:#fff;font-weight:700;font-size:13px;cursor:pointer}
 body.mob-mode .mob-sdesc{color:var(--forno-text-muted)}
 .mob-sneeds{display:flex;flex-wrap:wrap;gap:5px;margin-top:.45rem}
 .mob-needchip{font-size:11px;font-weight:600;background:#fbe4d4;color:#c2410c;border:1px solid #cfe8dc;border-radius:6px;padding:3px 8px}
@@ -2708,7 +2718,7 @@ function rawSteps(a){
           L(`Elt til deigen er glatt og smidig`,`Knead until the dough is smooth and supple`)
         ],
         why:L('Poolishen har allerede fermentert halvparten av melet og bidrar med mye av smak- og aromautviklingen — resten inkorporeres effektivt uansett metode.',`The poolish has already fermented half the flour and contributes much of the flavor and aroma development — the rest is incorporated efficiently regardless of method.`),
-        tip:L(`Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer extensibel (lettere å strekke) samtidig som den utvikler smak. ${deigTempSetning()}`,`The dough will feel more active and lightly sticky than standard. That's normal — poolish makes the dough more extensible (easier to stretch) while it develops flavor. ${deigTempSetning()}`)},
+        tip:L(`Deigen vil kjennes mer aktiv og lett klissete enn standard. Det er normalt — poolish gjør deigen mer ekstensibel (lettere å strekke) samtidig som den utvikler smak. ${deigTempSetning()}`,`The dough will feel more active and lightly sticky than standard. That's normal — poolish makes the dough more extensible (easier to stretch) while it develops flavor. ${deigTempSetning()}`)},
       {title:'Romtemperaturheving',loc:'rom',at:aM(mixAt,20),dur:rt,passive:true,desc:L(`La heve ca. ${rt} min ved ${S.temp}°C, dekket.`,`Let rise about ${rt} min at ${S.temp}°C, covered.`),substeps:[L(`Dekk til`,`Cover`),L(`La heve ca. ${rt} min ved ${S.temp}°C`,`Let rise about ${rt} min at ${S.temp}°C`)],why:rtW(rt),tip:TIP.roomRise},
       ...tailSteps(aM(mixAt,20+rt))
     ];
@@ -3190,7 +3200,7 @@ function renderSteps(steps, mode='desktop'){
     const ingOpen = window._openIng.has(i);
     const subOpen = window._openSub.has(i);
     const tipOpen = window._openTip.has(i);
-    const descBlock = (s.desc && !(hasSub && subOpen)) ? `<div class="${C.desc}">${s.desc}</div>` : '';
+    const descBlock = (s.desc && !(hasSub && subOpen)) ? `<div class="${C.desc}">${merkFagord(s.desc)}</div>` : '';
     const detailIcons = (hasNeeds||hasSub||hasTip)
       ? `<div class="step-detail-icons">`
         + (hasNeeds?`<button type="button" class="step-detail-btn step-detail-ico${ingOpen?' on':''}" aria-pressed="${ingOpen}" aria-label="${L('Ingredienser','Ingredients')}" title="${L('Ingredienser','Ingredients')}" onclick="toggleStepDetail('ing',${i})">🧾</button>`:'')
@@ -3201,7 +3211,7 @@ function renderSteps(steps, mode='desktop'){
     const ingBlock = (hasNeeds && ingOpen) ? `<div class="${C.needs}">${s.needs.map(n=>`<span class="${C.needchip}">${n}</span>`).join('')}</div>` : '';
     const bodyBlock = (hasSub && subOpen) ? substepsHTML(s, i) : '';
     const tipBlock = (hasTip && tipOpen)
-      ? (s.why?`<div class="${C.why}"><b>${L('Hvorfor','Why')}:</b> ${s.why}</div>`:'') + (s.tip?`<div class="${C.tip}"><b>Tips:</b> ${s.tip}</div>`:'')
+      ? (s.why?`<div class="${C.why}"><b>${L('Hvorfor','Why')}:</b> ${merkFagord(s.why)}</div>`:'') + (s.tip?`<div class="${C.tip}"><b>Tips:</b> ${merkFagord(s.tip)}</div>`:'')
       : '';
     if(s.sessionNote){
       html += `<div class="session-banner">⏱️ ${escH(s.sessionNote)}</div>`;
@@ -8182,6 +8192,66 @@ function toggleSubstepDone(stepIdx, subIdx){
   persistCheckedSubsteps();
   const mobEl=document.getElementById('mob-layout');
   if(mobEl&&mobEl.classList.contains('active')){ mobGen(); } else { gen(); }
+}
+// F30 trinn 2: trykkbare fagord i stegteksten.
+//
+// Backloggen antok at hvert ord måtte merkes i kildeteksten, og bandt derfor
+// dette til F29 — som ville betydd å åpne alle 45 stegene og 541 mengdeuttrykk.
+// Men ordlista finnes allerede som data, så matchingen kan gjøres i den FERDIG
+// RENDREDE teksten i stedet. Kildestrengene står urørt, og et nytt oppslag i
+// ordlista blir trykkbart uten at noen stegtekst endres.
+//
+// To regler som begge er der for lesbarheten, ikke for teknikken:
+//  · bare FØRSTE forekomst i hver tekstblokk merkes — ellers blir et avsnitt
+//    med «emne» fire ganger til en vegg av understreker
+//  · understeg merkes IKKE. De er en trykkflate for avhaking, og et trykkbart
+//    ord inni ville slåss med den bevegelsen brukeren er der for å gjøre.
+const FAGORD_BOKSTAV = 'A-Za-zÆØÅæøåéèü';
+function merkFagord(html){
+  if(!html || typeof ORDLISTE === 'undefined') return html;
+  // Del i tagger og tekst, og rør bare teksten — ellers kan et treff havne
+  // inni et attributt og ødelegge markup.
+  const deler = String(html).split(/(<[^>]*>)/);
+  const brukt = new Set();
+  // Lengste treff først, så «overflatespenning» ikke blir spist av et kortere ord.
+  const kandidater = [];
+  ORDLISTE.forEach((o, idx) => (o.treff || []).forEach(t => {
+    const tt = t.trim();
+    if (tt) kandidater.push({ idx, t: tt });
+  }));
+  kandidater.sort((a, b) => b.t.length - a.t.length);
+  for (let d = 0; d < deler.length; d++) {
+    if (d % 2 === 1) continue;                   // oddetall = tagg
+    for (const k of kandidater) {
+      if (brukt.has(k.idx)) continue;
+      const esc = k.t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Ordet må starte på ordgrense, og vi tar med resten av ordet slik at
+      // «ferment» merker «fermenterer» og «emne» merker «emnene».
+      const re = new RegExp('(^|[^' + FAGORD_BOKSTAV + '])(' + esc + '[' + FAGORD_BOKSTAV + ']*)', '');
+      const m = deler[d].match(re);
+      if (!m) continue;
+      brukt.add(k.idx);
+      deler[d] = deler[d].replace(re, (hel, f, ord) =>
+        f + '<span class="fagord" role="button" tabindex="0" onclick="visFagord(' + k.idx +
+        ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();visFagord(' + k.idx + ')}">' + ord + '</span>');
+    }
+  }
+  return deler.join('');
+}
+function visFagord(idx){
+  const o = (typeof ORDLISTE !== 'undefined') ? ORDLISTE[idx] : null;
+  if (!o) return;
+  const en = window._lang === 'en';
+  document.getElementById('fagord-boks')?.remove();
+  const boks = document.createElement('div');
+  boks.id = 'fagord-boks';
+  boks.innerHTML = '<div class="fagord-kort" onclick="event.stopPropagation()">'
+    + '<div class="fagord-ord">' + (en ? o.ordEn : o.ord) + '</div>'
+    + '<div class="fagord-tekst">' + (en ? o.fEn : o.f) + '</div>'
+    + '<button type="button" class="fagord-lukk" onclick="document.getElementById(\'fagord-boks\').remove()">'
+    + (en ? 'Got it' : 'Skjønner') + '</button></div>';
+  boks.onclick = () => boks.remove();
+  document.body.appendChild(boks);
 }
 function substepsHTML(step, stepIdx){
   const checkable = !step.passive;

@@ -7816,6 +7816,72 @@ def _atferd_7(page, results):
              and r157.get('iManualNo') is True and r157.get('iManualEn') is True)
     results.append(('glossary_explains_the_jargon_the_steps_actually_use', ok157, r157))
 
+    # F30 trinn 2 (v0.791): fagordene er trykkbare i stegteksten. Backloggen
+    # antok at hvert ord maatte merkes i KILDEteksten, og bandt derfor jobben til
+    # F29 - 45 steg og 541 mengdeuttrykk. Ordlista er data, saa merkingen kan
+    # gjoeres i den ferdig rendrede teksten i stedet, og kildestrengene staar urort.
+    #
+    # Det flytter risikoen: den ligger ikke lenger i aa glemme et ord, men i aa
+    # odelegge markup eller merke feil ord. Begge deler testes her.
+    r158 = page.evaluate("""() => {
+      const sv={m:S.method,pc:S.poolishCold,ph:S.poolishH,c:S.cold,mo:S.mode};
+      window._planChosen=true; setLayout('mob');
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      S.method='poolish'; S.poolishCold=true; S.poolishH=18; S.cold=24; S.mode='start';
+      window._openTip=new Set([0,1,2,3,4,5,6,7,8,9]);
+      window._openSub=new Set([0,1,2]);
+      mobShowTab('plan'); mobGen();
+      const rot=document.getElementById('mob-plan-content');
+      const merket=[...rot.querySelectorAll('.fagord')];
+      // Markup: teksten skal vaere UENDRET av merkingen. Sammenlign innerText
+      // mot samme tekst med merkingen fjernet.
+      const kopi=rot.cloneNode(true);
+      kopi.querySelectorAll('.fagord').forEach(e=>e.replaceWith(...e.childNodes));
+      // textContent, ikke innerText: `kopi` er frakoblet fra dokumentet og har
+      // dermed ingen layout, saa innerText der oppfoerer seg som textContent
+      // mens rot.innerText tar med CSS. De to er ikke sammenlignbare.
+      const uendret = kopi.textContent.replace(/\s+/g,' ').trim()
+                    === rot.textContent.replace(/\s+/g,' ').trim();
+      // Bare foerste forekomst per tekstblokk.
+      const perBlokk=[...rot.querySelectorAll('.mob-sdesc')].map(d=>
+        [...d.querySelectorAll('.fagord')].map(x=>x.textContent.toLowerCase()));
+      const duplikat = perBlokk.some(a=>new Set(a).size!==a.length);
+      // Understeg er en trykkflate for avhaking - ingen ord der.
+      const iUnderseg = rot.querySelectorAll('.substep-item .fagord').length;
+      // Telling alene er for svakt: skrur man av merkingen i BESKRIVELSEN
+      // holder tips-blokkene totalen oppe, og mutasjonen slipper gjennom.
+      // Maalt: det gjorde den. Derfor telles blokkene hver for seg - og de maa
+      // telles HER, for nullstillingen nederst tegner planen paa nytt med
+      // standardvalg og lukkede tips. Foerste forsok talte den planen.
+      const iDesc = rot.querySelectorAll('.mob-sdesc .fagord').length;
+      const iTips = rot.querySelectorAll('.mob-swhy .fagord, .mob-stip .fagord').length;
+      // «rundt 20 min» er preposisjonen, ikke formingsordet. Denne falske
+      // positiven fantes i forste versjon fordi treffordet var 'rund '.
+      const feilOrd = merket.map(x=>x.textContent.toLowerCase())
+                            .filter(o=>['rundt','rundtur','bolle','bollen'].includes(o));
+      // Trykk skal aapne forklaringen.
+      let popup=null;
+      if(merket.length){ merket[0].click();
+        const b=document.getElementById('fagord-boks');
+        popup = b ? {harOrd:!!b.querySelector('.fagord-ord').textContent.trim(),
+                     harTekst:b.querySelector('.fagord-tekst').textContent.length>30} : null;
+        b&&b.remove(); }
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      S.method=sv.m;S.poolishCold=sv.pc;S.poolishH=sv.ph;S.cold=sv.c;S.mode=sv.mo;
+      window._openTip=new Set(); window._openSub=new Set(); mobGen();
+      return {antall:merket.length, iDesc, iTips, uendret, duplikat, iUnderseg, feilOrd, popup};
+    }""")
+    ok158 = (r158.get('antall', 0) >= 10
+             and r158.get('iDesc', 0) >= 5
+             and r158.get('iTips', 0) >= 3
+             and r158.get('uendret') is True
+             and r158.get('duplikat') is False
+             and r158.get('iUnderseg') == 0
+             and r158.get('feilOrd') == []
+             and (r158.get('popup') or {}).get('harOrd') is True
+             and (r158.get('popup') or {}).get('harTekst') is True)
+    results.append(('jargon_in_the_steps_is_tappable_without_touching_the_text', ok158, r158))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

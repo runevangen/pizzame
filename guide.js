@@ -41,7 +41,7 @@ const ORDLISTE = [
   { ord:'Bulkheving', ordEn:'Bulk rise', treff:['bulk'],
     f:'Hevingen mens deigen fortsatt er én samlet klump, før du deler den i emner.',
     fEn:'The rise while the dough is still one single mass, before you divide it into balls.' },
-  { ord:'Runding', ordEn:'Shaping / rounding', treff:['rund godt','runding','rundet','rund '],
+  { ord:'Runding', ordEn:'Shaping / rounding', treff:['rund godt','runding','rundet','rundes'],
     f:'Å forme emnet til en stram kule ved å dra overflaten under seg selv. Ikke pynt: det er rundingen som bygger overflatespenning.',
     fEn:'Forming the ball into a taut sphere by drawing the surface under itself. Not cosmetic: the rounding is what builds surface tension.' },
   { ord:'Overflatespenning', ordEn:'Surface tension', treff:['overflatespenning'],

@@ -1065,7 +1065,7 @@ det er samme aksen (hvor mye gjær trengs egentlig), bare fra en annen kant.
 - Største jobben av de tre lagene — alle stegtekstene må røres. Ta den neste gang
   stegtekstene uansett skal åpnes. **[baseline]** (rendringslaget flytter seg).
 
-### F30. Ordliste — appen bruker fagord den aldri forklarer
+### F30. Ordliste — appen bruker fagord den aldri forklarer ✅ BYGGET (trinn 1 v0.790, trinn 2 v0.791)
 - **I klartekst:** stegtekstene lener seg tungt på bakespråk, og ingen av ordene
   er definert noe sted i appen. Den som aldri har bakt før leser «rund godt med
   begge hender» og «bygger overflatespenning» uten å ha noen mulighet til å
@@ -1107,7 +1107,19 @@ det er samme aksen (hvor mye gjær trengs egentlig), bare fra en annen kant.
   2. **Trykkbare ord i stegteksten.** Det som faktisk hjelper, siden spørsmålet
      dukker opp mens man står og leser. Men det krever at hver stegtekst merkes,
      altså at alle strengene røres.
-- **Ta trinn 2 sammen med F29.** F29 skal uansett åpne samtlige stegtekster for å
+> ✅ **Begge trinn bygget — og trinn 2 trengte ikke F29.** Antagelsen under var
+> at hvert ord måtte merkes i kildeteksten. Men ordlista er data, så merkingen
+> gjøres i den ferdig rendrede teksten: kildestrengene står urørt, og et nytt
+> oppslag blir trykkbart uten at noen stegtekst endres. Det gjorde trinn 2 til
+> en liten jobb, og løsnet den fra F29 helt.
+>
+> Samtidig avklart om **F29**: den skal IKKE generere prosaen. Å generere 541
+> mengder inn i naturlige setninger krever et malsystem som ville flatet ut
+> språket. Den avgrensede formen står: deklarer `uses:{}`, generér `needs`
+> derfra (17 håndskrevne lister forsvinner), og la en invariant kreve at hver
+> mengde i prosaen er deklarert.
+
+- ~~**Ta trinn 2 sammen med F29.**~~ F29 skal uansett åpne samtlige stegtekster for å
   innføre `uses:{}` — å merke fagord i samme runde koster nesten ingenting ekstra,
   mens to separate runder gjennom de samme strengene koster dobbelt.
 - **Test:** en invariant kan holde lista ærlig — hvert ord i ordlista må faktisk
