@@ -1200,7 +1200,7 @@ var rekkefølge-avhengige.
 - Se etter samme mønster i andre `scrollIntoView`-kall som utløses av en
   innstillingsendring i stedet for av et bevisst «vis meg»-trykk.
 
-### F32. Bilder til stegene — skuddliste, nøkling og de fire som må skytes om
+### F32. Bilder til stegene — motivliste, kobling til steg, og de fire som må tas på nytt
 
 - **I klartekst:** stegtekstene beskriver vurderinger som er vanskelige å sette
   ord på — «bobler aktivt», «fjærer sakte halvveis tilbake», «vokst 30–50 %».
