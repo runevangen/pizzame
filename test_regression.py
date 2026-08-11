@@ -8014,6 +8014,59 @@ def _atferd_7(page, results):
              and r159.get('rullIngenting') == 'ingenting')
     results.append(('wave_moved_to_a_practice_grid_and_clapping_took_over_focus', ok159, r159))
 
+    # v0.793: Fra-til-kortet skrev «Poolish · 54 timer», men tallet er S.cold -
+    # KJOELESKAPSTIDEN, ikke poolishen. Meldt inn: «Det staar poolish tid 54
+    # timer. Og bruker 69 timer 20 min.» Maalt paa det scenariet: poolish 14 t,
+    # kjoeleskapsheving 49,75 t, resten 5,3 t = 69,3. Planen var riktig; det var
+    # etiketten som ikke sa hva tallet var.
+    #
+    # Testen kobler ETIKETTEN til den EKTE planen: tallene i teksten maa vaere de
+    # samme timene stegkjeden faktisk bruker. Da kan de to ikke drive fra
+    # hverandre senere - som er hele grunnen til at feilen oppsto.
+    r160 = page.evaluate("""() => {
+      const sv={m:S.method,mo:S.mode,ph:S.poolishH,pc:S.poolishCold,bh:S.bigaH,c:S.cold,l:window._lang};
+      window._lang='no';
+      const ut={};
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      S.mel=500; S.hydro=65; S.temp=22; S.type='napoletana';
+      // 1) Begge fasene skal staa, og forspillet skal si HVOR det staar.
+      S.poolishH=14; S.poolishCold=false;
+      ut.poolishRom = winValText('poolish',54);
+      S.poolishCold=true; S.poolishH=18;
+      ut.poolishKald = winValText('poolish',54);
+      S.poolishCold=false; S.poolishH=14;
+      S.bigaH=18; ut.biga = winValText('biga',54);
+      ut.standard = winValText('standard',54);
+      // 2) Tallene i etiketten maa vaere de EKTE timene i planen.
+      S.method='poolish'; S.mode='end'; S.cold=54; S.poolishH=14; S.poolishCold=false;
+      const steps=stepsForAnchor(new Date(2026,7,15,16,0));
+      const t=i=>new Date(steps[i].at).getTime();
+      const finn=re=>steps.findIndex(x=>re.test(x.title));
+      const iPool=finn(/lag poolish/i), iMix=finn(/bland ferdig deig/i);
+      const iForm=finn(/form emner/i), iStek=steps.length-1;
+      ut.ekteForspillT = +(((t(iMix)-t(iPool))/36e5).toFixed(2));
+      ut.ekteKaldblokkT = +(((t(iStek)-t(iForm))/36e5).toFixed(2));
+      ut.ekteTotalT = +(((t(iStek)-t(0))/36e5).toFixed(2));
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      S.method=sv.m;S.mode=sv.mo;S.poolishH=sv.ph;S.poolishCold=sv.pc;S.bigaH=sv.bh;S.cold=sv.c;
+      window._lang=sv.l;
+      return ut;
+    }""")
+    _pr = r160.get('poolishRom','')
+    ok160 = (
+      # Forspill OG kaldheving, med sted for forspillet.
+      '14' in _pr and '54' in _pr and 'romtemp' in _pr and 'kaldheving' in _pr
+      and 'kjøleskap' in r160.get('poolishKald','') and '18' in r160.get('poolishKald','')
+      and '18' in r160.get('biga','') and 'romtemp' in r160.get('biga','')
+      # Langtidsdeig har ikke noe forspill - da skal det bare staa kaldhevingen.
+      and r160.get('standard','').strip() == '54t kaldheving'
+      # Etiketten maa stemme med planen: 14 t forspill, og kaldblokka er de 54
+      # minus forming og benketid, som ligger inne i samme blokk.
+      and abs(r160.get('ekteForspillT',0) - 14) < 0.4
+      and abs(r160.get('ekteKaldblokkT',0) - 54) < 0.4
+      and abs(r160.get('ekteTotalT',0) - 69.3) < 0.5)
+    results.append(('window_card_says_which_hours_it_is_talking_about', ok160, r160))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

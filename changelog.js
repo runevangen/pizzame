@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.793",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kortene i Fra–til sa «Poolish · 54 timer», men de 54 timene var kjøleskapstiden — ikke poolishen. Poolishen var 14. Planen var riktig hele veien; det var etiketten som ikke sa hva tallet gjaldt.",
+      "Nå står begge fasene: «Poolish · 14t romtemp + 54t kaldheving». Forspillet sier også hvor det står, siden en poolish på benken og en i kjøleskapet er to helt forskjellige deiger.",
+      "Biga får samme behandling. Langtidsdeig sier bare «54t kaldheving» — den har ikke noe forspill, så der var det aldri tvetydig."
+    ],
+    "changes_en": [
+      "The cards in the From–to picker said \"Poolish · 54 hours\", but those 54 hours were the fridge time — not the poolish. The poolish was 14. The plan was right all along; it was the label that did not say which hours it meant.",
+      "Now both phases are shown: \"Poolish · 14h room temp + 54h cold rise\". The preferment also says where it sits, since a poolish on the counter and one in the fridge are two entirely different doughs.",
+      "Biga gets the same treatment. Long-ferment dough just says \"54h cold rise\" — it has no preferment, so it was never ambiguous there."
+    ]
+  },
+  {
     "v": "0.792",
     "d": "august 2026",
     "d_en": "August 2026",

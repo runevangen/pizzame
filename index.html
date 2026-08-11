@@ -7630,7 +7630,34 @@ function winOptLabel(method,val){
 }
 // Kort tittel-tekst: metodenavnet sier allerede hva slags gjæring det er, så
 // «42 t» holder — «42 t kaldheving» brøt tittelen over to linjer på mobil.
-function winValText(method,val){ return L(`${val} timer`,`${val} hours`); }
+// v0.793: kortet skrev «Poolish · 54 timer», og tallet er S.cold — altså
+// KJØLESKAPSTIDEN, ikke poolishen. Meldt inn slik: «Det står poolish tid 54
+// timer. Og bruker 69 timer 20 min. Forklar.» Målt på nettopp det scenariet:
+// poolishen er 14 timer, kjøleskapshevingen 49,75, og de resterende 5,3 er
+// blanding, romheving, forming, benketid og ovn — 69,3 til sammen. Planen var
+// riktig hele veien. Det var etiketten som ikke sa hva tallet var.
+//
+// For Langtidsdeig gikk det bra, fordi kjøleskapstiden ER metodens tall. For
+// Poolish og Biga er det direkte misvisende: de har et forspill-tall brukeren
+// også setter, og «Poolish · 54 timer» kan ikke leses som annet enn poolishen.
+// Derfor står begge fasene nå, og forspillet sier hvor det står — romtemperatur
+// eller kjøleskap er forskjellen på to helt ulike deiger.
+//
+// S leses direkte her, og det er trygt: kandidaten varierer bare `c.key`
+// (kjøleskapstiden). Forspill-timene og romtemp/kjøleskap-valget er brukerens
+// egne, og det er nettopp dem kortet kommer til å bruke hvis han trykker.
+function winValText(method,val){
+  const kaldt=L(`${val}t kaldheving`,`${val}h cold rise`);
+  if(method==='poolish'){
+    const hvor=S.poolishCold?L('kjøleskap','fridge'):L('romtemp','room temp');
+    return L(`${S.poolishH}t ${hvor} + ${kaldt}`,`${S.poolishH}h ${hvor} + ${kaldt}`);
+  }
+  if(method==='biga')
+    return L(`${S.bigaH}t romtemp + ${kaldt}`,`${S.bigaH}h room temp + ${kaldt}`);
+  if(method==='standard') return kaldt;
+  if(method==='kveld')    return L(`${val}t kaldt`,`${val}h cold`);
+  return L(`${val} timer`,`${val} hours`);   // Hurtigdeig: tallet ER metodens tid
+}
 function renderWindowPicker(){
   const host=document.getElementById('mob-winres');
   if(!host) return;
