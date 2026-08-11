@@ -884,6 +884,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
       <span class="pill" data-v="chicago" title="Deep dish. 55–62%.">Chicago</span>
       <span class="pill" data-v="ingenelting" title="Ingen elting, ingen kjøkkenmaskin. Bland med skje, la stå natten over.">Ingen elting</span>
     </div>
+    <div id="gtype-melnote" style="margin-top:4px"></div>
   </div>
 
   <div id="gmet-wrap"><div class="lbl">Metode</div>
@@ -1270,6 +1271,8 @@ function syncStaticI18nUI(){
   // Meltype-nedtrekkene genereres fra MELTYPER (populateMeltypeSelects) — kall det
   // her så «annet»-etiketten (og evt. server-mel) bytter språk ved språkskifte.
   try{ populateMeltypeSelects(); }catch(e){}
+  // v0.796: melkurven har egne tekster (og melnavn via mtName) — samme grunn.
+  try{ renderMelkurv(); renderMelkurvTypeNote(); }catch(e){}
   st('wiz-finjuster-done','✓ Ferdig — se steg for steg','✓ Done — see step by step');
   // Info/settings tab
   st('mob-visning-lbl','Visning','Display');
@@ -1576,6 +1579,125 @@ function applyFlours(serverFlours){
   MELTYPER=[...valid.map(f=>({...f})), ANNET_FLOUR];
   try{ if(!MELTYPER.some(f=>f.v===S.meltype)) S.meltype=MELTYPER[0].v; }catch(e){}
   try{ recomputeColdMax(); }catch(e){}
+  // v0.796: melkurven er bygget over MELTYPER. Kommer det nye mel fra serveren,
+  // må den bygges på nytt — ellers står et nytt mel utenfor kurven for alltid,
+  // uten en avkryssingsboks å slå det på med.
+  _melkurv=null;
+  try{ renderMelkurv(); }catch(e){}
+}
+// ===== MELKURVEN (v0.796) — melet du faktisk har hjemme =====
+// Tre steder i koden brukte «det sterkeste melet som finnes» som svar på hvilke
+// mel vi regner med: COLD_MAX, søketaket i Smart-plan, og mel-støtte-rangeringen.
+// Svaret var altså «alle mel i verden». Melkurven gjør det til «de jeg har».
+//
+// Den MERKER, den skjuler ikke. Skjuler vi Manitoba fordi du ikke har den, får
+// du aldri vite at deigen du prøver å lage finnes — den mangler bare et mel du
+// kunne kjøpt. Derfor er alle mel fortsatt valgbare overalt; kurven styrer
+// gruppering, rangering og hva appen foreslår FØRST.
+//
+// Ligger i localStorage som tema og metodefilteret: dette er en egenskap ved
+// kjøkkenet ditt, ikke ved denne deigen, og skal ikke lagres i hver bakelogg.
+// Standard: alt på. Da oppfører appen seg nøyaktig som før til du sier fra.
+let _melkurv=null;
+function melEkte(){ return MELTYPER.filter(f=>!f.generic); }
+function loadMelkurv(){
+  if(_melkurv) return _melkurv;
+  const m={}; melEkte().forEach(f=>m[f.v]=true);
+  try{ const s=localStorage.getItem('pizzaMelkurv'); if(s){ const p=JSON.parse(s);
+    Object.keys(m).forEach(k=>{ if(typeof p[k]==='boolean') m[k]=p[k]; }); } }catch(e){}
+  _melkurv=m; return m;
+}
+// «Annet mel» er ikke et mel appen kjenner — det er brukerens eget. Det kan
+// hverken hukes av eller sorteres bort, og svarer alltid ja.
+function harMel(v){
+  const f=MELTYPER.find(m=>m.v===v);
+  if(!f || f.generic) return true;
+  return loadMelkurv()[v]!==false;
+}
+function melkurvValgt(){ return melEkte().filter(f=>harMel(f.v)); }
+// Tomt utvalg betyr «jeg har ikke sagt noe», ikke «jeg har ingen mel». Uten
+// denne ville det å hake av det siste melet gjort appen svarløs i stedet for
+// nøytral — og et grensesnitt der du kan låse deg selv ute er en felle.
+function melkurvPool(){ const v=melkurvValgt(); return v.length?v:melEkte(); }
+function melkurvErDelmengde(){ const n=melkurvValgt().length; return n>0 && n<melEkte().length; }
+// Hva kurven din faktisk rekker — samme tall som varslene dømmer etter.
+function melkurvSpenn(){
+  const p=melkurvPool();
+  return {tMn:Math.min(...p.map(f=>f.ferm.mn)),      tMx:Math.max(...p.map(f=>f.ferm.mx)),
+          hMn:Math.min(...p.map(f=>f.hydroRange.mn)),hMx:Math.max(...p.map(f=>f.hydroRange.mx))};
+}
+function toggleMelkurv(v){
+  const m=loadMelkurv(); m[v]=!harMel(v);
+  try{ localStorage.setItem('pizzaMelkurv', JSON.stringify(m)); }catch(e){}
+  renderMelkurv();
+  try{ populateMeltypeSelects(); }catch(e){}
+  try{ renderMelkurvTypeNote(); }catch(e){}
+  try{ document.body.classList.contains('mob-mode') ? mobGen() : schedNow(); }catch(e){}
+}
+function toggleMelkurvOpen(){
+  const b=document.getElementById('melkurv-body'), c=document.getElementById('melkurv-chev');
+  if(!b) return;
+  const åpen=b.style.display!=='none';
+  b.style.display=åpen?'none':'block';
+  if(c) c.textContent=åpen?'▾':'▴';
+  if(!åpen) renderMelkurv();
+}
+function renderMelkurv(){
+  const rows=document.getElementById('melkurv-rows');
+  if(rows){
+    rows.innerHTML=melEkte().map(f=>{
+      const på=harMel(f.v);
+      return `<div style="display:flex;align-items:center;gap:9px;padding:7px 2px">
+        <span onclick="toggleMelkurv('${escH(f.v)}')" role="checkbox" aria-checked="${på}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMelkurv('${escH(f.v)}')}" style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer">
+          <span aria-hidden="true" style="width:18px;height:18px;border-radius:5px;border:2px solid ${på?'var(--forno-accent)':'var(--forno-border)'};background:${på?'var(--forno-accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#1a1512;font-size:12px;font-weight:800">${på?'✓':''}</span>
+          <span style="font-size:13px;color:var(--forno-text)${på?'':';opacity:.55'}">${escH(mtName(f))}</span>
+          <span style="font-size:11px;color:var(--forno-text-faint);margin-left:auto;white-space:nowrap${på?'':';opacity:.55'}">${f.ferm.mn}–${f.ferm.mx}${L(' t',' h')} · ${f.hydroRange.mn}–${f.hydroRange.mx}%</span>
+        </span>
+      </div>`;
+    }).join('');
+  }
+  const sum=document.getElementById('melkurv-sum');
+  if(sum){
+    const sp=melkurvSpenn();
+    // Selve poenget med kurven, i én linje: hva du faktisk kan bake med den.
+    // Uten avkryssing sier den det samme om alle melene — ærlig, ikke tomt.
+    sum.innerHTML=melkurvValgt().length
+      ? L(`Med disse melene: <b>${sp.tMn}–${sp.tMx} timer</b> gjæring og <b>${sp.hMn}–${sp.hMx}%</b> hydrering.`,
+          `With these flours: <b>${sp.tMn}–${sp.tMx} hours</b> of fermentation and <b>${sp.hMn}–${sp.hMx}%</b> hydration.`)
+      : L('Ingenting er huket av, så appen regner med at alle melene er tilgjengelige.',
+          'Nothing is ticked, so the app assumes every flour is available.');
+  }
+  const lbl=document.getElementById('melkurv-lbl');
+  if(lbl){
+    const n=melkurvValgt().length, alle=melEkte().length;
+    lbl.textContent=L('🌾 Melet mitt','🌾 My flour')
+      + (melkurvErDelmengde()?L(` · ${n} av ${alle}`,` · ${n} of ${alle}`):L(' · alle',' · all'));
+  }
+  const help=document.getElementById('melkurv-help');
+  if(help) help.textContent=L('Huk av melet du har hjemme. Ingen mel forsvinner — appen sorterer lista og foreslår ut fra det du faktisk kan bake med.',
+                             'Tick the flours you have at home. No flour disappears — the app sorts the list and makes suggestions based on what you can actually bake with.');
+}
+// Melet ditt mot pizzatypen: hver type har en anbefalt hydrering, og et mel er
+// laget for et bestemt spenn. Rekker ingen av dine dit, er det en fysisk grense
+// — ikke en smakssak — og da skal den stå der du velger type, ikke først som et
+// varsel etterpå. Merker; typen er fortsatt valgbar.
+function renderMelkurvTypeNote(){
+  const els=['gtype-melnote','mob-gtype-melnote'].map(id=>document.getElementById(id)).filter(Boolean);
+  if(!els.length) return;
+  let html='';
+  const mål=HREC[S.type];
+  if(melkurvErDelmengde() && Number.isFinite(mål)){
+    const sp=melkurvSpenn();
+    if(mål<sp.hMn || mål>sp.hMx){
+      const redder=melEkte().find(f=>!harMel(f.v) && mål>=f.hydroRange.mn && mål<=f.hydroRange.mx);
+      const navn=tnShort(S.type);
+      const hjelp=redder?L(` ${redder.t} ville nådd dit.`,` ${redder.t} would reach it.`):'';
+      html=`<div style="font-size:11px;color:#8a5a00;line-height:1.45;padding:0 0 2px">🌾 ${escH(L(
+        `${navn} anbefales på ${mål}% hydrering. Melet du har er laget for ${sp.hMn}–${sp.hMx}%.${hjelp}`,
+        `${navn} is recommended at ${mål}% hydration. Your flour is made for ${sp.hMn}–${sp.hMx}%.${hjelp}`))}</div>`;
+    }
+  }
+  els.forEach(e=>e.innerHTML=html);
 }
 // Bygger meltype-nedtrekkene fra MELTYPER (så nye server-mel dukker opp automatisk).
 // Språk-bevisst for «annet»; merkevarenavn er språknøytrale. Beholder valgt verdi.
@@ -1590,12 +1712,29 @@ function populateMeltypeSelects(){
     // «Annet mel» holdes utenfor med vilje: den har ferm {mn:999, mx:0}, et
     // umulig spenn satt nettopp for at ingen varsler skal slå ut på et mel
     // appen ikke kjenner. Skrevet ut ville det blitt «999–0 t».
-    el.innerHTML=MELTYPER.map(f=>{
+    const opt=f=>{
       if(f.generic) return `<option value="${escH(f.v)}">${L('Annet mel / ikke i listen','Other / not listed')}</option>`;
       const sp=(f.ferm && Number.isFinite(f.ferm.mn) && f.ferm.mx>f.ferm.mn)
         ? L(` · ${f.ferm.mn}–${f.ferm.mx} t`,` · ${f.ferm.mn}–${f.ferm.mx} h`) : '';
       return `<option value="${escH(f.v)}">${escH(f.t)}${sp}</option>`;
-    }).join('');
+    };
+    // v0.796: har du sagt hvilke mel du har, deles lista i to — men INGEN
+    // fjernes. Skisse C ble vraket da grupperingen fulgte planen din, for da
+    // hoppet melene om hver gang du endret en time. Melkurven gjør den stabil:
+    // rekkefølgen endrer seg bare når du selv endrer hva du har.
+    // Har du alt (eller ingenting) haket av, er det ingen grupper å lage, og
+    // lista ser ut nøyaktig som før.
+    if(melkurvErDelmengde()){
+      const mine=MELTYPER.filter(f=>!f.generic && harMel(f.v));
+      const andre=MELTYPER.filter(f=>!f.generic && !harMel(f.v));
+      const gen=MELTYPER.filter(f=>f.generic);
+      el.innerHTML=
+        `<optgroup label="${escH(L('Melet mitt','My flour'))}">${mine.map(opt).join('')}</optgroup>`
+       +`<optgroup label="${escH(L('Andre mel','Other flours'))}">${andre.map(opt).join('')}</optgroup>`
+       +gen.map(opt).join('');
+    } else {
+      el.innerHTML=MELTYPER.map(opt).join('');
+    }
     if(MELTYPER.some(f=>f.v===cur)) el.value=cur;
     else { el.value=MELTYPER[0].v; }
   });
@@ -1732,6 +1871,7 @@ function applyTypeUI(){
   const ksub=document.getElementById('ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
   const psub=document.getElementById('psub');if(psub)psub.style.display=(!isIE&&S.method==='poolish')?'block':'none';
   const bsub=document.getElementById('bsub');if(bsub)bsub.style.display=(!isIE&&S.method==='biga')?'block':'none';
+  try{ renderMelkurvTypeNote(); }catch(e){}
 }
 function applyMobTypeUI(){
   const isIE = S.type==='ingenelting';
@@ -1748,6 +1888,7 @@ function applyMobTypeUI(){
   try{ syncI18nUI(); }catch(e){}
   const bsub=g('mob-bsub');if(bsub)bsub.style.display=(!isIE&&S.method==='biga')?'block':'none';
   const ssub=g('mob-ssub');if(ssub)ssub.style.display=(!isIE&&S.method==='standard')?'block':'none';
+  try{ renderMelkurvTypeNote(); }catch(e){}
 }
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
 pgrp('ggj','gjaer');
@@ -4054,10 +4195,13 @@ function searchAllMethods(anchor){
   });
   return pool;
 }
-// Mel varieres ikke i søket — i stedet: hvilke registrerte meltyper tolererer
-// FAKTISK den totale gjæringstiden resultatet endte opp med.
+// Mel varieres ikke i søket — i stedet: hvilke meltyper tolererer FAKTISK den
+// totale gjæringstiden resultatet endte opp med.
+// v0.796: teller melkurven din, ikke alle mel i verden. Rangeringen i Smart-plan
+// («bredest mel-støtte») svarte før på et spørsmål ingen hadde stilt — den løftet
+// planer du ikke kunne bake fordi tre mel du ikke eier tålte dem.
 function flourMatchesForHours(hrs){
-  return MELTYPER.filter(m=>hrs>=m.ferm.mn && hrs<=m.ferm.mx).map(m=>m.t);
+  return melkurvPool().filter(m=>hrs>=m.ferm.mn && hrs<=m.ferm.mx).map(m=>m.t);
 }
 
 // ===== Smart-plan: metode-filter (hvilke metoder du blir tilbudt) =====
@@ -5000,8 +5144,12 @@ function meltypeWarnSetFlour(flourVal){
   updateMeltypeInfo();
   if(document.body.classList.contains('mob-mode')){ mobGen(); } else { schedNow(); }
 }
+// v0.796: leter i melkurven din FØRST. «Bytt til Caputo Manitoba Oro» er et
+// dårlig råd hvis du ikke har den — men det er verdt å si når ingenting i
+// skapet ditt dekker planen, så fallbacken står igjen (kalleren merker den).
 function findBestMatchingFlour(hrs, hydro){
-  return MELTYPER.find(m => hrs>=m.ferm.mn && hrs<=m.ferm.mx && hydro>=m.hydroRange.mn && hydro<=m.hydroRange.mx);
+  const passer=m => hrs>=m.ferm.mn && hrs<=m.ferm.mx && hydro>=m.hydroRange.mn && hydro<=m.hydroRange.mx;
+  return melkurvPool().find(passer) || MELTYPER.find(m=>!m.generic && passer(m));
 }
 // v5.74: alle varsler kan skjules "for denne gang" med et kryss. Nøkkelen er
 // innholdet i selve konflikten, ikke varseltypen — skjuler du "Ta ut av kjøleskap
@@ -5097,7 +5245,12 @@ function meltypeWarningHTML(){
   }
   const betterFlour = findBestMatchingFlour(hrs, S.hydro);
   if(betterFlour && betterFlour.v!==S.meltype){
-    actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:12px;font-weight:600;cursor:pointer">${L(`Bytt til ${betterFlour.t}`,`Switch to ${betterFlour.t}`)}</button>`);
+    // v0.796: melkurven leder, men skjuler ikke. Foreslår vi et mel du selv har
+    // sagt at du ikke har, må knappen si det — ellers er den et råd du ikke kan
+    // følge, presentert som om du kunne.
+    const ikkeMitt = melkurvErDelmengde() && !harMel(betterFlour.v);
+    const merk = ikkeMitt ? L(' (ikke i kurven din)',' (not in your flour list)') : '';
+    actions.push(`<button onclick="meltypeWarnSetFlour('${betterFlour.v}')" style="padding:6px 12px;border:none;border-radius:8px;background:var(--forno-bg-raised,#F2F2F7);color:var(--dyn-text);border:1px solid var(--forno-border,transparent);font-size:12px;font-weight:600;cursor:pointer">${L(`Bytt til ${betterFlour.t}${merk}`,`Switch to ${betterFlour.t}${merk}`)}</button>`);
   }
   const actionsHtml = actions.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">${actions.join('')}</div>` : '';
   const finjusterLink = `<div style="margin-top:.5rem"><span onclick="meltypeWarnOpenFinjuster()" style="font-size:11px;color:#8a5a00;font-weight:600;text-decoration:underline;cursor:pointer">${L('⚙️ Se i Finjuster','⚙️ See in Fine-tune')}</span></div>`;
@@ -10039,6 +10192,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-s1-q1">Pizzatype</div></div>
       <div class="mob-pill-wrap" id="mob-gtype"></div>
+      <div id="mob-gtype-melnote" style="padding:0 1rem .5rem"></div>
 
       <div class="wiz-qhead"><div class="wiz-qnum">2</div><div class="wiz-qlbl" id="wiz-s1-q2">Antall pizzaer</div></div>
       <div style="display:flex;align-items:center;gap:10px;padding:.3rem 1rem .65rem;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
@@ -10211,6 +10365,19 @@ document.addEventListener('change', firstInteractionCheck, true);
       </select>
     </div>
     <div id="mob-gmel-fj-info" style="font-size:10.5px;color:var(--forno-text-faint);padding:0 1rem .5rem;line-height:1.4"></div>
+    <!-- v0.796: melkurven. Står her, rett under melvelgeren, fordi det er her
+         den virker — ikke i Innstillinger sammen med tema og skriftstørrelse. -->
+    <div id="melkurv-wrap" style="margin:0 1rem .7rem;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised)">
+      <div id="melkurv-toggle" onclick="toggleMelkurvOpen()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMelkurvOpen()}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;cursor:pointer">
+        <span id="melkurv-lbl" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🌾 Melet mitt</span>
+        <span id="melkurv-chev" style="font-size:12px;color:var(--forno-text-faint)">▾</span>
+      </div>
+      <div id="melkurv-body" style="display:none;padding:0 11px 8px">
+        <div id="melkurv-help" style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;padding:0 0 4px"></div>
+        <div id="melkurv-rows"></div>
+        <div id="melkurv-sum" style="font-size:11px;color:var(--forno-text-muted);line-height:1.45;padding:6px 0 0;border-top:1px solid var(--forno-border-soft,#e8e5e0);margin-top:4px"></div>
+      </div>
+    </div>
 
     <div id="finjuster-hydro-section">
     <div class="mob-section-lbl"><span id="mob-hydro-lbl">Hydrering</span> — <span id="mob-hlbl">65%</span> <span id="mob-hcat" style="font-size:10px;font-weight:600;padding:1px 5px;border-radius:6px;margin-left:2px"></span></div>

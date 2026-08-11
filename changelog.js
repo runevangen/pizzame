@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.796",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nytt: «Melet mitt» under Meltype i Finjuster. Huk av det du har hjemme, så vet appen hva du faktisk kan bake med — og sier hva kurven din rekker: «Med disse melene: 4–24 timer gjæring og 55–70 % hydrering.»",
+      "Ingenting skjules. Melene du ikke har står fortsatt i lista, bare under overskriften «Andre mel» — skjulte vi dem, ville du aldri fått vite at deigen du prøver å lage finnes og bare mangler et mel du kunne kjøpt.",
+      "Smart-plan rangerer nå etter melet ditt, ikke etter alle mel i verden. Før kunne den løfte en plan du ikke kunne bake fordi tre mel du ikke eier tålte den.",
+      "«Bytt til …»-knappen i melvarselet leter i kurven din først, og sier fra når det beste melet ikke står der.",
+      "Under Pizzatype dukker det opp en linje når melet ditt ikke rekker typens anbefalte hydrering — med navnet på et mel som ville nådd dit."
+    ],
+    "changes_en": [
+      "New: \"My flour\" under Flour type in Fine-tune. Tick what you have at home and the app knows what you can actually bake with — and tells you what your selection reaches: \"With these flours: 4–24 hours of fermentation and 55–70% hydration.\"",
+      "Nothing is hidden. Flours you do not have are still in the list, just under the heading \"Other flours\" — hiding them would mean never learning that the dough you are trying to make exists and merely needs a flour you could buy.",
+      "Smart plan now ranks by your flour rather than by every flour in the world. Before, it could promote a plan you could not bake because three flours you do not own tolerated it.",
+      "The \"Switch to …\" button in the flour warning looks in your selection first, and says so when the best flour is not there.",
+      "Under Pizza type a line appears when your flour cannot reach the type's recommended hydration — naming a flour that would."
+    ]
+  },
+  {
     "v": "0.795",
     "d": "august 2026",
     "d_en": "August 2026",

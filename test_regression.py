@@ -8214,6 +8214,120 @@ def _atferd_7(page, results):
       and r162.get('pcSliderSkjult') is True)
     results.append(('every_offered_method_is_offered_everywhere', ok162, r162))
 
+    # v0.796: melkurven. Meldt inn: «man kan krysse av for meltyper man har saa
+    # justerer oppskriften og tilbudte pizza etter det.» Valgt form: MERKE, ikke
+    # skjule - skjuler vi Manitoba fordi du ikke har den, faar du aldri vite at
+    # deigen du proever aa lage finnes.
+    #
+    # Testen vokter nettopp det loeftet, i tillegg til at kurven virker: ingen
+    # mel skal forsvinne fra nedtrekket uansett hva du haker av. Og den sjekker
+    # blindveien: haker du av ALT, skal appen falle tilbake til noeytralt i
+    # stedet for aa staa uten svar.
+    r163 = page.evaluate("""() => {
+      const sv={l:window._lang, mt:S.meltype, ty:S.type, hy:S.hydro,
+                lagret:(()=>{try{return localStorage.getItem('pizzaMelkurv');}catch(e){return null;}})()};
+      window._lang='no';
+      const ut={};
+      const alle=()=>melEkte().map(f=>f.v);
+      const sett=(v,på)=>{ if(harMel(v)!==på) toggleMelkurv(v); };
+      const lista=()=>{ const el=document.getElementById('gmel');
+        return {grupper:[...el.querySelectorAll('optgroup')].map(g=>g.label),
+                verdier:[...el.querySelectorAll('option')].map(o=>o.value)}; };
+      // 1) Standard: alt paa -> ingen grupper, lista som foer.
+      alle().forEach(v=>sett(v,true));
+      ut.startAlle = !melkurvErDelmengde();
+      ut.startListe = lista();
+      // 2) Delmengde: to grupper, men ALLE melene staar fortsatt der.
+      alle().forEach(v=>sett(v, v==='dallari'||v==='doppio_zero'));
+      const l2=lista();
+      ut.grupper = l2.grupper;
+      ut.ingenBorte = l2.verdier.length===ut.startListe.verdier.length
+                   && ut.startListe.verdier.every(v=>l2.verdier.includes(v));
+      ut.spenn = melkurvSpenn();
+      renderMelkurv();
+      ut.etikett = document.getElementById('melkurv-lbl').textContent;
+      ut.oppsummering = document.getElementById('melkurv-sum').textContent;
+      ut.rader = document.querySelectorAll('#melkurv-rows > div').length;
+      // 3) Rangeringen i Smart-plan teller melkurven, ikke alle mel i verden.
+      ut.stotte48Kurv = flourMatchesForHours(48).length;
+      ut.stotte12Kurv = flourMatchesForHours(12).length;
+      // 4) Forslaget leter i kurven foerst, og merker naar det maa utenfor.
+      S.hydro=65; S.type='napoletana';
+      ut.beste12 = (findBestMatchingFlour(12,65)||{}).v;
+      ut.beste12Mitt = harMel(ut.beste12);
+      ut.beste48 = (findBestMatchingFlour(48,65)||{}).v;
+      ut.beste48Mitt = harMel(ut.beste48);
+      // Skillende tilfelle: med bare Couco i kurven passer BAADE Doppio Zero
+      // (som staar foerst i MELTYPER) og Couco paa 20 t / 65 %. Uten kurv-
+      // preferansen vinner Doppio Zero - et mel du nettopp sa at du ikke har.
+      alle().forEach(v=>sett(v, v==='couco'));
+      ut.besteSkille = (findBestMatchingFlour(20,65)||{}).v;
+      alle().forEach(v=>sett(v, v==='dallari'||v==='doppio_zero'));
+      S.method='standard'; S.mode='start'; S.cold=48; S.meltype='dallari';
+      const varsel=meltypeWarningHTML();
+      ut.varselMerker = /ikke i kurven din/.test(varsel);
+      // 5) Typenotatet: bare naar kurven ikke rekker typens anbefalte hydrering.
+      sett('doppio_zero', false);            // igjen: bare Dallari, 55-60%
+      S.type='napoletana'; renderMelkurvTypeNote();
+      ut.typeNotat = document.getElementById('gtype-melnote').textContent;
+      sett('doppio_zero', true);             // 60-70% dekker 65%
+      renderMelkurvTypeNote();
+      ut.typeNotatVekk = document.getElementById('gtype-melnote').textContent;
+      // 6) Blindveien: haker du av alt, skal appen bli noeytral - ikke svarloes.
+      alle().forEach(v=>sett(v,false));
+      ut.tomtSpenn = melkurvSpenn();
+      ut.tomtIngenGrupper = lista().grupper.length===0;
+      ut.tomtStotte = flourMatchesForHours(48).length;
+      renderMelkurv();
+      ut.tomtSum = document.getElementById('melkurv-sum').textContent;
+      // 7) Valget overlever - det ligger i localStorage, ikke i S.
+      sett('couco', true);
+      let lagret=null; try{ lagret=JSON.parse(localStorage.getItem('pizzaMelkurv')||'{}'); }catch(e){}
+      ut.lagretCouco = lagret ? lagret.couco : null;
+      ut.iDeigen = Object.prototype.hasOwnProperty.call(S,'melkurv');
+      // rydd
+      try{ sv.lagret===null ? localStorage.removeItem('pizzaMelkurv')
+                            : localStorage.setItem('pizzaMelkurv', sv.lagret); }catch(e){}
+      _melkurv=null;
+      S.meltype=sv.mt; S.type=sv.ty; S.hydro=sv.hy;
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      window._lang=sv.l;
+      try{ populateMeltypeSelects(); renderMelkurv(); renderMelkurvTypeNote(); }catch(e){}
+      return ut;
+    }""")
+    ok163 = (
+      # Standard endrer ingenting: ingen grupper, alle mel.
+      r163.get('startAlle') is True
+      and (r163.get('startListe') or {}).get('grupper') == []
+      # Delt i to - og loeftet: ingen mel forsvinner.
+      and r163.get('grupper') == ['Melet mitt', 'Andre mel']
+      and r163.get('ingenBorte') is True
+      and r163.get('rader') == len((r163.get('startListe') or {}).get('verdier', [])) - 1
+      and (r163.get('spenn') or {}) == {'tMn': 4, 'tMx': 24, 'hMn': 55, 'hMx': 70}
+      and '2 av 9' in (r163.get('etikett') or '')
+      and '4–24 timer' in (r163.get('oppsummering') or '')
+      # Rangeringen teller kurven: 48t dekkes av ingen av de to, 12t av ett.
+      and r163.get('stotte48Kurv') == 0
+      and r163.get('stotte12Kurv') == 1
+      # Forslaget velger fra kurven naar det kan, og merker naar det ikke kan.
+      and r163.get('beste12Mitt') is True
+      and r163.get('beste48Mitt') is False
+      and r163.get('besteSkille') == 'couco'
+      and r163.get('varselMerker') is True
+      # Typenotatet kommer og gaar med kurvens rekkevidde.
+      and 'Napoletansk' in (r163.get('typeNotat') or '')
+      and '55–60%' in (r163.get('typeNotat') or '')
+      and (r163.get('typeNotatVekk') or '') == ''
+      # Tom kurv = «jeg har ikke sagt noe», ikke en blindvei.
+      and (r163.get('tomtSpenn') or {}).get('tMx') == 120
+      and r163.get('tomtIngenGrupper') is True
+      and r163.get('tomtStotte') == 5
+      and 'alle melene' in (r163.get('tomtSum') or '')
+      # Kurven hoerer til kjoekkenet, ikke deigen.
+      and r163.get('lagretCouco') is True
+      and r163.get('iDeigen') is False)
+    results.append(('flour_you_have_marks_the_list_without_hiding_anything', ok163, r163))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 
