@@ -743,6 +743,23 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
+### F34. Vinkestyringen tilbake i Fokus — 🧪 VENTER PÅ TRENINGSDATA (v0.792)
+
+Vinken er tatt ut av Fokus fordi den er «sånn halv god». Den bor nå som
+treningsrute under Mer → Utprøving.
+
+**Hva som må måles før den kommer tilbake:** treffraten i ruta, og — viktigere —
+forholdet mellom bom og *feil retning*. De to krever ulik fiks: bom betyr for
+høy terskel eller for svakt signal, feil retning betyr at aksevalget eller
+speilingen er gal. I Fokus var de umulige å skille, for der ser man bare om
+steget hoppet.
+
+**Kandidater hvis treningsdataene peker på feil retning:** soner i stedet for
+retning (venstre/høyre for hodet), eller tohåndsgesten — begge drodlet, ingen
+bygget.
+
+**Klapp er i mellomtiden den primære:** 1 neste, 2 forrige, 3 rull.
+
 ### F33. Etterprøv gjærskaleringen for 30 % poolish — 🧪 VENTER PÅ BAKST (v0.787)
 
 30 %-varianten bruker `prefermentShareScale()`: kurvene i CALIBRATION er satt for

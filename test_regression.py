@@ -7882,6 +7882,138 @@ def _atferd_7(page, results):
              and (r158.get('popup') or {}).get('harTekst') is True)
     results.append(('jargon_in_the_steps_is_tappable_without_touching_the_text', ok158, r158))
 
+    # v0.792: vinkestyringen er tatt UT av Fokus - meldt «saann halv god», og en
+    # halvgod gest midt i et steg koster mer enn den gir. Den bor naa i
+    # Mer -> Utproving som en 6x6 treningsrute.
+    #
+    # Merk hvorfor ruta finnes: i Fokus ser man bare RESULTATET (steget hoppet,
+    # eller ikke). Man ser aldri om detektoren bommet eller leste feil retning,
+    # og de to krever helt ulik fiks. Ruta skiller dem: den teller riktig retning
+    # separat fra bom.
+    #
+    # Testen sjekker ogsaa at Fokus IKKE lenger tilbyr vinkebryteren. Uten den
+    # sjekken ville de eldre vink-testene fortsatt vaert gronne mens funksjonen
+    # var uraakelig for brukeren - de kaller vinkToggle() direkte.
+    r159 = page.evaluate("""async () => {
+      const ut={};
+      window._planChosen=true; setLayout('mob');
+      if(!(window._steps||[]).length) window._steps=stepsForAnchor(new Date(2027,2,3,10,0));
+      // 1) Fokus tilbyr ikke lenger vink
+      openFocus();
+      const ov=document.getElementById('focus-overlay');
+      ut.fokusUtenVink = !/vinkToggle\(/.test(ov.innerHTML);
+      ut.fokusHarKlapp = /klappToggle\(/.test(ov.innerHTML);
+      // Den lange klappetiketten vises bare NAAR klapp er paa, saa staten maa
+      // settes for aa se den. Foerste forsok leste av-teksten og feilet.
+      const påFør=KLAPP.på; KLAPP.på=true; renderFocus();
+      const ov2=document.getElementById('focus-overlay');
+      ut.klappSierTre = /3\s*rull|3\s*scroll/i.test(ov2.innerText || ov2.textContent);
+      KLAPP.på=påFør; renderFocus();
+      closeFocus();
+      // 2) Inngangen finnes under Mer
+      ut.inngangFinnes = !!document.getElementById('mob-vinktrening');
+      // 3) Ruta: 6x6, ett maal, deg i midten
+      VT.rad=2; VT.kol=2; VT.treff=0; VT.bom=0; VT.følge=0; VT.beste=0; VT.logg=[];
+      vinktreningNyttMål();
+      const d=document.createElement('div'); d.innerHTML=vinktreningHTML();
+      ut.antallCeller = d.querySelectorAll('.vt-celle').length;
+      ut.enDeg  = d.querySelectorAll('.vt-du').length;
+      ut.etMål  = d.querySelectorAll('.vt-mal').length;
+      // 4) Riktig retning telles riktig: legg maalet rett til hoyre og vink dit
+      VT.rad=2; VT.kol=2; VT.mål={r:2,k:4}; VT.treff=0; VT.bom=0; VT.følge=0; VT.beste=0; VT.logg=[];
+      vinktreningFlytt('høyre');
+      ut.motMål = {kol:VT.kol, treff:VT.treff, bom:VT.bom, følge:VT.følge};
+      vinktreningFlytt('venstre');            // bort fra maalet
+      ut.fraMål = {kol:VT.kol, treff:VT.treff, bom:VT.bom, følge:VT.følge};
+      // 5) Kantene holder - ingen negativ rad/kolonne
+      VT.rad=0; VT.kol=0; vinktreningFlytt('opp'); vinktreningFlytt('venstre');
+      ut.kantHolder = VT.rad===0 && VT.kol===0;
+      // 6) Naar man naar maalet kommer et nytt, og det er ikke der man staar
+      VT.rad=2; VT.kol=3; VT.mål={r:2,k:4};
+      vinktreningFlytt('høyre');
+      ut.nyttMål = !!VT.mål && !(VT.mål.r===VT.rad && VT.mål.k===VT.kol);
+      // 7) Lukking rydder opp
+      window._vinktrening=true; lukkVinktrening();
+      ut.lukketRydder = !window._vinktrening && !VINK.på;
+      // 8) TELLINGEN, ikke bare etiketten. Foerste versjon av denne testen
+      //    sjekket at teksten sa «3 rull» - og da slapp en mutasjon som fjernet
+      //    selve tredjenivaaet rett gjennom. Her drives klappTikk med en stubbet
+      //    lyddetektor, saa den EKTE tellelogikken kjores.
+      const ekteVurder=window.klappVurder, ekteUt=window.klappUtløst;
+      const ekteAnalyse=KLAPP.analyse, ekteBuf=KLAPP.buf, ekteVent=KLAPP.ventende;
+      KLAPP.analyse={getByteTimeDomainData:()=>{}}; KLAPP.buf=new Uint8Array(8);
+      KLAPP.ventende=0; window.klappVurder=()=>true;
+      const logg=[]; window.klappUtløst=r=>logg.push(r);
+      const vent=ms=>new Promise(r=>setTimeout(r,ms));
+      klappTikk();                       await vent(KLAPP_PAR+120);
+      const ettKlapp=logg.slice(); logg.length=0;
+      KLAPP.ventende=0;
+      klappTikk(); klappTikk();          await vent(KLAPP_PAR+120);
+      const toKlapp=logg.slice(); logg.length=0;
+      KLAPP.ventende=0;
+      klappTikk(); klappTikk(); klappTikk();
+      const treKlappStraks=logg.slice(); await vent(KLAPP_PAR+120);
+      const treKlappEtter=logg.slice();
+      window.klappVurder=ekteVurder; window.klappUtløst=ekteUt;
+      KLAPP.analyse=ekteAnalyse; KLAPP.buf=ekteBuf; KLAPP.ventende=ekteVent;
+      ut.telling={ett:ettKlapp, to:toKlapp, treStraks:treKlappStraks, treEtter:treKlappEtter};
+      // 9) RULLERETNINGEN er en TILSTAND, ikke en posisjonssjekk. Spor man «er
+      //    jeg helt nede?» hver gang, ruller man opp ett hakk, er ikke lenger
+      //    nede, og neste tre-klapp ruller ned igjen - man vipper mellom de to
+      //    siste skjermene og kommer aldri opp. Testen fanger nettopp det:
+      //    andre kall MAA ogsaa si «opp», selv om vi da ikke staar i bunnen.
+      const gml=document.getElementById('focus-scroll');
+      if(gml) gml.id='focus-scroll-lagret';
+      const boks=document.createElement('div');
+      boks.id='focus-scroll';
+      boks.style.cssText='position:fixed;left:-9999px;top:0;width:200px;height:100px;overflow:auto';
+      boks.innerHTML='<div style="height:600px"></div>';
+      document.body.appendChild(boks);
+      window._klappRullOpp=undefined;
+      const r1=klappRull();                       // fra toppen -> ned
+      boks.scrollTop=boks.scrollHeight;           // vi er i bunnen
+      const r2=klappRull();                       // -> skal snu til opp
+      boks.scrollTop=Math.round((boks.scrollHeight-boks.clientHeight)/2);  // midt paa
+      const r3=klappRull();                       // -> skal FORTSATT si opp
+      boks.scrollTop=0;                           // i toppen
+      const r4=klappRull();                       // -> snur tilbake til ned
+      boks.remove();
+      const lagret=document.getElementById('focus-scroll-lagret');
+      if(lagret) lagret.id='focus-scroll';
+      ut.rull={r1,r2,r3,r4};
+      // Og: er alt synlig, skal den ikke late som noe skjedde.
+      const liten=document.createElement('div');
+      liten.id='focus-scroll';
+      liten.style.cssText='position:fixed;left:-9999px;top:0;width:200px;height:100px;overflow:auto';
+      liten.innerHTML='<div style="height:10px"></div>';
+      document.body.appendChild(liten);
+      ut.rullIngenting = klappRull();
+      liten.remove();
+      return ut;
+    }""")
+    ok159 = (r159.get('fokusUtenVink') is True
+             and r159.get('fokusHarKlapp') is True
+             and r159.get('klappSierTre') is True
+             and r159.get('inngangFinnes') is True
+             and r159.get('antallCeller') == 36
+             and r159.get('enDeg') == 1 and r159.get('etMål') == 1
+             and (r159.get('motMål') or {}).get('kol') == 3
+             and (r159.get('motMål') or {}).get('treff') == 1
+             and (r159.get('fraMål') or {}).get('bom') == 1
+             and (r159.get('fraMål') or {}).get('følge') == 0
+             and r159.get('kantHolder') is True
+             and r159.get('nyttMål') is True
+             and r159.get('lukketRydder') is True
+             # Tellingen: 1 -> neste, 2 -> forrige, 3 -> rull UMIDDELBART
+             # (ingenting kommer etter tre, saa den trenger ikke vente).
+             and (r159.get('telling') or {}).get('ett') == ['neste']
+             and (r159.get('telling') or {}).get('to') == ['forrige']
+             and (r159.get('telling') or {}).get('treStraks') == ['rull']
+             and (r159.get('telling') or {}).get('treEtter') == ['rull']
+             and (r159.get('rull') or {}) == {'r1':'ned','r2':'opp','r3':'opp','r4':'ned'}
+             and r159.get('rullIngenting') == 'ingenting')
+    results.append(('wave_moved_to_a_practice_grid_and_clapping_took_over_focus', ok159, r159))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.792",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Klapp har fått et tredje nivå: ett klapp er neste, to er forrige, og tre ruller nedover i steget. Når du har rullet helt ned, går neste tre-klapp oppover igjen — retningen snur ved endene og blir stående, så du ikke vipper mellom de to siste skjermene.",
+      "Tre klapp fyrer med en gang. Ett og to må vente ut par-vinduet for å vite at det ikke kommer flere — men etter tre kan ingenting komme, så den slipper å vente.",
+      "Vinkestyringen er tatt ut av Fokus. Den treffer ikke godt nok ennå, og en halvgod bevegelse midt i et steg du står i koster mer enn den gir.",
+      "Til gjengjeld: ny treningsrute under Mer → Utprøving. Seks ganger seks ruter, ett mål av gangen, og tall som viser om vinket ble lest som riktig retning — ikke bare om det ble sett i det hele tatt. Det er forskjellen mellom «den bommet» og «den leste venstre da jeg mente opp», og de to krever helt ulik fiks."
+    ],
+    "changes_en": [
+      "Clapping has a third level: one clap is next, two is previous, and three scrolls down within the step. Once you have scrolled all the way down, the next triple clap goes back up — the direction turns at the ends and stays, so you do not bounce between the last two screens.",
+      "Three claps fire immediately. One and two have to wait out the pair window to know no more are coming — but nothing can follow three, so it does not have to wait.",
+      "Wave control has been taken out of Focus. It does not hit reliably enough yet, and a half-working gesture in the middle of a step you are standing in costs more than it gives.",
+      "In return: a new practice grid under More → Trials. Six by six squares, one target at a time, and numbers showing whether the wave was read as the right direction — not just whether it was seen at all. That is the difference between \"it missed\" and \"it read left when I meant up\", and the two need completely different fixes."
+    ]
+  },
+  {
     "v": "0.791",
     "d": "august 2026",
     "d_en": "August 2026",

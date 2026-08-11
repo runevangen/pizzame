@@ -780,6 +780,40 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="modal-body" id="changelog-modal-body"></div>
   </div>
 </div>
+<style>
+/* v0.792: treningsruta. Fyllt rute = deg, ringet rute = maal. */
+.vt-rute{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;width:100%;aspect-ratio:1}
+.vt-celle{border-radius:7px;background:var(--forno-bg-raised,#221c16);border:1px solid var(--forno-border,#3a3029)}
+.vt-du{background:var(--forno-accent,#c1440e);border-color:var(--forno-accent,#c1440e)}
+.vt-mal{border:2px dashed var(--forno-accent,#c1440e);background:transparent}
+.vt-tall{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px;text-align:center}
+.vt-tall b{display:block;font-size:19px;color:var(--forno-accent-text,#e8a87c)}
+.vt-tall span{font-size:9.5px;color:var(--forno-text-faint);letter-spacing:.03em}
+.vt-siste{margin-top:10px;text-align:center;min-height:22px;letter-spacing:3px;font-size:17px}
+.vt-pil.vt-ok{color:var(--forno-accent-text,#e8a87c)}
+.vt-pil.vt-feil{color:var(--forno-text-faint,#8a7f74);opacity:.55}
+.vt-chip{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;cursor:pointer;border:1px solid var(--forno-border);background:var(--forno-bg-raised);color:var(--forno-text-faint)}
+.vt-chip-på{border:1px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text)}
+</style>
+<div id="vinktrening-modal" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--forno-bg,#14100c);flex-direction:column;align-items:center;padding:16px 14px">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px">
+    <div style="font-weight:800;font-size:15px;color:var(--forno-text)">🖐️ <span id="vt-tittel">Tren på vink</span></div>
+    <span onclick="lukkVinktrening()" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--forno-border);background:var(--forno-bg-raised);color:var(--forno-text-faint);display:flex;align-items:center;justify-content:center;cursor:pointer">✕</span>
+  </div>
+  <div id="vt-hjelp" style="font-size:11.5px;color:var(--forno-text-faint);max-width:420px;margin-top:6px;line-height:1.45">Vink for å flytte den fylte ruta til den ringede. Tallene viser om vinket ble lest som riktig retning — ikke bare om det ble sett.</div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;min-height:26px">
+    <span id="vink-hand-vt" style="font-size:19px;opacity:.3">🖐️</span>
+    <span style="position:relative;width:56px;height:30px;border-radius:8px;background:var(--forno-bg-raised);overflow:hidden">
+      <span id="vink-prikk-vt" style="position:absolute;top:50%;left:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--forno-accent);opacity:.25"></span>
+    </span>
+    <span id="vink-kvittering-vt" style="font-size:12px;font-weight:700;opacity:0;color:var(--forno-accent-text);min-width:56px"></span>
+  </div>
+  <div id="vt-body" style="width:100%;max-width:420px;margin-top:8px"></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-top:14px;flex-wrap:wrap;justify-content:center">
+    <span id="vt-reise-lbl" style="font-size:10.5px;color:var(--forno-text-faint)">Hvor langt du må vinke</span>
+    <span id="vt-reise" style="display:flex;gap:6px"></span>
+  </div>
+</div>
 <div id="manual-modal" class="modal-overlay" onclick="if(event.target===this)closeManualModal()">
   <div class="modal-box">
     <div class="modal-head"><b>📖 Bruksanvisning</b><button class="modal-x" onclick="closeManualModal()" aria-label="Lukk">✕</button></div>
@@ -1191,6 +1225,11 @@ function syncStaticI18nUI(){
   st('wiz-s2-sub','Langtidsdeig fungerer fint om du er usikker','Long-ferment dough works fine if you are unsure');
   st('wiz-s2-q1','Metode','Method');
   st('mob-psub-lbl','Poolish-varighet','Poolish duration');
+  st('mob-vinktrening','🖐️ Tren på vink','🖐️ Practise waving');
+  st('mob-vinktrening-hint','Vinkestyringen er tatt ut av Fokus inntil videre — den treffer ikke godt nok ennå. Her kan du trene og se hva den faktisk leser.','Wave control has been taken out of Focus for now — it does not hit reliably enough yet. Here you can practise and see what it actually reads.');
+  st('vt-tittel','Tren på vink','Practise waving');
+  st('vt-hjelp','Vink for å flytte den fylte ruta til den ringede. Tallene viser om vinket ble lest som riktig retning — ikke bare om det ble sett.','Wave to move the filled square to the ringed one. The numbers show whether the wave was read as the right direction — not just whether it was seen.');
+  st('vt-reise-lbl','Hvor langt du må vinke','How far you must wave');
   st('mob-p-andel-lbl','Hvor mye av melet forgjæres','How much of the flour is pre-fermented');
   st('mob-p-a50','50 % — mest smak','50 % — most flavour');
   st('mob-p-a30','30 % — sterkere deig','30 % — stronger dough');
@@ -8253,6 +8292,92 @@ function visFagord(idx){
   boks.onclick = () => boks.remove();
   document.body.appendChild(boks);
 }
+// ===== VINKTRENING (v0.792) =====
+//
+// «Virker sånn halv god» er ikke noe man kan handle på. Problemet er at man i
+// Fokus bare ser RESULTATET — steget hoppet, eller det gjorde ikke det — og
+// aldri hva detektoren faktisk leste. Bommet den, eller leste den «venstre» da
+// du mente «opp»? De to krever helt ulik fiks.
+//
+// Ruta er 6×6 med ett mål av gangen. Da måler den to ting samtidig som ingen
+// enkeltvink gjør: treffer den i det hele tatt, og treffer den RIKTIG RETNING.
+// Følgetallet forteller hvor lenge det holder — en gest som treffer ni ganger
+// og bommer på den tiende er noe helt annet enn en som treffer annenhver.
+const VT = {rad:2, kol:2, mål:null, treff:0, bom:0, følge:0, beste:0, logg:[]};
+function vinktreningHTML(){
+  const celler=[];
+  for(let r=0;r<6;r++) for(let k=0;k<6;k++){
+    const er = (r===VT.rad && k===VT.kol), erMål = VT.mål && VT.mål.r===r && VT.mål.k===k;
+    celler.push(`<div class="vt-celle${er?' vt-du':''}${erMål?' vt-mal':''}"></div>`);
+  }
+  const sum = VT.treff+VT.bom;
+  const pst = sum ? Math.round(VT.treff/sum*100) : 0;
+  return `<div class="vt-rute">${celler.join('')}</div>
+    <div class="vt-tall">
+      <div><b>${VT.treff}</b><span>${L('riktig','right')}</span></div>
+      <div><b>${VT.bom}</b><span>${L('feil vei','wrong way')}</span></div>
+      <div><b>${sum?pst+'%':'–'}</b><span>${L('treffrate','hit rate')}</span></div>
+      <div><b>${VT.beste}</b><span>${L('beste følge','best streak')}</span></div>
+    </div>
+    <div class="vt-siste">${VT.logg.slice(-8).map(x=>
+      `<span class="vt-pil${x.ok?' vt-ok':' vt-feil'}">${x.pil}</span>`).join('') || '&nbsp;'}</div>`;
+}
+function vinktreningNyttMål(){
+  // Målet skal alltid ligge slik at det krever minst ett vink, og aldri i samme
+  // rute man står i.
+  let r,k;
+  do { r=Math.floor(Math.random()*6); k=Math.floor(Math.random()*6); }
+  while (r===VT.rad && k===VT.kol);
+  VT.mål={r,k};
+}
+function vinktreningFlytt(retning){
+  const PIL={venstre:'←',høyre:'→',opp:'↑',ned:'↓'};
+  const før={r:VT.rad,k:VT.kol};
+  if(retning==='venstre') VT.kol=Math.max(0,VT.kol-1);
+  else if(retning==='høyre') VT.kol=Math.min(5,VT.kol+1);
+  else if(retning==='opp') VT.rad=Math.max(0,VT.rad-1);
+  else if(retning==='ned') VT.rad=Math.min(5,VT.rad+1);
+  else return;
+  // Riktig retning = den som minker avstanden til målet. Da trenger man ikke
+  // vite hva brukeren MENTE — ruta forteller hva som var rett vei.
+  const avstFør = VT.mål ? Math.abs(før.r-VT.mål.r)+Math.abs(før.k-VT.mål.k) : 0;
+  const avstNå  = VT.mål ? Math.abs(VT.rad-VT.mål.r)+Math.abs(VT.kol-VT.mål.k) : 0;
+  const ok = avstNå < avstFør;
+  if(ok){ VT.treff++; VT.følge++; if(VT.følge>VT.beste) VT.beste=VT.følge; }
+  else  { VT.bom++;   VT.følge=0; }
+  VT.logg.push({pil:PIL[retning]||'?', ok});
+  if(VT.mål && VT.rad===VT.mål.r && VT.kol===VT.mål.k) vinktreningNyttMål();
+  const b=document.getElementById('vt-body');
+  if(b) b.innerHTML=vinktreningHTML();
+}
+async function åpneVinktrening(){
+  VT.rad=2; VT.kol=2; VT.treff=0; VT.bom=0; VT.følge=0; VT.beste=0; VT.logg=[];
+  vinktreningNyttMål();
+  window._vinktrening=true;
+  const m=document.getElementById('vinktrening-modal');
+  m.style.display='flex';
+  document.getElementById('vt-body').innerHTML=vinktreningHTML();
+  syncVinktreningUI();
+  if(!VINK.på){ const ok=await vinkSlåPå(); if(!ok)
+    alert(L('Fikk ikke tilgang til kameraet. Sjekk at nettleseren har lov til å bruke det.',
+            'Could not get access to the camera. Check that the browser is allowed to use it.')); }
+  syncVinktreningUI();
+}
+function lukkVinktrening(){
+  window._vinktrening=false;
+  vinkStopp();
+  const m=document.getElementById('vinktrening-modal');
+  if(m) m.style.display='none';
+}
+function syncVinktreningUI(){
+  const v=document.getElementById('vt-reise');
+  if(!v) return;
+  v.innerHTML=['kort','normal','lang'].map(n=>{
+    const valgt=vinkReiseNavn()===n;
+    const tekst={kort:L('Kort','Short'),normal:L('Normal','Normal'),lang:L('Lang','Long')}[n];
+    return `<span onclick="setVinkReise('${n}');syncVinktreningUI()" class="vt-chip${valgt?' vt-chip-på':''}">${tekst}</span>`;
+  }).join('');
+}
 function substepsHTML(step, stepIdx){
   const checkable = !step.passive;
   const items = step.substeps.map((txt,subIdx)=>{
@@ -8532,6 +8657,10 @@ function vinkTikk(){
   else vinkUtløst(tegn>0 ? 'ned' : 'opp');
 }
 function vinkUtløst(retning){
+  // v0.792: treningsruta under Mer -> Utproving fanger vinkene i stedet for
+  // Fokus. Den finnes fordi «virker sånn halv god» ikke er noe man kan handle
+  // paa - man maa se hvilken retning detektoren faktisk leste, mens man vinker.
+  if(window._vinktrening){ vinktreningFlytt(retning); return; }
   const ov=document.getElementById('focus-overlay');
   if(!ov || ov.style.display!=='flex'){ vinkStopp(); return; }
   // v0.769: hånd opp/ned ruller i stegteksten. Retningen er KOMMANDO, ikke
@@ -8562,7 +8691,7 @@ function vinkUtløst(retning){
 // steget på nytt 16 ganger i sekundet ville vært sløsing — og det ville
 // nullstilt rulleposisjonen midt i at man leser.
 function vinkMaling(){
-  const h=document.getElementById('vink-hand');
+  const h=vinkEl('vink-hand');
   if(h){
     // Både lys OG størrelse. Telefonen står en meter unna og ses på skrå;
     // gjennomsiktighet alene er vanskelig å bedømme, men at ikonet vokser
@@ -8570,7 +8699,7 @@ function vinkMaling(){
     h.style.opacity = (0.3 + 0.7*VINK.glød).toFixed(3);
     h.style.transform = 'scale('+(1+0.35*VINK.glød).toFixed(3)+')';
   }
-  const p=document.getElementById('vink-prikk');
+  const p=vinkEl('vink-prikk');
   if(p){
     const x = VINK.visX==null ? 0.5 : VINK.visX;
     const y = VINK.visY==null ? 0.5 : VINK.visY;
@@ -8579,8 +8708,14 @@ function vinkMaling(){
     p.style.opacity = (0.25 + 0.75*VINK.glød).toFixed(3);
   }
 }
+// v0.792: indikatoren bor to steder nå — i Fokus og i treningsruta. Én oppslags-
+// hjelper, slik at de to ikke kan drive fra hverandre når noe endres.
+function vinkEl(id){
+  return (window._vinktrening && document.getElementById(id+'-vt'))
+       || document.getElementById(id);
+}
 function vinkMelding(tekst){
-  const el=document.getElementById('vink-kvittering');
+  const el=vinkEl('vink-kvittering');
   if(!el) return;
   el.textContent=tekst;
   el.style.opacity='1';
@@ -8704,10 +8839,18 @@ function klappVurder(rms, nå){
   k.forrige = rms;
   return bekreftet;
 }
-// Ett klapp = neste, to klapp = forrige. «Neste» må vente på par-vinduet
-// (~0,4 s) før det kan slå fast at det var ett — det er prisen for å ha to
-// retninger på ett signal. Neste er det man gjør oftest, så den korte pausen
-// treffer der den merkes minst.
+// v0.792: ett klapp = neste, to = forrige, tre = rull.
+//
+// Prisen for å telle er ventetid: så lenge et høyere antall er mulig, må hvert
+// lavere antall vente ut par-vinduet (420 ms) for å vite at det var ferdig.
+// Med tre nivåer betaler «neste» ett vindu og «forrige» to — mens «rull» fyrer
+// momentant, siden ingenting kommer etter tre.
+//
+// Rullingen har RETNING SOM TILSTAND, ikke som posisjonssjekk. Spør man «er jeg
+// helt nede?» hver gang, skjer dette: du er nederst, ruller opp én skjerm, er
+// ikke lenger nederst, og neste tre-klapp ruller ned igjen. Da står du og
+// vipper mellom de to siste skjermene. Retningen snur derfor ved endene og BLIR
+// stående til man treffer den andre enden.
 function klappTikk(){
   const k=KLAPP;
   if(!k.analyse) return;
@@ -8718,17 +8861,39 @@ function klappTikk(){
   const nå=Date.now();
   if(klappVurder(rms, nå)){
     k.ventende++;
-    if(k.ventende===2){ clearTimeout(k.parTimer); k.ventende=0; klappUtløst('forrige'); }
-    else k.parTimer=setTimeout(()=>{ k.ventende=0; klappUtløst('neste'); }, KLAPP_PAR);
+    clearTimeout(k.parTimer);
+    if(k.ventende>=3){ k.ventende=0; klappUtløst('rull'); return; }
+    const antall=k.ventende;
+    k.parTimer=setTimeout(()=>{ k.ventende=0;
+      klappUtløst(antall===1 ? 'neste' : 'forrige'); }, KLAPP_PAR);
   }
+}
+function klappRull(){
+  const boks=document.getElementById('focus-scroll');
+  if(!boks) return null;
+  const rom=boks.scrollHeight-boks.clientHeight;
+  if(rom<=8) return 'ingenting';           // alt får plass — ikke lat som noe skjer
+  const steg=Math.max(80, Math.round(boks.clientHeight*0.7));
+  if(window._klappRullOpp===undefined) window._klappRullOpp=false;
+  if(!window._klappRullOpp && boks.scrollTop>=rom-4) window._klappRullOpp=true;
+  if(window._klappRullOpp && boks.scrollTop<=4)      window._klappRullOpp=false;
+  boks.scrollBy({top: window._klappRullOpp ? -steg : steg, behavior:'smooth'});
+  return window._klappRullOpp ? 'opp' : 'ned';
 }
 function klappUtløst(retning){
   const ov=document.getElementById('focus-overlay');
   if(!ov || ov.style.display!=='flex'){ klappStopp(); return; }
   const total=(window._steps||[]).length;
+  if(retning==='rull'){
+    const r=klappRull();
+    vinkMelding(r==='ingenting' ? L('👏👏👏 Alt får plass','👏👏👏 It all fits')
+              : r==='opp'       ? L('👏👏👏 ↑ Opp','👏👏👏 ↑ Up')
+                                : L('👏👏👏 ↓ Ned','👏👏👏 ↓ Down'));
+    return;
+  }
   if(retning==='neste'){ if((window._focusIdx||0) < total-1) focusGoto((window._focusIdx||0)+1); }
   else focusPrev();
-  vinkMelding(retning==='neste' ? L('👏 → Neste','👏 → Next') : L('👏 ← Forrige','👏 ← Previous'));
+  vinkMelding(retning==='neste' ? L('👏 → Neste','👏 → Next') : L('👏👏 ← Forrige','👏👏 ← Previous'));
 }
 // Tar en ferdig MediaStream, av samme grunn som vinkStart().
 function klappStart(strøm){
@@ -8862,8 +9027,11 @@ function renderFocus(){
     <div style="height:6px;background:var(--forno-bg-raised);border-radius:3px;margin:12px 18px 0;overflow:hidden"><div style="height:100%;width:${Math.round((i+1)/total*100)}%;background:var(--forno-accent)"></div></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;min-height:16px">
       ${window._focusWake?`<span style="font-size:10.5px;font-weight:700;color:var(--forno-text-faint)">🔆 ${L('Skjermen holdes våken','Screen stays awake')}</span>`:''}
-      ${vinkStøttes()?`<span onclick="vinkToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${VINK.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${VINK.på?L('👋 Vink: på — sideveis blar, opp/ned ruller','👋 Wave: on — sideways flips, up/down scrolls'):L('👋 Bla med vink','👋 Flip with a wave')}</span>`:''}
-      ${klappStøttes()?`<span onclick="klappToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${KLAPP.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${KLAPP.på?L('👏 Klapp: på — 1 neste, 2 forrige','👏 Clap: on — 1 next, 2 previous'):L('👏 Bla med klapp','👏 Flip with a clap')}</span>`:''}
+      ${/* v0.792: vinkestyringen er flyttet ut av Fokus og ned i Mer -> Utproving.
+           Den er «sånn halv god» i praksis, og en halvgod gest i et steg du
+           står midt i koster mer enn den gir. Den kommer tilbake hit når
+           treningsruten viser at den treffer. */''}
+      ${klappStøttes()?`<span onclick="klappToggle()" style="font-size:10.5px;font-weight:700;cursor:pointer;color:${KLAPP.på?'var(--forno-accent-text)':'var(--forno-text-faint)'}">${KLAPP.på?L('👏 Klapp: på — 1 neste · 2 forrige · 3 rull','👏 Clap: on — 1 next · 2 previous · 3 scroll'):L('👏 Bla med klapp','👏 Flip with a clap')}</span>`:''}
     </div>
     ${(VINK.på||KLAPP.på)?`<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;min-height:22px">
       <span id="vink-hand" style="font-size:19px;line-height:1;opacity:.3;display:${VINK.på?'inline':'none'};transition:opacity .12s linear,transform .12s linear;will-change:opacity,transform">👋</span>
@@ -10106,6 +10274,11 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <div class="mob-section-lbl" id="mob-utproving-lbl">🧪 Utprøving</div>
     <div id="mob-gjaertest-wrap" style="padding:.2rem 1rem .7rem"></div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="åpneVinktrening()">
+      <span id="mob-vinktrening" style="font-size:13px;color:var(--dyn-text);font-weight:500">🖐️ Tren på vink</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
+    </div>
+    <div id="mob-vinktrening-hint" style="padding:0 1rem .7rem;font-size:11px;color:var(--forno-text-faint);line-height:1.45">Vinkestyringen er tatt ut av Fokus inntil videre — den treffer ikke godt nok ennå. Her kan du trene og se hva den faktisk leser.</div>
 
     <div class="mob-section-lbl" id="mob-admin-lbl">Admin</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openFormlerModal()">
