@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.795",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Mania-poolish kan nå velges på PC. Den har bare stått i mobilvelgeren — oppskriften og tidsplanen har regnet den riktig hele tiden, den var ikke mulig å trykke på.",
+      "Mania er også med i Fra–til nå. Før kunne du skru den av og på i metodefilteret som styrer Fra–til, mens den aldri kunne komme opp der uansett hva du valgte. Den har ingen skruer å justere, så kortet svarer på det ene spørsmålet som gjelder: får de faste 36 timene plass i vinduet ditt, eller mangler du så og så mye?",
+      "Appen hadde fire lister over hvilke metoder du blir tilbudt, og de var ikke like. Nå er det én — og en test som feller enhver ny forskjell mellom dem."
+    ],
+    "changes_en": [
+      "Mania poolish can now be chosen on desktop. It only ever appeared in the mobile picker — the recipe and schedule have computed it correctly all along, it just was not clickable.",
+      "Mania is now part of From–to as well. Before, you could switch it on and off in the method filter that governs From–to, while it could never show up there no matter what you chose. It has no knobs to adjust, so the card answers the one question that applies: do the fixed 36 hours fit in your window, or how much are you short?",
+      "The app had four lists of which methods you are offered, and they did not match. Now there is one — and a test that fails on any new divergence between them."
+    ]
+  },
+  {
     "v": "0.794",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -4321,7 +4321,12 @@ def _atferd_5(page, results):
       const tight=windowCandidates(new Date('2027-08-07T18:00'),32*60);
       const noFit=tight.filter(c=>!c.best);
       const favFirstAmongNoFit = noFit.length>1 && noFit[0].method==='biga';
-      const hasMinVal = noFit.every(c=>typeof c.minVal==='number');
+      // v0.795: en metode som ikke passer maa baere med seg verdien utveiene
+      // skal sette - ellers gjoer «stek senere» ingenting. Mania er unntaket, og
+      // et ekte et: den har ingen justerbar variabel (tom key), og da SKAL
+      // minVal vaere null. Vakten holder fortsatt for alle med skrue.
+      const hasMinVal = noFit.every(c => c.key ? typeof c.minVal==='number' : c.minVal===null)
+                     && noFit.some(c => c.key);
       const h=document.getElementById('mob-winres').innerHTML;
       const firstShift=(h.match(/applyWindowShiftBake\\('(\\w+)','(\\w+)',(\\d+),(\\d+)\\)/)||[]);
       const btnIsFav = firstShift[1]==='biga';
@@ -8123,6 +8128,91 @@ def _atferd_7(page, results):
              and r161.get('beholdtValg') is True
              and r161.get('mobilLik') is True)
     results.append(('flour_dropdown_shows_fermentation_range', ok161, r161))
+
+    # v0.795: appen hadde FIRE lister over metoder, og de var ikke like. Meldt
+    # inn: «Metoder du blir tilbudt burde ogsaa vaere paa fra og til maaten.»
+    # Maalt foer fiksen: metodefilteret og Smart-plan tilbød 6, mobilkortene 6,
+    # men PC-kortene 5 og Fra-til 5 - begge manglet Mania. Du kunne altsaa skru
+    # Mania av og paa i filteret som styrer Fra-til, mens den aldri kunne komme
+    # opp der uansett hva du valgte.
+    #
+    # Testen fryser ikke et tall, den binder listene sammen: alle metoder med
+    # smartPlan i METHODS-registeret skal finnes ALLE de fire stedene. En ny
+    # metode som legges inn ett sted felles her i stedet for aa bli oppdaget i
+    # bruk et halvt aar senere.
+    #
+    # Mania er den eneste metoden uten justerbar variabel (tom `key`). Da maa to
+    # ting holde: planen maa faa en ekte lengde i vinduet, og aa velge den maa
+    # ikke skrive noe i S - hverken en tom noekkel eller en tilfeldig time.
+    r162 = page.evaluate("""() => {
+      const sv={l:window._lang};
+      window._lang='no';
+      const ut={};
+      const sett=a=>[...new Set(a)].sort().join(',');
+      ut.registeret = sett(Object.keys(METHODS).filter(k=>METHODS[k].smartPlan));
+      ut.filteret   = sett(BETA_METHOD_DEFS.map(d=>d[0]));
+      ut.fraTil     = sett(WINDOW_METHODS.map(d=>d.m));
+      ut.pcKort     = sett([...document.querySelectorAll('#gmet .mc')].map(e=>e.dataset.v));
+      try{ mobMethodCards(); }catch(e){}
+      ut.mobKort    = sett([...document.querySelectorAll('#mob-gmet > div')].map(e=>e.dataset.v||''));
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      S.mel=500; S.type='napoletana'; S.hydro=65; S.temp=22;
+      ut.smartPlan  = sett((searchAllMethods(new Date(2026,7,20,18,0))||[])
+                            .map(c=>(c.snapshot||{}).method).filter(Boolean));
+      // Fra-til med et romslig vindu: alle seks skal faa plass.
+      const cands=windowCandidates(new Date(2026,7,20,18,0), 5*24*60);
+      ut.kandidater = sett(cands.map(c=>c.method));
+      const mania=cands.find(c=>c.method==='mania');
+      ut.maniaPasser = !!(mania && mania.best);
+      // Lengden maa vaere Manias EKTE kjede, ikke en gjetning.
+      const fasit=(MANIA_T.POOLISH+MANIA_T.CHILL+MANIA_T.MIX+MANIA_T.RISE1
+                   +MANIA_T.ROOM1+MANIA_T.COLDBULK+MANIA_T.FINAL);
+      ut.maniaSpenn = mania && mania.best ? mania.best.span : null;
+      ut.maniaFasit = fasit;
+      ut.maniaTittel = winValText('mania', mania && mania.best ? mania.best.val : null);
+      ut.maniaUnder  = winOptLabel('mania', mania && mania.best ? mania.best.val : null);
+      // Aa velge den skal bytte metode og ROERE INGENTING ANNET.
+      const foer=JSON.stringify({c:S.cold,h:S.hurtigH,k:S.kveldH,p:S.poolishH,b:S.bigaH});
+      applyWindowCandidate('mania', mania?mania.key:'', mania&&mania.best?mania.best.val:null);
+      ut.etterMetode = S.method;
+      ut.uroert = JSON.stringify({c:S.cold,h:S.hurtigH,k:S.kveldH,p:S.poolishH,b:S.bigaH})===foer;
+      ut.tomNokkel = Object.prototype.hasOwnProperty.call(S,'');
+      // PC-siden: den faste strukturen har ingen kald slider aa dra i.
+      mCards(); document.querySelectorAll('#gmet .mc').forEach(e=>{ if(e.dataset.v==='mania') e.onclick(); });
+      ut.pcSliderSkjult = (document.getElementById('cwrap')||{}).style.display==='none';
+      ut.pcValgt = S.method==='mania';
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      window._lang=sv.l;
+      try{ mCards(); mobMethodCards(); }catch(e){}
+      return ut;
+    }""")
+    _reg = r162.get('registeret')
+    ok162 = (
+      # Ett register, fem lister som maa vaere enige med det.
+      bool(_reg) and 'mania' in (_reg or '')
+      and r162.get('filteret') == _reg
+      and r162.get('fraTil') == _reg
+      and r162.get('pcKort') == _reg
+      and r162.get('mobKort') == _reg
+      and r162.get('smartPlan') == _reg
+      and r162.get('kandidater') == _reg
+      # Mania faar plass, og lengden er kjedens egen.
+      and r162.get('maniaPasser') is True
+      and r162.get('maniaSpenn') == r162.get('maniaFasit')
+      # Etiketten sier hva de faste fasene ER - ikke «null timer», og ikke
+      # «kaldheving», som er det den falt ned paa uten egen gren.
+      and 'null' not in (r162.get('maniaTittel') or 'null')
+      and '12t poolish' in (r162.get('maniaTittel') or '')
+      and '10t udelt' in (r162.get('maniaTittel') or '')
+      and 'kaldheving' not in (r162.get('maniaUnder') or 'kaldheving')
+      and 'Pizzamania' in (r162.get('maniaUnder') or '')
+      # Metoden uten skruer skal ikke skrive i S.
+      and r162.get('etterMetode') == 'mania'
+      and r162.get('uroert') is True
+      and r162.get('tomNokkel') is False
+      and r162.get('pcValgt') is True
+      and r162.get('pcSliderSkjult') is True)
+    results.append(('every_offered_method_is_offered_everywhere', ok162, r162))
 
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]

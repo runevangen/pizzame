@@ -891,6 +891,10 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
       <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Langtidsdeig</div><div class="mc-s">Direkte + kjøl</div></div>
       <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
       <div class="mc" data-v="biga" title="Fast fordeig 16–24t."><div class="mc-t">Biga</div><div class="mc-s">Fast fordeig, 16–24t</div></div>
+      <!-- v0.795: Mania sto bare i mobilvelgeren. PC-fanen har regnet den riktig
+           siden F17 (gen() bruker Manias egne tall), den var bare ikke mulig å
+           velge herfra. -->
+      <div class="mc" data-v="mania" title="To-trinns metode fra Pizzamania. Fast oppskrift, ingen justerbare variabler."><div class="mc-t">Mania-poolish</div><div class="mc-s">To-trinns, udelt kald heving</div></div>
       <div class="mc hc" data-v="hurtig" title="2–16 timer i romtemperatur."><div class="mc-t">Hurtigdeig</div><div class="mc-s">2–16 timer, romtemperatur</div></div>
       <div class="mc" data-v="kveld" title="5–24 timer i kjøleskap. Kaldt vann, ingen dagers planlegging."><div class="mc-t">Kveldsdeig</div><div class="mc-s">5–24t kjøleskap</div></div>
     </div>
@@ -1175,7 +1179,7 @@ function syncStaticI18nUI(){
   setPCPills('#gkm .pill',{ankarsrum:['Ankarsrum','Ankarsrum'],manuell:['Manuell elting','Manual kneading'],annen:['Annen maskin','Other machine']});
   setPCPills('#govn .pill',{pizza:['Pizzaovn (430–450°C)','Pizza oven (430–450°C)'],vanlig:['Vanlig ovn (maks 250°C)','Regular oven (max 250°C)']});
   // v0.668 (backlog T-i18n): PC-metodekort + seksjonsetiketter + meny + planlegging.
-  const _mcSub={standard:['Direkte + kjøl','Direct + fridge'],poolish:['Løs fordeig, 12–16t','Loose preferment, 12–16h'],biga:['Fast fordeig, 16–24t','Stiff preferment, 16–24h'],hurtig:['2–16 timer, romtemperatur','2–16 hours, room temperature'],kveld:['5–24t kjøleskap','5–24h fridge']};
+  const _mcSub={standard:['Direkte + kjøl','Direct + fridge'],poolish:['Løs fordeig, 12–16t','Loose preferment, 12–16h'],biga:['Fast fordeig, 16–24t','Stiff preferment, 16–24h'],mania:['To-trinns, udelt kald heving','Two-stage, undivided cold proof'],hurtig:['2–16 timer, romtemperatur','2–16 hours, room temperature'],kveld:['5–24t kjøleskap','5–24h fridge']};
   document.querySelectorAll('#gmet .mc').forEach(mc=>{ const v=mc.dataset.v; const tt=mc.querySelector('.mc-t'); const ss=mc.querySelector('.mc-s'); if(tt) tt.textContent=mN(v); if(ss&&_mcSub[v]) ss.textContent=L(_mcSub[v][0],_mcSub[v][1]); });
   const _typeLbl=(document.getElementById('gtype')||{}).previousElementSibling; if(_typeLbl&&_typeLbl.classList.contains('lbl')) _typeLbl.textContent=L('Pizzatype','Pizza type');
   const _metWrap=document.getElementById('gmet-wrap'); if(_metWrap){ const ml=_metWrap.querySelector('.lbl'); if(ml) ml.textContent=L('Metode','Method'); }
@@ -1710,7 +1714,10 @@ function mCards(){
       S.method=c.dataset.v;mCards();
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
       document.getElementById('ksub').style.display=S.method==='kveld'?'block':'none';
-      document.getElementById('cwrap').style.display=(S.method==='hurtig'||S.method==='kveld')?'none':'block';
+      // v0.795: les METHODS i stedet for å ramse opp de to metodene som ikke har
+      // kald slider. applyTypeUI() gjorde allerede det; her sto den gamle lista,
+      // og med Mania valgbar på PC ville den vist en slider som ikke gjør noe.
+      document.getElementById('cwrap').style.display=methodShowsColdSlider(S.method)?'block':'none';
       schedNow();
     };
   });
@@ -7204,6 +7211,7 @@ function mobMethodCards(){
    {v:'kveld',t:L('Kveldsdeig','Evening dough'),s:L('5–24 timer i kjøleskap','5–24 hours in the fridge')}
   ].forEach(({v,t,s})=>{
     const el=document.createElement('div');
+    el.dataset.v=v;   // v0.795: gjør lista lesbar utenfra, som PC-kortene
     const isOn=S.method===v;
     el.style.cssText=`position:relative;border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${isOn?'var(--forno-bg-raised)':'var(--forno-accent-soft)'};border:${isOn?'2px solid var(--forno-accent)':'1px solid transparent'}`;
     const fit=methodFitNote(v);
@@ -7635,6 +7643,10 @@ function readWinStart(){
 function winOptLabel(method,val){
   if(method==='hurtig'){ const o=HOPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):''; }
   if(method==='kveld'){ const o=KOPTS.find(x=>x.h===val); return o?(window._lang==='en'?o.bEn:o.b):''; }
+  // v0.795: Mania har ingen verdi å slå opp — uten denne falt den ned i
+  // COLD_OPTS og fikk «kaldheving», som er feil for en fast to-trinns plan.
+  if(method==='mania') return L('Fast oppskrift fra Pizzamania — ingenting å justere',
+                                'Fixed recipe from Pizzamania — nothing to adjust');
   // Langtidsdeig: slideren går i 6-timers steg, mens smaksstigen kun har
   // merkelapper på 24/48/72 — for mellomverdier sier vi hva tiden ER i stedet.
   const o=COLD_OPTS.find(x=>x.h===val);
@@ -7668,6 +7680,14 @@ function winValText(method,val){
     return L(`${S.bigaH}t romtemp + ${kaldt}`,`${S.bigaH}h room temp + ${kaldt}`);
   if(method==='standard') return kaldt;
   if(method==='kveld')    return L(`${val}t kaldt`,`${val}h cold`);
+  // v0.795: Mania har ingen `val` — fasene er faste. Tallene leses fra MANIA_T,
+  // samme kilde som stegkjeden og oppskriftsraden, så etiketten ikke kan drifte
+  // fra planen. Det var nettopp den driften v0.793 måtte rette for poolish.
+  if(method==='mania'){
+    const h=m=>Math.round(m/60);
+    return L(`${h(MANIA_T.POOLISH)}t poolish + ${h(MANIA_T.COLDBULK)}t udelt + ${h(MANIA_T.FINAL)}t i emner`,
+             `${h(MANIA_T.POOLISH)}h poolish + ${h(MANIA_T.COLDBULK)}h undivided + ${h(MANIA_T.FINAL)}h in balls`);
+  }
   return L(`${val} timer`,`${val} hours`);   // Hurtigdeig: tallet ER metodens tid
 }
 function renderWindowPicker(){
@@ -7832,10 +7852,12 @@ function renderWindowPicker(){
     {
       const fl=MELTYPER.find(m=>m.v===S.meltype);
       if(fl && fl.ferm && Number.isFinite(fl.ferm.mn)){
-        const l2={method:S.method, val:S[c.key]};
-        S.method=c.method; S[c.key]=c.best.val; _q10Memo={k:null,v:null};
+        // v0.795: c.key er tom for metoder med fast struktur (Mania) — da er det
+        // bare metoden som byttes. Uten vakten ble S[''] satt og lest.
+        const l2={method:S.method, val:c.key?S[c.key]:null};
+        S.method=c.method; if(c.key) S[c.key]=c.best.val; _q10Memo={k:null,v:null};
         const th=totalFermentHours();
-        S.method=l2.method; S[c.key]=l2.val; _q10Memo={k:null,v:null};
+        S.method=l2.method; if(c.key) S[c.key]=l2.val; _q10Memo={k:null,v:null};
         const over=Math.round(th-fl.ferm.mx), under=Math.round(fl.ferm.mn-th);
         if(over>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${over}t over det ${escH(fl.t)} er ment for`,`${over}h beyond what ${escH(fl.t)} is meant for`)}</span>`;
         else if(under>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${under}t kortere enn ${escH(fl.t)} er ment for`,`${under}h shorter than ${escH(fl.t)} is meant for`)}</span>`;
@@ -7881,7 +7903,9 @@ function renderWindowPicker(){
 // ombestemme deg uten å fylle inn tidspunktene på nytt.
 function applyWindowCandidate(method,key,val){
   const changed = S.method!==method;
-  S.method=method; S[key]=val;
+  // v0.795: tom key = metoden har ingen justerbar variabel (Mania). Da skal
+  // ingenting i S skrives — bare metoden byttes.
+  S.method=method; if(key) S[key]=val;
   if(changed) clearStepProgress();
   window._planChosen=true;
   try{ mobMethodCards(); }catch(e){}

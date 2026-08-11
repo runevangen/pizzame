@@ -381,13 +381,24 @@ function ballWeightNote(){
 // bruker) lar brukeren nå styre lengden selv, så innvendingen faller bort.
 // For forspill-metodene varieres den KALDE halen; selve forspill-lengden
 // (poolishH/bigaH) er et smaksvalg brukeren har tatt og skal ikke overstyres.
+//
+// v0.795: Mania er nå med. «Kan uansett ikke justeres» stemmer fortsatt, men det
+// var feil grunn til å holde den ute: Fra–til spør «får denne planen plass i
+// vinduet mitt?», og det spørsmålet har et svar også for en plan uten skruer —
+// den passer, eller den mangler så og så mange timer. Uten den kunne du skru
+// Mania av og på i metodefilteret som styrer Fra–til, mens den aldri kunne
+// komme opp der uansett hva du valgte.
+//
+// Tom `key` betyr «ingen variabel å variere»: vals() gir da nøyaktig ett
+// alternativ, og både windowCandidates og applyWindowCandidate lar S i fred.
 const COLD_VALS=()=>{const a=[];for(let h=24;h<=COLD_MAX;h+=6)a.push(h);return a;};
 const WINDOW_METHODS=[
   {m:'hurtig',   key:'hurtigH', vals:()=>HOPTS.map(o=>o.h)},
   {m:'kveld',    key:'kveldH',  vals:()=>KOPTS.map(o=>o.h)},
   {m:'standard', key:'cold',    vals:COLD_VALS},
   {m:'poolish',  key:'cold',    vals:COLD_VALS},
-  {m:'biga',     key:'cold',    vals:COLD_VALS}
+  {m:'biga',     key:'cold',    vals:COLD_VALS},
+  {m:'mania',    key:'',        vals:()=>[null]}
 ];
 // Favoritten løftes med samme milde vekt som nattestarter straffes med: den
 // vinner når den er innenfor 3 timers gjæring av det beste alternativet, men
@@ -421,7 +432,7 @@ function windowCandidates(bakeAt, windowMin){
       S.method=def.m;
       let best=null,minSpan=null,minVal=null;
       for(const v of def.vals()){
-        S[def.key]=v;
+        if(def.key) S[def.key]=v;   // metoder med fast struktur har ingen skrue
         let span=null;
         try{ span=planSpanMin(bakeAt); }catch(e){ continue; }
         if(span==null) continue;
