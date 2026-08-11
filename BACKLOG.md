@@ -1,6 +1,7 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 07.08.2026 · F27, F28 og F25 bygget; F24 har fått en utfordrer og venter på bakst; fem funn fra plangjennomgang fikset (v0.742). Gjenstår: F29 (lag 2), F26 (følger F24), F12 og T-i18n2 (parkert).
+Sist oppdatert: 11.08.2026 · v0.784–0.788 ute: kald poolish står der den faktisk står, kjøleskapspausen tempereres, finere timeraster, 30 %-poolish som variant, og vinkelengden er blitt et valg. Vanntemperaturen regnes nå av en varmebalanse som teller fordeigen med. Testriggen er delt i sju grupper, og CI kjører på hver push med nattlig stabilitetssjekk.
+**Venter på bakst:** F33 (ny), F24. **Venter på avgjørelse:** F26, F12. **Ikke startet:** F29, F30, F32, T-i18n2.
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
