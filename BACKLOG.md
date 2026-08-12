@@ -826,6 +826,17 @@ All gjæren i poolishen i begge. Tidsplan uten nattevekking: poolish fre 18:00 �
 bland lør 12:00 → emner lør 13:20 → kjøleskap lør 13:35 → **måling søn 09:20** →
 steking søn 13:20.
 
+**Vanntemperatur i blandesteget: A 8°C, B 16°C.** Merk at dette IKKE er tallene
+appen viser. Appen sikter mot 23°C, og med bare 75g justerbart vann i A gir det
+4°C (gulvet — regnestykket ber om 0,4°C) og en deig på 23,5°C, mens B får 13°C og
+23,1°C. Det er 1 grads forskjell mellom to deiger som skal være like på alt annet
+enn andelen, og 1°C er ca. 9 % i gjæringsfart — den nest største feilkilden i
+hele oppsettet.
+
+Sikter man mot 24°C i stedet, lander BEGGE på 24,1°C, og vannet blir 8°C og 16°C
+— vanlig springvann, ingen kanne i kjøleskapet. Målet 24 er valgt fordi det er
+det eneste som er nåbart for begge; 23 er utenfor rekkevidde for A.
+
 **Det ene som måles:** merk høyden på boksene med tusj når emnene settes inn. Ved
 søn 09:20, før uttak: hvor høyt har de seks emnene steget mot merket? Bilde
 ovenfra og fra siden.
@@ -837,9 +848,9 @@ ovenfra og fra siden.
 Retningen er hele svaret — ingen tallfesting nødvendig.
 
 **Fire ting som ødelegger forsøket:** gjærtesten på (se funn 1); ulik sone i
-kjøleskapet (større forskjell enn den vi leter etter); udokumentert
-deigtemperatur — A lander på ~24°C og B på ~23°C, og 1°C er ca. 9 % i
-gjæringsfart, så begge må måles og skrives ned; og 14 timers poolish (se funn 2).
+kjøleskapet (større forskjell enn den vi leter etter); ulik deigtemperatur — mål
+begge etter elting, begge skal vise 24°C, og spriker de mer enn en halv grad må
+det skrives ned og regnes inn; og 14 timers poolish (se funn 2).
 
 ### F24. Vurder Q10 også for Poolish og Biga — 🧪 FØRSTE BAKST-RESULTAT (v0.761)
 > ⚠️ **Første ekte data, og de peker mot NEI for Kveldsdeig.**
