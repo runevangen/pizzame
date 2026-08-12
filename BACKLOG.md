@@ -779,6 +779,68 @@ det er samme aksen (hvor mye gjær trengs egentlig), bare fra en annen kant.
 **Ikke rør noe før det:** deigtemperaturen og melsplitten er målt og verifisert
 (r154, r155). Det er kun gjærmengden som står på et anslag.
 
+#### To funn som avgjør HVORDAN forsøket må settes opp (målt v0.801)
+
+Begge kom fram ved å krysse tabellveien mot Q10-modellen, og begge ville gjort
+et naivt oppsett verdiløst:
+
+**1. Q10-modellen ser ikke poolish-andelen i det hele tatt.** `fermentLoadHours()`
+integrerer tid ved temperatur, og de timene er identiske uansett hvor mye av
+melet som står i poolishen. Målt, 24t poolish + 48t kaldt: tabellen gir 0,52g
+(50 %) mot 0,63g (30 %), mens Q10 gir 0,29g for begge — samme belastning, 38,37.
+De to modellene er altså uenige om andelen betyr noe overhodet.
+
+Ikke nødvendigvis en feil: Q10 svarer på «hvor mye gjæring har skjedd», og det er
+faktisk uendret. Det som endrer seg er hvor mye MEL som ble utsatt for den.
+Men konsekvensen er hard: **forsøket må kjøres med gjærtesten AV.** Med den på
+får begge deigene samme gjærmengde, og sammenligningen måler ingenting.
+
+**2. Ved 14 timers poolish er de to variantene matematisk identiske.**
+`prefermentShareScale()` skalerer avviket fra 1,0, og ved 14 timer ER
+multiplikatoren 1,0 — så andelen har null effekt. Retningen snur også rundt det
+punktet: under 14t gir 30 % *mindre* gjær, over gir det *mer*.
+
+| Poolish | 50 % | 30 % | Forskjell |
+|---|---|---|---|
+| 12t | 1,35g | 1,26g | −7 % |
+| **14t** | **1,13g** | **1,13g** | **0** |
+| 18t | 0,74g | 0,90g | +22 % |
+| 24t | 0,74g | 0,90g | +22 % |
+
+14 timer er standardlengden i appen — altså nettopp den lengden der forsøket er
+tomt. **Bruk 18 timer:** korteste lengde der forskjellen er full (22 %).
+
+#### Protokoll — klar til bruk
+
+Én variabel: andelen. Alt annet likt.
+
+Begge deigene: 500g mel · 325g vann (65 %) · 14g salt · 3 emner à 280g · 18t
+poolish romtemperatur · 24t kald · 22°C rom · 3°C skap · gjærtest AV.
+
+| | Poolish | Hoveddeig | Gjær |
+|---|---|---|---|
+| **A — 50 %** | 250g mel + 250g vann | 250g mel + 75g vann + salt | **0,74g** tørr |
+| **B — 30 %** | 150g mel + 150g vann | 350g mel + 175g vann + salt | **0,90g** tørr |
+
+All gjæren i poolishen i begge. Tidsplan uten nattevekking: poolish fre 18:00 →
+bland lør 12:00 → emner lør 13:20 → kjøleskap lør 13:35 → **måling søn 09:20** →
+steking søn 13:20.
+
+**Det ene som måles:** merk høyden på boksene med tusj når emnene settes inn. Ved
+søn 09:20, før uttak: hvor høyt har de seks emnene steget mot merket? Bilde
+ovenfra og fra siden.
+
+- Like høye → skaleringen holder, F33 lukkes.
+- B lavere → 0,90g er for lite; den lineære antakelsen underdriver tapet.
+- B høyere → 0,90g er for mye; den overdriver.
+
+Retningen er hele svaret — ingen tallfesting nødvendig.
+
+**Fire ting som ødelegger forsøket:** gjærtesten på (se funn 1); ulik sone i
+kjøleskapet (større forskjell enn den vi leter etter); udokumentert
+deigtemperatur — A lander på ~24°C og B på ~23°C, og 1°C er ca. 9 % i
+gjæringsfart, så begge må måles og skrives ned; og 14 timers poolish (se funn 2).
+
 ### F24. Vurder Q10 også for Poolish og Biga — 🧪 FØRSTE BAKST-RESULTAT (v0.761)
 > ⚠️ **Første ekte data, og de peker mot NEI for Kveldsdeig.**
 >
