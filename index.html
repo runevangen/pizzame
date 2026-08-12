@@ -805,6 +805,27 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     </div>
   </div>
 </div>
+
+<!-- v0.799: «Når er du ledig?» lå inne i Smart-plan, men den styrer også hvert
+     «du er ikke ledig da»-varsel i resten av appen. Samme flytting som
+     melkurven, og samme grunn: en innstilling som treffer overalt kan ikke bo
+     inne i én fane. Ingen sammenslåing her — i en egen boks er det ingenting
+     å skjule bak. -->
+<div id="pizzatid-modal" class="modal-overlay" onclick="if(event.target===this)closePizzatidModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b id="pizzatid-modal-tittel">🗓️ Når er du ledig?</b><button class="modal-x" onclick="closePizzatidModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <div style="padding:11px 13px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px;margin-bottom:10px">
+        <div id="mob-pizzatid-help" style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted)">Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: Smart-plan <b style="color:var(--forno-text)">foreslår</b> oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.</div>
+      </div>
+      <div id="pizzatid-status" style="display:none;margin-bottom:10px"></div>
+      <div id="mob-pizzatid-body">
+        <div id="mob-pizzatid-days"></div>
+        <div style="padding:8px 0 0"><button id="mob-pizzatid-save" onclick="saveBetaPizzatid()" style="width:100%;height:38px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text-muted);font-size:12.5px;font-weight:600;cursor:pointer">Lagre ledig tid</button></div>
+      </div>
+    </div>
+  </div>
+</div>
 <style>
 /* v0.792: treningsruta. Fyllt rute = deg, ringet rute = maal. */
 .vt-rute{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;width:100%;aspect-ratio:1}
@@ -890,6 +911,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none"><span id="pc-menu-fav">★ Min favoritt</span></div>
     <!-- v0.797: PC har ingen Mer-fane, så samme boks nås herfra. -->
     <div class="menu-row" id="pc-menu-tilbud" onclick="sidenavGo(openTilbudModal)">🎛️ Hva du blir tilbudt</div>
+    <div class="menu-row" id="pc-menu-pizzatid" onclick="sidenavGo(openPizzatidModal)">🗓️ Når er du ledig?</div>
     <div class="menu-row" id="pc-menu-feedback" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
     <div class="menu-row" id="pc-menu-share" onclick="sidenavGo(shareApp)">📤 Del appen</div>
     <div style="height:1px;background:#F2F2F7"></div>
@@ -903,6 +925,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
   </div>
 </div>
 
+  <div id="pc-tilbud-tips"></div>
   <div><div class="lbl">Pizzatype</div>
     <div class="pills" id="gtype">
       <span class="pill on" data-v="napoletana" title="Tynn, luftig. Anbefalt hydrering 60–68%.">Napoletansk</span>
@@ -1300,6 +1323,7 @@ function syncStaticI18nUI(){
   try{ populateMeltypeSelects(); }catch(e){}
   // v0.796: melkurven har egne tekster (og melnavn via mtName) — samme grunn.
   try{ renderMelkurv(); renderMelkurvTypeNote(); }catch(e){}
+  try{ renderTilbudTips(); }catch(e){}
   st('wiz-finjuster-done','✓ Ferdig — se steg for steg','✓ Done — see step by step');
   // Info/settings tab
   st('mob-visning-lbl','Visning','Display');
@@ -1327,10 +1351,13 @@ function syncStaticI18nUI(){
   // Smart-plan tab (tidl. «Beta»)
   st('mob-beta-h','🧭 Smart-plan','🧭 Smart plan');
   st('mob-beta-sub','Si når du har tid og når du vil spise — så finner appen metoden som passer. Søker på tvers av alle metoder.','Tell it when you have time and when you want to eat — the app finds the method that fits. Searches across all methods.');
-  st('mob-pizzatid-lbl','Når er du ledig?','When are you free?');
+  // v0.799: «her» ble feil da boksen flyttet ut av Smart-plan — nå navngis
+  // begge stedene i stedet for å peke på skjermen du tilfeldigvis står i.
+  st('pizzatid-modal-tittel','🗓️ Når er du ledig?','🗓️ When are you free?');
+  st('mer-tilbud-pizzatid','🗓️ Når er du ledig?','🗓️ When are you free?');
+  st('pc-menu-pizzatid','🗓️ Når er du ledig?','🗓️ When are you free?');
   // help contains HTML, so set innerHTML instead of textContent
-  { const el=document.getElementById('mob-pizzatid-help'); if(el) el.innerHTML=L('Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.','Set up the fixed times you are free to make pizza, per weekday. The app uses them in two places: here it <b style="color:var(--forno-text)">suggests</b> recipes that fit your time, and elsewhere in the app it <b style="color:var(--forno-text)">warns</b> you if a step lands at a time you have not set aside.'); }
-  st('mob-pizzatid-help2','Trykk «Vis» for å sette opp ukedagene dine.','Tap "Show" to set up your weekdays.');
+  { const el=document.getElementById('mob-pizzatid-help'); if(el) el.innerHTML=L('Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: Smart-plan <b style="color:var(--forno-text)">foreslår</b> oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.','Set up the fixed times you are free to make pizza, per weekday. The app uses them in two places: Smart plan <b style="color:var(--forno-text)">suggests</b> recipes that fit your time, and elsewhere in the app it <b style="color:var(--forno-text)">warns</b> you if a step lands at a time you have not set aside.'); }
   st('mob-pizzatid-save','Lagre ledig tid','Save free time');
   st('mob-beta-baketime-lbl','Når skal deigen være klar?','When should the dough be ready?');
   st('mob-beta-baketime-sub','Ferdig hevet og klar for ovnen.','Proofed and ready for the oven.');
@@ -3979,6 +4006,7 @@ async function savePizzatidSchedule(schedule){
 function pizzatidChanged(){
   if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
   else { try{ schedNow(); }catch(e){} }
+  try{ renderPizzatidStatus(); }catch(e){}
 }
 function timeStrToMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
 // ===== v0.735: midlertidig pause i «ledig tid» =====
@@ -4190,10 +4218,11 @@ function searchAllMethods(anchor){
   // skrudd av faller ut av puljen. Har du skrudd av ALT, slapper vi filteret og
   // viser alle (flagg til render) — aldri en tom skjerm. Den manuelle velgeren
   // er uberørt: du kan alltid velge enhver metode selv.
-  const methodOk = c => (typeof betaMethodAllowed==='function') ? betaMethodAllowed(c.snapshot.method) : true;
-  const allowedCands = candidates.filter(methodOk);
-  window._betaFilterRelaxed = candidates.length>0 && allowedCands.length===0;
-  const base = allowedCands.length ? allowedCands : candidates;
+  // v0.799: slakkingen bodde her, som en regel bare Smart-plan kjente. Den er
+  // flyttet til tilbudteMetoder() og deles nå med Fra–til — samme innstilling
+  // skal ikke gi tom skjerm i den ene fanen og full liste i den andre.
+  const lovlige = new Set(tilbudteMetoder([...new Set(candidates.map(c=>c.snapshot.method))]));
+  const base = candidates.filter(c=>lovlige.has(c.snapshot.method));
   const feasible=base.filter(c=>new Date(c.startIso).getTime()>=now);
   const usingFallback=!feasible.length;
   const pool=feasible.length ? feasible : base;
@@ -4275,21 +4304,13 @@ function toggleFavMethod(v){
 function betaOppdaterResultat(){
   const res=document.getElementById('mob-beta-result');
   if(!res || !res.innerHTML.trim()) return;
-  // v0.774: uendret scrollTop er ikke lenger nok. Resultatblokka ligger OVER
-  // metodelista og skifter høyde når vinneren skifter (andre kort, annen
-  // notelengde) — da glir filteret du står og trykker i, selv om rullingen
-  // står stille. Anker derfor filterets SKJERMPOSISJON over re-renderingen:
-  // mål avstanden til toppen før, og juster rullingen med differansen etter.
-  const skjerm=document.getElementById('mob-beta');
-  // v0.797: ankeret er lenka i Smart-plan-skjermen, ikke etiketten i modalen —
-  // den ligger utenfor rullingen og har ingen posisjon å bevare.
-  const anker=document.getElementById('mob-beta-methods-lenke');
-  const ankerFør=(anker&&skjerm)?anker.getBoundingClientRect().top:null;
+  // v0.774 forankret Smart-plan-skjermens rulling her: filteret sto NEDENFOR
+  // resultatblokka, og når blokka skiftet høyde gled bryteren du nettopp
+  // trykket i, ut av syne. v0.799 flyttet filteret ut av skjermen — da finnes
+  // det ingen posisjon å bevare, og forankringen er fjernet med problemet den
+  // løste. Ikke etterlatt som død kode: en vakt for noe som ikke kan skje
+  // leses som om det fortsatt kan skje.
   try{ runBetaSearch(true); }catch(e){ return; }
-  if(ankerFør!=null){
-    const drift=anker.getBoundingClientRect().top-ankerFør;
-    if(drift) skjerm.scrollTop+=drift;
-  }
   const el=document.getElementById('mob-beta-result');
   if(!el) return;
   el.style.transition='none';
@@ -4306,6 +4327,36 @@ function openTilbudModal(){
   try{ renderMelkurv(); }catch(e){}
   try{ renderBetaMethodFilter(); }catch(e){}
   document.getElementById('tilbud-modal').style.display='flex';
+  tilbudTipsSett();
+}
+// ===== FØRSTEGANGSTIPSET (v0.799) =====
+// Melkurven og metodefilteret gjør ingenting før du har fylt dem ut, og de
+// ligger under Mer — der man ikke leter mens man planlegger sin første pizza.
+// Uten et hint er de funksjoner ingen finner. Tipset står derfor der du
+// faktisk er (steg 1 og PC-kolonnen), og forsvinner så snart du har åpnet
+// boksen én gang — eller når du krysser det bort.
+//
+// Ikke en modal ved oppstart: en boks som stiller spørsmål før du har sett
+// appen, er noe man klikker bort uten å lese.
+function tilbudTipsVises(){
+  try{ return !localStorage.getItem('pizzaTilbudSett'); }catch(e){ return false; }
+}
+function tilbudTipsSett(){
+  try{ localStorage.setItem('pizzaTilbudSett','1'); }catch(e){}
+  renderTilbudTips();
+}
+function renderTilbudTips(){
+  const bokser=['tilbud-tips','pc-tilbud-tips'].map(id=>document.getElementById(id)).filter(Boolean);
+  if(!bokser.length) return;
+  const html = tilbudTipsVises()
+    ? `<div style="margin:0 0 10px;padding:9px 11px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px;display:flex;gap:9px;align-items:flex-start">
+         <span onclick="openTilbudModal()" style="flex:1;font-size:11.5px;line-height:1.45;color:var(--forno-text-muted);cursor:pointer">${L(
+           'Første gang? Si hvilket <b style="color:var(--forno-text)">mel du har</b> og hvilke <b style="color:var(--forno-text)">metoder</b> du vil bli tilbudt, så regner appen med ditt kjøkken. Du finner det under <b style="color:var(--forno-text)">Mer → 🎛️ Hva du blir tilbudt</b>.',
+           'First time? Tell it which <b style="color:var(--forno-text)">flour you have</b> and which <b style="color:var(--forno-text)">methods</b> you want offered, and the app will plan around your kitchen. You will find it under <b style="color:var(--forno-text)">More → 🎛️ What you are offered</b>.')}</span>
+         <span onclick="tilbudTipsSett()" role="button" tabindex="0" aria-label="${escH(L('Lukk','Close'))}" style="font-size:13px;color:var(--forno-text-faint);cursor:pointer;line-height:1;padding:2px 2px 2px 0">✕</span>
+       </div>`
+    : '';
+  bokser.forEach(e=>e.innerHTML=html);
 }
 function closeTilbudModal(){
   document.getElementById('tilbud-modal').style.display='none';
@@ -4526,15 +4577,12 @@ async function renderBetaPanel(){
 }
 // Åpner Beta-fanen og folder ut Pizzatid-panelet, slik at "Rediger pizzatiden
 // din" i varselet lander på selve redigeringen og ikke bare på fanen.
+// v0.799: ukedagene bor i en egen boks nå, så varselknappen åpner den direkte
+// i stedet for å bytte fane og folde ut. Ett hopp mindre, og du mister ikke
+// skjermen du sto i.
 function openPizzatidFromWarning(){
   setReturnTo(true);
-  mobShowTab('beta');
-  setTimeout(()=>{
-    const body=document.getElementById('mob-pizzatid-body');
-    if(body && body.style.display==='none') togglePizzatidMinimized();
-    const wrap=document.getElementById('mob-pizzatid-days');
-    if(wrap && wrap.scrollIntoView) wrap.scrollIntoView({behavior:'smooth',block:'center'});
-  }, 60);
+  openPizzatidModal();
 }
 // v5.77: alle varselknapper som sender deg et annet sted var enveisdører — du
 // landet i Beta-fanen eller Finjuster, endret noe, og fikk aldri vite om
@@ -4606,18 +4654,35 @@ function renderReturnBar(){
 // v0.656: setter «Vis/Skjul»-etiketten ut fra om panelet er åpent, i riktig
 // språk. Kalles både ved toggling og fra i18n-synken — uten den siste sto den
 // statiske «Vis ▾» igjen på engelsk til første trykk (viste «VIS» → «Show»).
-function syncPizzatidToggleLabel(){
-  const body=document.getElementById('mob-pizzatid-body');
-  const toggle=document.getElementById('mob-pizzatid-toggle');
-  if(!body||!toggle) return;
-  const open=body.style.display!=='none';
-  toggle.textContent=open?L('Skjul ▴','Hide ▴'):L('Vis ▾','Show ▾');
+// v0.799: sammenslåingen er borte sammen med flyttingen. Inne i en egen boks
+// er det ingenting å skjule ukedagene bak — de ER innholdet. Begge de gamle
+// funksjonene er beholdt som åpning av boksen, siden varslene og førstegangs-
+// stien kaller dem, og «fold ut tidene» betyr nå «vis meg tidene».
+function syncPizzatidToggleLabel(){}
+function togglePizzatidMinimized(){ openPizzatidModal(); }
+function openPizzatidModal(){
+  try{ renderPizzatidDays(); }catch(e){}
+  const m=document.getElementById('pizzatid-modal'); if(m) m.style.display='flex';
+  renderPizzatidStatus();
 }
-function togglePizzatidMinimized(){
-  const body=document.getElementById('mob-pizzatid-body');
-  if(!body) return;
-  body.style.display=(body.style.display==='none')?'block':'none';
-  syncPizzatidToggleLabel();
+function closePizzatidModal(){
+  const m=document.getElementById('pizzatid-modal'); if(m) m.style.display='none';
+  // Å lukke boksen ER returen: du byttet aldri skjerm, så det finnes ingenting
+  // å gå tilbake TIL. Sporet ryddes så en senere skjerm ikke arver den.
+  try{ if(_returnTo){ clearReturnTo(); renderReturnBar(); } }catch(e){}
+}
+// v0.799: kom du hit fra et varsel, skal boksen svare MENS du redigerer — «du
+// har fortsatt et steg utenfor tiden din» → «alle steg ligger innenfor». Det
+// var den verdifulle halvdelen av returlinja fra v5.77. Den andre halvdelen,
+// «← Tilbake til tidsplanen», er borte av seg selv: en modal tar deg ikke bort
+// fra skjermen du sto i, så det finnes ingen vei tilbake å tilby.
+function renderPizzatidStatus(){
+  const el=document.getElementById('pizzatid-status');
+  if(!el) return;
+  let html='';
+  try{ html=returnBarStatusHTML(); }catch(e){ html=''; }
+  el.innerHTML=html;
+  el.style.display=html?'block':'none';
 }
 const PIZZATID_MAX_SLOTS=6; // rimelig tak per dag (matcher backend-sanitizeSchedule)
 function renderPizzatidDays(){
@@ -10303,6 +10368,7 @@ document.addEventListener('change', firstInteractionCheck, true);
         <span id="wiz-fresh-banner-txt">Fortsetter: </span>
         <button id="wiz-s1-reset" onclick="doReset()" style="flex-shrink:0;padding:4px 9px;border:1px solid var(--forno-border);border-radius:7px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Start ny</button>
       </div>
+      <div id="tilbud-tips" style="padding:.5rem 1rem 0"></div>
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-s1-q1">Pizzatype</div></div>
       <div class="mob-pill-wrap" id="mob-gtype"></div>
       <div id="mob-gtype-melnote" style="padding:0 1rem .5rem"></div>
@@ -10567,6 +10633,10 @@ document.addEventListener('change', firstInteractionCheck, true);
       <span id="mer-tilbud-metoder" style="font-size:13px;color:var(--dyn-text);font-weight:500">🎛️ Metoder du blir tilbudt</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openPizzatidModal()">
+      <span id="mer-tilbud-pizzatid" style="font-size:13px;color:var(--dyn-text);font-weight:500">🗓️ Når er du ledig?</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
+    </div>
     <div style="height:1px;background:var(--forno-border);margin:1.2rem 1rem .2rem"></div>
 
     <div class="mob-section-lbl" id="mob-i18n-section">Språk / Enheter</div>
@@ -10661,19 +10731,10 @@ document.addEventListener('change', firstInteractionCheck, true);
         <div id="mob-beta-sub" style="font-size:11px;color:var(--forno-text-faint);margin-top:2px">Oppgi når du er ledig og når du vil spise — få en anbefalt oppskrift tilbake. Søker på tvers av alle metoder.</div>
       </div>
 
-      <div class="mob-section-lbl" onclick="togglePizzatidMinimized()" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding-right:1rem">
-        <span id="mob-pizzatid-lbl">Når er du ledig?</span>
-        <span id="mob-pizzatid-toggle" style="font-size:11px;color:var(--forno-accent-text)">Vis ▾</span>
-      </div>
-      <div style="margin:.2rem 1rem .55rem;padding:12px 14px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px">
-        <div id="mob-pizzatid-help" style="font-size:12.5px;line-height:1.45;color:var(--forno-text-muted)">Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: her <b style="color:var(--forno-text)">foreslår</b> den oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.</div>
-        <div id="mob-pizzatid-help2" style="font-size:11px;color:var(--forno-text-faint);margin-top:6px">Trykk «Vis» for å sette opp ukedagene dine.</div>
-      </div>
-      <div id="mob-pizzatid-body" style="display:none">
-        <div id="mob-pizzatid-days" style="padding:.3rem 1rem .5rem"></div>
-        <div style="padding:0 1rem .8rem"><button id="mob-pizzatid-save" onclick="saveBetaPizzatid()" style="width:100%;height:36px;border:1px solid var(--forno-border);border-radius:8px;background:var(--forno-bg-raised);color:var(--forno-text-muted);font-size:12px;font-weight:600;cursor:pointer">Lagre ledig tid</button></div>
-      </div>
-
+      <!-- v0.799: «Når er du ledig?» sto her, men den gjelder ikke bare
+           Smart-plan — den er også kilden til «du er ikke ledig da»-varslene
+           gjennom hele appen. En innstilling som treffer overalt kan ikke bo
+           inne i én fane. Flyttet til Mer / ☰ Meny, som melkurven. -->
       <div id="mob-beta-baketime-lbl" style="padding:.9rem 1rem 0;font-size:15px;font-weight:800;color:var(--forno-accent-text)">Når skal deigen være klar?</div>
       <div id="mob-beta-baketime-sub" style="padding:2px 1rem 0;font-size:11.5px;color:var(--forno-text-faint)">Ferdig hevet og klar for ovnen.</div>
       <div style="padding:.55rem 1rem .8rem">
@@ -10689,14 +10750,10 @@ document.addEventListener('change', firstInteractionCheck, true);
         </div>
         <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
         <div id="mob-beta-result"></div>
-        <!-- v0.797: selve avkryssingen bor i «Hva du blir tilbudt». Lenka blir
-             stående her fordi den fortsatt er ankeret resultatblokka måles mot
-             (v0.774): treffene over skifter høyde når filteret endres, og uten
-             ankeret glir det du nettopp trykket i, ut av syne. -->
-        <div id="mob-beta-methods-lenke" onclick="openTilbudModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTilbudModal()}" style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised);cursor:pointer">
-          <span id="mob-beta-methods-lbl-lenke" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🎛️ Metoder du blir tilbudt</span>
-          <span style="font-size:14px;color:var(--forno-text-faint)">›</span>
-        </div>
+        <!-- v0.799: metodefilteret sto her i v0.797 som en lenke. Det er ute nå.
+             Filteret gjelder Smart-plan OG Fra–til, og skal derfor bo samme sted
+             som alt annet du eier — under Mer. Med lenka borte forsvinner også
+             grunnen til å forankre rullingen her (se betaOppdaterResultat). -->
       </div>
 
       <div style="height:1px;background:var(--forno-border);margin:1.7rem 1rem 0"></div>

@@ -391,6 +391,19 @@ function ballWeightNote(){
 //
 // Tom `key` betyr «ingen variabel å variere»: vals() gir da nøyaktig ett
 // alternativ, og både windowCandidates og applyWindowCandidate lar S i fred.
+// v0.799: ÉN regel for hvilke metoder du blir tilbudt, delt av Smart-plan og
+// Fra–til. Før lå halve regelen bare i Smart-plan: hadde du skrudd AV alle
+// metodene, slakket den filteret og viste alt likevel — «aldri en tom skjerm».
+// Fra–til kjente ikke den regelen og hoppet bare over dem, så nøyaktig samme
+// innstilling ga full liste i den ene fanen og tom skjerm i den andre.
+// Slakkingen er den riktige oppførselen; den bor nå ett sted.
+let _metodefilterSlakket=false;
+function tilbudteMetoder(alle){
+  const på=alle.filter(m => typeof betaMethodAllowed!=='function' || betaMethodAllowed(m));
+  _metodefilterSlakket = alle.length>0 && på.length===0;
+  try{ window._betaFilterRelaxed=_metodefilterSlakket; }catch(e){}
+  return på.length ? på : alle;
+}
 const COLD_VALS=()=>{const a=[];for(let h=24;h<=COLD_MAX;h+=6)a.push(h);return a;};
 const WINDOW_METHODS=[
   {m:'hurtig',   key:'hurtigH', vals:()=>HOPTS.map(o=>o.h)},
@@ -425,10 +438,11 @@ function windowCandidates(bakeAt, windowMin){
   const out=[];
   try{
     S.mode='end';
+    // C: samme av/på-filter som Smart-plan — nå bokstavelig talt samme, ikke
+    // en parallell kopi av regelen (v0.799).
+    const lovlige=new Set(tilbudteMetoder(WINDOW_METHODS.map(d=>d.m)));
     for(const def of WINDOW_METHODS){
-      // C: samme av/på-filter som Smart-plan. Skrur du av en metode du aldri
-      // lager, skal den heller ikke ta plass her.
-      if(typeof betaMethodAllowed==='function' && !betaMethodAllowed(def.m)) continue;
+      if(!lovlige.has(def.m)) continue;
       S.method=def.m;
       let best=null,minSpan=null,minVal=null;
       for(const v of def.vals()){

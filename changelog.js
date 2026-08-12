@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.799",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Når er du ledig?» er flyttet ut av Smart-plan. Den styrer også hvert «du er ikke ledig da»-varsel i resten av appen, og en innstilling som treffer overalt kan ikke bo inne i én fane. Ligger nå under Mer og i ☰ Meny på PC — der finnes den for første gang.",
+      "«Metoder du blir tilbudt» er borte fra Smart-plan. Filteret gjelder Fra–til like mye, så det står ett sted: Mer → Hva du blir tilbudt.",
+      "Og det lå faktisk egen logikk i Smart-plan: hadde du skrudd av alle metodene, viste den alle likevel — mens Fra–til ble stående tom. Samme innstilling ga altså to forskjellige svar. Nå er regelen én, og begge slipper den tomme skjermen.",
+      "Nytt: et lite tips første gang som peker på Mer → Hva du blir tilbudt, så melkurven og metodefilteret ikke blir funksjoner ingen finner. Det forsvinner når du har vært der én gang.",
+      "Kommer du til ukedagene fra et varsel, svarer boksen mens du redigerer: «du har fortsatt et steg utenfor tiden din» → «alle steg ligger innenfor». Å lukke den er returen — du forlot aldri skjermen du sto i."
+    ],
+    "changes_en": [
+      "\"When are you free?\" has moved out of Smart plan. It also governs every \"you are not free then\" warning across the app, and a setting that affects everything cannot live inside one tab. It is now under More, and in ☰ Menu on desktop — where it exists for the first time.",
+      "\"Methods you are offered\" is gone from Smart plan. The filter applies to From–to just as much, so it lives in one place: More → What you are offered.",
+      "And Smart plan did carry its own logic: if you switched every method off, it showed them all anyway — while From–to came up empty. One setting, two different answers. The rule is now single, and neither gives you an empty screen.",
+      "New: a small first-time tip pointing to More → What you are offered, so the flour list and method filter do not stay features nobody finds. It disappears once you have been there.",
+      "If you reach the weekday times from a warning, the box answers while you edit: \"you still have a step outside your time\" → \"all steps are within\". Closing it is the way back — you never left the screen you were on."
+    ]
+  },
+  {
     "v": "0.798",
     "d": "august 2026",
     "d_en": "August 2026",

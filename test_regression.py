@@ -484,42 +484,51 @@ def _atferd_1(page, results):
       mobShowTab('beta');
       const selfOpened = shown();
 
-      // Kommer fra et varsel på Steg-fanen i stedet.
+      // v0.799: «Naar er du ledig?» er en egen boks nå, ikke en fane du sendes
+      // til. Da er halve v5.77-mekanismen ikke lenger relevant - du forlot aldri
+      // skjermen din, saa «← Tilbake til tidsplanen» ville vaert en knapp uten
+      // sted aa gaa. Den VERDIFULLE halvdelen staar igjen og er flyttet inn i
+      // boksen: den svarer MENS du redigerer, og aa lukke boksen er returen.
       mobShowTab('plan');
       const onOriginBefore = shown();
       openPizzatidFromWarning();
-      const landedTab = MOB_TABS.find(id => document.getElementById('mob-'+id).classList.contains('active'));
-      const afterJump = { shown: shown(), text: status() };
+      const stod = document.getElementById('pizzatid-modal').style.display;
+      const st = () => (document.getElementById('pizzatid-status')||{}).textContent||'';
+      const etterHopp = { aapen: stod, tekst: st(), fane:
+        MOB_TABS.find(id => document.getElementById('mob-'+id).classList.contains('active')) };
 
-      // Redigerer pizzatiden så konflikten forsvinner: linjen skal snu til grønt
-      // uten at vi bytter skjerm.
+      // Redigerer pizzatiden saa konflikten forsvinner: svaret i boksen skal snu
+      // til gront uten at vi bytter skjerm.
       const allDay = [['00:00','23:59'], null];
       window._pizzatidSchedule = {mon:allDay,tue:allDay,wed:allDay,thu:allDay,fri:allDay,sat:allDay,sun:allDay};
       pizzatidChanged();
-      const afterFix = { shown: shown(), text: status() };
+      const etterFiks = { tekst: st() };
 
-      // Returnerer.
-      goBackFromJump();
-      const backTab = MOB_TABS.find(id => document.getElementById('mob-'+id).classList.contains('active'));
-      const afterReturn = shown();
+      closePizzatidModal();
+      const etterLukk = { aapen: document.getElementById('pizzatid-modal').style.display,
+                          fane: MOB_TABS.find(id => document.getElementById('mob-'+id).classList.contains('active')),
+                          linje: shown(), spor: !!_returnTo };
 
       _returnTo = null; renderReturnBar();
       return {
-        selfOpened, onOriginBefore, landedTab,
-        afterJump, afterFix, backTab, afterReturn,
-        resolvedIsGreen: afterFix.text.includes('Alle steg ligger'),
-        hasBackButton: afterJump.text.includes('Tilbake')
+        selfOpened, onOriginBefore, etterHopp, etterFiks, etterLukk,
+        sierProblemet: /ikke ligger|utenfor|fortsatt/i.test(etterHopp.tekst),
+        loestErGront: etterFiks.tekst.includes('Alle steg ligger')
       };
     }""")
     ok12 = (
       r12['selfOpened'] is False and
       r12['onOriginBefore'] is False and
-      r12['landedTab'] == 'beta' and
-      r12['afterJump']['shown'] is True and r12['hasBackButton'] and
-      r12['afterFix']['shown'] is True and r12['resolvedIsGreen'] and
-      r12['backTab'] == 'plan' and r12['afterReturn'] is False
+      # Boksen aapner, og du blir staaende paa skjermen du var paa.
+      r12['etterHopp']['aapen'] == 'flex' and r12['etterHopp']['fane'] == 'plan' and
+      r12['sierProblemet'] and
+      # Den svarer live mens du redigerer.
+      r12['loestErGront'] and
+      # Aa lukke er returen - ingen returlinje blir haengende igjen.
+      r12['etterLukk']['aapen'] == 'none' and r12['etterLukk']['fane'] == 'plan' and
+      r12['etterLukk']['linje'] is False and r12['etterLukk']['spor'] is False
     )
-    results.append(('warning_jumps_have_a_return_path', ok12, r12))
+    results.append(('warning_jump_to_free_time_answers_while_you_edit', ok12, r12))
 
     # v5.78: wizarden har fire steg. "Når" og antall bor på steg 1 sammen med
     # pizzatypen, Finjuster er et nummerert steg, og steg 4 er kvalitetssjekken
@@ -1998,27 +2007,42 @@ def _atferd_2(page, results):
 
 def _atferd_3(page, results):
 
-    # v0.656: «Vis/Skjul»-veksleren i Smart-plan («Når er du ledig?») hadde en
-    # statisk norsk «Vis ▾» i HTML som bare ble språktilpasset ved første trykk —
-    # så engelske brukere så «VIS» → «Show». Nå setter i18n-synken den med det
-    # samme. Sjekk: etter setLang('en') står lukket panel med «Show», ikke «Vis».
+    # v0.656 testet «Vis/Skjul»-veksleren paa «Naar er du ledig?»: den hadde en
+    # statisk norsk «Vis ▾» i HTML som bare ble spraaktilpasset ved foerste
+    # trykk, saa engelske brukere saa «VIS».
+    #
+    # v0.799 flyttet ukedagene ut av Smart-plan og inn i en egen boks, og da
+    # forsvant selve veksleren - det er ingenting aa folde ut lenger. Laerdommen
+    # gjelder fortsatt, saa testen er flyttet med innholdet: de NYE statiske
+    # etikettene (boksens tittel, raden i Mer, raden i PC-menyen, hjelpeteksten)
+    # maa vaere paa riktig spraak ved foerste visning, ikke foerst etter at du
+    # har roert dem.
     r47 = page.evaluate("""() => {
       const _lang=window._lang;
+      const t=id=>{ const e=document.getElementById(id); return e?e.textContent:null; };
       try{
-        const body=document.getElementById('mob-pizzatid-body');
-        if(body) body.style.display='none';           // lukket utgangstilstand
-        setLang('en'); const enClosed=document.getElementById('mob-pizzatid-toggle').textContent;
-        togglePizzatidMinimized(); const enOpen=document.getElementById('mob-pizzatid-toggle').textContent;
-        togglePizzatidMinimized(); const enClosedAgain=document.getElementById('mob-pizzatid-toggle').textContent;
-        setLang('no'); const noClosed=document.getElementById('mob-pizzatid-toggle').textContent;
-        const syncInStatic = syncStaticI18nUI.toString().includes('syncPizzatidToggleLabel');
-        return {enClosed, enOpen, enClosedAgain, noClosed, syncInStatic};
+        setLang('en');
+        const en={tittel:t('pizzatid-modal-tittel'), mer:t('mer-tilbud-pizzatid'),
+                  pc:t('pc-menu-pizzatid'), hjelp:t('mob-pizzatid-help'),
+                  lagre:t('mob-pizzatid-save')};
+        setLang('no');
+        const no={tittel:t('pizzatid-modal-tittel'), mer:t('mer-tilbud-pizzatid'),
+                  pc:t('pc-menu-pizzatid'), hjelp:t('mob-pizzatid-help'),
+                  lagre:t('mob-pizzatid-save')};
+        return {en, no};
       } finally { setLang(_lang); }
     }""")
-    ok47 = (r47.get('enClosed','').startswith('Show') and r47.get('enOpen','').startswith('Hide')
-            and r47.get('enClosedAgain','').startswith('Show') and r47.get('noClosed','').startswith('Vis')
-            and r47.get('syncInStatic'))
-    results.append(('smartplan_free_time_toggle_localized_from_first_render', ok47, r47))
+    _en, _no = r47.get('en') or {}, r47.get('no') or {}
+    ok47 = (all(_en.get(k) and _no.get(k) for k in ['tittel','mer','pc','hjelp','lagre'])
+            and 'free' in _en['tittel'].lower() and 'ledig' in _no['tittel'].lower()
+            and 'free' in _en['mer'].lower()    and 'ledig' in _no['mer'].lower()
+            and 'free' in _en['pc'].lower()     and 'ledig' in _no['pc'].lower()
+            # Hjelpeteksten navngir begge stedene tiden brukes - «her» ble feil
+            # da boksen flyttet ut av Smart-plan.
+            and 'Smart plan' in _en['hjelp'] and 'warns' in _en['hjelp']
+            and 'Smart-plan' in _no['hjelp'] and 'varsler' in _no['hjelp']
+            and _en['lagre'] != _no['lagre'])
+    results.append(('free_time_box_is_localized_from_first_render', ok47, r47))
 
     # v0.657: det doble Deiger-inngangspunktet på mobil er fjernet. 🍽️-ikonet i
     # topplinja (mob-active-deiger-btn) er borte; aktive deiger vises kun via
@@ -5932,26 +5956,14 @@ def _atferd_6(page, results):
         const res=document.getElementById('mob-beta-result');
         const førHTML=res.innerHTML;
         if(!førHTML.trim()) return {ingenTreff:true};
-        // v0.797: selve avkryssingen ligger nå i «Hva du blir tilbudt», som er
-        // en modal. Det som blir staaende i Smart-plan-skjermen er LENKA dit,
-        // og det er den som maa holde plassen sin naar treffene over regnes om.
+        // v0.774 forankret rullingen her: metodefilteret sto NEDENFOR
+        // resultatblokka i denne skjermen, og naar blokka skiftet hoeyde gled
+        // bryteren du nettopp trykket i, ut av syne. v0.799 flyttet filteret ut
+        // av Smart-plan - da finnes det ingen posisjon aa bevare, og baade
+        // forankringen og maalingen av den er borte. Det som staar igjen er den
+        // ANDRE halvdelen, og den er fortsatt hele poenget: endrer du filteret,
+        // skal treffene regnes om og blinke.
         await vent();
-        const skjerm=document.getElementById('mob-beta');
-        // v0.774: invarianten er FILTERETS skjermposisjon, ikke scrollTop.
-        // Resultatblokka over skifter høyde når vinneren skifter, og da må
-        // rullingen justeres for at filteret skal stå stille — et frosset
-        // scrollTop ville vært et filter som glir.
-        //
-        // Og målingen MÅ skje midt i rullingen, ikke på endestopp: helt nederst
-        // klamper nettleseren scrollTop selv når innholdet over krymper, så
-        // filteret står stille uansett — mutasjonen som fjernet justeringen
-        // besto testen så lenge den målte fra bunnen.
-        const anker=document.getElementById('mob-beta-methods-lenke');
-        anker.scrollIntoView({block:'center'}); await vent();
-        const førRull=skjerm.scrollTop;
-        if(førRull < 100 || førRull >= skjerm.scrollHeight-skjerm.clientHeight-40)
-          return {kunneIkkeRulle:true, førRull, max:skjerm.scrollHeight-skjerm.clientHeight};
-        const ankerFør=anker.getBoundingClientRect().top;
         // Slå av en metode som ER blant treffene — ellers kan resultatet være
         // uendret av gode grunner, og «regnet på nytt» blir umulig å skille
         // fra «gjorde ingenting».
@@ -5963,15 +5975,13 @@ def _atferd_6(page, results):
         // etter to rAF, har den ikke rukket å flytte seg ennå, og testen ville
         // bestått selv med fiksen reversert. Vent til rullingen har roet seg.
         await new Promise(r=>setTimeout(r,900));
-        const ankerEtter=anker.getBoundingClientRect().top;
         const etterHTML=document.getElementById('mob-beta-result').innerHTML;
         // «Mania-poolish» inneholder «poolish» — fjern Mania-navnene før vi
         // spør om Poolish forsvant, ellers slår sjekken feil ut av seg selv.
         const rens=etterHTML.replace(/Mania-?[Pp]oolish|Mania/g,'');
         const merket=rens.includes(METHODS[vinner].no) || rens.includes(METHODS[vinner].noShort);
-        return {førRull, ankerFør, ankerEtter,
-                beholderPlass: Math.abs(ankerEtter-ankerFør) < 12,
-                regnetPåNytt: etterHTML!==førHTML, vinnerBorte: !merket, vinner,
+        return {regnetPåNytt: etterHTML!==førHTML, vinnerBorte: !merket, vinner,
+                filteretErUte: !document.querySelector('#mob-beta #mob-beta-methods-rows'),
                 blink, blinker: !!blink && blink!=='none' && !/transparent/.test(blink)};
       } finally {
         window._lang=_lang; _betaMethods=null;
@@ -5980,12 +5990,12 @@ def _atferd_6(page, results):
         try{ renderBetaMethodFilter(); }catch(e){}
       }
     }""")
-    if r142.get('ingenTreff') or r142.get('kunneIkkeRulle'):
+    if r142.get('ingenTreff'):
         ok142 = False
     else:
         ok142 = all(r142.get(k) for k in
-                    ['beholderPlass', 'regnetPåNytt', 'vinnerBorte', 'blinker'])
-    results.append(('smartplan_filter_change_keeps_your_place_and_still_recomputes', ok142, r142))
+                    ['regnetPåNytt', 'vinnerBorte', 'blinker', 'filteretErUte'])
+    results.append(('smartplan_recomputes_and_blinks_when_the_filter_changes', ok142, r142))
 
     # v0.773: «772 fortsatt grå». Knappen VAR oransje — bak body.pre-interact
     # sitt 85 % gråskala-slør over alle .mob-content. Sløret løftes bare av
@@ -8372,10 +8382,12 @@ def _atferd_7(page, results):
       });
       ut.inngangPc       = peker('pc-menu-tilbud');
       ut.inngangMelLenke = peker('melkurv-lenke');
-      ut.inngangMetLenke = peker('mob-beta-methods-lenke');
+      // v0.799: metodefilteret har ingen lenke i Smart-plan lenger - det gjelder
+      // Fra-til like mye, og bor derfor bare under Mer.
+      ut.ingenMetLenke = !g('mob-beta-methods-lenke');
       // Etikettene skal si det samme, foer og etter en endring.
       const les=()=>({mel:[g('melkurv-lbl'),g('melkurv-lenke-lbl'),g('mer-tilbud-mel')].map(e=>e&&e.textContent),
-                      met:[g('mob-beta-methods-lbl'),g('mob-beta-methods-lbl-lenke'),g('mer-tilbud-metoder')].map(e=>e&&e.textContent)});
+                      met:[g('mob-beta-methods-lbl'),g('mer-tilbud-metoder')].map(e=>e&&e.textContent)});
       const enige=o=>o.mel.every(t=>t===o.mel[0]) && o.met.every(t=>t===o.met[0]);
       melEkte().forEach(f=>{ if(f.v!=='dallari' && harMel(f.v)) toggleMelkurv(f.v); });
       toggleBetaMethod('mania');
@@ -8408,7 +8420,7 @@ def _atferd_7(page, results):
       and r164.get('inngangMerRad') is True
       and r164.get('inngangPc') is True
       and r164.get('inngangMelLenke') is True
-      and r164.get('inngangMetLenke') is True
+      and r164.get('ingenMetLenke') is True
       # Og alle etikettene sier det samme tallet.
       and r164.get('enigeEtter') is True
       and '1 av 9' in (r164.get('melTekst') or '')
@@ -8530,6 +8542,109 @@ def _atferd_7(page, results):
       and r165.get('smartPlanMel') in ('couco', 'manitoba')
       and r165.get('spFeil') is None and r165.get('spFeil2') is None)
     results.append(('a_plan_you_pick_uses_flour_you_actually_have', ok165, r165))
+
+    # v0.799: tre ting fra samme melding. «Naar er du ledig» laa inne i
+    # Smart-plan, men styrer ogsaa «du er ikke ledig da»-varslene i hele appen -
+    # flyttet ut. Metodefilteret er ute av Smart-plan helt. Og: «Soerg for at det
+    # ikke ligger egen logikk paa smartplan sin metoder du blir tilbudt.»
+    #
+    # Det gjorde det. Maalt: skrudde du av ALLE metodene, slakket Smart-plan
+    # filteret og viste alle likevel («aldri en tom skjerm») - mens Fra-til bare
+    # hoppet over dem. Samme innstilling ga altsaa full liste i den ene fanen og
+    # tom skjerm i den andre. Slakkingen er riktig oppfoersel; den bor naa ett
+    # sted og deles. Den delen av testen er den viktigste her.
+    r166 = page.evaluate("""() => {
+      const sv={l:window._lang,
+                bm:(()=>{try{return localStorage.getItem('pizzaBetaMethods');}catch(e){return null;}})(),
+                tips:(()=>{try{return localStorage.getItem('pizzaTilbudSett');}catch(e){return null;}})()};
+      window._lang='no'; try{ syncI18nUI(); }catch(e){}
+      const g=id=>document.getElementById(id);
+      const ut={};
+      // 1) Pizzatid ut av Smart-plan, inn i egen boks med to innganger.
+      ut.pizzatidIBeta  = !!document.querySelector('#mob-beta #mob-pizzatid-days');
+      ut.pizzatidIModal = !!document.querySelector('#pizzatid-modal #mob-pizzatid-days');
+      ut.pizzatidLister = document.querySelectorAll('#mob-pizzatid-days').length;
+      ut.pizzatidFoer   = g('pizzatid-modal').style.display||'';
+      openPizzatidModal();
+      ut.pizzatidAapen  = g('pizzatid-modal').style.display;
+      ut.pizzatidDager  = document.querySelectorAll('#mob-pizzatid-days > div').length;
+      closePizzatidModal();
+      // Varselknappen skal lande PAA redigeringen, ikke bare i naerheten.
+      openPizzatidFromWarning();
+      ut.varselAapner = g('pizzatid-modal').style.display;
+      closePizzatidModal();
+      ut.pizzatidMer = !!g('mer-tilbud-pizzatid'); ut.pizzatidPc = !!g('pc-menu-pizzatid');
+      // 2) Metodefilteret helt ute av Smart-plan, og fortsatt i én kopi.
+      ut.metodeIBeta   = !!document.querySelector('#mob-beta #mob-beta-methods-rows')
+                      || !!document.querySelector('#mob-beta #mob-beta-methods-lenke');
+      ut.metodeLister  = document.querySelectorAll('#mob-beta-methods-rows').length;
+      // 3) ÉN regel for filteret. Dette er selve funnet.
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]); S.mel=500; S.type='napoletana';
+      const bake=new Date(2027,7,20,18,0);
+      const settFilter=f=>BETA_METHOD_DEFS.forEach(([k])=>{ if(betaMethodAllowed(k)!==f(k)) toggleBetaMethod(k); });
+      const fraTil=()=>windowCandidates(bake, 96*60).map(c=>c.method).sort().join(',');
+      const smart =()=>[...new Set(searchAllMethods(bake).map(c=>c.snapshot.method))].sort().join(',');
+      settFilter(()=>true);
+      ut.alleFraTil=fraTil(); ut.alleSmart=smart();
+      settFilter(k=>k==='poolish');
+      ut.enFraTil=fraTil(); ut.enSmart=smart();
+      settFilter(()=>false);          // alt av: BEGGE skal slakke, ikke bare én
+      ut.avFraTil=fraTil(); ut.avSmart=smart(); ut.slakketFlagg=window._betaFilterRelaxed;
+      // Flagget settes NAAR filteret brukes, ikke naar det endres - saa det maa
+      // leses etter et nytt oppslag, ellers henger forrige svar igjen.
+      settFilter(()=>true); fraTil();
+      ut.flaggTilbake=window._betaFilterRelaxed;
+      // 4) Foerstegangstipset: staar der du er, peker til Mer, og forsvinner
+      //    naar du har vaert der - ikke foer.
+      try{ localStorage.removeItem('pizzaTilbudSett'); }catch(e){}
+      renderTilbudTips();
+      const t=(g('tilbud-tips')||{}).textContent||'';
+      ut.tipsVises = t.length>0;
+      ut.tipsPekerTilMer = /Mer/.test(t) && /mel du har/.test(t) && /metoder/.test(t);
+      ut.tipsPaaPc = ((g('pc-tilbud-tips')||{}).textContent||'').length>0;
+      openTilbudModal(); closeTilbudModal();
+      ut.tipsBorteEtter = ((g('tilbud-tips')||{}).textContent||'').length===0;
+      renderTilbudTips();
+      ut.tipsBlirBorte  = ((g('tilbud-tips')||{}).textContent||'').length===0;
+      // rydd
+      try{ sv.bm===null ? localStorage.removeItem('pizzaBetaMethods')
+                        : localStorage.setItem('pizzaBetaMethods', sv.bm);
+           sv.tips===null ? localStorage.removeItem('pizzaTilbudSett')
+                          : localStorage.setItem('pizzaTilbudSett', sv.tips); }catch(e){}
+      _betaMethods=null;
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      window._lang=sv.l;
+      try{ renderBetaMethodFilter(); renderTilbudTips(); syncI18nUI(); }catch(e){}
+      return ut;
+    }""")
+    ok166 = (
+      # Pizzatid ute av Smart-plan, i én kopi, med begge inngangene.
+      r166.get('pizzatidIBeta') is False
+      and r166.get('pizzatidIModal') is True
+      and r166.get('pizzatidLister') == 1
+      and r166.get('pizzatidFoer') in ('', 'none')
+      and r166.get('pizzatidAapen') == 'flex'
+      and r166.get('pizzatidDager', 0) >= 7
+      and r166.get('varselAapner') == 'flex'
+      and r166.get('pizzatidMer') is True and r166.get('pizzatidPc') is True
+      # Metodefilteret helt ute av Smart-plan, fortsatt én kopi.
+      and r166.get('metodeIBeta') is False
+      and r166.get('metodeLister') == 1
+      # ÉN regel: samme filter gir samme metodesett i begge fanene ...
+      and r166.get('alleFraTil') == r166.get('alleSmart')
+      and r166.get('enFraTil') == 'poolish' and r166.get('enSmart') == 'poolish'
+      # ... og med ALT avskrudd slakker BEGGE, ikke bare Smart-plan.
+      and r166.get('avFraTil') == r166.get('alleFraTil')
+      and r166.get('avSmart') == r166.get('alleSmart')
+      and r166.get('slakketFlagg') is True
+      and r166.get('flaggTilbake') is False
+      # Førstegangstipset.
+      and r166.get('tipsVises') is True
+      and r166.get('tipsPekerTilMer') is True
+      and r166.get('tipsPaaPc') is True
+      and r166.get('tipsBorteEtter') is True
+      and r166.get('tipsBlirBorte') is True)
+    results.append(('settings_that_affect_everything_live_under_more', ok166, r166))
 
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
