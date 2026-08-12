@@ -3883,9 +3883,17 @@ def _atferd_5(page, results):
     # hadde. Hurtig er uendret (mål 24°C); Ingen elting beholder kvalitativ
     # tekst (skje-blanding, ingen maskinfriksjon, 15t romheving).
     r99 = page.evaluate("""() => {
-      const saved={method:S.method,type:S.type,mode:S.mode,temp:S.temp,km:S.kjokkenmaskin};
+      const saved={};
+      Object.keys(S).forEach(k=>saved[k]=S[k]);
       const anchor=new Date(2027,2,10,10,0);
+      // v0.800: testen satte bare fem felter og ARVET resten fra hvilken test
+      // som tilfeldigvis kjorte foer. Maalt: den kunne kjore med mel=400 og en
+      // avkjolt poolish, og da er 4°C ikke lenger riktig svar - tallene den
+      // fryser gjelder en bestemt deig. Naa settes hele grunnlaget her.
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
       S.type='napoletana'; S.mode='start'; S.kjokkenmaskin='ankarsrum';
+      S.mel=500; S.hydro=65; S.poolishH=14; S.bigaH=18; S.poolishCold=false;
+      S.poolishAndel=0.5; S.poolishPauseH=0; S.cold=24; S.gjaertest=false;
       const descOf=(method,titleFrag)=>{S.method=method;const st=stepsForAnchor(anchor);const s=st.find(x=>x.title.includes(titleFrag));return s?s.desc:'';};
       S.temp=22;
       const std22=descOf('standard','autolyse'), pl22=descOf('poolish','bland ferdig'), bg22=descOf('biga','bland ferdig'), hu22=descOf('hurtig','bland deig raskt');
@@ -3895,26 +3903,33 @@ def _atferd_5(page, results):
       const stdAnnen=descOf('standard','autolyse');
       S.kjokkenmaskin='ankarsrum'; S.type='ingenelting';
       const ie=descOf('standard','Bland alt i bollen');
-      S.method=saved.method;S.type=saved.type;S.mode=saved.mode;S.temp=saved.temp;S.kjokkenmaskin=saved.km;
+      Object.keys(saved).forEach(k=>S[k]=saved[k]);
       return {
         // v0.787: tallene er ikke lenger like paa tvers av metodene, fordi
         // vannet naa regnes av en varmebalanse som teller fordeigen med.
         // Direktedeig staar stille paa 17°C; poolish (halve melet forgjaeret,
         // romtemperert) trenger iskaldt vann, biga 14°C.
-        std22Has17: std22.includes('anbefalt ca. 17°C'),
-        pl22Has4: pl22.includes('anbefalt ca. 4°C'),
-        bg22Has14: bg22.includes('anbefalt ca. 14°C'),
+        // v0.800: TALLENE er uendret - det er ordene foran dem som ble byttet,
+        // fra to hardkodede varianter valgt paa kjokkenmaskin til ord som
+        // foelger tallet. Testen fryser derfor tallet og krever i tillegg at
+        // ordet stemmer med det: det var nettopp «kjolig eller romtemperert
+        // vann (anbefalt ca. 4°C)» som ble meldt inn.
+        std22Has17: /\\b17°C\\b/.test(std22) && std22.includes('kjølig vann'),
+        pl22Has4: /\\b4°C\\b/.test(pl22) && pl22.includes('rett fra kjøleskapet'),
+        bg22Has14: /\\b14°C\\b/.test(bg22) && bg22.includes('kaldt vann fra springen'),
         // 26°C rom ga 9°C med den gamle formelen. Den vektet rom, mel og vann
         // likt (1/3 hver), men vannet er ~60 % av varmekapasiteten i en 65 %
         // deig — saa den overkompenserte i et varmt kjokken: 9°C vann gir
         // faktisk 19,8°C deig, ikke 23. 14°C treffer.
-        std26Has14: std26.includes('anbefalt ca. 14°C'),
-        annenHas10: stdAnnen.includes('anbefalt ca. 10°C') && stdAnnen.includes('rett fra kjøleskapet'),
+        std26Has14: /\\b14°C\\b/.test(std26) && std26.includes('kaldt vann fra springen'),
+        annenHas10: /\\b10°C\\b/.test(stdAnnen) && stdAnnen.includes('kaldt vann fra springen'),
+        // Og ingen av dem faar kalle vann under 15 grader «romtemperert».
+        ingenLoegn: [std22,pl22,bg22,std26,stdAnnen].every(d=>!/romtemperert vann/.test(d)),
         hurtig19: hu22.includes('19°C'),
         ingeneltingQualitative: ie.includes('ikke iskaldt') && !ie.includes('anbefalt')
       };
     }""")
-    ok99 = all(r99.get(k) for k in ['std22Has17','pl22Has4','bg22Has14','std26Has14','annenHas10','hurtig19','ingeneltingQualitative'])
+    ok99 = all(r99.get(k) for k in ['std22Has17','pl22Has4','bg22Has14','std26Has14','annenHas10','ingenLoegn','hurtig19','ingeneltingQualitative'])
     results.append(('mix_steps_recommend_concrete_water_temp_c_std_poolish_biga', ok99, r99))
 
     # v0.722 (F13): kjøleskapstemperatur som inndata (Finjuster) med automatisk
@@ -8645,6 +8660,88 @@ def _atferd_7(page, results):
       and r166.get('tipsBorteEtter') is True
       and r166.get('tipsBlirBorte') is True)
     results.append(('settings_that_affect_everything_live_under_more', ok166, r166))
+
+    # v0.800: meldt inn fra en ekte plan - «Se steg 2. Og temperatur paa vann.»
+    # Steget sa: «Tilsett 75g kjoelig eller romtemperert vann (anbefalt ca. 4°C)».
+    #
+    # To maalte feil:
+    #  1) Ordene var hardkodet per kjoekkenmaskin mens tallet ble regnet ut, saa
+    #     de drev fra hverandre. 4°C er hverken kjoelig eller romtemperert - og
+    #     foelger du ORDENE (18-22°C) i stedet for tallet, lander deigen paa
+    #     25,4-26,0°C, som appens EGET varsel kaller for varm. Prosaen ledet til
+    #     en deig appen selv ville protestert paa.
+    #  2) De 4 gradene var gulvet i klemmingen, ikke et svar. Regnestykket ba om
+    #     0,4°C. Verste maalte tilfelle: poolish 50 % + eltekrok + 26°C kjoekken
+    #     ber om -53,2°C, og appen skrev «anbefalt ca. 4°C».
+    #
+    # Vakten mot stoey er like viktig som varselet: av 27 kombinasjoner klemmes
+    # svaret i 9, men i 5 av dem koster det ingenting. Planen som ble meldt inn
+    # er en av dem - 4°C gir 23,5°C deig, midt i baandet. Der skal appen tie.
+    r167 = page.evaluate("""() => {
+      const sv={l:window._lang};
+      window._lang='no';
+      const ut={};
+      const sett=(met,km,rom,andel)=>{
+        Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+        S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=rom; S.method=met;
+        S.poolishH=14; S.bigaH=18; S.poolishCold=false; S.cold=32;
+        S.kjokkenmaskin=km; S.oven='pizza'; S.mode='start';
+        if(andel) S.poolishAndel=andel;
+        _q10Memo={k:null,v:null};
+      };
+      // 1) Ordene foelger tallet. Tre punkter langs skalaen.
+      sett('poolish','ankarsrum',22);            // 4°C
+      ut.kaldFrase=waterTempPhrase(); ut.kaldTall=calcWaterTempC(23);
+      sett('standard','ankarsrum',22);           // 17°C
+      ut.kjoligFrase=waterTempPhrase(); ut.kjoligTall=calcWaterTempC(23);
+      sett('biga','ankarsrum',22);               // 14°C
+      ut.bigaFrase=waterTempPhrase(); ut.bigaTall=calcWaterTempC(23);
+      // Ingen frase skal si «romtemperert» om vann under 15 grader.
+      ut.ingenLoegn=[ut.kaldFrase,ut.kjoligFrase,ut.bigaFrase]
+        .every(f=>!/romtemperert/.test(f));
+      // Ordet skal ogsaa BYTTE naar tallet gjoer det.
+      ut.uliktOrd = ut.kaldFrase.split(' (')[0] !== ut.kjoligFrase.split(' (')[0];
+      // 2) Klemt OG dyrt -> si fra. Klemt og gratis -> ti stille.
+      sett('poolish','ankarsrum',22);
+      ut.gratisKlemt = { klemt:Math.abs(calcWaterTempRaw(23)-calcWaterTempC(23))>0.6,
+                         varsel:!!vannIkkeNok(23), frase:waterTempPhrase() };
+      sett('poolish','annen',26);                // raa -53,2°C, deig 31°C
+      const dyr=vannIkkeNok(23);
+      ut.dyrKlemt = { raa:dyr&&dyr.raa, vist:dyr&&dyr.vist, deig:dyr&&dyr.deig,
+                      frase:waterTempPhrase(), setning:deigTempSetning() };
+      // 3) Aarsaken skal staa i tall, og lese fordeigen fra samme kilde som
+      //    varmeregnskapet - ikke en parallell utregning.
+      ut.sierAarsak = /Bare 75 av 325g vann er justerbart/.test(ut.dyrKlemt.setning);
+      // 4) Ingen raad om aa gjoere det du allerede har gjort.
+      sett('poolish','annen',26,0.3);
+      ut.paa30 = { setning:deigTempSetning(), nevner30:/30 %-varianten/.test(deigTempSetning()) };
+      sett('poolish','annen',26,0.5);
+      ut.paa50nevner30 = /30 %-varianten/.test(deigTempSetning());
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+      window._lang=sv.l;
+      return ut;
+    }""")
+    ok167 = (
+      # Ordene foelger tallet, og lyver ikke om det.
+      r167.get('kaldTall') == 4 and 'kjøleskapet' in (r167.get('kaldFrase') or '')
+      and r167.get('kjoligTall') == 17 and 'kjølig' in (r167.get('kjoligFrase') or '')
+      and r167.get('bigaTall') == 14 and 'springen' in (r167.get('bigaFrase') or '')
+      and r167.get('ingenLoegn') is True
+      and r167.get('uliktOrd') is True
+      # Klemt, men gratis: tallet staar, ingen advarsel.
+      and (r167.get('gratisKlemt') or {}).get('klemt') is True
+      and (r167.get('gratisKlemt') or {}).get('varsel') is False
+      and 'rekker ikke' not in ((r167.get('gratisKlemt') or {}).get('frase') or '')
+      # Klemt og dyrt: begge stedene sier fra, og tallene er de ekte.
+      and (r167.get('dyrKlemt') or {}).get('raa') == -53
+      and (r167.get('dyrKlemt') or {}).get('vist') == 4
+      and (r167.get('dyrKlemt') or {}).get('deig') == 31
+      and 'rekker ikke helt her' in ((r167.get('dyrKlemt') or {}).get('frase') or '')
+      and r167.get('sierAarsak') is True
+      # Ingen raad om aa velge 30 % naar du staar paa 30 %.
+      and (r167.get('paa30') or {}).get('nevner30') is False
+      and r167.get('paa50nevner30') is True)
+    results.append(('water_temperature_words_match_the_number_and_admit_the_limit', ok167, r167))
 
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]

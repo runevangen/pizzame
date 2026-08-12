@@ -2529,12 +2529,29 @@ function rtW(actualMins){
 // justeres senere. Tallene er de samme i dag; det er koblingen som ikke skal
 // finnes.
 const PREF_VANN=' (18–21°C) ';
+// v0.800: ordene følger TALLET, ikke kjøkkenmaskinen. Før var de to hardkodede
+// varianter valgt på maskin, mens tallet ble regnet ut — så de drev fra
+// hverandre. Meldt inn på en plan som sa «kjølig eller romtemperert vann
+// (anbefalt ca. 4°C)». 4°C er ingen av delene, og målt: følger du ordene i
+// stedet for tallet (18–22°C), lander deigen på 25,4–26,0°C — som appens eget
+// varsel kaller for varm. Prosaen ledet altså til en deig appen selv ville
+// protestert på.
+function vannOrd(t){
+  if(t<=6)  return L('vann rett fra kjøleskapet','water straight from the fridge');
+  if(t<=14) return L('kaldt vann fra springen','cold tap water');
+  if(t<=20) return L('kjølig vann','cool water');
+  if(t<=26) return L('romtemperert vann','room-temperature water');
+  return L('lunkent vann','lukewarm water');
+}
 function waterTempPhrase(){
   if(S.type==='ingenelting') return L('kjølig eller romtemperert vann (ikke iskaldt)','cool or room-temperature water (not ice-cold)');
-  const t=calcWaterTempC(23);
-  return S.kjokkenmaskin==='annen'
-    ? L(`kaldt vann, gjerne rett fra kjøleskapet (anbefalt ca. ${t}°C)`,`cold water, ideally straight from the fridge (recommended about ${t}°C)`)
-    : L(`kjølig eller romtemperert vann (anbefalt ca. ${t}°C)`,`cool or room-temperature water (recommended about ${t}°C)`);
+  const t=calcWaterTempC(23), ord=vannOrd(t);
+  // Er tallet gulvet i klemmingen og det koster deigtemperatur, sier vi det
+  // her — ikke «anbefalt», som er en påstand om at det virker.
+  return vannIkkeNok(23)
+    ? L(`${ord} (${t}°C — kaldere finnes ikke, og det rekker ikke helt her)`,
+        `${ord} (${t}°C — it does not get colder, and it is not quite enough here)`)
+    : L(`${ord} (ca. ${t}°C)`,`${ord} (about ${t}°C)`);
 }
 // Blande-/elte-steget er satt av ~20 min, men selve eltingen er kortere (10–12 min
 // e.l.). Uten denne presiseringen kunne planens «20 min» og teksten «elt 10–12 min»
@@ -2606,17 +2623,38 @@ function deigTempC(vannC){
   const C=k.reduce((a,x)=>a+x[0]*x[1],0), E=k.reduce((a,x)=>a+x[0]*x[1]*x[2],0);
   return C>0 ? E/C+friksjonC() : S.temp;
 }
-function calcWaterTempC(target=24){
+// v0.800: den ukLEMTE verdien, skilt ut for seg. Uten den kan ingen se om
+// tallet som vises er et svar eller bare gulvet i klemmingen — og de to ser
+// helt like ut på skjermen. Målt på en poolish 50 % ved 26°C kjøkken med
+// eltekrok: regnestykket ber om −53°C, og appen skrev ut 4°C som «anbefalt».
+function calcWaterTempRaw(target=24){
   const k=deigKomponenter(0);
   const siste=k[k.length-1];
   const Cv=siste[0]*siste[1];                      // vannleddets varmekapasitet
+  if(Cv<=0) return null;                           // ingen spak i det hele tatt
   const fast=k.slice(0,-1);
   const C=fast.reduce((a,x)=>a+x[0]*x[1],0), E=fast.reduce((a,x)=>a+x[0]*x[1]*x[2],0);
+  return ((target-friksjonC())*(C+Cv)-E)/Cv;
+}
+function calcWaterTempC(target=24){
+  const t=calcWaterTempRaw(target);
   // Er alt vannet bundet i fordeigen, finnes det ingen spak — da er et presist
   // tall en løgn, og romtemperert er det ærligste svaret.
-  if(Cv<=0) return Math.max(4, Math.min(38, Math.round(S.temp)));
-  const t=Math.round(((target-friksjonC())*(C+Cv)-E)/Cv);
-  return Math.max(4, Math.min(t, 38)); // fra kaldt kjøleskapsvann til lunkent
+  if(t===null) return Math.max(4, Math.min(38, Math.round(S.temp)));
+  return Math.max(4, Math.min(Math.round(t), 38)); // fra kaldt kjøleskapsvann til lunkent
+}
+// Klemt OG dyrt. Begge delene må til: målt over 27 kombinasjoner (3 metoder ×
+// 3 maskiner × 3 romtemperaturer) klemmes svaret i 9, men i 5 av dem koster det
+// ingenting — deigen lander innenfor båndet likevel. Et varsel der ville vært
+// støy om et tall som ikke er noe problem.
+function vannIkkeNok(target=23){
+  const raa=calcWaterTempRaw(target);
+  if(raa===null) return null;
+  const t=calcWaterTempC(target);
+  if(Math.abs(raa-t)<0.6) return null;        // ikke klemt
+  const av=deigTempAvvik(t);
+  if(!av) return null;                        // klemt, men gratis
+  return {raa:Math.round(raa), vist:t, deig:Math.round(av.d), for:av.for};
 }
 // v0.787: når vannet er klemt mot grensen og deigen likevel ikke når målet, er
 // et presist tall en halv sannhet. Sveipet fant to slike hjørner av 54: en 50 %
@@ -2633,11 +2671,35 @@ function deigTempSetning(){
   const v=calcWaterTempC(23), av=deigTempAvvik(v), grad=Math.round(deigTempC(v));
   if(!av) return L(`Deigtemperatur: ca. ${grad}°C.`,`Dough temperature: about ${grad}°C.`);
   if(av.for==='varm'){
-    const utvei=(S.method==='poolish'&&!S.poolishCold)
-      ? L(' Vil du ned, er det kjøleskaps-poolish eller 30 %-varianten som flytter tallet — ikke vannet.',' To bring it down it is the fridge poolish or the 30 % variant that moves the number — not the water.')
+    // v0.800: 30 %-varianten ble tilbudt også når du ALLEREDE står på 30 % —
+    // et råd om å gjøre det du nettopp har gjort. Nå nevnes bare de spakene du
+    // faktisk har igjen.
+    const spaker=[];
+    if(S.method==='poolish' && !S.poolishCold) spaker.push(L('kjøleskaps-poolish','a fridge poolish'));
+    if(S.method==='poolish' && poolishAndel()>0.3) spaker.push(L('30 %-varianten','the 30 % variant'));
+    const utvei=spaker.length
+      ? L(` Vil du ned, er det ${spaker.join(' eller ')} som flytter tallet — ikke vannet.`,
+          ` To bring it down it is ${spaker.join(' or ')} that moves the number — not the water.`)
       : L(' Bare et kjøligere kjøkken flytter dette nevneverdig.',' Only a cooler kitchen moves this appreciably.');
-    return L(`Deigtemperatur: ca. ${grad}°C — varmere enn de 22–24 vi sikter mot, og vannet er allerede så kaldt det kan bli.${utvei}`,
-             `Dough temperature: about ${grad}°C — warmer than the 22–24 we aim for, and the water is already as cold as it can be.${utvei}`);
+    // v0.800: HVORFOR vannet ikke rekker, i tall. «Vannet er så kaldt det kan
+    // bli» sier at spaken er brukt opp, men ikke at den knapt fantes: ved 50 %
+    // poolish er bare 75 av 325g vann justerbart, og de resterende 250 står i
+    // forgjæringen på romtemperatur. Da må de 75 grammene flyttes 7,2 grader
+    // for å flytte deigen én.
+    let hvorfor='';
+    try{
+      // Leser fordeigen fra samme kilde som varmeregnskapet gjør
+      // (fordeigVedBlanding), så tallet i teksten ikke kan drifte fra modellen —
+      // og så en avkjølt poolish oppgir SIN temperatur, ikke romtemperaturen.
+      const r=recipeFor(), f=fordeigVedBlanding();
+      const just=f ? r.water-f.vannG : null;
+      if(just!=null && just>0 && just<r.water){
+        hvorfor=L(` Bare ${just} av ${r.water}g vann er justerbart — resten står i forgjæringen på ${Math.round(f.tempC)}°C.`,
+                  ` Only ${just} of ${r.water}g water is adjustable — the rest sits in the preferment at ${Math.round(f.tempC)}°C.`);
+      }
+    }catch(e){}
+    return L(`Deigtemperatur: ca. ${grad}°C — varmere enn de 22–24 vi sikter mot, og vannet er allerede så kaldt det kan bli.${hvorfor}${utvei}`,
+             `Dough temperature: about ${grad}°C — warmer than the 22–24 we aim for, and the water is already as cold as it can be.${hvorfor}${utvei}`);
   }
   return L(`Deigtemperatur: ca. ${grad}°C — kjøligere enn de 22–24 vi sikter mot. Den gjærer litt saktere enn planen antar, så la deigen og ikke klokka avgjøre når hevingen er ferdig.`,
            `Dough temperature: about ${grad}°C — cooler than the 22–24 we aim for. It ferments a little slower than the plan assumes, so let the dough rather than the clock decide when the rise is done.`);

@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.800",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Blandesteget sa «kjølig eller romtemperert vann (anbefalt ca. 4°C)». 4°C er ingen av delene. Ordene var hardkodet etter hvilken kjøkkenmaskin du har, mens tallet ble regnet ut — så de drev fra hverandre. Nå følger ordene tallet: 4°C er «vann rett fra kjøleskapet», 14°C er «kaldt vann fra springen», 17°C er «kjølig vann».",
+      "Det var ikke bare språk: følger du ordene i stedet for tallet, lander deigen på 25–26°C — som appens eget varsel kaller for varm.",
+      "Og noen ganger er tallet ikke et svar, men en grense. Med halve melet i en romtemperert poolish er bare 75 av 325g vann justerbart, og regnestykket kan be om vann kaldere enn det finnes — i verste målte tilfelle −53°C. Appen skrev ut 4°C og kalte det «anbefalt». Nå sier den fra: «4°C — kaldere finnes ikke, og det rekker ikke helt her», med hvor mye vann som faktisk er justerbart og hvorfor.",
+      "Men bare når det koster noe. Av 27 kombinasjoner blir svaret klemt i 9, og i 5 av dem lander deigen fint likevel — der sier appen ingenting.",
+      "Og den slutter å foreslå 30 %-poolishen til folk som allerede har valgt den."
+    ],
+    "changes_en": [
+      "The mixing step said \"cool or room-temperature water (recommended about 4°C)\". 4°C is neither. The words were hard-coded by which stand mixer you have while the number was computed, so the two drifted apart. Now the words follow the number: 4°C is \"water straight from the fridge\", 14°C is \"cold tap water\", 17°C is \"cool water\".",
+      "This was not just language: follow the words instead of the number and the dough lands at 25–26°C — which the app's own warning calls too warm.",
+      "And sometimes the number is not an answer but a limit. With half the flour in a room-temperature poolish, only 75 of 325g of water is adjustable, and the arithmetic can ask for water colder than exists — in the worst measured case −53°C. The app printed 4°C and called it \"recommended\". Now it says so: \"4°C — it does not get colder, and it is not quite enough here\", with how much water is actually adjustable and why.",
+      "But only when it costs something. Across 27 combinations the answer is clamped in 9, and in 5 of those the dough lands fine anyway — there the app stays quiet.",
+      "And it stops suggesting the 30 % poolish to people who have already chosen it."
+    ]
+  },
+  {
     "v": "0.799",
     "d": "august 2026",
     "d_en": "August 2026",
