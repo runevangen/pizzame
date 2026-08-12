@@ -8752,6 +8752,109 @@ def _atferd_7(page, results):
       and r167.get('paa50nevner30') is True)
     results.append(('water_temperature_words_match_the_number_and_admit_the_limit', ok167, r167))
 
+    # v0.802 (tallfeieren): meldt inn som moenster, ikke enkeltsak — «det dukker
+    # ofte opp veldig enkle feil i oppskriften». Og det stemmer: «Poolish · 54
+    # timer» (v0.793), «kjoelig eller romtemperert (anbefalt ca. 4°C)» (v0.800)
+    # og 55-gradersvannet var alle SAMME klasse: ett tall i prosaen, et annet i
+    # planen. Hver ble funnet av brukeren, én om gangen.
+    #
+    # Denne testen leser HVERT tall i HVER stegtekst (desc/why/tip/substeps)
+    # over 12 scenarioer og krever at det kan spores til planens egne verdier:
+    # oppskriften, splittene, pc(), temperaturmodellen, varighetene — pluss en
+    # KOMMENTERT liste over bevisste konstanter (ovnstemperaturer, HOPTS-kurven,
+    # kjoeleskapssoner). Feilretningen er valgt med vilje: et nytt bevisst tall
+    # gir falsk ALARM som maa legges til med kommentar — aldri et stille hull.
+    #
+    # Unntakene under er de tre kjente literalene, og listen sammenlignes
+    # EKSAKT: forsvinner en av dem fra prosaen, feiler testen ogsaa — aerlig
+    # begge veier, som r157.
+    r168 = page.evaluate("""() => {
+      const sv={}; Object.keys(S).forEach(k=>sv[k]=S[k]); const svLang=window._lang;
+      window._lang='no';
+      const SCEN=[
+        {n:'standard 500/65',  s:{method:'standard',cold:48}},
+        {n:'standard 800/70',  s:{method:'standard',cold:72,mel:800,hydro:70}},
+        {n:'poolish 50% rom',  s:{method:'poolish',poolishH:14,poolishCold:false,cold:32}},
+        {n:'poolish 30% rom',  s:{method:'poolish',poolishH:18,poolishCold:false,cold:24,poolishAndel:0.3}},
+        {n:'poolish 50% kald', s:{method:'poolish',poolishH:36,poolishCold:true,cold:24}},
+        {n:'biga',             s:{method:'biga',bigaH:18,cold:48}},
+        {n:'mania',            s:{method:'mania'}},
+        {n:'hurtig',           s:{method:'hurtig',hurtigH:4}},
+        {n:'kveld',            s:{method:'kveld',kveldH:10}},
+        {n:'ingenelting',      s:{type:'ingenelting'}},
+        {n:'chicago biga',     s:{method:'biga',type:'chicago',bigaH:18,cold:72,mel:600,hydro:60}},
+        {n:'NY vanlig ovn',    s:{method:'standard',type:'newyork',cold:48,oven:'vanlig'}},
+      ];
+      const funn=[];
+      SCEN.forEach(sc=>{
+        try{
+          Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+          S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+          S.kjokkenmaskin='ankarsrum'; S.oven='pizza'; S.mode='start'; S.gjaertest=false;
+          S.meltype='couco';
+          Object.assign(S, sc.s);
+          _q10Memo={k:null,v:null};
+          const r=recipeFor();
+          const steps=stepsForAnchor(new Date(2026,7,14,10,0));
+          const ok=new Set();
+          const till=v=>{ if(v==null||isNaN(v)) return;
+            [Math.round(v),Math.floor(v),Math.ceil(v),+(+v).toFixed(1),+(+v).toFixed(2)]
+              .forEach(x=>ok.add(x)); };
+          // Oppskriften og alt som avledes av den
+          ['flour','water','salt','oil','butter','sugar','yDry','yFresh','hydro'].forEach(k=>till(r[k]));
+          try{ const pz=pc(); [pz.count,pz.perPizza,pz.melPer,pz.totalDough].forEach(till); }catch(e){}
+          const yw=Math.max(10,Math.round(r.water*0.06)); till(yw); till(r.water-yw);   // gjaervann
+          till(60); till(r.water-60);                                                    // kickstartvann
+          try{ const sp=poolishSplit(r); [sp.pool,sp.rest,sp.restMel].forEach(till); }catch(e){}
+          try{ const m=maniaRecipe(); Object.keys(m).forEach(k=>till(m[k])); }catch(e){}
+          try{ till(Math.round(r.flour*0.6)); till(Math.round(r.flour*0.6*0.44));       // biga-splitten
+               till(Math.round(r.water-Math.round(r.flour*0.6*0.44))); till(Math.round(r.flour*0.4)); }catch(e){}
+          // Temperaturmodellen
+          till(S.temp); till(S.fridgeC); till(calcWaterTempC(23));
+          till(Math.round(deigTempC(calcWaterTempC(23)))); till(19);                     // hurtigs eget vann
+          // Varigheter — planens egne
+          steps.forEach(st=>{ till(st.dur); till(Math.round((st.dur||0)/60)); till(+((st.dur||0)/60).toFixed(1)); });
+          [S.cold,S.poolishH,S.bigaH,S.hurtigH,S.kveldH].forEach(till);
+          till(rtM(60)); till(Math.round(rtM(60)*1.5)); till(Math.round(totalFermentHours()));
+          try{ till(poolishTemperMin()); till(Math.round(poolishTemperMin()/60)); }catch(e){}
+          // Bevisste konstanter — hver med grunn:
+          // 2..7: kjoeleskapssoner · 18/21: PREF_VANN · 22-24: deigbaandet ·
+          // 250/430/450: ovner · 90/120: sekunder · 40/43: kickstart · 45: vanlig
+          // ovn-oppvarming · HOPTS-kurven: ovn per hevelengde · 280: chicago-ovn
+          [1,2,3,4,5,6,7,8,9,10,12,15,16,20,21,18,22,23,24,25,30,40,43,44,45,50,60,64,90,120,250,430,450].forEach(till);
+          try{ HOPTS.forEach(o=>{ till(parseInt(o.tp)); till(parseInt(o.tv)); }); }catch(e){}
+          if(S.type==='chicago') till(280);
+          steps.forEach(st=>{
+            const tekst=[st.desc||'',st.why||'',st.tip||'',(st.substeps||[]).join(' · ')].join(' ¦ ');
+            const rx=/(\\d+(?:[.,]\\d+)?)\\s*(g\\b|°C|timer?\\b|min\\b|%|sek\\b|stk\\b)/g;
+            let m;
+            while((m=rx.exec(tekst))){
+              const v=parseFloat(m[1].replace(',','.'));
+              if(!ok.has(v) && !ok.has(Math.round(v)))
+                funn.push(sc.n+' | '+st.title+' | '+m[1]+m[2]);
+            }
+          });
+        }catch(e){ funn.push(sc.n+' | FEIL | '+String(e).slice(0,80)); }
+      });
+      Object.keys(sv).forEach(k=>S[k]=sv[k]); window._lang=svLang; _q10Memo={k:null,v:null};
+      return funn.sort();
+    }""")
+    # De tre kjente literalene — EKSAKT liste, ikke tak:
+    #  · 13°C: hardkodet modellpaastand i tempereringssteget («lander ferdig
+    #    deig rundt 13°C»). Omtrent riktig ved standardinnstillinger i dag,
+    #    men regnes ingen steder. Meldt videre som eget spoersmaal.
+    #  · 26/28°C: Mania-avskriften («gaa ikke over 26, aldri over 28») —
+    #    frosset med vilje (v0.759), skal IKKE koples til modellen.
+    UNNTAK = sorted([
+        'poolish 50% kald | 🌡 Ta poolish ut — temperer | 13°C',
+        'mania | Bland hoveddeig | 26°C',
+        'mania | Bland hoveddeig | 28°C',
+    ])
+    ok168 = (r168 == UNNTAK)
+    results.append(('every_number_in_the_prose_traces_to_the_plan', ok168,
+                    {'uventede': [x for x in r168 if x not in UNNTAK],
+                     'savnede': [x for x in UNNTAK if x not in r168]}))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 
