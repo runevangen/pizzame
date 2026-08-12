@@ -780,6 +780,31 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="modal-body" id="changelog-modal-body"></div>
   </div>
 </div>
+
+<!-- v0.797: melkurven og metodefilteret var to bokser av samme slag — «hva
+     eier jeg» og «hva vil jeg bli tilbudt» — plassert hver for seg, den ene
+     inne i Finjuster og den andre inne i Smart-plan. Begge svarer på spørsmål
+     om deg, ikke om denne deigen, og hører derfor sammen ett sted. Modal, ikke
+     en fane-seksjon: da når både Mer (mobil) og ☰ Meny (PC) den samme boksen,
+     og kontrollene finnes bare i ÉN kopi. -->
+<div id="tilbud-modal" class="modal-overlay" onclick="if(event.target===this)closeTilbudModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b id="tilbud-modal-tittel">🎛️ Hva du blir tilbudt</b><button class="modal-x" onclick="closeTilbudModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <div style="border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised);padding:10px 11px;margin-bottom:12px">
+        <div id="melkurv-lbl" style="font-size:12.5px;font-weight:700;color:var(--forno-text-muted);margin-bottom:4px">🌾 Melet mitt</div>
+        <div id="melkurv-help" style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;padding:0 0 4px"></div>
+        <div id="melkurv-rows"></div>
+        <div id="melkurv-sum" style="font-size:11px;color:var(--forno-text-muted);line-height:1.45;padding:6px 0 0;border-top:1px solid var(--forno-border-soft,#e8e5e0);margin-top:4px"></div>
+      </div>
+      <div style="border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised);padding:10px 11px">
+        <div id="mob-beta-methods-lbl" style="font-size:12.5px;font-weight:700;color:var(--forno-text-muted);margin-bottom:4px">🎛️ Metoder du blir tilbudt</div>
+        <div id="mob-beta-methods-help" style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;padding:0 0 4px">Bare metodene du huker av foreslås i Smart-plan og Fra–til. Du kan alltid velge enhver metode manuelt.</div>
+        <div id="mob-beta-methods-rows"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <style>
 /* v0.792: treningsruta. Fyllt rute = deg, ringet rute = maal. */
 .vt-rute{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;width:100%;aspect-ratio:1}
@@ -863,6 +888,8 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
       <span id="active-deiger-count" class="cnt" style="display:none">0</span>
     </div>
     <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none"><span id="pc-menu-fav">★ Min favoritt</span></div>
+    <!-- v0.797: PC har ingen Mer-fane, så samme boks nås herfra. -->
+    <div class="menu-row" id="pc-menu-tilbud" onclick="sidenavGo(openTilbudModal)">🎛️ Hva du blir tilbudt</div>
     <div class="menu-row" id="pc-menu-feedback" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
     <div class="menu-row" id="pc-menu-share" onclick="sidenavGo(shareApp)">📤 Del appen</div>
     <div style="height:1px;background:#F2F2F7"></div>
@@ -1308,7 +1335,11 @@ function syncStaticI18nUI(){
   st('mob-beta-baketime-lbl','Når skal deigen være klar?','When should the dough be ready?');
   st('mob-beta-baketime-sub','Ferdig hevet og klar for ovnen.','Proofed and ready for the oven.');
   st('mob-beta-search-btn','🔍 Finn oppskriften','🔍 Find the recipe');
-  st('mob-beta-methods-help','Bare metodene du huker av foreslås i Smart-plan. Du kan alltid velge enhver metode manuelt.','Only the methods you tick are suggested in Smart plan. You can always pick any method manually.');
+  // v0.797: Fra–til bruker samme filter som Smart-plan, og det sto ikke i teksten.
+  st('mob-beta-methods-help','Bare metodene du huker av foreslås i Smart-plan og Fra–til. Du kan alltid velge enhver metode manuelt.','Only the methods you tick are suggested in Smart plan and From–to. You can always pick any method manually.');
+  st('mob-tilbud-lbl','🎛️ Hva du blir tilbudt','🎛️ What you are offered');
+  st('tilbud-modal-tittel','🎛️ Hva du blir tilbudt','🎛️ What you are offered');
+  st('pc-menu-tilbud','🎛️ Hva du blir tilbudt','🎛️ What you are offered');
   st('mob-beta-popular-lbl','Eller velg et populært tidspunkt','Or pick a popular time');
   st('mob-beta-popular-help','Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.','Tap a preset time, and we fill in the date and time above and run the search right away.');
   syncPizzatidToggleLabel();  // v0.656: «Vis/Skjul»-etiketten var statisk norsk til første trykk
@@ -1634,14 +1665,6 @@ function toggleMelkurv(v){
   try{ renderMelkurvTypeNote(); }catch(e){}
   try{ document.body.classList.contains('mob-mode') ? mobGen() : schedNow(); }catch(e){}
 }
-function toggleMelkurvOpen(){
-  const b=document.getElementById('melkurv-body'), c=document.getElementById('melkurv-chev');
-  if(!b) return;
-  const åpen=b.style.display!=='none';
-  b.style.display=åpen?'none':'block';
-  if(c) c.textContent=åpen?'▾':'▴';
-  if(!åpen) renderMelkurv();
-}
 function renderMelkurv(){
   const rows=document.getElementById('melkurv-rows');
   if(rows){
@@ -1667,12 +1690,14 @@ function renderMelkurv(){
       : L('Ingenting er huket av, så appen regner med at alle melene er tilgjengelige.',
           'Nothing is ticked, so the app assumes every flour is available.');
   }
-  const lbl=document.getElementById('melkurv-lbl');
-  if(lbl){
-    const n=melkurvValgt().length, alle=melEkte().length;
-    lbl.textContent=L('🌾 Melet mitt','🌾 My flour')
-      + (melkurvErDelmengde()?L(` · ${n} av ${alle}`,` · ${n} of ${alle}`):L(' · alle',' · all'));
-  }
+  // Samme tall på boksen og på lenka som peker til den — står de to og sier
+  // ulike ting, tror man at man har trykket feil sted.
+  const n=melkurvValgt().length, alle=melEkte().length;
+  const tekst=L('🌾 Melet mitt','🌾 My flour')
+    + (melkurvErDelmengde()?L(` · ${n} av ${alle}`,` · ${n} of ${alle}`):L(' · alle',' · all'));
+  ['melkurv-lbl','melkurv-lenke-lbl','mer-tilbud-mel'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.textContent=tekst;
+  });
   const help=document.getElementById('melkurv-help');
   if(help) help.textContent=L('Huk av melet du har hjemme. Ingen mel forsvinner — appen sorterer lista og foreslår ut fra det du faktisk kan bake med.',
                              'Tick the flours you have at home. No flour disappears — the app sorts the list and makes suggestions based on what you can actually bake with.');
@@ -4256,7 +4281,9 @@ function betaOppdaterResultat(){
   // står stille. Anker derfor filterets SKJERMPOSISJON over re-renderingen:
   // mål avstanden til toppen før, og juster rullingen med differansen etter.
   const skjerm=document.getElementById('mob-beta');
-  const anker=document.getElementById('mob-beta-methods-lbl');
+  // v0.797: ankeret er lenka i Smart-plan-skjermen, ikke etiketten i modalen —
+  // den ligger utenfor rullingen og har ingen posisjon å bevare.
+  const anker=document.getElementById('mob-beta-methods-lenke');
   const ankerFør=(anker&&skjerm)?anker.getBoundingClientRect().top:null;
   try{ runBetaSearch(true); }catch(e){ return; }
   if(ankerFør!=null){
@@ -4272,13 +4299,16 @@ function betaOppdaterResultat(){
     el.style.boxShadow='0 0 0 0 transparent';
   });
 }
-function toggleBetaMethodsOpen(){
-  const body=document.getElementById('mob-beta-methods-body');
-  const chev=document.getElementById('mob-beta-methods-chev');
-  if(!body) return;
-  const open=body.style.display!=='none';
-  body.style.display=open?'none':'block';
-  if(chev) chev.textContent=open?'▾':'▴';
+// v0.797: melkurven og metodefilteret i én boks, nådd fra Mer (mobil) og
+// ☰ Meny (PC). Kontrollene finnes i ÉN kopi — lenkene som peker hit er bare
+// veier inn, ikke egne brytere som kan komme i motstrid med boksen.
+function openTilbudModal(){
+  try{ renderMelkurv(); }catch(e){}
+  try{ renderBetaMethodFilter(); }catch(e){}
+  document.getElementById('tilbud-modal').style.display='flex';
+}
+function closeTilbudModal(){
+  document.getElementById('tilbud-modal').style.display='none';
 }
 function renderBetaMethodFilter(){
   const body=document.getElementById('mob-beta-methods-rows');
@@ -4298,11 +4328,14 @@ function renderBetaMethodFilter(){
       </div>`;
     }).join('');
   }
-  const lbl=document.getElementById('mob-beta-methods-lbl');
-  if(lbl){
-    const onCount=BETA_METHOD_DEFS.filter(([v])=>m[v]!==false).length;
-    lbl.textContent=L('🎛️ Metoder du blir tilbudt','🎛️ Methods you are offered')+(onCount<BETA_METHOD_DEFS.length?L(` · ${onCount} av 6`,` · ${onCount} of 6`):L(' · alle',' · all'));
-  }
+  const onCount=BETA_METHOD_DEFS.filter(([v])=>m[v]!==false).length;
+  const tekst=L('🎛️ Metoder du blir tilbudt','🎛️ Methods you are offered')
+    +(onCount<BETA_METHOD_DEFS.length
+        ? L(` · ${onCount} av ${BETA_METHOD_DEFS.length}`,` · ${onCount} of ${BETA_METHOD_DEFS.length}`)
+        : L(' · alle',' · all'));
+  ['mob-beta-methods-lbl','mob-beta-methods-lbl-lenke','mer-tilbud-metoder'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.textContent=tekst;
+  });
 }
 
 // v0.741: bryteren for gjærtesten. Den står i Innstillinger, ikke i metode-
@@ -10365,18 +10398,11 @@ document.addEventListener('change', firstInteractionCheck, true);
       </select>
     </div>
     <div id="mob-gmel-fj-info" style="font-size:10.5px;color:var(--forno-text-faint);padding:0 1rem .5rem;line-height:1.4"></div>
-    <!-- v0.796: melkurven. Står her, rett under melvelgeren, fordi det er her
-         den virker — ikke i Innstillinger sammen med tema og skriftstørrelse. -->
-    <div id="melkurv-wrap" style="margin:0 1rem .7rem;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised)">
-      <div id="melkurv-toggle" onclick="toggleMelkurvOpen()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMelkurvOpen()}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;cursor:pointer">
-        <span id="melkurv-lbl" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🌾 Melet mitt</span>
-        <span id="melkurv-chev" style="font-size:12px;color:var(--forno-text-faint)">▾</span>
-      </div>
-      <div id="melkurv-body" style="display:none;padding:0 11px 8px">
-        <div id="melkurv-help" style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;padding:0 0 4px"></div>
-        <div id="melkurv-rows"></div>
-        <div id="melkurv-sum" style="font-size:11px;color:var(--forno-text-muted);line-height:1.45;padding:6px 0 0;border-top:1px solid var(--forno-border-soft,#e8e5e0);margin-top:4px"></div>
-      </div>
+    <!-- v0.797: melkurven bor nå i «Hva du blir tilbudt» (Mer / ☰ Meny). Her
+         står bare veien dit, ved siden av valget den påvirker. -->
+    <div id="melkurv-lenke" onclick="openTilbudModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTilbudModal()}" style="margin:0 1rem .7rem;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised);cursor:pointer">
+      <span id="melkurv-lenke-lbl" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🌾 Melet mitt</span>
+      <span style="font-size:14px;color:var(--forno-text-faint)">›</span>
     </div>
 
     <div id="finjuster-hydro-section">
@@ -10447,6 +10473,19 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div id="mob-bakster-notes"></div>
     <div class="mob-content" id="mob-bakster-content">
       <p id="mob-bakster-empty" style="color:#999;font-size:13px;padding:.5rem 0">Laster deiger…</p>
+    </div>
+    <div style="height:1px;background:var(--forno-border);margin:1.2rem 1rem .2rem"></div>
+
+    <!-- v0.797: «hva eier jeg» og «hva vil jeg bli tilbudt» hører sammen, og
+         hører hjemme her — ikke inne i en fane du er midt i noe annet i. -->
+    <div class="mob-section-lbl" id="mob-tilbud-lbl">🎛️ Hva du blir tilbudt</div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openTilbudModal()">
+      <span id="mer-tilbud-mel" style="font-size:13px;color:var(--dyn-text);font-weight:600">🌾 Melet mitt</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
+    </div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openTilbudModal()">
+      <span id="mer-tilbud-metoder" style="font-size:13px;color:var(--dyn-text);font-weight:500">🎛️ Metoder du blir tilbudt</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div style="height:1px;background:var(--forno-border);margin:1.2rem 1rem .2rem"></div>
 
@@ -10570,15 +10609,13 @@ document.addEventListener('change', firstInteractionCheck, true);
         </div>
         <button id="mob-beta-search-btn" onclick="runBetaSearch()" style="width:100%;height:46px;border:none;border-radius:12px;background:var(--forno-accent);color:#1a1512;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(232,89,12,.30)">🔍 Finn oppskriften</button>
         <div id="mob-beta-result"></div>
-        <div style="margin-top:10px;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised)">
-          <div id="mob-beta-methods-toggle" onclick="toggleBetaMethodsOpen()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleBetaMethodsOpen()}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;cursor:pointer">
-            <span id="mob-beta-methods-lbl" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🎛️ Metoder du blir tilbudt</span>
-            <span id="mob-beta-methods-chev" style="font-size:12px;color:var(--forno-text-faint)">▾</span>
-          </div>
-          <div id="mob-beta-methods-body" style="display:none;padding:0 11px 8px">
-            <div id="mob-beta-methods-help" style="font-size:11px;color:var(--forno-text-faint);line-height:1.4;padding:0 0 4px">Bare metodene du huker av foreslås i Smart-plan. Du kan alltid velge enhver metode manuelt.</div>
-            <div id="mob-beta-methods-rows"></div>
-          </div>
+        <!-- v0.797: selve avkryssingen bor i «Hva du blir tilbudt». Lenka blir
+             stående her fordi den fortsatt er ankeret resultatblokka måles mot
+             (v0.774): treffene over skifter høyde når filteret endres, og uten
+             ankeret glir det du nettopp trykket i, ut av syne. -->
+        <div id="mob-beta-methods-lenke" onclick="openTilbudModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTilbudModal()}" style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised);cursor:pointer">
+          <span id="mob-beta-methods-lbl-lenke" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🎛️ Metoder du blir tilbudt</span>
+          <span style="font-size:14px;color:var(--forno-text-faint)">›</span>
         </div>
       </div>
 

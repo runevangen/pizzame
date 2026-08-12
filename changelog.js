@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.797",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Melet mitt» og «Metoder du blir tilbudt» er samlet i én boks: 🎛️ Hva du blir tilbudt. Begge svarer på spørsmål om deg og kjøkkenet ditt, ikke om denne deigen, og lå spredt — den ene inne i Finjuster, den andre inne i Smart-plan.",
+      "Boksen nås fra Mer på mobil og fra ☰ Meny på PC. Melkurven fantes ikke på PC i det hele tatt før nå.",
+      "Det står fortsatt en lenke dit de virker: under Meltype i Finjuster, og under søket i Smart-plan. Men avkryssingen finnes bare ett sted — to kopier av samme bryter kan si to forskjellige ting.",
+      "Hjelpeteksten sa at filteret gjaldt Smart-plan. Det gjelder Fra–til også, og nå står det."
+    ],
+    "changes_en": [
+      "\"My flour\" and \"Methods you are offered\" are now in one box: 🎛️ What you are offered. Both answer questions about you and your kitchen rather than about this dough, and they were scattered — one inside Fine-tune, the other inside Smart plan.",
+      "The box is reached from More on mobile and from ☰ Menu on desktop. The flour list did not exist on desktop at all until now.",
+      "There is still a link where they take effect: under Flour type in Fine-tune, and under the search in Smart plan. But the tick boxes exist in one place only — two copies of the same switch can say two different things.",
+      "The help text said the filter applied to Smart plan. It applies to From–to as well, and now it says so."
+    ]
+  },
+  {
     "v": "0.796",
     "d": "august 2026",
     "d_en": "August 2026",

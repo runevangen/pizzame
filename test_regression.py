@@ -5932,9 +5932,9 @@ def _atferd_6(page, results):
         const res=document.getElementById('mob-beta-result');
         const førHTML=res.innerHTML;
         if(!førHTML.trim()) return {ingenTreff:true};
-        // Åpne metodelista og rull helt ned til den, slik brukeren står.
-        const body=document.getElementById('mob-beta-methods-body');
-        if(body && body.style.display==='none') toggleBetaMethodsOpen();
+        // v0.797: selve avkryssingen ligger nå i «Hva du blir tilbudt», som er
+        // en modal. Det som blir staaende i Smart-plan-skjermen er LENKA dit,
+        // og det er den som maa holde plassen sin naar treffene over regnes om.
         await vent();
         const skjerm=document.getElementById('mob-beta');
         // v0.774: invarianten er FILTERETS skjermposisjon, ikke scrollTop.
@@ -5946,7 +5946,7 @@ def _atferd_6(page, results):
         // klamper nettleseren scrollTop selv når innholdet over krymper, så
         // filteret står stille uansett — mutasjonen som fjernet justeringen
         // besto testen så lenge den målte fra bunnen.
-        const anker=document.getElementById('mob-beta-methods-lbl');
+        const anker=document.getElementById('mob-beta-methods-lenke');
         anker.scrollIntoView({block:'center'}); await vent();
         const førRull=skjerm.scrollTop;
         if(førRull < 100 || førRull >= skjerm.scrollHeight-skjerm.clientHeight-40)
@@ -8327,6 +8327,93 @@ def _atferd_7(page, results):
       and r163.get('lagretCouco') is True
       and r163.get('iDeigen') is False)
     results.append(('flour_you_have_marks_the_list_without_hiding_anything', ok163, r163))
+
+    # v0.797: melkurven og metodefilteret er to bokser av samme slag - «hva eier
+    # jeg» og «hva vil jeg bli tilbudt» - og laa hver for seg, den ene inne i
+    # Finjuster og den andre inne i Smart-plan. Meldt inn: «Burde ikke dette
+    # ligge under mer fanen. Og metoder du vil faa tilbydd infra og til maa ogsaa
+    # ligge der.» Begge bor naa i samme boks, naadd fra Mer (mobil) og ☰ Meny
+    # (PC), pluss to lenker der de virker.
+    #
+    # Faren ved aa gi en innstilling flere innganger er aa lage flere KOPIER av
+    # bryteren - to dommere som kan si ulike ting. Testen holder oeye med
+    # nettopp det: kontrollene skal finnes i noeyaktig én kopi, og hver etikett
+    # som nevner dem skal si det samme tallet.
+    r164 = page.evaluate("""() => {
+      const sv={l:window._lang,
+                mk:(()=>{try{return localStorage.getItem('pizzaMelkurv');}catch(e){return null;}})(),
+                bm:(()=>{try{return localStorage.getItem('pizzaBetaMethods');}catch(e){return null;}})()};
+      window._lang='no'; try{ syncI18nUI(); }catch(e){}
+      const g=id=>document.getElementById(id);
+      const ut={};
+      // Én kopi av hver kontroll - ikke én per inngang.
+      ut.melLister    = document.querySelectorAll('#melkurv-rows').length;
+      ut.metodeLister = document.querySelectorAll('#mob-beta-methods-rows').length;
+      ut.avkryssingerUtenfor = document.querySelectorAll(
+        '#melkurv-lenke [role=checkbox], #mob-beta-methods-lenke [role=checkbox]').length;
+      // De gamle hjemmene skal vaere borte, ikke ligge igjen som doedt innhold.
+      ut.gammelMelBoks    = !!g('melkurv-body');
+      ut.gammelMetodeBoks = !!g('mob-beta-methods-body');
+      // Boksen aapnes og lukkes, og fylles naar den aapnes.
+      ut.foer = g('tilbud-modal').style.display||'';
+      openTilbudModal();
+      ut.aapen = g('tilbud-modal').style.display;
+      ut.melRader    = document.querySelectorAll('#melkurv-rows > div').length;
+      ut.metodeRader = document.querySelectorAll('#mob-beta-methods-rows > div').length;
+      ut.melEkte     = melEkte().length;
+      ut.metodeEkte  = BETA_METHOD_DEFS.length;
+      // Alle inngangene peker til samme boks.
+      const peker=id=>{ const e=g(id); return !!e && /openTilbudModal/.test(e.getAttribute('onclick')||''); };
+      // Mer-fanen: raden ER klikkflaten, teksten ligger inni den.
+      ut.inngangMerRad   = ['mer-tilbud-mel','mer-tilbud-metoder'].every(id=>{
+        const e=g(id); const rad=e&&e.closest('[onclick]');
+        return !!rad && /openTilbudModal/.test(rad.getAttribute('onclick')||'')
+            && !!rad.closest('#mob-tips');
+      });
+      ut.inngangPc       = peker('pc-menu-tilbud');
+      ut.inngangMelLenke = peker('melkurv-lenke');
+      ut.inngangMetLenke = peker('mob-beta-methods-lenke');
+      // Etikettene skal si det samme, foer og etter en endring.
+      const les=()=>({mel:[g('melkurv-lbl'),g('melkurv-lenke-lbl'),g('mer-tilbud-mel')].map(e=>e&&e.textContent),
+                      met:[g('mob-beta-methods-lbl'),g('mob-beta-methods-lbl-lenke'),g('mer-tilbud-metoder')].map(e=>e&&e.textContent)});
+      const enige=o=>o.mel.every(t=>t===o.mel[0]) && o.met.every(t=>t===o.met[0]);
+      melEkte().forEach(f=>{ if(f.v!=='dallari' && harMel(f.v)) toggleMelkurv(f.v); });
+      toggleBetaMethod('mania');
+      const etter=les();
+      ut.enigeEtter = enige(etter);
+      ut.melTekst = etter.mel[0];
+      ut.metTekst = etter.met[0];
+      closeTilbudModal();
+      ut.lukket = g('tilbud-modal').style.display;
+      // rydd
+      melEkte().forEach(f=>{ if(!harMel(f.v)) toggleMelkurv(f.v); });
+      toggleBetaMethod('mania');
+      try{ sv.mk===null ? localStorage.removeItem('pizzaMelkurv') : localStorage.setItem('pizzaMelkurv',sv.mk);
+           sv.bm===null ? localStorage.removeItem('pizzaBetaMethods') : localStorage.setItem('pizzaBetaMethods',sv.bm); }catch(e){}
+      _melkurv=null; _betaMethods=null;
+      window._lang=sv.l; try{ syncI18nUI(); renderMelkurv(); renderBetaMethodFilter(); }catch(e){}
+      return ut;
+    }""")
+    ok164 = (
+      # Én kopi av hver kontroll - lenkene er veier inn, ikke egne brytere.
+      r164.get('melLister') == 1 and r164.get('metodeLister') == 1
+      and r164.get('avkryssingerUtenfor') == 0
+      and r164.get('gammelMelBoks') is False and r164.get('gammelMetodeBoks') is False
+      # Boksen aapner, fylles og lukker.
+      and r164.get('foer') in ('', 'none')
+      and r164.get('aapen') == 'flex' and r164.get('lukket') == 'none'
+      and r164.get('melRader') == r164.get('melEkte')
+      and r164.get('metodeRader') == r164.get('metodeEkte')
+      # Fire innganger, samme boks.
+      and r164.get('inngangMerRad') is True
+      and r164.get('inngangPc') is True
+      and r164.get('inngangMelLenke') is True
+      and r164.get('inngangMetLenke') is True
+      # Og alle etikettene sier det samme tallet.
+      and r164.get('enigeEtter') is True
+      and '1 av 9' in (r164.get('melTekst') or '')
+      and '5 av 6' in (r164.get('metTekst') or ''))
+    results.append(('what_you_are_offered_lives_in_one_box_with_several_doors', ok164, r164))
 
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
