@@ -4968,6 +4968,10 @@ function applyBetaResult(regId,altIdx){
   if(s.method==='biga'){ S.bigaH=s.bigaH; }
   if(s.method==='hurtig'){ S.hurtigH=s.hurtigH; }
   if(s.method==='kveld'){ S.kveldH=s.kveldH; }
+  // v0.798: Smart-plan har samme «velg denne planen»-øyeblikk som Fra–til, og
+  // skal bytte mel på samme måte. Ett sted ville vært verre enn ingen: da
+  // avhenger melet du får av hvilken fane du gikk gjennom.
+  try{ melkurvAutobytt(); }catch(e){}
   const d=new Date(entry.anchorIso);
   const pad=n=>String(n).padStart(2,'0');
   const dateStr=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -5170,19 +5174,77 @@ function meltypeWarnSetHydro(newHydro){
   try{ mobHydroUI(); }catch(e){}
   if(document.body.classList.contains('mob-mode')){ mobGen(); } else { schedNow(); }
 }
-function meltypeWarnSetFlour(flourVal){
+// v0.798: alle tre nedtrekkene, ikke to. mob-gmel-fj manglet, så Finjuster
+// kunne bli stående og vise melet du nettopp byttet fra.
+function settMeltype(flourVal){
   S.meltype = flourVal;
-  const selPC = document.getElementById('gmel'); if(selPC) selPC.value = flourVal;
-  const selMob = document.getElementById('mob-gmel'); if(selMob) selMob.value = flourVal;
-  updateMeltypeInfo();
+  ['gmel','mob-gmel','mob-gmel-fj'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value=flourVal;
+  });
+  try{ updateMeltypeInfo(); }catch(e){}
+}
+function meltypeWarnSetFlour(flourVal){
+  settMeltype(flourVal);
   if(document.body.classList.contains('mob-mode')){ mobGen(); } else { schedNow(); }
 }
 // v0.796: leter i melkurven din FØRST. «Bytt til Caputo Manitoba Oro» er et
 // dårlig råd hvis du ikke har den — men det er verdt å si når ingenting i
 // skapet ditt dekker planen, så fallbacken står igjen (kalleren merker den).
+//
+// v0.798: og faller til slutt tilbake på mel som bare klarer TIDEN. Målt på et
+// ekte tilfelle: 69-timers poolish, kurv med Couco og Manitoba, hydrering 65 %.
+// Manitoba tåler timene, men er laget for 70–100 % vann — så funksjonen
+// returnerte null, og «Bytt til …»-knappen forsvant nøyaktig når appen hadde
+// svaret. Den var taus fordi den var kresen. Gjæringstiden er en hard grense;
+// hydreringen er en anbefaling du kan flytte med én knapp rett ved siden av.
 function findBestMatchingFlour(hrs, hydro){
-  const passer=m => hrs>=m.ferm.mn && hrs<=m.ferm.mx && hydro>=m.hydroRange.mn && hydro<=m.hydroRange.mx;
-  return melkurvPool().find(passer) || MELTYPER.find(m=>!m.generic && passer(m));
+  const tid  = m => hrs>=m.ferm.mn && hrs<=m.ferm.mx;
+  const vann = m => hydro>=m.hydroRange.mn && hydro<=m.hydroRange.mx;
+  const begge= m => tid(m) && vann(m);
+  return melkurvPool().find(begge) || MELTYPER.find(m=>!m.generic && begge(m))
+      || melkurvPool().find(tid)   || MELTYPER.find(m=>!m.generic && tid(m));
+}
+
+// ===== STILLE MELBYTTE (v0.798) =====
+// Meldt inn: «men vi har krysset av for mel vi har på kjøkkenet. Derfor mener
+// jeg at appen kan bytte stille til det.» Han har rett: melkurven er ikke en
+// gjetning appen gjør på dine vegne, det er din egen opplysning om hva som står
+// i skapet. Da er det ikke et forslag å bruke det — det er det eneste svaret
+// som gir mening.
+//
+// Stille, men ikke skjult: kortet sier hvilket mel planen kommer til å bruke
+// FØR du trykker, så oppskriften aldri endrer seg uten spor.
+//
+// Tre vakter, og hver av dem har en grunn:
+//   · Bare når du FAKTISK har sagt hva du har. Med alt haket av betyr «bytt til
+//     melet ditt» «bytt til hva som helst», og da ville alle som aldri har rørt
+//     kurven fått melet byttet under seg.
+//   · Aldri bort fra «Annet mel / ikke i listen». Det er et bevisst valg om at
+//     appen ikke kjenner melet ditt, og det skal den ikke overstyre.
+//   · Aldri når melet du står på er ditt eget OG klarer planen. Da er det
+//     ingenting å rette.
+function melkurvBytteFor(hrs, hydro){
+  if(!melkurvErDelmengde()) return null;
+  if(!Number.isFinite(hrs)) return null;
+  const na=MELTYPER.find(m=>m.v===S.meltype);
+  if(!na || na.generic) return null;
+  if(harMel(na.v) && hrs>=na.ferm.mn && hrs<=na.ferm.mx) return null;
+  const mine=melkurvValgt();
+  // Helst et mel som klarer både tiden og vannet; ellers det som klarer tiden.
+  return mine.find(f=>hrs>=f.ferm.mn && hrs<=f.ferm.mx
+                   && hydro>=f.hydroRange.mn && hydro<=f.hydroRange.mx)
+      || mine.find(f=>hrs>=f.ferm.mn && hrs<=f.ferm.mx)
+      || null;
+}
+// Kalles når en plan tas i bruk — S er da allerede satt til den nye planen, så
+// totalFermentHours() gjelder nøyaktig den deigen du valgte.
+function melkurvAutobytt(){
+  let hrs=null;
+  try{ _q10Memo={k:null,v:null}; hrs=totalFermentHours(); }catch(e){ return null; }
+  const f=melkurvBytteFor(hrs, S.hydro);
+  if(!f || f.v===S.meltype) return null;
+  settMeltype(f.v);
+  return f;
 }
 // v5.74: alle varsler kan skjules "for denne gang" med et kryss. Nøkkelen er
 // innholdet i selve konflikten, ikke varseltypen — skjuler du "Ta ut av kjøleskap
@@ -8044,9 +8106,23 @@ function renderWindowPicker(){
         S.method=c.method; if(c.key) S[c.key]=c.best.val; _q10Memo={k:null,v:null};
         const th=totalFermentHours();
         S.method=l2.method; if(c.key) S[c.key]=l2.val; _q10Memo={k:null,v:null};
-        const over=Math.round(th-fl.ferm.mx), under=Math.round(fl.ferm.mn-th);
-        if(over>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${over}t over det ${escH(fl.t)} er ment for`,`${over}h beyond what ${escH(fl.t)} is meant for`)}</span>`;
-        else if(under>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${under}t kortere enn ${escH(fl.t)} er ment for`,`${under}h shorter than ${escH(fl.t)} is meant for`)}</span>`;
+        // v0.798: har du sagt hva du har i skapet, bytter «Bruk denne» melet
+        // for deg. Da er det feil å kjefte om et mel planen ikke kommer til å
+        // bruke — kortet sier i stedet hvilket mel den FÅR, før du trykker.
+        // Stille bytte betyr uten å spørre, ikke uten å si fra.
+        const bytt=melkurvBytteFor(th, S.hydro);
+        if(bytt){
+          const vann=(S.hydro<bytt.hydroRange.mn||S.hydro>bytt.hydroRange.mx)
+            ? L(` (vil ha ${bytt.hydroRange.mn}–${bytt.hydroRange.mx}% vann)`,
+                ` (wants ${bytt.hydroRange.mn}–${bytt.hydroRange.mx}% water)`) : '';
+          melPris=`<br><span style="color:#3f7d34;font-weight:700">🌾 ${escH(L(
+            `Bruker ${bytt.t} — den tåler disse timene${vann}`,
+            `Uses ${bytt.t} — it handles these hours${vann}`))}</span>`;
+        } else {
+          const over=Math.round(th-fl.ferm.mx), under=Math.round(fl.ferm.mn-th);
+          if(over>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${over}t over det ${escH(fl.t)} er ment for`,`${over}h beyond what ${escH(fl.t)} is meant for`)}</span>`;
+          else if(under>0) melPris=`<br><span style="color:#8a5a00;font-weight:700">🌾 ${L(`${under}t kortere enn ${escH(fl.t)} er ment for`,`${under}h shorter than ${escH(fl.t)} is meant for`)}</span>`;
+        }
       }
     }
     if(isWin){
@@ -8093,6 +8169,10 @@ function applyWindowCandidate(method,key,val){
   // ingenting i S skrives — bare metoden byttes.
   S.method=method; if(key) S[key]=val;
   if(changed) clearStepProgress();
+  // v0.798: melet følger planen når du har sagt hva du har. Må stå ETTER at
+  // metoden er satt — det er den nye planens gjæringstid melet skal måles mot,
+  // ikke den forrige.
+  try{ melkurvAutobytt(); }catch(e){}
   window._planChosen=true;
   try{ mobMethodCards(); }catch(e){}
   try{ mobBuildHrows(); }catch(e){}

@@ -8415,6 +8415,122 @@ def _atferd_7(page, results):
       and '5 av 6' in (r164.get('metTekst') or ''))
     results.append(('what_you_are_offered_lives_in_one_box_with_several_doors', ok164, r164))
 
+    # v0.798: meldt inn fra Fra-til - «jeg faar opp forslag paa mel som ikke har
+    # lang nok fermenteringstid. Jeg har valgt flere meltyper som takler tiden.
+    # burde ikke appen bytte mel til en av mine meltyper?»
+    #
+    # Maalt foer fiksen (kurv: Couco + Manitoba, valgt: Doppio Zero, 72t vindu):
+    # alle de tre lengste kortene sa «43-45t over Caputo Doppio Zero», mens
+    # Manitoba i kurven dekket samtlige. Og «Bytt til ...»-knappen kunne ikke
+    # engang dukke opp: findBestMatchingFlour krevde treff paa BAADE tid og
+    # hydrering, og Manitoba vil ha 70-100 % vann mot planens 65 - saa den
+    # returnerte null. Appen var taus fordi den var kresen.
+    #
+    # Melkurven er brukerens egen opplysning om hva som staar i skapet, ikke en
+    # gjetning appen gjoer paa hans vegne. Derfor byttes melet naa uten aa spoerre
+    # - men kortet sier hvilket mel planen faar FOER du trykker. Stille betyr
+    # uten aa spoerre, ikke uten aa si fra.
+    r165 = page.evaluate("""() => {
+      const sv={l:window._lang, mt:S.meltype,
+                mk:(()=>{try{return localStorage.getItem('pizzaMelkurv');}catch(e){return null;}})()};
+      window._lang='no';
+      const ut={};
+      const kurv=liste=>melEkte().forEach(f=>{ const vil=liste.includes(f.v);
+                                               if(harMel(f.v)!==vil) toggleMelkurv(f.v); });
+      const nullstill=()=>{ Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+                            S.mel=500; S.hydro=65; S.type='napoletana'; S.temp=22; };
+      kurv(['couco','manitoba']);
+      nullstill(); S.meltype='doppio_zero';
+      // 1) Kortet sier hvilket mel planen faar - foer du trykker.
+      S.mode='end'; window._uiMode='window';
+      const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+      const stek=new Date(Date.now()+96*3600000); stek.setHours(18,0,0,0);
+      if(dEl) dEl.value=fd(stek);
+      if(tEl) tEl.value='18:00';
+      const start=new Date(stek.getTime()-72*3600000);
+      S.winStart=fd(start)+'T'+String(start.getHours()).padStart(2,'0')+':00';
+      // renderWindowPicker leser vindusstarten fra FELTENE (readWinStart) og
+      // overstyrer S. Uten dette arvet testen en gammel dato fra en tidligere
+      // test, vinduet ble ~140 t, og da dekker ingen mel planen - heller ikke
+      // Manitoba paa 120. Koden gjorde altsaa rett; oppsettet var umulig.
+      syncWinFields();
+      try{ renderWindowPicker(); }catch(e){ ut.renderFeil=''+e; }
+      ut.vindu=S.winStart;
+      const h=(document.getElementById('mob-winres')||{}).innerHTML||'';
+      ut.kortSierBruker = /Bruker Caputo Manitoba Oro/.test(h);
+      ut.kortSierVann   = /vil ha 70–100% vann/.test(h);
+      ut.kortKjefterIkke = !/over det Caputo Doppio Zero er ment for/.test(h);
+      // 2) Byttet skjer naar planen tas i bruk, og alle tre nedtrekkene foelger.
+      nullstill(); S.meltype='doppio_zero'; S.mode='end';
+      applyWindowCandidate('poolish','cold',54);
+      ut.etterBruk = S.meltype;
+      ut.nedtrekk  = ['gmel','mob-gmel','mob-gmel-fj']
+                      .map(id=>(document.getElementById(id)||{}).value);
+      // 3) Helst et mel som klarer BAADE tid og vann. Mania 36t: Couco (16-54 t,
+      //    60-80 %) klarer begge, Manitoba bare tiden.
+      nullstill(); S.meltype='doppio_zero'; S.method='mania'; _q10Memo={k:null,v:null};
+      ut.maniaTimer = +totalFermentHours().toFixed(1);
+      ut.maniaBytte = (melkurvBytteFor(ut.maniaTimer, 65)||{}).v;
+      // Skillende tilfelle: kurv med Pizzeria (12-48 t, 60-80 %) og Manitoba
+      // (24-120 t, 70-100 %), plan 36 t paa 85 % vann. Pizzeria staar foerst og
+      // klarer TIDEN - saa uten vann-preferansen vinner den, og du hadde faatt
+      // et mel som ikke taaler vannet. Manitoba klarer begge.
+      kurv(['pizzeria','manitoba']);
+      ut.beggeKravBytte = (melkurvBytteFor(36, 85)||{}).v;
+      kurv(['couco','manitoba']);
+      // 4) Vaktene. Hver av dem er en grunn til IKKE aa bytte.
+      nullstill(); S.meltype='couco'; S.method='kveld'; S.kveldH=24; _q10Memo={k:null,v:null};
+      ut.egetMelKlarerDet = (melkurvBytteFor(totalFermentHours(), 65)||{}).v || null;
+      nullstill(); S.meltype='annet';
+      ut.annetMelUroert   = (melkurvBytteFor(69, 65)||{}).v || null;
+      nullstill(); S.meltype='doppio_zero';
+      kurv(melEkte().map(f=>f.v));          // ingen kurv erklaert = alt paa
+      ut.utenKurv         = (melkurvBytteFor(69, 65)||{}).v || null;
+      // 5) findBestMatchingFlour tier ikke lenger naar bare tiden kan treffes.
+      ut.besteTidBare = (findBestMatchingFlour(69, 65)||{}).v;
+      // 6) Smart-plan har samme oeyeblikk og maa gjoere det samme.
+      kurv(['couco','manitoba']);
+      nullstill(); S.meltype='doppio_zero';
+      const boks=document.createElement('div'); boks.id='__t798'; document.body.appendChild(boks);
+      let a=new Date(2027,7,1,18,0); while(a.getDay()!==5) a.setDate(a.getDate()+1);
+      try{ renderResultBlock('__t798','fre 18:00', a.toISOString()); }catch(e){ ut.spFeil=''+e; }
+      const sh=boks.innerHTML; boks.remove();
+      const m=sh.match(/applyBetaResult\\((\\d+),(\\d+)\\)/);
+      if(m){ try{ applyBetaResult(+m[1], +m[2]); }catch(e){ ut.spFeil2=''+e; } }
+      ut.smartPlanMel = S.meltype;
+      ut.smartPlanTimer = (()=>{ _q10Memo={k:null,v:null}; return +totalFermentHours().toFixed(1); })();
+      // rydd
+      try{ sv.mk===null ? localStorage.removeItem('pizzaMelkurv')
+                        : localStorage.setItem('pizzaMelkurv', sv.mk); }catch(e){}
+      _melkurv=null;
+      Object.keys(DEF).forEach(k=>S[k]=DEF[k]); S.meltype=sv.mt;
+      window._uiMode=null; window._lang=sv.l;
+      try{ populateMeltypeSelects(); renderMelkurv(); }catch(e){}
+      return ut;
+    }""")
+    ok165 = (
+      # Kortet forteller hva planen faar - ikke hva den ikke faar.
+      r165.get('kortSierBruker') is True
+      and r165.get('kortSierVann') is True
+      and r165.get('kortKjefterIkke') is True
+      # Byttet skjer ved bruk, og alle tre nedtrekkene foelger med.
+      and r165.get('etterBruk') == 'manitoba'
+      and r165.get('nedtrekk') == ['manitoba', 'manitoba', 'manitoba']
+      # Helst et mel som klarer baade tid og vann.
+      and r165.get('maniaBytte') == 'couco'
+      and r165.get('beggeKravBytte') == 'manitoba'
+      # Vaktene: eget mel som klarer det, «annet mel», og ingen erklaert kurv.
+      and r165.get('egetMelKlarerDet') is None
+      and r165.get('annetMelUroert') is None
+      and r165.get('utenKurv') is None
+      # Ikke lenger taus naar bare tiden kan treffes.
+      and r165.get('besteTidBare') == 'manitoba'
+      # Smart-plan gjoer det samme - melet skal ikke avhenge av hvilken fane
+      # du gikk gjennom.
+      and r165.get('smartPlanMel') in ('couco', 'manitoba')
+      and r165.get('spFeil') is None and r165.get('spFeil2') is None)
+    results.append(('a_plan_you_pick_uses_flour_you_actually_have', ok165, r165))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.798",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Har du krysset av for melet du har, bytter appen til det når du velger en plan. Før sa Fra–til «45t over det Caputo Doppio Zero er ment for» — om et mel du ikke engang eier — mens Manitoba Oro i kurven din dekket alle de tre lengste forslagene.",
+      "Byttet skjer uten å spørre, men ikke uten å si fra: kortet sier «🌾 Bruker Caputo Manitoba Oro — den tåler disse timene» før du trykker. Gjelder både Fra–til og Smart-plan, så melet ikke avhenger av hvilken fane du gikk gjennom.",
+      "Tre unntak: appen bytter aldri når melet du står på er ditt eget og klarer planen, aldri bort fra «Annet mel / ikke i listen», og aldri hvis du ikke har sagt hva du har.",
+      "«Bytt til …»-knappen i melvarselet var taus når den trengtes mest. Den krevde treff på både tid og hydrering, så et mel som tålte timene men ville ha mer vann ble aldri nevnt. Gjæringstiden er en hard grense; vannet kan du flytte med knappen ved siden av."
+    ],
+    "changes_en": [
+      "If you have ticked the flours you own, the app switches to one of them when you pick a plan. Before, From–to said \"45h beyond what Caputo Doppio Zero is meant for\" — about a flour you do not even own — while Manitoba Oro in your list covered all three of the longest suggestions.",
+      "The switch happens without asking, but not without saying: the card reads \"🌾 Uses Caputo Manitoba Oro — it handles these hours\" before you tap. Applies to both From–to and Smart plan, so the flour does not depend on which tab you came through.",
+      "Three exceptions: it never switches when the flour you are on is yours and handles the plan, never away from \"Other / not listed\", and never if you have not said what you have.",
+      "The \"Switch to …\" button in the flour warning went quiet exactly when it was needed. It required a match on both time and hydration, so a flour that handled the hours but wanted more water was never mentioned. Fermentation time is a hard limit; the water you can move with the button next to it."
+    ]
+  },
+  {
     "v": "0.797",
     "d": "august 2026",
     "d_en": "August 2026",
