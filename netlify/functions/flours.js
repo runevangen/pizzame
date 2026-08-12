@@ -22,7 +22,7 @@ const SEED_FLOURS = [
   { v: 'pizzeria', t: 'Caputo Pizzeria', protein: '12,5%', w: '260–270', hydro: '60–80%', hydroRange: { mn: 60, mx: 80 }, ferm: { mn: 12, mx: 48 } },
   { v: 'nuvola', t: 'Caputo Nuvola', protein: '12,5%', w: '260–280', hydro: '60–75%', hydroRange: { mn: 60, mx: 75 }, ferm: { mn: 12, mx: 48 } },
   { v: 'regal_tipo00', t: 'Regal Tipo 00', protein: '13%', w: '–', hydro: '60–75%', hydroRange: { mn: 60, mx: 75 }, ferm: { mn: 12, mx: 48 }, estimated: true },
-  { v: 'couco', t: 'Caputo Couco', protein: '13%', w: '300–340', hydro: '60–80%', hydroRange: { mn: 60, mx: 80 }, ferm: { mn: 16, mx: 54 } },
+  { v: 'couco', t: 'Caputo Cuoco', protein: '13%', w: '300–320', hydro: '60–80%', hydroRange: { mn: 60, mx: 80 }, ferm: { mn: 16, mx: 54 } },
   { v: 'manitoba', t: 'Caputo Manitoba Oro', protein: '12,9–14,5%', w: '340–390', hydro: '70–100%', hydroRange: { mn: 70, mx: 100 }, ferm: { mn: 24, mx: 120 } }
 ];
 

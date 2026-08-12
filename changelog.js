@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.801",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Melet het «Caputo Couco». Det riktige navnet er «Caputo Cuoco» — den røde posen, også kjent som Saccorosso. W-verdien er samtidig rettet fra 300–340 til produsentens 300–320.",
+      "Bare navnet er endret. Nøkkelen bak ligger lagret i hver bakelogg, så deigene du har bakt med den peker fortsatt riktig — og en ny test vokter at nøklene ikke kan døpes om i vanvare."
+    ],
+    "changes_en": [
+      "The flour was called \"Caputo Couco\". The correct name is \"Caputo Cuoco\" — the red bag, also known as Saccorosso. The W value has been corrected from 300–340 to the manufacturer's 300–320.",
+      "Only the name changed. The key behind it is stored in every bake log, so the doughs you have already baked still point to the right flour — and a new test guards against keys being renamed by accident."
+    ]
+  },
+  {
     "v": "0.800",
     "d": "august 2026",
     "d_en": "August 2026",

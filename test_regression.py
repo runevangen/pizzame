@@ -8126,6 +8126,12 @@ def _atferd_7(page, results):
         if(rad.t!==vent){ ut.riktig=false; ut.avvik.push(rad.t+' != '+vent); }
       });
       ut.eksempel=(no.find(o=>o.v==='manitoba')||{}).t;
+      // v0.801: NØKLENE er frosne, navnene er det ikke. `v` ligger lagret i
+      // hver bakelogg (saveBake lagrer config:{...S}), så en omdøpt nøkkel
+      // foreldreloeser historikken din i stillhet. Navnet `t` er bare visning -
+      // «Caputo Couco» ble rettet til «Caputo Cuoco» uten aa roere noekkelen.
+      ut.nokler = melEkte().map(f=>f.v).sort().join(',');
+      ut.cuoco  = (MELTYPER.find(f=>f.v==='couco')||{}).t;
       window._lang='en'; populateMeltypeSelects();
       const en=les('gmel')||[];
       ut.enEksempel=(en.find(o=>o.v==='manitoba')||{}).t;
@@ -8151,7 +8157,10 @@ def _atferd_7(page, results):
              and r161.get('enGenerisk') == 'Other / not listed'
              and r161.get('enTimer') is True
              and r161.get('beholdtValg') is True
-             and r161.get('mobilLik') is True)
+             and r161.get('mobilLik') is True
+             and r161.get('nokler') == ('couco,dallari,doppio_zero,manitoba,nuvola,'
+                                        'pizzeria,regal_pizzamel,regal_tipo00,vanlig_hvetemel')
+             and r161.get('cuoco') == 'Caputo Cuoco')
     results.append(('flour_dropdown_shows_fermentation_range', ok161, r161))
 
     # v0.795: appen hadde FIRE lister over metoder, og de var ikke like. Meldt
