@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.802",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "PC-visningen var vanskelig å lese: Pizzatype-pillene, ☰ Meny og ⚙️ Avanserte innstillinger sto med nesten hvit tekst på lys bakgrunn. En fargevariabel pekte på mobilens mørke tema i stedet for reserven sin — nå har PC hele den lyse paletten selv, og teksten er mørk der den skal være mørk.",
+      "«Fra–til» fantes bare på mobil. Nå står den som tredje valg under Planlegging på PC også: oppgi tidligst mulig oppstart og ønsket steketid, og få de samme kandidatkortene — beste alternativ, «slik får du den til å passe», og melvarslene.",
+      "Smart-plan lå som nest siste rad i ☰ Meny, bak Formler og Admin. Den har fått en egen, synlig inngang øverst i sidepanelet — og raden i menyen er flyttet til toppen.",
+      "Bytter du fra mobil- til PC-visning, speiler sidepanelet nå tilstanden din: modusvalget (og et Fra–til-vindu du sto i) følger med i stedet for å vise noe annet enn planen."
+    ],
+    "changes_en": [
+      "The desktop view was hard to read: the pizza-type pills, ☰ Menu and ⚙️ Advanced settings showed near-white text on a light background. A colour variable pointed at the mobile dark theme instead of its fallback — desktop now carries the full light palette itself, and text is dark where it should be dark.",
+      "\"From–to\" only existed on mobile. It is now the third choice under Planning on desktop too: state the earliest you can start and when you want to bake, and get the same candidate cards — best option, \"here's how to make it fit\", and the flour notes.",
+      "Smart plan sat as the second-to-last row in ☰ Menu, behind Formulas and Admin. It now has its own visible entry at the top of the sidebar — and the menu row has moved to the top.",
+      "Switching from mobile to desktop view now mirrors your state: the mode choice (and a From–to window you were in) carries over instead of showing something other than the plan."
+    ]
+  },
+  {
     "v": "0.801",
     "d": "august 2026",
     "d_en": "August 2026",

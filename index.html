@@ -649,9 +649,35 @@ body.pc-mode{
   --pc-border:#e0d3b5; --pc-border-soft:#ece3d2;
   --pc-muted:#7c6a4d; --pc-faint:#9c8861;
   --pc-accent:#e8590c; --pc-accent-text:#c2410c; --pc-accent-soft:#fbe4d4;
+  /* v0.802: LESBARHETSBUG — reglene under brukte var(--forno-text,#3f2d10) og
+     stolte på fallbacken, men --forno-text ER definert i :root (mobilens MØRKE
+     tema: lys beige #f4ece0). Resultat: nesten hvit tekst på lys pergament i
+     Pizzatype-pillene, ☰ Meny, ⚙️ Avanserte innstillinger og nedtrekkene.
+     Fiks ved kilden: PC er alltid lys, så hele --forno-*-settet remappes til
+     samme lyse palett som mobilens «Lys»-tema (body.mob-mode.theme-light).
+     Da blir også delte, token-drevne fragmenter (modalene fra ☰ Meny og
+     Fra–til-kortene) lesbare på PC — de var tidligere lys-på-lys. */
+  --forno-bg:#f5f0e6;
+  --forno-bg-raised:#fffdf8;
+  --forno-bg-sunken:#e8dcc4;
+  --forno-border:#e0d3b5;
+  --forno-border-soft:#ece3d2;
+  --forno-text:#3f2d10;
+  --forno-text-muted:#40301a;
+  --forno-text-faint:#6d5a3a;
+  --forno-accent:#e8590c;
+  --forno-accent-soft:#fbe4d4;
+  --forno-accent-text:#c2410c;
   background:var(--pc-bg);
   font-family:var(--forno-font-body),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
+/* v0.802: Smart-plan lå som nest siste rad i ☰ Meny-nedtrekket, bak Formler og
+   Admin — usynlig for den som ikke leter. Egen, synlig inngang øverst i
+   sidepanelet i stedet (raden i menyen står også, flyttet til toppen). */
+.smart-cta{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1.5px solid #e8590c;background:#fbe4d4;cursor:pointer;transition:background .15s}
+.smart-cta:hover{background:#f7d5bc}
+.smart-cta .smart-cta-h{font-size:13px;font-weight:700;color:#c2410c}
+.smart-cta .smart-cta-sub{font-size:11px;color:#7c6a4d;margin-top:1px;line-height:1.35}
 /* flater */
 body.pc-mode .sb{background:var(--pc-bg);border-right-color:var(--pc-border)}
 body.pc-mode .mn{background:var(--pc-raised)}
@@ -688,7 +714,10 @@ body.pc-mode .mb:hover:not(.on),
 body.pc-mode .hrow:hover{background:var(--pc-border-soft)}
 body.pc-mode .mc,
 body.pc-mode .segctrl .pill{background:var(--pc-sunken)}
-body.pc-mode .segctrl .pill.on{background:var(--pc-raised)}
+/* v0.802: valgt segment var USYNLIG — regelen under overstyrte bare bakgrunnen
+   (til lys), mens «body.pc-mode .pill.on» over fortsatt satte color:#fff.
+   Hvit på nesten hvit i Gjærtype/Kjøkkenmaskin/Ovntype. Farge må med. */
+body.pc-mode .segctrl .pill.on{background:var(--pc-raised);color:var(--forno-text)}
 body.pc-mode .mb,
 body.pc-mode .brst,
 body.pc-mode input[type=date],
@@ -902,6 +931,8 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <div class="menu-wrap">
   <div class="menu-trigger" onclick="toggleSidenavMenu()"><span id="pc-menu-trigger-lbl">☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
   <div class="menu-dropdown" id="sidenav-dropdown" style="display:none">
+    <!-- v0.802: Smart-plan flyttet fra nest nederst (bak Formler/Admin) til toppen. -->
+    <div class="menu-row" id="pc-menu-smart" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
     <div class="menu-row" id="pc-menu-manual" onclick="sidenavGo(openManualModal)">📖 Bruksanvisning</div>
     <div class="menu-row" id="pc-menu-tips" onclick="sidenavGo(openTechModal)">💡 Tips</div>
     <div class="menu-row" onclick="sidenavGo(openDeigerModal)">
@@ -919,11 +950,19 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" id="pc-menu-formler" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
     <div class="menu-row" id="pc-menu-admin" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
-    <div class="menu-row" id="pc-menu-smart" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
     <div style="height:1px;background:#F2F2F7"></div>
     <div class="menu-row" id="pc-menu-logout" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
   </div>
 </div>
+
+  <!-- v0.802: synlig Smart-plan-inngang i PC-drakt (før: kun en rad langt nede i ☰ Meny). -->
+  <div class="smart-cta" id="pc-smart-cta" onclick="setLayout('mob');mobShowTab('beta')" title="Si når du har tid og når du vil spise — appen finner metoden som passer">
+    <span style="font-size:20px" aria-hidden="true">🧭</span>
+    <div style="min-width:0">
+      <div class="smart-cta-h" id="pc-smart-cta-h">Smart-plan</div>
+      <div class="smart-cta-sub" id="pc-smart-cta-sub">Finn metoden som passer tiden din</div>
+    </div>
+  </div>
 
   <div id="pc-tilbud-tips"></div>
   <div><div class="lbl">Pizzatype</div>
@@ -960,11 +999,18 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="mbtns">
       <div class="mb on" id="ms" onclick="setMode('start')" title="Beregner fremover fra starttidspunkt">▶<br><span id="pc-mode-start-lbl">Starter nå</span></div>
       <div class="mb" id="me" onclick="setMode('end')" title="Beregner bakover fra ønsket steketid">🍕<br><span id="pc-mode-end-lbl">Planlagt steketid</span></div>
+      <!-- v0.802: «Fra–til» fantes bare på mobil — nå også her. Samme motor-regel
+           som mobilen (v0.725): steketiden er ankeret, oppstarten en nedre grense. -->
+      <div class="mb" id="mw" onclick="setMode('window')" title="Oppgi tidligst mulig oppstart og ønsket steketid — appen viser metodene som får plass i vinduet">↔<br><span id="pc-mode-window-lbl">Fra–til</span></div>
     </div>
     <div id="bs">
       <div class="lbl" id="pc-bs-lbl" style="margin-bottom:4px">Når begynner du?</div>
       <div class="dtg"><input type="date" id="sd"><input type="time" id="st" value="07:30"></div>
       <div class="hint" id="pc-bs-hint">Appen regner fremover og viser når hvert steg skjer.</div>
+    </div>
+    <div id="bw" style="display:none;margin-bottom:6px">
+      <div class="lbl" id="pc-bw-lbl" style="margin-bottom:4px">Når kan du tidligst begynne?</div>
+      <div class="dtg"><input type="date" id="wd" onchange="renderWindowPicker()"><input type="time" id="wt" value="20:00" onchange="renderWindowPicker()"></div>
     </div>
     <div id="be" style="display:none">
       <div class="lbl" id="pc-be-lbl" style="margin-bottom:4px">Når vil du ha pizzaen ferdig?</div>
@@ -972,6 +1018,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
       <div class="hint" id="pc-be-hint">Appen regner bakover og viser når du må starte.</div>
       <div id="earliest-hint" style="font-size:11px;color:#e8590c;margin-top:3px"></div>
     </div>
+    <div id="pc-winres" style="display:none;margin-top:8px"></div>
   </div>
 
   <div class="divl"></div>
@@ -1237,6 +1284,12 @@ function syncStaticI18nUI(){
   st('pc-lbl-planlegging','📅 Planlegging','📅 Planning');
   st('pc-mode-start-lbl','Starter nå','Starting now'); at('ms','title','Beregner fremover fra starttidspunkt','Calculates forward from the start time');
   st('pc-mode-end-lbl','Planlagt steketid','Scheduled bake time'); at('me','title','Beregner bakover fra ønsket steketid','Calculates backward from the desired bake time');
+  // v0.802: Fra–til på PC + synlig Smart-plan-inngang
+  st('pc-mode-window-lbl','Fra–til','From–to'); at('mw','title','Oppgi tidligst mulig oppstart og ønsket steketid — appen viser metodene som får plass i vinduet','State the earliest possible start and the desired bake time — the app shows the methods that fit in the window');
+  st('pc-bw-lbl','Når kan du tidligst begynne?','When can you start at the earliest?');
+  st('pc-smart-cta-h','Smart-plan','Smart plan');
+  st('pc-smart-cta-sub','Finn metoden som passer tiden din','Find the method that fits your time');
+  at('pc-smart-cta','title','Si når du har tid og når du vil spise — appen finner metoden som passer','Tell it when you have time and when you want to eat — the app finds the method that fits');
   st('pc-bs-lbl','Når begynner du?','When do you start?'); st('pc-bs-hint','Appen regner fremover og viser når hvert steg skjer.','The app calculates forward and shows when each step happens.');
   st('pc-be-lbl','Når vil du ha pizzaen ferdig?','When do you want the pizza ready?'); st('pc-be-hint','Appen regner bakover og viser når du må starte.','The app calculates backward and shows when you need to start.');
   st('pc-menu-trigger-lbl','☰ Meny','☰ Menu');
@@ -1868,10 +1921,16 @@ function schedNow(){
 function updateEarliestHint(){
   const el=document.getElementById('earliest-hint');
   if(!el||S.mode!=='end')return;
+  // v0.802: i Fra–til er «tidligst mulig fra NÅ» feil premiss (jf. v0.726) —
+  // kandidatlista svarer på det samme, regnet fra DIN oppgitte oppstart.
+  if(S.winStart){ el.textContent=''; return; }
   const earliest=earliestBakeAt();
   el.textContent=earliest ? L('Tidligst mulig: ','Earliest possible: ')+fDT(earliest) : '';
 }
 ['sd','st','ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',sched);el.addEventListener('change',sched);}});
+// v0.802: steketid-feltene driver også Fra–til-lista på PC (jf. v0.726 på mobil).
+// renderWindowPicker() no-op-er selv utenfor Fra–til-modus.
+['ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){const f=()=>{try{renderWindowPicker();}catch(e){}};el.addEventListener('input',f);el.addEventListener('change',f);}});
 
 function buildHrows(){
   const b=document.getElementById('hrows');if(!b)return;
@@ -1977,14 +2036,30 @@ function uTempUI(){
 uHydroUI();uTempUI();
 
 function setMode(m){
-  S.mode=m;
+  // v0.802: «Fra–til» også på PC — samme regel som mobSetMode()/v0.725: steketiden
+  // er ankeret (S.mode='end'), oppstarten kun en nedre grense (S.winStart).
+  if(m==='window'){
+    S.mode='end';
+    if(!S.winStart) S.winStart=defaultWinStart();
+  }else{
+    S.mode=m;
+    S.winStart=null;
+  }
+  const um=uiMode();
   updateEarliestHint();
-  const ms=document.getElementById('ms');const me=document.getElementById('me');
-  if(ms)ms.classList.toggle('on',m==='start');
-  if(me)me.classList.toggle('on',m==='end');
-  const bs=document.getElementById('bs');const be=document.getElementById('be');
-  if(bs)bs.style.display=m==='start'?'block':'none';
-  if(be)be.style.display=m==='end'?'block':'none';
+  const ms=document.getElementById('ms');const me=document.getElementById('me');const mw=document.getElementById('mw');
+  if(ms)ms.classList.toggle('on',um==='start');
+  if(me)me.classList.toggle('on',um==='end');
+  if(mw)mw.classList.toggle('on',um==='window');
+  const bs=document.getElementById('bs');const be=document.getElementById('be');const bw=document.getElementById('bw');
+  if(bs)bs.style.display=um==='start'?'block':'none';
+  if(be)be.style.display=(um==='end'||um==='window')?'block':'none';
+  if(bw)bw.style.display=um==='window'?'block':'none';
+  // I Fra–til svarer kandidatlista på «når må du starte» — bakover-hintet ville sagt det dobbelt.
+  const beh=document.getElementById('pc-be-hint');
+  if(beh)beh.style.display=um==='window'?'none':'block';
+  if(um==='window'){ syncWinFields(); renderWindowPicker(); }
+  else{ const wr=document.getElementById('pc-winres'); if(wr){ wr.style.display='none'; wr.innerHTML=''; } }
   schedNow();
 }
 function doReset(){
@@ -6835,7 +6910,13 @@ function setLayout(mode){
     const tabId=onTab?onTab.id.replace('mob-tab-',''):'settings';
     try{ mobShowTab(tabId); }catch(e){ try{ wizEnterSettingsTab(); }catch(_){} }
   }
-  else{gen();}
+  else{
+    // v0.802: PC-sidepanelet er statisk HTML og ble aldri synket ved bytte FRA
+    // mobil — modusknappene (og nå Fra–til-feltene) kunne vise en annen
+    // tilstand enn planen. Samme speiling som mobil-grenen gjør.
+    try{ syncDesktopControls(); }catch(e){}
+    try{ setMode(uiMode()); }catch(e){ gen(); }
+  }
 }
 
 // ===== INNLOGGING (navn + 4-sifret PIN, delt via Netlify Blobs) =====
@@ -7401,7 +7482,7 @@ async function loadConfigThenStart(){
     if(restored){
       // Speil oppsettet inn i piller/glidebrytere/modus — samme sync openBake bruker.
       if(targetLayout==='mob'){ syncMobControls(); mobSetMode(uiMode()); }
-      else { syncDesktopControls(); setMode(S.mode); }
+      else { syncDesktopControls(); setMode(uiMode()); }  // v0.802: uiMode() — et gjenopprettet Fra–til-oppsett skal lande i Fra–til, ikke i ren steketid
     }
     // Innstillinger-fanen er allerede markert aktiv i selve HTML-en fra start (statisk klasse),
     // så mobShowTab('settings') kalles aldri automatisk ved første sideinnlasting — uten dette
@@ -7961,6 +8042,17 @@ function ensureFeasibleBakeTime(){
 // «S.mode==='end'?», og pizzaen blir ferdig når du faktisk vil spise.
 // S.winStart (ISO-lokal 'YYYY-MM-DDTHH:MM' eller null) er UI-flagget.
 function uiMode(){ return S.winStart ? 'window' : S.mode; }
+// v0.802: Fra–til finnes nå i begge layouter, med hvert sitt sett felter
+// (mobil: mob-wd/mob-wt/mob-ed/mob-et/mob-winres — PC: wd/wt/ed/et/pc-winres).
+// Én oppslagsfunksjon, så resten av Fra–til-koden er layout-blind.
+function winEls(){
+  const mobEl=document.getElementById('mob-layout');
+  const mob=mobEl&&mobEl.classList.contains('active');
+  const g=id=>document.getElementById(id);
+  return mob
+    ? {wd:g('mob-wd'), wt:g('mob-wt'), ed:g('mob-ed'), et:g('mob-et'), res:g('mob-winres')}
+    : {wd:g('wd'),     wt:g('wt'),     ed:g('ed'),     et:g('et'),     res:g('pc-winres')};
+}
 function mobSetMode(m){
   if(m==='window'){
     S.mode='end';
@@ -8004,12 +8096,12 @@ function defaultWinStart(){
 function syncWinFields(){
   if(!S.winStart) return;
   const [d,t]=S.winStart.split('T');
-  const dEl=document.getElementById('mob-wd'), tEl=document.getElementById('mob-wt');
+  const {wd:dEl, wt:tEl}=winEls();
   if(dEl&&d) dEl.value=d;
   if(tEl&&t) tEl.value=t;
 }
 function readWinStart(){
-  const dEl=document.getElementById('mob-wd'), tEl=document.getElementById('mob-wt');
+  const {wd:dEl, wt:tEl}=winEls();
   if(!dEl||!dEl.value) return null;
   return dEl.value+'T'+((tEl&&tEl.value)||'20:00');
 }
@@ -8066,12 +8158,11 @@ function winValText(method,val){
   return L(`${val} timer`,`${val} hours`);   // Hurtigdeig: tallet ER metodens tid
 }
 function renderWindowPicker(){
-  const host=document.getElementById('mob-winres');
+  const {ed:dEl, et:tEl, res:host}=winEls();
   if(!host) return;
   if(uiMode()!=='window'){ host.style.display='none'; host.innerHTML=''; return; }
   host.style.display='block';
   S.winStart=readWinStart()||S.winStart;
-  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
   const bakeAt = (dEl&&dEl.value) ? new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')) : null;
   const startAt = S.winStart ? new Date(S.winStart) : null;
   const box=(inner,tone)=>`<div style="border:1px solid ${tone||'var(--forno-border-soft)'};background:var(--forno-bg);border-radius:9px;padding:8px 10px;font-size:11.5px;color:var(--forno-text-muted);line-height:1.5">${inner}</div>`;
@@ -8301,6 +8392,18 @@ function applyWindowCandidate(method,key,val){
   // ikke den forrige.
   try{ melkurvAutobytt(); }catch(e){}
   window._planChosen=true;
+  // v0.802: Fra–til finnes nå også på PC — synk kontrollene i layouten du står i.
+  const mobEl=document.getElementById('mob-layout');
+  const isMob=mobEl&&mobEl.classList.contains('active');
+  if(!isMob){
+    // syncDesktopControls() rører ikke dato-/tidsfeltene, så v0.728-fella under
+    // (steketiden overskrives) gjelder ikke her.
+    try{ syncDesktopControls(); }catch(e){}
+    renderWindowPicker();
+    clearTimeout(AT);
+    gen();
+    return;
+  }
   try{ mobMethodCards(); }catch(e){}
   try{ mobBuildHrows(); }catch(e){}
   try{ mobBuildKrows(); }catch(e){}
@@ -8337,7 +8440,7 @@ function applyWindowShiftStart(method,key,val,shortMin){
   applyWindowCandidate(method,key,val);
 }
 function applyWindowShiftBake(method,key,val,shortMin){
-  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  const {ed:dEl, et:tEl}=winEls();
   if(dEl&&dEl.value&&tEl){
     const nb=new Date(new Date(dEl.value+'T'+(tEl.value||'18:00')).getTime()+shortMin*60000);
     dEl.value=fd(nb);
@@ -8351,7 +8454,7 @@ function applyWindowCandidateEarly(method,key,val,spanMin,startMs){
   const startAt=startMs?new Date(startMs):(S.winStart?new Date(S.winStart):null);
   if(startAt&&!isNaN(startAt.getTime())){
     const newBake=new Date(startAt.getTime()+spanMin*60000);
-    const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+    const {ed:dEl, et:tEl}=winEls();
     if(dEl) dEl.value=fd(newBake);
     if(tEl) tEl.value=String(newBake.getHours()).padStart(2,'0')+':'+String(newBake.getMinutes()).padStart(2,'0');
   }
@@ -10215,7 +10318,7 @@ function openBake(id){
     const dEl=document.getElementById(p+'d'), tEl=document.getElementById(p+'t');
     if(dEl)dEl.value=ds; if(tEl)tEl.value=ts;
     syncDesktopControls();
-    setMode(S.mode);
+    setMode(uiMode());  // v0.802: som mobil-grenen — en deig lagret i Fra–til åpnes i Fra–til
     showTab('plan', document.querySelector('.topnav .tab'));
     clearTimeout(AT);
     gen();
