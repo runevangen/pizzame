@@ -8607,6 +8607,12 @@ def _atferd_7(page, results):
       ut.pizzatidChip = !!chip && /openPizzatidModal/.test(chip.getAttribute('onclick')||'')
                      && !!chip.closest('#mob-beta');
       ut.subTekst = (g('mob-beta-sub')||{}).textContent||'';
+      // v0.807: inngangskortet hadde samme utdaterte paastand («si naar du har
+      // tid») og skal si NOEYAKTIG det samme som skjermens foerste setning —
+      // to formuleringer av samme loefte driver fra hverandre, det har vi maalt.
+      ut.kortTekst = (g('wiz-entry-a-sub')||{}).textContent||'';
+      ut.kortLikSkjerm = ut.subTekst.startsWith(ut.kortTekst.replace(/\.$/,''));
+      ut.kortUtenGammel = !/har tid/.test(ut.kortTekst);
       // 2) Metodefilteret helt ute av Smart-plan, og fortsatt i én kopi.
       ut.metodeIBeta   = !!document.querySelector('#mob-beta #mob-beta-methods-rows')
                       || !!document.querySelector('#mob-beta #mob-beta-methods-lenke');
@@ -8662,6 +8668,8 @@ def _atferd_7(page, results):
       and r166.get('pizzatidMer') is True and r166.get('pizzatidPc') is True
       and r166.get('pizzatidChip') is True
       and 'Stemmer melet og tidene dine, stemmer planen' in (r166.get('subTekst') or '')
+      and r166.get('kortLikSkjerm') is True
+      and r166.get('kortUtenGammel') is True
       # Metodefilteret helt ute av Smart-plan, fortsatt én kopi.
       and r166.get('metodeIBeta') is False
       and r166.get('metodeLister') == 1

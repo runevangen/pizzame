@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.807",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Inngangsskjermens Smart-plan-kort sa «Si når du har tid og når du vil spise» — men tiden oppgir du ikke der lenger; appen leser den fra «Når er du ledig?». Kortet sier nå nøyaktig det samme som Smart-plan-skjermens første setning, så de to aldri kan love forskjellige ting."
+    ],
+    "changes_en": [
+      "The entry screen's Smart plan card said \"Tell it when you have time and when you want to eat\" — but you no longer state your time there; the app reads it from \"When are you free?\". The card now says exactly the same as the Smart plan screen's first sentence, so the two can never promise different things."
+    ]
+  },
+  {
     "v": "0.806",
     "d": "august 2026",
     "d_en": "August 2026",
