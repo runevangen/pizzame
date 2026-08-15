@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.809",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Ledig tid»-raden i Smart-plan ble for rotete med klokkeslett — «man 6:30–8 +1 · tir–fre 16–22 · …» er et regnestykke, ikke en orientering. Nå oversettes periodene til dagsdeler: «man–fre kveld · helg hele dagen», eller «man–fre morgen og kveld» når du har to økter.",
+      "Passer ikke uken din i to grupper, sier raden heller «egne tider · 7 dager» enn å bli en remse igjen. De nøyaktige klokkeslettene står i boksen, ett trykk unna.",
+      "Standardteksten er kortet til bare «standardoppsettet» — raden er allerede en dør, oppfordringen var dobbel. Pausen vinner fortsatt over alt."
+    ],
+    "changes_en": [
+      "The \"Free time\" row in Smart plan got too cluttered with clock times — \"Mon 6:30–8 +1 · Tue–Fri 16–22 · …\" is arithmetic, not orientation. Periods now translate to parts of the day: \"Mon–Fri evening · weekend all day\", or \"Mon–Fri morning and evening\" when you have two sessions.",
+      "If your week does not fit in two groups, the row says \"custom times · 7 days\" rather than becoming a strip again. The exact times live in the box, one tap away.",
+      "The default label is shortened to just \"the default setup\" — the row is already a door, the prompt was doubled. The pause still wins over everything."
+    ]
+  },
+  {
     "v": "0.808",
     "d": "august 2026",
     "d_en": "August 2026",

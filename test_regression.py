@@ -8613,17 +8613,26 @@ def _atferd_7(page, results):
       const chip=g('beta-grunnlag-tid');
       ut.pizzatidChip = !!chip && /openPizzatidModal/.test(chip.getAttribute('onclick')||'')
                      && !!chip.closest('#mob-beta');
-      const svSched=window._pizzatidSchedule;
+const svSched=window._pizzatidSchedule;
       const svOff=(()=>{try{return localStorage.getItem('pizzatidOffUntil');}catch(e){return null;}})();
       try{ localStorage.removeItem('pizzatidOffUntil'); }catch(e){}
       window._pizzatidSchedule=defaultPizzatidSchedule();
       ut.sumStandard=pizzatidSammendrag();
+      // v0.809 (variant 1): dagsdeler, ikke klokkeslett. Enkel uke -> to
+      // grupper med helg-navn; morgen+kveld alle hverdager -> «morgen og
+      // kveld»; passer ikke uken i to grupper -> aerlig fallback med antall.
       const hv=[['16:00','22:00']], he=[['10:00','22:00']];
       window._pizzatidSchedule={mon:hv,tue:hv,wed:hv,thu:hv,fri:hv,sat:he,sun:he};
       ut.sumEgne=pizzatidSammendrag();
-      // to perioder på én dag + halvtime: formatering maa overleve begge
-      window._pizzatidSchedule={mon:[['06:30','08:00'],['16:00','22:00']],tue:hv,wed:hv,thu:hv,fri:hv,sat:he,sun:he};
-      ut.sumFlere=pizzatidSammendrag();
+      const mk=[['06:30','08:00'],['16:00','22:00']];
+      window._pizzatidSchedule={mon:mk,tue:mk,wed:mk,thu:mk,fri:mk,sat:he,sun:he};
+      ut.sumMorgenKveld=pizzatidSammendrag();
+      window._pizzatidSchedule={mon:mk,tue:hv,wed:hv,thu:hv,fri:hv,sat:he,sun:he};
+      ut.sumFallback=pizzatidSammendrag();
+      // dagtid-delen (10-16) maa ogsaa finnes - grensen mot kveld ligger paa 16
+      const dg=[['12:00','15:00']];
+      window._pizzatidSchedule={mon:hv,tue:hv,wed:hv,thu:hv,fri:hv,sat:dg,sun:dg};
+      ut.sumDagtid=pizzatidSammendrag();
       try{ localStorage.setItem('pizzatidOffUntil', String(Date.now()+3600000)); }catch(e){}
       ut.sumPause=pizzatidSammendrag();
       try{ svOff===null ? localStorage.removeItem('pizzatidOffUntil')
@@ -8691,9 +8700,11 @@ def _atferd_7(page, results):
       and r166.get('varselAapner') == 'flex'
       and r166.get('pizzatidMer') is True and r166.get('pizzatidPc') is True
       and r166.get('pizzatidChip') is True
-      and 'standard' in (r166.get('sumStandard') or '')
-      and r166.get('sumEgne') == 'man–fre 16–22 · lør–søn 10–22'
-      and r166.get('sumFlere') == 'man 6:30–8 +1 · tir–fre 16–22 · lør–søn 10–22'
+      and r166.get('sumStandard') == 'standardoppsettet'
+      and r166.get('sumEgne') == 'man–fre kveld · helg hele dagen'
+      and r166.get('sumMorgenKveld') == 'man–fre morgen og kveld · helg hele dagen'
+      and r166.get('sumFallback') == 'egne tider · 7 dager'
+      and r166.get('sumDagtid') == 'man–fre kveld · helg dag'
       and 'pause' in (r166.get('sumPause') or '')
       and 'Stemmer melet og tidene dine, stemmer planen' in (r166.get('subTekst') or '')
       and r166.get('kortLikSkjerm') is True

@@ -4175,17 +4175,32 @@ function pizzatidSammendrag(){
   }
   const sched=window._pizzatidSchedule||defaultPizzatidSchedule();
   if(JSON.stringify(sched)===JSON.stringify(defaultPizzatidSchedule()))
-    return L('standardoppsettet — trykk og sett dine tider','the default — tap to set your times');
+    return L('standardoppsettet','the default setup');
+  // v0.809: klokkeslett ble dagsdeler. Første utgave ramset opp tidene
+  // («man 6:30–8 +1 · tir–fre 16–22 · …») og ble meldt inn som rotete — raden
+  // skal orientere, presisjonen bor i boksen ett trykk unna. Nå: hver periode
+  // blir morgen (før 10), dag (10–16) eller kveld (etter 16); spenner den 12
+  // timer eller mer, er dagen «hele dagen». Og passer ikke uken i TO grupper,
+  // sier raden heller «egne tider · N dager» enn å bli en remse igjen.
   const nokler=['mon','tue','wed','thu','fri','sat','sun'];
   const navn=window._lang==='en'
     ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
     : ['man','tir','ons','tor','fre','lør','søn'];
-  const tid=t=>String(t).replace(/:00$/,'').replace(/^0/,'');
+  const delAv=p=>{
+    const fra=timeStrToMin(p[0]), til=timeStrToMin(p[1]);
+    if(til-fra>=12*60) return 'hel';
+    if(fra<10*60) return 'morgen';
+    if(fra<16*60) return 'dag';
+    return 'kveld';
+  };
+  const ord={morgen:L('morgen','morning'), dag:L('dag','daytime'), kveld:L('kveld','evening')};
   const dag=k=>{
     const per=(sched[k]||[]).filter(Boolean);
     if(!per.length) return '';
-    const forste=`${tid(per[0][0])}–${tid(per[0][1])}`;
-    return per.length>1 ? `${forste} +${per.length-1}` : forste;
+    const deler=[...new Set(per.map(delAv))];
+    if(deler.includes('hel')||deler.length>=3) return L('hele dagen','all day');
+    return ['morgen','dag','kveld'].filter(x=>deler.includes(x)).map(x=>ord[x])
+      .join(L(' og ',' and '));
   };
   const grupper=[];
   nokler.forEach((k,i)=>{
@@ -4193,10 +4208,17 @@ function pizzatidSammendrag(){
     if(sist && sist.v===v) sist.til=i;
     else grupper.push({fra:i, til:i, v});
   });
-  const deler=grupper.filter(g=>g.v).map(g=>
-    (g.fra===g.til?navn[g.fra]:`${navn[g.fra]}–${navn[g.til]}`)+' '+g.v);
-  if(!deler.length) return L('ingen tider satt — trykk og sett opp uken din','no times set — tap to set up your week');
-  return deler.join(' · ');
+  const med=grupper.filter(g=>g.v);
+  if(!med.length) return L('ingen tider satt','no times set');
+  if(med.length>2){
+    const n=nokler.filter(k=>(sched[k]||[]).filter(Boolean).length).length;
+    return L(`egne tider · ${n} dager`,`custom times · ${n} days`);
+  }
+  return med.map(g=>{
+    const d=(g.fra===5&&g.til===6) ? L('helg','weekend')
+          : g.fra===g.til ? navn[g.fra] : `${navn[g.fra]}–${navn[g.til]}`;
+    return d+' '+g.v;
+  }).join(' · ');
 }
 function renderGrunnlag(){
   const e=document.getElementById('beta-grunnlag-tid-verdi');
