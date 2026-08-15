@@ -1405,7 +1405,10 @@ function syncStaticI18nUI(){
   // Smart-plan tab (tidl. «Beta»)
   st('mob-beta-h','🧭 Smart-plan','🧭 Smart plan');
   st('mob-beta-sub','Si når du vil spise — appen prøver alle metodene og finner den som passer best i din uke. Stemmer melet og tidene dine, stemmer planen.','Say when you want to eat — the app tries every method and finds the one that fits your week best. If your flour and your times are right, the plan is right.');
-  st('beta-chip-tid','🗓️ Når er du ledig?','🗓️ When are you free?');
+  st('beta-grunnlag-l','Søket bruker det appen vet om deg','The search uses what the app knows about you');
+  st('beta-grunnlag-mel-navn','Melet mitt','My flour');
+  st('beta-grunnlag-tid-navn','Ledig tid','Free time');
+  try{ renderGrunnlag(); }catch(e){}
   // v0.799: «her» ble feil da boksen flyttet ut av Smart-plan — nå navngis
   // begge stedene i stedet for å peke på skjermen du tilfeldigvis står i.
   st('pizzatid-modal-tittel','🗓️ Når er du ledig?','🗓️ When are you free?');
@@ -1782,9 +1785,15 @@ function renderMelkurv(){
   const n=melkurvValgt().length, alle=melEkte().length;
   const tekst=L('🌾 Melet mitt','🌾 My flour')
     + (melkurvErDelmengde()?L(` · ${n} av ${alle}`,` · ${n} of ${alle}`):L(' · alle',' · all'));
-  ['melkurv-lbl','melkurv-lenke-lbl','mer-tilbud-mel','beta-chip-mel'].forEach(id=>{
+  ['melkurv-lbl','melkurv-lenke-lbl','mer-tilbud-mel'].forEach(id=>{
     const e=document.getElementById(id); if(e) e.textContent=tekst;
   });
+  // v0.808: grunnlagsraden i Smart-plan viser bare VERDIEN — navnet står fast
+  // i raden. Samme tall som etikettene over, fra samme utregning.
+  const gv=document.getElementById('beta-grunnlag-mel-verdi');
+  if(gv) gv.textContent=melkurvErDelmengde()
+    ? L(`${n} av ${alle} valgt`,`${n} of ${alle} selected`)
+    : L('alle','all');
   const help=document.getElementById('melkurv-help');
   if(help) help.textContent=L('Huk av melet du har hjemme. Ingen mel forsvinner — appen sorterer lista og foreslår ut fra det du faktisk kan bake med.',
                              'Tick the flours you have at home. No flour disappears — the app sorts the list and makes suggestions based on what you can actually bake with.');
@@ -4152,6 +4161,47 @@ function defaultPizzatidSchedule(){
   const weekend=()=>[['06:00','23:00']];
   return {mon:weekday(),tue:weekday(),wed:weekday(),thu:weekday(),fri:weekday(),sat:weekend(),sun:weekend()};
 }
+
+// ===== GRUNNLAGSRADENE I SMART-PLAN (v0.808, skisse B) =====
+// Uken din, oppsummert for «Ledig tid»-raden. Ærlighetsrekkefølge: pausen
+// vinner over alt — en rad som sier «man–fre 16–22» mens ledig tid er slått
+// av, lyver om hva søket faktisk bruker. Deretter: står du på standard-
+// oppsettet, sier raden det, i stedet for å ramse opp tider du aldri har
+// valgt. Ellers: faktiske tider, med sammenhengende like dager slått sammen.
+function pizzatidSammendrag(){
+  if(pizzatidIsOff()){
+    return L(`på pause til ${fDT(new Date(pizzatidOffUntil()))}`,
+             `paused until ${fDT(new Date(pizzatidOffUntil()))}`);
+  }
+  const sched=window._pizzatidSchedule||defaultPizzatidSchedule();
+  if(JSON.stringify(sched)===JSON.stringify(defaultPizzatidSchedule()))
+    return L('standardoppsettet — trykk og sett dine tider','the default — tap to set your times');
+  const nokler=['mon','tue','wed','thu','fri','sat','sun'];
+  const navn=window._lang==='en'
+    ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+    : ['man','tir','ons','tor','fre','lør','søn'];
+  const tid=t=>String(t).replace(/:00$/,'').replace(/^0/,'');
+  const dag=k=>{
+    const per=(sched[k]||[]).filter(Boolean);
+    if(!per.length) return '';
+    const forste=`${tid(per[0][0])}–${tid(per[0][1])}`;
+    return per.length>1 ? `${forste} +${per.length-1}` : forste;
+  };
+  const grupper=[];
+  nokler.forEach((k,i)=>{
+    const v=dag(k), sist=grupper[grupper.length-1];
+    if(sist && sist.v===v) sist.til=i;
+    else grupper.push({fra:i, til:i, v});
+  });
+  const deler=grupper.filter(g=>g.v).map(g=>
+    (g.fra===g.til?navn[g.fra]:`${navn[g.fra]}–${navn[g.til]}`)+' '+g.v);
+  if(!deler.length) return L('ingen tider satt — trykk og sett opp uken din','no times set — tap to set up your week');
+  return deler.join(' · ');
+}
+function renderGrunnlag(){
+  const e=document.getElementById('beta-grunnlag-tid-verdi');
+  if(e) e.textContent=pizzatidSammendrag();
+}
 async function loadPizzatidSchedule(){
   try{
     const u=JSON.parse(localStorage.getItem('pizzaUser'));
@@ -4181,6 +4231,7 @@ function pizzatidChanged(){
   if(document.body.classList.contains('mob-mode')){ try{ mobGen(); }catch(e){} }
   else { try{ schedNow(); }catch(e){} }
   try{ renderPizzatidStatus(); }catch(e){}
+  try{ renderGrunnlag(); }catch(e){}
 }
 function timeStrToMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
 // ===== v0.735: midlertidig pause i «ledig tid» =====
@@ -10936,9 +10987,19 @@ document.addEventListener('change', firstInteractionCheck, true);
         <!-- v0.806: søkets to skjulte inndata gjort synlige, som dører — ikke kopier.
              Melbrikken får teksten sin fra renderMelkurv, samme kilde som boksen og
              alle andre «Melet mitt»-etiketter, så den kan aldri si noe annet enn dem. -->
-        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-          <span id="beta-chip-mel" onclick="openTilbudModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTilbudModal()}" style="display:inline-flex;align-items:center;padding:6px 11px;border:1px solid var(--forno-border);border-radius:999px;background:var(--forno-bg-raised);font-size:11.5px;font-weight:600;color:var(--forno-accent-text);cursor:pointer">🌾 Melet mitt</span>
-          <span id="beta-chip-tid" onclick="openPizzatidModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPizzatidModal()}" style="display:inline-flex;align-items:center;padding:6px 11px;border:1px solid var(--forno-border);border-radius:999px;background:var(--forno-bg-raised);font-size:11.5px;font-weight:600;color:var(--forno-accent-text);cursor:pointer">🗓️ Når er du ledig?</span>
+        <!-- v0.808 (skisse B): opplysninger med dør, ikke knapper. Verdiene er levende:
+             melraden fylles av renderMelkurv (samme kilde som boksen), tidsraden av
+             renderGrunnlag/pizzatidSammendrag — og pausen vinner over tidene der. -->
+        <div style="margin-top:9px;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;overflow:hidden">
+          <div id="beta-grunnlag-l" style="font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-text-faint);padding:8px 11px 4px;background:var(--forno-bg-raised)">Søket bruker det appen vet om deg</div>
+          <div id="beta-grunnlag-mel" onclick="openTilbudModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTilbudModal()}" style="display:flex;align-items:center;gap:9px;padding:10px 11px;background:var(--forno-bg-raised);border-top:1px solid var(--forno-border-soft,#e8e5e0);cursor:pointer">
+            <span aria-hidden="true">🌾</span><span id="beta-grunnlag-mel-navn" style="font-size:12.5px;font-weight:600;color:var(--forno-text);white-space:nowrap">Melet mitt</span>
+            <span id="beta-grunnlag-mel-verdi" style="margin-left:auto;font-size:11px;color:var(--forno-text-faint);text-align:right">alle</span><span style="color:var(--forno-text-faint);font-size:13px">›</span>
+          </div>
+          <div id="beta-grunnlag-tid" onclick="openPizzatidModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPizzatidModal()}" style="display:flex;align-items:center;gap:9px;padding:10px 11px;background:var(--forno-bg-raised);border-top:1px solid var(--forno-border-soft,#e8e5e0);cursor:pointer">
+            <span aria-hidden="true">🗓️</span><span id="beta-grunnlag-tid-navn" style="font-size:12.5px;font-weight:600;color:var(--forno-text);white-space:nowrap">Ledig tid</span>
+            <span id="beta-grunnlag-tid-verdi" style="margin-left:auto;font-size:11px;color:var(--forno-text-faint);text-align:right"></span><span style="color:var(--forno-text-faint);font-size:13px">›</span>
+          </div>
         </div>
       </div>
 

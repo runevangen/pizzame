@@ -8406,19 +8406,22 @@ def _atferd_7(page, results):
       });
       ut.inngangPc       = peker('pc-menu-tilbud');
       ut.inngangMelLenke = peker('melkurv-lenke');
-      // v0.806: melbrikken i Smart-plan er den fjerde doera til samme boks.
-      ut.inngangMelChip  = peker('beta-chip-mel');
+      // v0.808 (skisse B): melRADEN i Smart-plan er den fjerde doera til samme
+      // boks, og verdispennet dens maa baere SAMME tall som boksens etikett —
+      // det er ikke en fjerde tekstkopi, det er samme utregning vist to steder.
+      ut.inngangMelChip  = peker('beta-grunnlag-mel');
       // v0.799: metodefilteret har ingen lenke i Smart-plan lenger - det gjelder
       // Fra-til like mye, og bor derfor bare under Mer.
       ut.ingenMetLenke = !g('mob-beta-methods-lenke');
       // Etikettene skal si det samme, foer og etter en endring.
-      const les=()=>({mel:[g('melkurv-lbl'),g('melkurv-lenke-lbl'),g('mer-tilbud-mel'),g('beta-chip-mel')].map(e=>e&&e.textContent),
+      const les=()=>({mel:[g('melkurv-lbl'),g('melkurv-lenke-lbl'),g('mer-tilbud-mel')].map(e=>e&&e.textContent),
                       met:[g('mob-beta-methods-lbl'),g('mer-tilbud-metoder')].map(e=>e&&e.textContent)});
       const enige=o=>o.mel.every(t=>t===o.mel[0]) && o.met.every(t=>t===o.met[0]);
       melEkte().forEach(f=>{ if(f.v!=='dallari' && harMel(f.v)) toggleMelkurv(f.v); });
       toggleBetaMethod('mania');
       const etter=les();
       ut.enigeEtter = enige(etter);
+      ut.melVerdi = (g('beta-grunnlag-mel-verdi')||{}).textContent||'';
       ut.melTekst = etter.mel[0];
       ut.metTekst = etter.met[0];
       closeTilbudModal();
@@ -8447,6 +8450,7 @@ def _atferd_7(page, results):
       and r164.get('inngangPc') is True
       and r164.get('inngangMelLenke') is True
       and r164.get('inngangMelChip') is True
+      and '1 av 10' in (r164.get('melVerdi') or '')
       and r164.get('ingenMetLenke') is True
       # Og alle etikettene sier det samme tallet.
       and r164.get('enigeEtter') is True
@@ -8601,11 +8605,31 @@ def _atferd_7(page, results):
       ut.varselAapner = g('pizzatid-modal').style.display;
       closePizzatidModal();
       ut.pizzatidMer = !!g('mer-tilbud-pizzatid'); ut.pizzatidPc = !!g('pc-menu-pizzatid');
-      // v0.806: brikken i Smart-plan-hodet er tredje doer til samme boks, og
-      // underteksten navngir soekets to skjulte inndata med begrunnelsen.
-      const chip=g('beta-chip-tid');
+      // v0.808 (skisse B): tidsRADEN i Smart-plan-hodet er tredje doer til samme
+      // boks — og verdien dens maa vaere aerlig i alle tre tilstander:
+      // standardoppsett sier «standard», egne tider oppsummeres med dagene
+      // slaatt sammen, og PAUSEN vinner over alt (en rad som ramser opp tider
+      // mens ledig tid er av, lyver om hva soeket bruker).
+      const chip=g('beta-grunnlag-tid');
       ut.pizzatidChip = !!chip && /openPizzatidModal/.test(chip.getAttribute('onclick')||'')
                      && !!chip.closest('#mob-beta');
+      const svSched=window._pizzatidSchedule;
+      const svOff=(()=>{try{return localStorage.getItem('pizzatidOffUntil');}catch(e){return null;}})();
+      try{ localStorage.removeItem('pizzatidOffUntil'); }catch(e){}
+      window._pizzatidSchedule=defaultPizzatidSchedule();
+      ut.sumStandard=pizzatidSammendrag();
+      const hv=[['16:00','22:00']], he=[['10:00','22:00']];
+      window._pizzatidSchedule={mon:hv,tue:hv,wed:hv,thu:hv,fri:hv,sat:he,sun:he};
+      ut.sumEgne=pizzatidSammendrag();
+      // to perioder på én dag + halvtime: formatering maa overleve begge
+      window._pizzatidSchedule={mon:[['06:30','08:00'],['16:00','22:00']],tue:hv,wed:hv,thu:hv,fri:hv,sat:he,sun:he};
+      ut.sumFlere=pizzatidSammendrag();
+      try{ localStorage.setItem('pizzatidOffUntil', String(Date.now()+3600000)); }catch(e){}
+      ut.sumPause=pizzatidSammendrag();
+      try{ svOff===null ? localStorage.removeItem('pizzatidOffUntil')
+                        : localStorage.setItem('pizzatidOffUntil', svOff); }catch(e){}
+      window._pizzatidSchedule=svSched;
+      try{ renderGrunnlag(); }catch(e){}
       ut.subTekst = (g('mob-beta-sub')||{}).textContent||'';
       // v0.807: inngangskortet hadde samme utdaterte paastand («si naar du har
       // tid») og skal si NOEYAKTIG det samme som skjermens foerste setning —
@@ -8667,6 +8691,10 @@ def _atferd_7(page, results):
       and r166.get('varselAapner') == 'flex'
       and r166.get('pizzatidMer') is True and r166.get('pizzatidPc') is True
       and r166.get('pizzatidChip') is True
+      and 'standard' in (r166.get('sumStandard') or '')
+      and r166.get('sumEgne') == 'man–fre 16–22 · lør–søn 10–22'
+      and r166.get('sumFlere') == 'man 6:30–8 +1 · tir–fre 16–22 · lør–søn 10–22'
+      and 'pause' in (r166.get('sumPause') or '')
       and 'Stemmer melet og tidene dine, stemmer planen' in (r166.get('subTekst') or '')
       and r166.get('kortLikSkjerm') is True
       and r166.get('kortUtenGammel') is True

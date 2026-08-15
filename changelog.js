@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.808",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Brikkene under Smart-plan er byttet med to rader: «Søket bruker det appen vet om deg». De gamle brikkene hadde to svakheter — tidsbrikken stilte et spørsmål i stedet for å vise svaret ditt, og begge så ut som handlingsknapper.",
+      "Radene viser levende tilstand for begge: «Melet mitt — 3 av 10 valgt» og «Ledig tid — man–fre 16–22 · lør–søn 10–22», med like dager slått sammen. Trykk på en rad for å endre.",
+      "Tidsraden er ærlig i alle tilstander: står du på standardoppsettet, sier den det i stedet for å ramse opp tider du aldri har valgt — og har du satt ledig tid på pause, vinner pausen over alt annet."
+    ],
+    "changes_en": [
+      "The chips under Smart plan have been replaced with two rows: \"The search uses what the app knows about you\". The old chips had two weaknesses — the time chip asked a question instead of showing your answer, and both looked like action buttons.",
+      "The rows show live state for both: \"My flour — 3 of 10 selected\" and \"Free time — Mon–Fri 16–22 · Sat–Sun 10–22\", with equal days merged. Tap a row to change it.",
+      "The time row is honest in every state: if you are on the default setup it says so instead of listing times you never chose — and if free time is paused, the pause wins over everything else."
+    ]
+  },
+  {
     "v": "0.807",
     "d": "august 2026",
     "d_en": "August 2026",
