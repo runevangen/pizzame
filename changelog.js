@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.803",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nytt mel i lista: Ramlösa Kvarn Tipo 00 (Finax) — siktet svensk vårvete med 12,5 % protein, selges blant annet hos Coop.",
+      "Produsenten oppgir ikke W-verdi, så gjæringstiden (10–36 t) og hydreringen (58–70 %) er anslått av oss og merket slik i appen. Samme protein som Caputo Pizzeria, men uten dokumentert styrke settes taket forsiktig til 36 timer — ikke Pizzerias 48."
+    ],
+    "changes_en": [
+      "New flour in the list: Ramlösa Kvarn Tipo 00 (Finax) — sifted Swedish spring wheat with 12.5% protein, sold at Coop among others.",
+      "The manufacturer publishes no W value, so the fermentation range (10–36h) and hydration (58–70%) are our estimates and marked as such in the app. Same protein as Caputo Pizzeria, but without documented strength the ceiling is set cautiously at 36 hours — not Pizzeria's 48."
+    ]
+  },
+  {
     "v": "0.802",
     "d": "august 2026",
     "d_en": "August 2026",

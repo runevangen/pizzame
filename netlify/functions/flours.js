@@ -19,6 +19,7 @@ const SEED_FLOURS = [
   { v: 'doppio_zero', t: 'Caputo Doppio Zero', protein: '11%', w: '220–230', hydro: '60–70%', hydroRange: { mn: 60, mx: 70 }, ferm: { mn: 6, mx: 24 } },
   { v: 'regal_pizzamel', t: 'Regal Pizzamel', protein: '11%', w: '–', hydro: '60–68%', hydroRange: { mn: 60, mx: 68 }, ferm: { mn: 6, mx: 24 }, estimated: true },
   { v: 'vanlig_hvetemel', t: 'Vanlig hvetemel', protein: '11,2%', w: '–', hydro: '55–63%', hydroRange: { mn: 55, mx: 63 }, ferm: { mn: 4, mx: 10 }, estimated: true },
+  { v: 'ramlosa_tipo00', t: 'Ramlösa Kvarn Tipo 00', protein: '12,5%', w: '–', hydro: '58–70%', hydroRange: { mn: 58, mx: 70 }, ferm: { mn: 10, mx: 36 }, estimated: true },
   { v: 'pizzeria', t: 'Caputo Pizzeria', protein: '12,5%', w: '260–270', hydro: '60–80%', hydroRange: { mn: 60, mx: 80 }, ferm: { mn: 12, mx: 48 } },
   { v: 'nuvola', t: 'Caputo Nuvola', protein: '12,5%', w: '260–280', hydro: '60–75%', hydroRange: { mn: 60, mx: 75 }, ferm: { mn: 12, mx: 48 } },
   { v: 'regal_tipo00', t: 'Regal Tipo 00', protein: '13%', w: '–', hydro: '60–75%', hydroRange: { mn: 60, mx: 75 }, ferm: { mn: 12, mx: 48 }, estimated: true },

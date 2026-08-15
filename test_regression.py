@@ -2805,7 +2805,7 @@ def _atferd_4(page, results):
         // editor
         window._adminPassword='x'; openFlourEditor();
         out.editorOpens = document.getElementById('flour-modal').style.display==='flex';
-        out.listsRealFlours = document.querySelectorAll('#flour-modal-body .admin-card').length===9;
+        out.listsRealFlours = document.querySelectorAll('#flour-modal-body .admin-card').length===10;
         out.annetExcluded = ![...document.querySelectorAll('#flour-modal-body .admin-uname')].some(e=>e.textContent.includes('Annet'));
         out.hasForm = !!document.getElementById('flour-f-t') && !!document.getElementById('flour-f-fmx');
         // save payload via mock fetch
@@ -8158,8 +8158,8 @@ def _atferd_7(page, results):
              and r161.get('enTimer') is True
              and r161.get('beholdtValg') is True
              and r161.get('mobilLik') is True
-             and r161.get('nokler') == ('couco,dallari,doppio_zero,manitoba,nuvola,'
-                                        'pizzeria,regal_pizzamel,regal_tipo00,vanlig_hvetemel')
+             and r161.get('nokler') == ('couco,dallari,doppio_zero,manitoba,nuvola,pizzeria,'
+                                        'ramlosa_tipo00,regal_pizzamel,regal_tipo00,vanlig_hvetemel')
              and r161.get('cuoco') == 'Caputo Cuoco')
     results.append(('flour_dropdown_shows_fermentation_range', ok161, r161))
 
@@ -8338,7 +8338,7 @@ def _atferd_7(page, results):
       and r163.get('ingenBorte') is True
       and r163.get('rader') == len((r163.get('startListe') or {}).get('verdier', [])) - 1
       and (r163.get('spenn') or {}) == {'tMn': 4, 'tMx': 24, 'hMn': 55, 'hMx': 70}
-      and '2 av 9' in (r163.get('etikett') or '')
+      and '2 av 10' in (r163.get('etikett') or '')
       and '4–24 timer' in (r163.get('oppsummering') or '')
       # Rangeringen teller kurven: 48t dekkes av ingen av de to, 12t av ett.
       and r163.get('stotte48Kurv') == 0
@@ -8447,7 +8447,7 @@ def _atferd_7(page, results):
       and r164.get('ingenMetLenke') is True
       # Og alle etikettene sier det samme tallet.
       and r164.get('enigeEtter') is True
-      and '1 av 9' in (r164.get('melTekst') or '')
+      and '1 av 10' in (r164.get('melTekst') or '')
       and '5 av 6' in (r164.get('metTekst') or ''))
     results.append(('what_you_are_offered_lives_in_one_box_with_several_doors', ok164, r164))
 
