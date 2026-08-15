@@ -8869,6 +8869,86 @@ def _atferd_7(page, results):
                     {'uventede': [x for x in r168 if x not in UNNTAK],
                      'savnede': [x for x in UNNTAK if x not in r168]}))
 
+    # v0.805-runden, bestilt eksplisitt: «Lag test paa at prosa tekst eller steg
+    # har samme innhold som ingrediensene. Avvik der maa rettes.»
+    #
+    # Strengere enn tallfeieren (r168): den sjekker at hvert tall SPORER til en
+    # kilde — denne sjekker at stegenes tilsetninger SUMMERER til
+    # ingredienslista, per ingrediens. Det er klassen som fanget restMel-buggen
+    # (200g mel borte ved 30 % andel, v0.787): hvert tall fantes, men summen
+    # stemte ikke.
+    #
+    # Parseren skiller tilsetninger fra omtale: «hold av 20g» er en reservasjon
+    # (de 20 grammene telles naar de faktisk tilsettes i neste steg), «(hvorav
+    # 167g mel)» og «à 280g» er per-emne-informasjon, «Resten av vannet (265g)
+    # tilsettes i neste steg» er en fremoverreferanse, og «(ca. 500g mel per
+    # langpanne)» er per-panne-info. Foerste kjoering fant fem avvik — ALLE var
+    # parserhull, ingen var appfeil: stegene summerte riktig i alle 12
+    # scenarioene. Vakten er der for at det skal forbli slik.
+    r169 = page.evaluate("""() => {
+      const sv={}; Object.keys(S).forEach(k=>sv[k]=S[k]); const svLang=window._lang;
+      window._lang='no';
+      const SCEN=[
+        {n:'standard 500/65',  s:{method:'standard',cold:48}},
+        {n:'standard 800/70',  s:{method:'standard',cold:72,mel:800,hydro:70}},
+        {n:'poolish 50% rom',  s:{method:'poolish',poolishH:14,poolishCold:false,cold:32}},
+        {n:'poolish 30% rom',  s:{method:'poolish',poolishH:18,poolishCold:false,cold:24,poolishAndel:0.3}},
+        {n:'poolish 50% kald', s:{method:'poolish',poolishH:36,poolishCold:true,cold:24}},
+        {n:'biga',             s:{method:'biga',bigaH:18,cold:48}},
+        {n:'mania',            s:{method:'mania'}},
+        {n:'hurtig',           s:{method:'hurtig',hurtigH:4}},
+        {n:'kveld',            s:{method:'kveld',kveldH:10}},
+        {n:'ingenelting',      s:{type:'ingenelting'}},
+        {n:'chicago biga',     s:{method:'biga',type:'chicago',bigaH:18,cold:72,mel:600,hydro:60}},
+        {n:'NY vanlig ovn',    s:{method:'standard',type:'newyork',cold:48,oven:'vanlig'}},
+      ];
+      const funn=[];
+      const num=x=>parseFloat(String(x).replace(',','.'));
+      SCEN.forEach(sc=>{
+        try{
+          Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
+          S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.fridgeC=3;
+          S.kjokkenmaskin='ankarsrum'; S.oven='pizza'; S.mode='start'; S.gjaertest=false;
+          S.meltype='couco';
+          Object.assign(S, sc.s);
+          _q10Memo={k:null,v:null};
+          const r=recipeFor();
+          const steps=stepsForAnchor(new Date(2026,7,14,10,0));
+          const sum={mel:0,vann:0,salt:0,gjaer:0,olje:0,smor:0,sukker:0};
+          steps.forEach(st=>{
+            let d=st.desc||'';
+            d=d.replace(/hold av \\d+(?:[.,]\\d+)?g(?: vann)?/g,'')
+               .replace(/\\(hvorav [^)]*\\)/g,'')
+               .replace(/à (?:ca\\. )?\\d+(?:[.,]\\d+)?g/g,'')
+               .replace(/Resten av vannet \\(\\d+g\\) tilsettes i neste steg\\./g,'')
+               .replace(/\\(ca\\. \\d+(?:[.,]\\d+)?g mel per [^)]*\\)/g,'');
+            const tell=(rx,felt)=>{ let m; while((m=rx.exec(d))) sum[felt]+=num(m[1]); };
+            tell(/(\\d+(?:[.,]\\d+)?)g\\s+(?:kjølig |kaldt |lunkent |iskaldt |romtemperert |eller )*vann(?![a-zæøå])/g,'vann');
+            tell(/vannet \\((\\d+(?:[.,]\\d+)?)g/g,'vann');
+            tell(/de (\\d+(?:[.,]\\d+)?)g vannet/g,'vann');
+            tell(/(\\d+(?:[.,]\\d+)?)g\\s+mel/g,'mel');
+            tell(/(\\d+(?:[.,]\\d+)?)g\\s+salt/g,'salt');
+            tell(/(\\d+(?:[.,]\\d+)?)g\\s+(?:tørrgjær|fersk gjær)/g,'gjaer');
+            tell(/(\\d+(?:[.,]\\d+)?)g\\s+(?:oliven)?olje/g,'olje');
+            tell(/(\\d+(?:[.,]\\d+)?)g\\s+(?:smeltet )?smør/g,'smor');
+            tell(/(\\d+(?:[.,]\\d+)?)g\\s+sukker/g,'sukker');
+          });
+          const fasit={mel:r.flour, vann:r.water, salt:r.salt, gjaer:r.yDry,
+                       olje:r.oil||0, smor:r.butter||0, sukker:r.sugar||0};
+          Object.keys(fasit).forEach(k=>{
+            // 1g slingring: splittene rundes hver for seg (Math.round paa
+            // biga-vannet o.l.), saa summen kan avvike med under ett gram.
+            if(Math.abs(sum[k]-fasit[k])>1.01)
+              funn.push(sc.n+' | '+k+': steg '+(+sum[k].toFixed(2))+' vs liste '+fasit[k]);
+          });
+        }catch(e){ funn.push(sc.n+' | FEIL: '+String(e).slice(0,100)); }
+      });
+      Object.keys(sv).forEach(k=>S[k]=sv[k]); window._lang=svLang; _q10Memo={k:null,v:null};
+      return funn.sort();
+    }""")
+    ok169 = (r169 == [])
+    results.append(('step_additions_sum_to_the_ingredient_list', ok169, r169))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 
