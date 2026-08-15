@@ -63,7 +63,31 @@ async function getFlours(store) {
   if (!Array.isArray(list) || !list.length) {
     list = SEED_FLOURS.map(f => ({ ...f }));
     await store.setJSON('list', list);
+    return list;
   }
+  // v0.804: lageret vant ALT så snart det fantes — seeden ble bare lest ved
+  // første kall noensinne. Konsekvens, meldt inn fra prod: nye mel i koden
+  // (Ramlösa, v0.803) dukket aldri opp, og Cuoco-navnerettingen (v0.801) ble
+  // aldri synlig, fordi frontenden lar serverlista overstyre sin egen seed ved
+  // oppstart. Testene fanget det ikke: de kjører uten serverfunksjonen, så
+  // applyFlours() får aldri data lokalt.
+  //
+  // Migrering ved lesing, med adminens suverenitet i behold:
+  //  · Seed-mel som mangler i lagret liste settes inn på seed-plassen sin
+  //    (lista er sortert etter protein — å dytte dem bakerst hadde rotet den).
+  //  · Kjente feilverdier rettes BARE hvis lagret verdi fortsatt er nøyaktig
+  //    den gamle feilen — har admin endret noe selv, røres det ikke.
+  let endret = false;
+  SEED_FLOURS.forEach((f, i) => {
+    if (!list.some(x => x.v === f.v)) {
+      list.splice(Math.min(i, list.length), 0, { ...f });
+      endret = true;
+    }
+  });
+  const c = list.find(f => f.v === 'couco');
+  if (c && c.t === 'Caputo Couco') { c.t = 'Caputo Cuoco'; endret = true; }
+  if (c && c.w === '300–340') { c.w = '300–320'; endret = true; }
+  if (endret) await store.setJSON('list', list);
   return list;
 }
 

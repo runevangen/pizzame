@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.804",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ramlösa-melet fra v0.803 var ikke synlig i appen likevel — og Cuoco-navnerettingen fra v0.801 hadde heller aldri nådd fram. Mellisten på serveren vant over koden så snart den fantes, så endringer i kodens liste ble aldri lest igjen.",
+      "Nå flettes de: nye mel i koden legges inn på riktig plass i serverlista, og kjente feilverdier rettes — men bare hvis de står uendret. Har du redigert et mel selv i admin, røres det ikke."
+    ],
+    "changes_en": [
+      "The Ramlösa flour from v0.803 was not actually visible in the app — and the Cuoco name fix from v0.801 had never arrived either. The server's flour list won over the code as soon as it existed, so changes to the code's list were never read again.",
+      "Now they merge: new flours in the code are inserted at their proper place in the server list, and known bad values are corrected — but only if they are unchanged. A flour you have edited yourself in admin is left alone."
+    ]
+  },
+  {
     "v": "0.803",
     "d": "august 2026",
     "d_en": "August 2026",
