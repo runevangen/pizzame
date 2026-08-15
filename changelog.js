@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.810",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Hurtigdeigens «Etterheving + forvarme» var ett steg som ba deg varme ovnen ved stegstart — ved 2 timers deig er hevingen 33 minutter, men ved 8 timer er den nesten 3 timer, og en pizzaovn på 450°C skal ikke stå og fyre så lenge. Nå er det to steg: en ren etterheving, og et eget «Sett på ovnen 🔥» som kommer akkurat tidsnok — 20 minutter før steking for pizzaovn, 45 for vanlig ovn, samme regel som alle de andre metodene.",
+      "Ovnssteget nevner også Hurtigdeigens egen måltemperatur (den varierer med hevetiden), så du slipper å bla frem til stekesteget for å vite hva du skal stille inn.",
+      "Er etterhevingen kortere enn ovnen trenger — kort deig og vanlig ovn — settes ovnen på allerede før hevingen starter, så den rekker å bli gjennomvarm."
+    ],
+    "changes_en": [
+      "Quick dough's \"Final proof + preheat\" was one step that told you to heat the oven at the start of the proof — with a 2-hour dough the proof is 33 minutes, but at 8 hours it is nearly 3 hours, and a 450°C pizza oven should not blaze away that long. It is now two steps: a pure final proof, and a separate \"Turn on the oven 🔥\" that arrives just in time — 20 minutes before baking for a pizza oven, 45 for a regular oven, the same rule as every other method.",
+      "The oven step also names Quick dough's own target temperature (it varies with the rise time), so you do not have to skip ahead to the baking step to know what to set.",
+      "If the proof is shorter than the oven needs — short dough and a regular oven — the oven goes on before the proof even starts, so it has time to heat through."
+    ]
+  },
+  {
     "v": "0.809",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -1514,30 +1514,58 @@ def _atferd_2(page, results):
     # stekesteget. Tester at kjeden fortsatt henger sammen uten hull/overlapp
     # etter at et steg ble satt inn forst, og at begge nye elementene faktisk
     # finnes.
+    # v0.810: «Etterheving + forvarme» ble splittet — ovnssteget (dur:0,
+    # dispLoc:'ovn') ligger nå MED VILJE inne i etterhevingen, som i alle andre
+    # metoder. Kjedesjekken hopper derfor over det, og splitten fryses:
+    # eget ovnssteg preheatMin() foer steking, Hurtigdeigens maaltemperatur
+    # navngitt i det (samme tall som stekesteget), og et rent etterhevingssteg
+    # som ikke lenger ber deg fyre ovnen.
     r32 = page.evaluate("""() => {
       resetTestState();
       S.type='napoletana'; S.method='hurtig'; S.hurtigH=4; S.mel=500; S.hydro=65;
       S.mode='end'; S.temp=22; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
       const steps = window._steps || [];
+      const kjede = steps.filter(s => s.dispLoc !== 'ovn');
       let chainOk = true;
-      for (let i = 0; i < steps.length - 1; i++) {
-        const end = new Date(steps[i].at).getTime() + (steps[i].dur||0)*60000;
-        const nextStart = new Date(steps[i+1].at).getTime();
+      for (let i = 0; i < kjede.length - 1; i++) {
+        const end = new Date(kjede[i].at).getTime() + (kjede[i].dur||0)*60000;
+        const nextStart = new Date(kjede[i+1].at).getTime();
         if (Math.abs(end - nextStart) > 60000) chainOk = false;
       }
+      const ovn = steps.find(s => s.dispLoc === 'ovn');
+      const etterhev = steps.find(s => String(s.title).startsWith('Etterheving'));
+      const bake = steps[steps.length-1];
+      const tmpTxt = String(bake.desc).split(' — ')[0];
       return {
         firstTitle: steps[0].title,
         chainOk,
         kickstartHasNeeds: !!(steps[0].needs && steps[0].needs.length),
         kickstartHasSubsteps: !!(steps[0].substeps && steps[0].substeps.length === 3),
-        bakeTip: steps[steps.length-1].tip
+        bakeTip: bake.tip,
+        ovnTitle: ovn ? ovn.title : null,
+        // ovnen skal paa preheatMin() minutter foer steking, dur 0
+        ovnLeadMin: ovn ? Math.round((new Date(bake.at) - new Date(ovn.at))/60000) : null,
+        preheatMin: preheatMin(),
+        ovnDur: ovn ? (ovn.dur||0) : null,
+        // Hurtigdeigens egen maaltemperatur staar i ovnssteget — samme tall
+        // som stekesteget bruker (to dommere-vakt: ett tall, to visninger)
+        ovnNavngirTemp: ovn ? String(ovn.desc).includes('Varm til') && String(ovn.desc).includes(tmpTxt) : false,
+        etterhevTitle: etterhev ? etterhev.title : null,
+        etterhevPassiv: etterhev ? etterhev.passive === true : false,
+        // splitten: hevesteget skal ikke lenger nevne ovnen
+        etterhevUtenOvn: etterhev ? !/ovn/i.test(String(etterhev.desc)) : false
       };
     }""")
     ok32 = (
       r32['firstTitle'] == 'Vekk gjæren (kickstart)' and r32['chainOk'] and
       r32['kickstartHasNeeds'] and r32['kickstartHasSubsteps'] and
-      'semulegryn' in r32['bakeTip'].lower()
+      'semulegryn' in r32['bakeTip'].lower() and
+      r32['ovnTitle'] == 'Sett på ovnen 🔥' and
+      r32['ovnLeadMin'] == r32['preheatMin'] and r32['ovnDur'] == 0 and
+      r32['ovnNavngirTemp'] and
+      r32['etterhevTitle'] == 'Etterheving (81 min)' and
+      r32['etterhevPassiv'] and r32['etterhevUtenOvn']
     )
     results.append(('hurtig_yeast_kickstart_and_semolina_tip', ok32, r32))
 

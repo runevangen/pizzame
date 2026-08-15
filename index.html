@@ -2416,17 +2416,21 @@ function preheatMin(){
 // roomMin = hvor mange minutter deigen uansett står i romtemperatur rett før
 // steking; steget klemmes innenfor det (−5 min) så det aldri kan havne foran
 // steget som slipper deigen ut på benken.
-function preheatSteps(bakeAt, roomMin, type){
+function preheatSteps(bakeAt, roomMin, type, tempTxt){
   const tp=type||S.type;
   const ph=Math.min(preheatMin(), Math.max(0,roomMin-5));
   if(ph<5) return [];
   const t=S.oven==='pizza'?L('pizzaovnen','the pizza oven'):L('ovnen','the oven');
+  // v0.810: Hurtigdeig har egen måltemperatur per hevetid (HOPTS-kurven som
+  // skåner honningdeigen) — den må stå i steget, siden stekestegets tall
+  // varierer. De andre metodene sender ingen og beholder teksten sin ordrett.
+  const mål=tempTxt?L(` Varm til ${tempTxt}.`,` Heat to ${tempTxt}.`):'';
   const stone=S.oven!=='pizza'&&(tp==='napoletana'||tp==='newyork');
   // loc:'rom' fordi DEIGEN fortsatt står på benken — det holder Q10-modellen
   // uendret (romtemperaturintervallet deles i to like varme deler i stedet for
   // å bli borte). dispLoc:'ovn' fordi det er dit DU går.
   return [{title:'Sett på ovnen 🔥',loc:'rom',dispLoc:'ovn',at:sM(bakeAt,ph),dur:0,
-    desc:L(`Sett på ${t} nå — den trenger ca. ${fmtDur(ph)} før den er varm nok. ${stone?'Sett pizzastein/-stål inn med en gang: luften i ovnen blir varm lenge før steinen er det, og det er steinen som gir bunnen.':'Deigen står trygt på benken mens ovnen varmes.'}`,`Turn on ${t} now — it needs about ${durEn(fmtDur(ph))} before it is hot enough. ${stone?'Put the pizza stone/steel in right away: the air in the oven gets hot long before the stone does, and it is the stone that makes the base.':'The dough sits safely on the counter while the oven heats.'}`),
+    desc:L(`Sett på ${t} nå — den trenger ca. ${fmtDur(ph)} før den er varm nok.${mål} ${stone?'Sett pizzastein/-stål inn med en gang: luften i ovnen blir varm lenge før steinen er det, og det er steinen som gir bunnen.':'Deigen står trygt på benken mens ovnen varmes.'}`,`Turn on ${t} now — it needs about ${durEn(fmtDur(ph))} before it is hot enough.${mål} ${stone?'Put the pizza stone/steel in right away: the air in the oven gets hot long before the stone does, and it is the stone that makes the base.':'The dough sits safely on the counter while the oven heats.'}`),
     substeps:[
       L(`Sett på ${t} — ca. ${fmtDur(ph)} til den er klar`,`Turn on ${t} — about ${durEn(fmtDur(ph))} until it is ready`),
       ...(stone?[L('Sett pizzastein/-stål inn med en gang','Put the pizza stone/steel in right away')]:[]),
@@ -3364,7 +3368,25 @@ function hurtigSteps(anchor){
         :L('Elt litt lenger enn du ville gjort med lengre hevetid — hurtigdeig har mindre tid til at gluten utvikler seg av seg selv.','Knead a bit longer than you would with a longer rise — quick dough has less time for gluten to develop on its own.')},
     {title:`Bulk-heving (ca. ${Math.round(ba/60*10)/10}t)`,loc:'rom',at:aM(mixAt,15),dur:ba,passive:true,desc:L(`Dekk tett. Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}.`,`Cover tightly. Rise at ${S.temp}°C for about ${fmtHM(ba)}.`),substeps:[L(`Dekk tett`,`Cover tightly`),L(`Hev ved ${S.temp}°C i ca. ${fmtHM(ba)}`,`Rise at ${S.temp}°C for about ${fmtHM(ba)}`)],why:rtW(ba),tip:TIP.roomRise},
     {title:'Form emner',loc:'benk',at:aM(mixAt,15+ba),dur:15,desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g. Rund godt.`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}. Round well.`),needs:[L(`📦 ${p.count} emne${p.count>1?'r':''}`,`📦 ${p.count} ball${p.count>1?'s':''}`)],substeps:[L(`Del i ${p.count} emne${p.count>1?'r':''} à ${p.perPizza}g`,`Divide into ${p.count} ball${p.count>1?'s':''} of ${p.perPizza}g${p.count>1?' each':''}`),L('Rund godt — ikke kjevle, strekk for hånd senere','Round well — don\'t roll out, stretch by hand later')],why:L('Runde, stramme emner holder formen gjennom den korte etterhevingen som følger, og gir jevn heving.','Round, tight balls hold their shape through the short final proof that follows, and rise evenly.'),tip:L('Ikke kjevle — strekk for hånd.','Don\'t roll out — stretch by hand.')},
-    {title:`Etterheving + forvarme (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,desc:L(`Etterhev ${fmtHM(afm)}. Varm ovnen til ${tmp}${S.oven==='pizza'?'':' — sett pizzastein/-stål inn med en gang og la det forvarmes minst 45–60 min, siden vanlig ovn bruker mye lenger tid på å varme opp steinen/stålet enn selve luften'}.`,`Final proof ${fmtHM(afm)}. Heat the oven to ${tmp}${S.oven==='pizza'?'':' — put the pizza stone/steel in right away and let it preheat at least 45–60 min, since a regular oven takes much longer to heat the stone/steel than the air itself'}.`),substeps:[L(`Etterhev ${fmtHM(afm)}, tildekket`,`Final proof ${fmtHM(afm)}, covered`),L(`Varm ovnen til ${tmp}${S.oven==='pizza'?'':' (sett pizzastein/-stål inn med en gang, forvarm 45–60 min)'}`,`Heat the oven to ${tmp}${S.oven==='pizza'?'':' (put the pizza stone/steel in right away, preheat 45–60 min)'}`)],why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')},
+    // v0.810: «Etterheving + forvarme» var ETT steg, og instruksen «varm ovnen»
+    // sto ved stegstart. Ved 2t deig er etterhevingen 33 min og buntingen nesten
+    // gratis — men den skalerer: ved 8t er den 2t 57min, ved 16t over 6 timer,
+    // og å følge steget bokstavelig fyrte en 450-graders pizzaovn hele tiden.
+    // Meldt inn fra en ekte plan. Alle andre metoder fikk eget forvarmingssteg i
+    // v0.739 («det stemte kun for Hurtigdeig» — derfor ble den stående); nå
+    // bygger også Hurtigdeig det fra preheatSteps, samme kilde som alle andre.
+    // Rekkefølgen avgjøres av tidene: trenger ovnen lenger enn etterhevingen
+    // (2t deig + vanlig ovn: 45 min ovn mot 33 min heving), skal den på FØR.
+    ...(function(){
+      const bakeAtH=aM(mixAt,30+ba+afm);
+      const etterhev={title:`Etterheving (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,
+        desc:L(`Etterhev ${fmtHM(afm)}, tildekket.`,`Final proof ${fmtHM(afm)}, covered.`),
+        substeps:[L(`Etterhev ${fmtHM(afm)}, tildekket`,`Final proof ${fmtHM(afm)}, covered`)],
+        why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')};
+      const ovn=preheatSteps(bakeAtH, 30+ba+afm, S.type, tmp);
+      return (ovn.length && new Date(ovn[0].at)<new Date(etterhev.at))
+        ? [...ovn, etterhev] : [etterhev, ...ovn];
+    })(),
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
       why:WHY.st,tip:(bakeTip(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
   ]};
