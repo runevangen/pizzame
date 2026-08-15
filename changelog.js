@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.805",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Tempereringssteget for kjøleskaps-poolish sa «halvparten av melet, over to tredeler av varmekapasiteten, lander rundt 13°C». Alle tre tallene var skrevet inn for hånd én gang — og ved 30 % poolish var alle tre feil: der er sannheten 30 % av melet, 40 % av varmekapasiteten, og rundt 18°C.",
+      "Nå regnes de av samme varmebalanse som resten av appen, så setningen er sann for akkurat din deig — uansett mengde, andel, romtemperatur og kjøkkenmaskin.",
+      "Dermed er hvert eneste tall i stegtekstene enten regnet av planen eller en bevisst avskrift fra en kilde — og en test vokter at det forblir slik."
+    ],
+    "changes_en": [
+      "The warm-up step for fridge poolish said \"half the flour, over two thirds of the heat capacity, lands around 13°C\". All three numbers were typed in by hand once — and at 30% poolish all three were wrong: the truth there is 30% of the flour, 40% of the heat capacity, and around 18°C.",
+      "They are now computed by the same heat balance as the rest of the app, so the sentence is true for your exact dough — regardless of amount, share, room temperature and mixer.",
+      "With that, every number in the step texts is either computed from the plan or a deliberate transcript from a source — and a test guards that it stays that way."
+    ]
+  },
+  {
     "v": "0.804",
     "d": "august 2026",
     "d_en": "August 2026",

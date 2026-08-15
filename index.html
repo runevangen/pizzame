@@ -2791,6 +2791,36 @@ function deigTempAvvik(vannC){
   if(d<21.5) return {d, for:'kald'};
   return null;
 }
+// v0.805: «rundt 13°C» i tempereringssteget var en håndregnet literal — en
+// påstand OM modellen som ikke kom FRA den. Målt før fiksen: 11,7–14,9°C over
+// spennet av innstillinger, så rådet var aldri galt, men tallet kunne ikke
+// følge deigen — og ved 30 % poolish-andel er regnestykket et annet. Nå regnes
+// det av samme varmebalanse som alt annet: fordeigen på kjøleskapstemperatur i
+// stedet for temperert. Tallfeieren (r168) mistet med dette sitt siste reelle
+// unntak — bare Mania-avskriften står igjen som bevisst literal.
+function deigTempUtenTemperering(){
+  const f=fordeigVedBlanding();
+  if(!f) return null;
+  const fridge=(S.fridgeC==null?3:S.fridgeC);
+  const r=recipeFor();
+  const k=[[Math.max(0,r.flour-f.melG)/1000, C_MEL,  S.temp],
+           [f.melG/1000,                     C_MEL,  fridge],
+           [f.vannG/1000,                    C_VANN, fridge],
+           [Math.max(0,r.water-f.vannG)/1000,C_VANN, calcWaterTempC(23)]];
+  const C=k.reduce((a,x)=>a+x[0]*x[1],0), E=k.reduce((a,x)=>a+x[0]*x[1]*x[2],0);
+  return C>0 ? E/C+friksjonC() : null;
+}
+// Samme sannhetskrav for brøkene i samme setning: «halvparten av melet og over
+// to tredeler av varmekapasiteten» stemte bare for 50 %-andelen. Ved 30 % er
+// det 30 % av melet og ~40 % av varmekapasiteten — så også de regnes nå.
+function poolishVarmeandelPct(){
+  const f=fordeigVedBlanding();
+  if(!f) return null;
+  const r=recipeFor();
+  const pool=f.melG/1000*C_MEL + f.vannG/1000*C_VANN;
+  const tot =r.flour/1000*C_MEL + r.water/1000*C_VANN;
+  return tot>0 ? Math.round(pool/tot*100) : null;
+}
 function machineLabel(){
   const m = window._lang==='en'
     ? {ankarsrum:'Ankarsrum',manuell:'by hand',annen:'the stand mixer'}
@@ -3086,7 +3116,7 @@ function rawSteps(a){
           L(`Ta ut til temperering i neste steg`,`Take out for the warm-up in the next step`)
         ],
         why:L('Pausen skyver resten av planen inn i tiden du faktisk er ledig, uten å endre når du spiser. I kjøleskapet nærmest pauses gjæringen — en moden poolish holder seg godt kaldt en god stund, men ikke i det uendelige, derfor er pausen begrenset til maks 18 timer.',`The pause shifts the rest of the plan into the time you're actually free, without changing when you eat. In the fridge the fermentation is all but paused — a mature poolish keeps well cold for a good while, but not indefinitely, so the pause is limited to a maximum of 18 hours.`),
-        tip:L('At den er litt mer boblete og moden etter pausen er helt greit. Tempereringen etterpå er ikke valgfri — en poolish rett fra kjøleskapet er over to tredeler av deigmassen og trekker ferdig deig ned mot 13°C.',`It being a bit more bubbly and mature after the pause is perfectly fine. The warm-up afterwards is not optional — a poolish straight from the fridge is over two thirds of the dough mass and pulls the finished dough down towards 13°C.`)}]:[]),
+        tip:L(`At den er litt mer boblete og moden etter pausen er helt greit. Tempereringen etterpå er ikke valgfri — en poolish rett fra kjøleskapet er ${poolishVarmeandelPct()} % av deigens varmekapasitet og trekker ferdig deig ned mot ${Math.round(deigTempUtenTemperering())}°C.`,`It being a bit more bubbly and mature after the pause is perfectly fine. The warm-up afterwards is not optional — a poolish straight from the fridge is ${poolishVarmeandelPct()}% of the dough's heat capacity and pulls the finished dough down towards ${Math.round(deigTempUtenTemperering())}°C.`)}]:[]),
       ...(kaldFor?[
         {title:'🌡 Ta poolish ut — temperer',loc:'benk',at:temperAt,dur:0,passive:true,
           desc:L(`Ta poolish-bollen ut av kjøleskapet ca. ${fmtDur(temperMin)} før du skal blande, og la den stå tildekket på benken. Du gjør ingenting med den — den skal bare miste kulda.`,`Take the poolish bowl out of the fridge about ${durEn(fmtDur(temperMin))} before you mix, and leave it covered on the counter. You do nothing to it — it just needs to lose the chill.`),
@@ -3094,7 +3124,7 @@ function rawSteps(a){
             L(`Ta bollen ut av kjøleskapet`,`Take the bowl out of the fridge`),
             L(`La stå tildekket på benken ca. ${fmtDur(temperMin)}`,`Leave it covered on the counter for about ${durEn(fmtDur(temperMin))}`)
           ],
-          why:L('Poolishen er halvparten av melet og over to tredeler av deigens varmekapasitet. Går den rett fra kjøleskapet i maskinen, lander ferdig deig rundt 13°C i stedet for 22–24 — og det kan ikke rettes med varmere vann, for det er bare noen få desiliter vann igjen å skru på. Da gjærer den første hevingen omtrent halvt tempo, og timen på benken leverer ikke det planen lover.','The poolish is half the flour and more than two thirds of the dough\'s heat capacity. Straight from the fridge into the mixer, the finished dough lands around 13°C instead of 22–24 — and warmer water cannot fix it, because only a few decilitres of water are left to adjust. The first rise then ferments at roughly half speed, and the hour on the counter doesn\'t deliver what the plan promises.'),
+          why:L(`Poolishen er ${Math.round(poolishAndel()*100)} % av melet og ${poolishVarmeandelPct()} % av deigens varmekapasitet. Går den rett fra kjøleskapet i maskinen, lander ferdig deig rundt ${Math.round(deigTempUtenTemperering())}°C i stedet for 22–24 — og det kan ikke rettes med varmere vann, for det er bare noen få desiliter vann igjen å skru på. Da gjærer den første hevingen i bare halvt til to tredels tempo, og timen på benken leverer ikke det planen lover.`,`The poolish is ${Math.round(poolishAndel()*100)}% of the flour and ${poolishVarmeandelPct()}% of the dough's heat capacity. Straight from the fridge into the mixer, the finished dough lands around ${Math.round(deigTempUtenTemperering())}°C instead of 22–24 — and warmer water cannot fix it, because only a few decilitres of water are left to adjust. The first rise then ferments at only half to two-thirds speed, and the hour on the counter doesn't deliver what the plan promises.`),
           tip:L('Kjenn på bollen framfor å se på klokka: den skal ikke lenger kjennes kald mot håndbaken. Er den fortsatt kjølig, gi den litt lenger — et varmt kjøkken går raskere enn tida her sier, et kaldt går tregere. Har du termometer, sikt på 16–18°C i poolishen.','Feel the bowl rather than watching the clock: it should no longer feel cold against the back of your hand. If it still feels chilly, give it a little longer — a warm kitchen goes faster than the time here says, a cold one slower. With a thermometer, aim for 16–18°C in the poolish.')}
       ]:[]),
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:mixAt,dur:20,

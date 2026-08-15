@@ -8726,6 +8726,16 @@ def _atferd_7(page, results):
       ut.paa30 = { setning:deigTempSetning(), nevner30:/30 %-varianten/.test(deigTempSetning()) };
       sett('poolish','annen',26,0.5);
       ut.paa50nevner30 = /30 %-varianten/.test(deigTempSetning());
+      // v0.805: tempereringsstegets tall regnes naa av deigTempUtenTemperering().
+      // Tallfeieren (r168) sjekker bare at prosaen SPORER til modellen - regner
+      // modellen feil, stemmer de jo overens om feilen. Derfor fryses fysikken
+      // her: haandregnet fasit for 500g/22°/Ankarsrum/50 %/3° skap er 13,7°C
+      // (E/C + 4 friksjon), og varmeandelen 66 %. Maalt for mutasjonene som
+      // slapp gjennom feieren: uten friksjon 9,7; med temperert fordeig ~19.
+      sett('poolish','ankarsrum',22);
+      S.poolishCold=true; S.poolishH=36; _q10Memo={k:null,v:null};
+      ut.utenTemp  = +deigTempUtenTemperering().toFixed(1);
+      ut.varmeandel = poolishVarmeandelPct();
       Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
       window._lang=sv.l;
       return ut;
@@ -8749,7 +8759,10 @@ def _atferd_7(page, results):
       and r167.get('sierAarsak') is True
       # Ingen raad om aa velge 30 % naar du staar paa 30 %.
       and (r167.get('paa30') or {}).get('nevner30') is False
-      and r167.get('paa50nevner30') is True)
+      and r167.get('paa50nevner30') is True
+      # Fysikken i tempereringsstegets regnede tall.
+      and abs((r167.get('utenTemp') or 0) - 13.7) < 0.2
+      and r167.get('varmeandel') == 66)
     results.append(('water_temperature_words_match_the_number_and_admit_the_limit', ok167, r167))
 
     # v0.802 (tallfeieren): meldt inn som moenster, ikke enkeltsak — «det dukker
@@ -8812,6 +8825,9 @@ def _atferd_7(page, results):
           // Temperaturmodellen
           till(S.temp); till(S.fridgeC); till(calcWaterTempC(23));
           till(Math.round(deigTempC(calcWaterTempC(23)))); till(19);                     // hurtigs eget vann
+          // v0.805: tempereringsstegets tall regnes naa - og faar dermed kilder her
+          try{ till(Math.round(deigTempUtenTemperering())); }catch(e){}
+          try{ till(poolishVarmeandelPct()); till(Math.round(poolishAndel()*100)); }catch(e){}
           // Varigheter — planens egne
           steps.forEach(st=>{ till(st.dur); till(Math.round((st.dur||0)/60)); till(+((st.dur||0)/60).toFixed(1)); });
           [S.cold,S.poolishH,S.bigaH,S.hurtigH,S.kveldH].forEach(till);
@@ -8839,14 +8855,12 @@ def _atferd_7(page, results):
       Object.keys(sv).forEach(k=>S[k]=sv[k]); window._lang=svLang; _q10Memo={k:null,v:null};
       return funn.sort();
     }""")
-    # De tre kjente literalene — EKSAKT liste, ikke tak:
-    #  · 13°C: hardkodet modellpaastand i tempereringssteget («lander ferdig
-    #    deig rundt 13°C»). Omtrent riktig ved standardinnstillinger i dag,
-    #    men regnes ingen steder. Meldt videre som eget spoersmaal.
-    #  · 26/28°C: Mania-avskriften («gaa ikke over 26, aldri over 28») —
-    #    frosset med vilje (v0.759), skal IKKE koples til modellen.
+    # Kjente literaler — EKSAKT liste, ikke tak. Etter v0.805 staar bare
+    # Mania-avskriften igjen («gaa ikke over 26, aldri over 28»), frosset med
+    # vilje (v0.759) og skal IKKE koples til modellen. 13°C-hardkoden i
+    # tempereringssteget regnes naa av deigTempUtenTemperering() — idealtilstand:
+    # de eneste literalene som gjenstaar, er avskrift med vilje.
     UNNTAK = sorted([
-        'poolish 50% kald | 🌡 Ta poolish ut — temperer | 13°C',
         'mania | Bland hoveddeig | 26°C',
         'mania | Bland hoveddeig | 28°C',
     ])
