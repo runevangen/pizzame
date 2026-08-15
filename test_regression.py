@@ -8406,11 +8406,13 @@ def _atferd_7(page, results):
       });
       ut.inngangPc       = peker('pc-menu-tilbud');
       ut.inngangMelLenke = peker('melkurv-lenke');
+      // v0.806: melbrikken i Smart-plan er den fjerde doera til samme boks.
+      ut.inngangMelChip  = peker('beta-chip-mel');
       // v0.799: metodefilteret har ingen lenke i Smart-plan lenger - det gjelder
       // Fra-til like mye, og bor derfor bare under Mer.
       ut.ingenMetLenke = !g('mob-beta-methods-lenke');
       // Etikettene skal si det samme, foer og etter en endring.
-      const les=()=>({mel:[g('melkurv-lbl'),g('melkurv-lenke-lbl'),g('mer-tilbud-mel')].map(e=>e&&e.textContent),
+      const les=()=>({mel:[g('melkurv-lbl'),g('melkurv-lenke-lbl'),g('mer-tilbud-mel'),g('beta-chip-mel')].map(e=>e&&e.textContent),
                       met:[g('mob-beta-methods-lbl'),g('mer-tilbud-metoder')].map(e=>e&&e.textContent)});
       const enige=o=>o.mel.every(t=>t===o.mel[0]) && o.met.every(t=>t===o.met[0]);
       melEkte().forEach(f=>{ if(f.v!=='dallari' && harMel(f.v)) toggleMelkurv(f.v); });
@@ -8444,6 +8446,7 @@ def _atferd_7(page, results):
       and r164.get('inngangMerRad') is True
       and r164.get('inngangPc') is True
       and r164.get('inngangMelLenke') is True
+      and r164.get('inngangMelChip') is True
       and r164.get('ingenMetLenke') is True
       # Og alle etikettene sier det samme tallet.
       and r164.get('enigeEtter') is True
@@ -8598,6 +8601,12 @@ def _atferd_7(page, results):
       ut.varselAapner = g('pizzatid-modal').style.display;
       closePizzatidModal();
       ut.pizzatidMer = !!g('mer-tilbud-pizzatid'); ut.pizzatidPc = !!g('pc-menu-pizzatid');
+      // v0.806: brikken i Smart-plan-hodet er tredje doer til samme boks, og
+      // underteksten navngir soekets to skjulte inndata med begrunnelsen.
+      const chip=g('beta-chip-tid');
+      ut.pizzatidChip = !!chip && /openPizzatidModal/.test(chip.getAttribute('onclick')||'')
+                     && !!chip.closest('#mob-beta');
+      ut.subTekst = (g('mob-beta-sub')||{}).textContent||'';
       // 2) Metodefilteret helt ute av Smart-plan, og fortsatt i én kopi.
       ut.metodeIBeta   = !!document.querySelector('#mob-beta #mob-beta-methods-rows')
                       || !!document.querySelector('#mob-beta #mob-beta-methods-lenke');
@@ -8651,6 +8660,8 @@ def _atferd_7(page, results):
       and r166.get('pizzatidDager', 0) >= 7
       and r166.get('varselAapner') == 'flex'
       and r166.get('pizzatidMer') is True and r166.get('pizzatidPc') is True
+      and r166.get('pizzatidChip') is True
+      and 'Stemmer melet og tidene dine, stemmer planen' in (r166.get('subTekst') or '')
       # Metodefilteret helt ute av Smart-plan, fortsatt én kopi.
       and r166.get('metodeIBeta') is False
       and r166.get('metodeLister') == 1

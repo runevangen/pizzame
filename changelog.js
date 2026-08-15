@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.806",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan sier nå hva søket faktisk bygger på. Underteksten var utdatert — den ba deg oppgi når du har tid, men det gjør du ikke der lenger; appen leser det fra «Når er du ledig?». Ny tekst: «Si når du vil spise — appen prøver alle metodene og finner den som passer best i din uke. Stemmer melet og tidene dine, stemmer planen.»",
+      "Under teksten står søkets to egne inndata som trykkbare brikker: 🌾 Melet mitt (med antallet ditt, live) og 🗓️ Når er du ledig? Begge åpner boksene sine direkte — de er dører, ikke kopier, og melbrikken får teksten fra samme kilde som alle andre «Melet mitt»-etiketter."
+    ],
+    "changes_en": [
+      "Smart plan now says what the search actually builds on. The subtitle was outdated — it asked you to state when you have time, but you no longer do that there; the app reads it from \"When are you free?\". New text: \"Say when you want to eat — the app tries every method and finds the one that fits your week best. If your flour and your times are right, the plan is right.\"",
+      "Below it, the search's two personal inputs sit as tappable chips: 🌾 My flour (with your count, live) and 🗓️ When are you free? Both open their boxes directly — they are doors, not copies, and the flour chip gets its text from the same source as every other \"My flour\" label."
+    ]
+  },
+  {
     "v": "0.805",
     "d": "august 2026",
     "d_en": "August 2026",
