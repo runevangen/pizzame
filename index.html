@@ -2674,6 +2674,15 @@ function mixWorkNote(){
 // (17 / 21 / 10 °C mot gamle 17 / 21 / 9) — endringen gjelder fordeigene, som er
 // der formelen faktisk var gal.
 const C_MEL=1.8, C_VANN=4.186;                          // kJ/kg·K
+// MÅLT 16.08.2026 (Runes Ankarsrum, 500g/62 %, trinn 3–4 i 10–12 min):
+// 21°C i bollen etter blanding → 25–26°C etter elting = 4,5–5°C reell
+// eltevarme. Ankarsrum-verdien er altså VALIDERT — ikke juster den ned mot
+// spiralmikser-referanser (2–3°C); de gjelder andre maskiner/eltestiler.
+// Samme måling viste to motvirkende småfeil som IKKE skal rettes hver for
+// seg: kickstartvannet kjølner til ~34°C før blanding (modellen bokfører
+// 41,5) og stålbollen varmer blandingen ~0,5–1° mot romtemperatur (ikke
+// modellert). Med målte verdier lander 13°-vann fortsatt på ~24,3° deig —
+// feilene kansellerer, og vannanbefalingen står seg.
 const FRIKSJON_C={ankarsrum:4, manuell:1.5, annen:8};   // reell oppvarming fra elting
 function friksjonC(){ return FRIKSJON_C[S.kjokkenmaskin] ?? 5; }
 // v0.812: Hurtigdeigens kickstart ber om 60g vann på 40–43°C, men varmebalansen
