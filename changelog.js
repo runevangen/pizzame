@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.816",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Åpnet du en lagret deig som var startet «nå» for å fortsette på den, gled hele tidsplanen til gjenåpningstidspunktet — en deig startet 09:47 og gjenåpnet 12:43 fikk alle steg forskjøvet tre timer. Nå beholder en gjenåpnet deig sitt lagrede starttidspunkt: starten er et historisk faktum, og det som eventuelt endres, skal flytte slutten — aldri starten.",
+      "Ankeret ryddes overalt der det skal: lukker du deigen, fullfører du Planlegging, eller henter du en ny plan fra Smart-plan, gjelder «starter nå» som før. Deiger lagret i «spis kl.»-modus var aldri rammet."
+    ],
+    "changes_en": [
+      "If you opened a saved dough that was started \"now\" to continue it, the whole timeline slid to the moment you reopened it — a dough started at 09:47 and reopened at 12:43 had every step shifted three hours. A reopened dough now keeps its saved start time: the start is a historical fact, and whatever changes should move the end — never the start.",
+      "The anchor is cleared everywhere it should be: close the dough, finish Planning, or fetch a new plan from Smart plan, and \"starting now\" applies as before. Doughs saved in \"eat at\" mode were never affected."
+    ]
+  },
+  {
     "v": "0.815",
     "d": "august 2026",
     "d_en": "August 2026",

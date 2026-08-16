@@ -9183,6 +9183,45 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('active_dough_card_name_never_paints_under_the_buttons', ok173, r173))
 
+    # v0.816: en gjenaapnet, START-forankret deig gled til «naa» — mobilens
+    # start-anker var alltid live nåtid, og feltene openBake skrev til
+    # finnes ikke i mobil-layouten (meldt inn: «Søndagspizza» lagret 09:47,
+    # gjenaapnet 12:43 → hele tidsplanen forskjoevet tre timer). Naa huskes
+    # deigens lagrede anker (window._activeAnchorISO), og alt som lukker
+    # deigen eller lager en NY plan rydder det. Fryser hele kontrakten:
+    # gjenaapning treffer 09:47, regenerering flytter ingenting, lukking og
+    # wizFinish rydder, og end-forankret deig setter aldri startanker.
+    r174 = page.evaluate("""() => {
+      resetTestState();
+      setLayout('mob');
+      const bake={id:'sp1',name:'Søndagspizza',status:'active',favorite:false,
+                  ownerId:currentUserId(),
+                  config:{type:'napoletana',method:'hurtig',hurtigH:8,mel:500,hydro:62,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+                  anchorMode:'start',anchorISO:'2026-08-16T09:47:00',
+                  checkedSteps:[],checkedIngredients:[]};
+      window._bakesCache=[bake];
+      openBake('sp1');
+      const s1=window._steps||[];
+      const foerste=new Date(s1[0].at);
+      const gjenaapnetRiktig=foerste.getHours()===9&&foerste.getMinutes()===47;
+      mobGen();
+      const stabil=new Date((window._steps||[])[0].at).getTime()===foerste.getTime();
+      closeActiveDeig();
+      const ryddetVedLukk=window._activeAnchorISO===null;
+      const naaErNaa=Math.abs(mobGetAnchor('s').getTime()-Date.now())<5000;
+      openBake('sp1');
+      const satt=window._activeAnchorISO==='2026-08-16T09:47:00';
+      wizFinish();
+      const ryddetVedNyPlan=window._activeAnchorISO===null;
+      window._bakesCache=[{...bake,id:'sp2',anchorMode:'end',anchorISO:'2026-08-16T17:00:00'}];
+      openBake('sp2');
+      const endSetterIkke=window._activeAnchorISO===null;
+      closeActiveDeig(); window._bakesCache=[];
+      return {gjenaapnetRiktig, stabil, ryddetVedLukk, naaErNaa, satt, ryddetVedNyPlan, endSetterIkke};
+    }""")
+    ok174 = all(r174.values())
+    results.append(('reopened_dough_keeps_its_saved_start_anchor', ok174, r174))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

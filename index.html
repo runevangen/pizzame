@@ -2084,7 +2084,7 @@ function doReset(){
   // slått av i det stille hver gang du startet en ny deig — og da er bakst nr. 2
   // ikke lenger et testbakst, som gjør hele sammenligningen verdiløs.
   loadPrefs();
-  window._activeDeigId=null;window._activeDeigName=null;
+  window._activeDeigId=null;window._activeDeigName=null;window._activeAnchorISO=null;
   try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
   window._checkedIngredients=new Set();
@@ -5353,6 +5353,7 @@ function applyBetaResult(regId,altIdx){
   const dateStr=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const timeStr=pad(d.getHours())+':'+pad(d.getMinutes());
   window._planChosen = true;  // v0.655: brukt Smart-plan teller som valg
+  window._activeAnchorISO=null; // v0.816: ny plan fra Smart-plan — gammelt startanker ryddes
   mobShowTab('settings');
   wizGoto(2, ()=>{
     mobMethodCards();
@@ -7015,7 +7016,7 @@ async function renderNotesPanel(targetId){
   window._bakesCache = bakes;
   const b = bakes.find(x=>x.id===id);
   if(!b){
-    window._activeDeigId=null; window._activeDeigName=null;
+    window._activeDeigId=null; window._activeDeigName=null; window._activeAnchorISO=null;
     el.innerHTML = noNoteDeigHTML();
     return;
   }
@@ -8566,6 +8567,7 @@ function applyWindowCandidate(method,key,val){
   // ikke den forrige.
   try{ melkurvAutobytt(); }catch(e){}
   window._planChosen=true;
+  window._activeAnchorISO=null; // v0.816: ny plan fra søket — gammelt startanker ryddes
   // v0.802: Fra–til finnes nå også på PC — synk kontrollene i layouten du står i.
   const mobEl=document.getElementById('mob-layout');
   const isMob=mobEl&&mobEl.classList.contains('active');
@@ -8840,6 +8842,7 @@ function wizBack(){
 }
 function wizFinish(){
   window._planChosen = true;  // v0.655: fullført Planlegging teller som valg
+  window._activeAnchorISO=null; // v0.816: ny plan = nytt anker — det gamle skal ikke lekke inn
   mobShowTab('plan');
 }
 
@@ -8896,7 +8899,20 @@ function mobShowTab(t){
 }
 
 function mobGetAnchor(p){
-  if(p==='s') return new Date(); // "Starter nå" bruker alltid live nåværende tidspunkt — feltet er ikke lenger synlig/redigerbart
+  if(p==='s'){
+    // v0.816: «Starter nå» bruker live nåtid — MEN en gjenåpnet, aktiv deig
+    // skal beholde sitt LAGREDE startanker. Uten dette gled hele tidsplanen
+    // til «nå» ved gjenåpning (meldt inn: «Søndagspizza» lagret 09:47,
+    // gjenåpnet 12:43 → alt forskjøvet tre timer). Ankeret settes KUN av
+    // openBake (egen deig, start-forankret) og nullstilles av alt som
+    // lukker deigen eller lager en ny plan — starten er et historisk
+    // faktum; endringer skal flytte slutten, aldri starten.
+    if(window._activeAnchorISO){
+      const d=new Date(window._activeAnchorISO);
+      if(!isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  }
   const d=document.getElementById('mob-'+p+'d').value;
   const t=document.getElementById('mob-'+p+'t').value||'08:00';
   return d?new Date(d+'T'+t):new Date();
@@ -10381,7 +10397,7 @@ function activeDeigBar(isMob){
 }
 
 function closeActiveDeig(){
-  window._activeDeigId=null; window._activeDeigName=null;
+  window._activeDeigId=null; window._activeDeigName=null; window._activeAnchorISO=null;
   window._checked=new Set();
   window._checkedIngredients=new Set();
   syncSaveBakeLabel();
@@ -10493,6 +10509,10 @@ function openBake(id){
   window._planChosen = true;  // v0.655: åpnet en lagret deig = et reelt valg
   window._activeDeigId = mine ? id : null;
   window._activeDeigName = mine ? b.name : null;
+  // v0.816: egen, start-forankret deig beholder sitt lagrede anker ved
+  // gjenåpning (se mobGetAnchor). Andres deig åpnes «som ny» og skal
+  // naturlig re-forankres til nå.
+  window._activeAnchorISO = (mine && b.anchorMode!=='end' && b.anchorISO) ? b.anchorISO : null;
   window._checked = new Set(Array.isArray(b.checkedSteps) ? b.checkedSteps : []);
   window._checkedIngredients = new Set(Array.isArray(b.checkedIngredients) ? b.checkedIngredients : []);
   window._checkedSubsteps = new Set(Array.isArray(b.checkedSubsteps) ? b.checkedSubsteps : []);
@@ -10623,7 +10643,7 @@ async function deleteBakeConfirm(id){
   try{
     const res = await fetch('/api/bakes/'+id+bakeAuthQuery(), { method: 'DELETE' });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; syncSaveBakeLabel(); }
+    if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; window._activeAnchorISO=null; syncSaveBakeLabel(); }
     refreshBaksterPanels();
     refreshNotesPanels();
     refreshDeigerBanner();
