@@ -743,6 +743,27 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
+### F36. Flytt steketiden ETTER oppstart — med vindusvarsling (v0.813-oppfølger)
+
+v0.813 ga − / + på Steketid-raden, men kun som ren forskyvning før start.
+Etter at deigen står i bulk er fortiden låst: å flytte steketiden tidligere
+FORKORTER gjenværende heving, og det endrer deigen. Knappen kan finnes også
+da, men må være ærlig: «Steketid 16:00 — etterhevingen kortes fra 3 t 50 min
+til 2 t 50 min. Innenfor vinduet ✓», og varsel når melets/metodens
+gjæringsvindu sprenges. Krever at «etter oppstart» defineres (første steg
+avhaket? oppstartstid passert?) og at forskyvningen da holder utførte steg
+fast i stedet for å flytte alt.
+
+### F37. Planen følger avhakingen (v0.813-oppfølger)
+
+Meldt inn fra et ekte bak: brukeren begynte ~20 min før planlagt oppstart,
+og planen sto og pekte på det gamle klokkeslettet mens virkeligheten var i
+gang. Idé: når et steg hakes av på et annet tidspunkt enn planlagt, tilby
+«Startet du nå? Flytt resten av planen tilsvarende». Da følger planen
+virkeligheten i stedet for omvendt. Trenger en terskel (±5 min er støy),
+og må spille sammen med F36 — begge omhandler «planen etter at den har
+møtt virkeligheten».
+
 ### F34. Vinkestyringen tilbake i Fokus — 🧪 VENTER PÅ TRENINGSDATA (v0.792)
 
 Vinken er tatt ut av Fokus fordi den er «sånn halv god». Den bor nå som
