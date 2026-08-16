@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.814",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kickstart-steget sa «la stå til det bobler og skummer» — men med rundt 1 gram gjær i 60 gram vann ser et helt friskt resultat ut som små nålestikk-bobler og en tynn, melkete film, ikke noe skumberg. En fersk bakst viste at teksten fikk et sunt resultat til å ligne en bom. Nå kalibrerer steget forventningen til gjærmengden.",
+      "Dødsgrensa i tipset står uendret: bobler det ikke i det hele tatt etter 5–10 minutter, er gjæren død — bytt den før du blander inn melet."
+    ],
+    "changes_en": [
+      "The kickstart step said \"let it sit until it bubbles and foams\" — but with about 1 gram of yeast in 60 grams of water, a perfectly healthy result looks like tiny pinprick bubbles and a thin, milky film, not a foam dome. A real bake showed the text made a healthy result look like a failure. The step now calibrates the expectation to the amount of yeast.",
+      "The dead-yeast threshold in the tip is unchanged: if nothing bubbles at all after 5–10 minutes, the yeast is dead — replace it before mixing in the flour."
+    ]
+  },
+  {
     "v": "0.813",
     "d": "august 2026",
     "d_en": "August 2026",

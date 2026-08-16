@@ -3361,12 +3361,17 @@ function hurtigSteps(anchor){
   const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
     {title:'Vekk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
-      desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min til det bobler og skummer. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min until it bubbles and foams. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
+      // v0.814: sto «til det bobler og skummer» — men med ~1g gjær i 60g vann
+      // ser et friskt resultat ut som små nålestikk-bobler og en tynn film
+      // (meldt inn med foto fra et ekte bak: så sunt ut, men lignet ikke
+      // løftet i teksten). Forventningen kalibreres til gjærmengden;
+      // dødsgrensa i tipset («ingen bobler i det hele tatt») står uendret.
+      desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min. Med så lite gjær er små bobler og en tynn, melkete film på overflaten nok — ikke vent noe skumberg. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min. With this little yeast, small bubbles and a thin, milky film on the surface are enough — don't wait for a foam dome. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
       needs:[`🫙 ${ya}`, L(`💧 ${wk}g lunkent vann`,`💧 ${wk}g lukewarm water`), L('🍯 1 ts honning','🍯 1 tsp honey')],
       substeps:[
         L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C)`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C)`),
         L('Tilsett en teskje honning','Add a teaspoon of honey'),
-        L('La stå ca. 5 min til det bobler og skummer','Let it sit about 5 min until it bubbles and foams')
+        L('La stå ca. 5 min — små bobler og en tynn film er nok','Let it sit about 5 min — small bubbles and a thin film are enough')
       ],
       why:L('Bekrefter at gjæren faktisk lever før du blander inn resten, og gir den et forsprang siden den får lettfordøyelig mat med det samme i stedet for å vente på melet.','Confirms the yeast is actually alive before you mix in the rest, and gives it a head start since it gets easily digestible food right away instead of waiting for the flour.'),
       tip:L('Bobler det ikke i det hele tatt etter 5–10 min, er gjæren død — bytt den ut nå, ikke etter du har blandet inn alt melet.','If nothing bubbles at all after 5–10 min, the yeast is dead — replace it now, not after you have mixed in all the flour.')},
