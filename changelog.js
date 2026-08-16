@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.811",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Passive steg på tidslinjen sa «1 time venting» — under en tittel som allerede sa «Romtemperaturheving». Deigen hever, modner eller hviler; det er bare du som venter, og ordet leste som at ingenting skjer. Nå viser passive steg bare varigheten: «· 1 time».",
+      "Skillet mellom din tid og deigens tid bæres i stedet av «aktivt»-merket, som står igjen kun på stegene der du faktisk må gjøre noe: står det «15 min aktivt», koster tiden deg — står det bare «1 time», jobber deigen alene."
+    ],
+    "changes_en": [
+      "Passive steps on the timeline said \"1 hour waiting\" — under a title that already said \"Room-temperature rise\". The dough is rising, maturing or resting; only you are waiting, and the word read as if nothing was happening. Passive steps now show just the duration: \"· 1 hour\".",
+      "The distinction between your time and the dough's time is instead carried by the \"active\" mark, which remains only on steps where you actually have to do something: \"15 min active\" costs you time — a bare \"1 hour\" means the dough is working alone."
+    ]
+  },
+  {
     "v": "0.810",
     "d": "august 2026",
     "d_en": "August 2026",

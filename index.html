@@ -3679,7 +3679,12 @@ function renderSteps(steps, mode='desktop'){
           <div style="flex:1;min-width:0">
             <div class="${C.title}">${dispTitle(s.title)}${missed ? ' <span class="missed-flag" title="Tiden for dette steget er passert uten at det er avhaket">⚠️ ikke avhaket</span>' : ''}${isNext ? ' <span class="next-flag" title="Dette er neste steg å gjøre">👉 neste</span>' : ''}${conflictFlag}</div>
             <div class="${C.meta}">
-              <div class="${C.time}">${fDT(s.at)}</div>${s.dur ? `<div class="${C.time}">· ${s.passive ? (window._lang==='en'?durEn(fmtDur(s.dur))+' waiting':fmtDur(s.dur)+' venting') : s.dur+(isMob ? ' min' : L(' min aktivt',' min active'))}</div>` : ''}
+              ${''/* v0.811: passive steg sa «1 time venting» — men tittelen rett over
+                    sier alt hva deigen gjør (heving, modning, pause), og «venting» leste
+                    som at ingenting skjer. Ett fellesord blir enten feil et sted eller
+                    blekt overalt. Nå bærer «aktivt»-merket på de aktive stegene skillet
+                    alene: står det ikke «aktivt», koster ikke tiden deg noe. */}
+              <div class="${C.time}">${fDT(s.at)}</div>${s.dur ? `<div class="${C.time}">· ${s.passive ? (window._lang==='en'?durEn(fmtDur(s.dur)):fmtDur(s.dur)) : s.dur+(isMob ? ' min' : L(' min aktivt',' min active'))}</div>` : ''}
               ${locHtml}
             </div>
           </div>

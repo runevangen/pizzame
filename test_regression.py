@@ -9035,6 +9035,32 @@ const svSched=window._pizzatidSchedule;
     ok169 = (r169 == [])
     results.append(('step_additions_sum_to_the_ingredient_list', ok169, r169))
 
+    # v0.811: passive steg sa «1 time venting» under en tittel som allerede sa
+    # «Romtemperaturheving» — deigen hever, du venter, og ordet leste som at
+    # ingenting skjer (meldt inn fra prod, v0.810-skjermbilde). Valgt løsning A:
+    # passive steg viser bare varigheten, og «aktivt»-merket på de aktive
+    # stegene bærer skillet alene. Fryser begge retninger: ordet borte fra
+    # tidslinjen (begge språk), varigheten fortsatt synlig, «aktivt» fortsatt
+    # på plass på PC.
+    r170 = page.evaluate("""() => {
+      resetTestState();
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65;
+      S.cold=48; S.temp=22; S.mode='end';
+      setLayout('pc'); gen();
+      const no = document.getElementById('main').innerHTML;
+      window._lang='en'; gen();
+      const en = document.getElementById('main').innerHTML;
+      window._lang='no'; gen();
+      return {
+        ventingBorte: !no.includes(' venting'),
+        waitingBorte: !en.includes(' waiting'),
+        varighetVises: /·\\s*1 time/.test(no),
+        aktivtBeholdt: no.includes(' min aktivt')
+      };
+    }""")
+    ok170 = all(r170.values())
+    results.append(('passive_steps_show_bare_duration_active_keep_their_mark', ok170, r170))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 
