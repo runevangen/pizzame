@@ -10041,11 +10041,16 @@ function bakeCardHTML(b, mob){
   const starBtn = mine ? `<span onclick="event.stopPropagation();toggleFavorite('${b.id}',${!!b.favorite})" title="${b.favorite?L('Fjern som favoritt','Remove as favorite'):L('Sett som favoritt','Set as favorite')}" style="cursor:pointer;font-size:16px;color:${b.favorite?'#EFAB27':'var(--dyn-border)'};flex-shrink:0;line-height:1">${b.favorite?'★':'☆'}</span>` : '';
   if(b.status==='active'){
     return `<div style="border:1px solid ${b.favorite&&mine?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
+      ${''/* v0.815: navnekolonnen manglet flex:1/min-width:0 (Ferdige-kortet
+            hadde det) — et langt ettords-navn («Søndagpizza») kunne ikke
+            krympes eller brytes, og malte seg under Åpne-knappen. Meldt inn
+            med skjermbilde. Nå samme mønster som Ferdige-kortet, pluss
+            overflow-wrap så også navn uten mellomrom bryter. */}
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="min-width:0;display:flex;gap:6px;align-items:flex-start">
+        <div style="min-width:0;flex:1;display:flex;gap:6px;align-items:flex-start">
           ${starBtn}
-          <div>
-            <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}${badge}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text);overflow-wrap:anywhere">${escH(b.name)}${badge}</div>
             <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''}</div>
           </div>
         </div>

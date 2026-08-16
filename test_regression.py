@@ -9146,6 +9146,43 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('plan_shift_buttons_move_everything_together_end_mode_only', ok172, r172))
 
+    # v0.815: aktivt deig-kort — navnekolonnen manglet flex:1/min-width:0 og
+    # navnebryting (Ferdige-kortet hadde det), saa et langt ettords-navn
+    # («Søndagpizza») malte seg under Aapne-knappen. Meldt inn med
+    # skjermbilde. Fryses med EKTE geometri, og breddene er KALIBRERT mot
+    # den gamle markupen: ved 360px var det plass nok til at buggen ikke
+    # syntes — ved 280px (og ved ekstra langt navn paa 360px) overlappet
+    # den gamle markupen maalt. En test som ikke feiler paa buggen den skal
+    # fange, tester ingenting.
+    r173 = page.evaluate("""() => {
+      const prov=(bredde,navn)=>{
+        const bake={id:'t1',name:navn,status:'active',favorite:false,
+                    config:{type:'napoletana',method:'hurtig',hydro:62,cold:48},
+                    anchorMode:'start',anchorISO:new Date('2026-08-16T09:47:00').toISOString(),savedBy:'Rune'};
+        const holder=document.createElement('div');
+        holder.style.cssText=`position:fixed;top:0;left:0;width:${bredde}px;background:#fff;z-index:9999`;
+        holder.innerHTML=bakeCardHTML(bake,true);
+        document.body.appendChild(holder);
+        const knapp=[...holder.querySelectorAll('button')].find(x=>/Åpne|Open/.test(x.textContent));
+        const navnEl=[...holder.querySelectorAll('div')].find(x=>x.textContent.startsWith(navn)&&x.style.fontWeight==='600');
+        let res={fantBegge:!!(knapp&&navnEl)};
+        if(res.fantBegge){
+          const a=navnEl.getBoundingClientRect(), c=knapp.getBoundingClientRect();
+          res.overlapp=!(a.right<=c.left||c.right<=a.left||a.bottom<=c.top||c.bottom<=a.top);
+          res.navnSynlig=a.width>50;
+        }
+        holder.remove();
+        return res;
+      };
+      return { smal:prov(280,'Søndagpizzaekstralang'),
+               langtNavn:prov(360,'Søndagpizzaekstraekstraekstralang') };
+    }""")
+    ok173 = all(
+      r173[k].get('fantBegge') and r173[k].get('overlapp') is False and r173[k].get('navnSynlig')
+      for k in ('smal','langtNavn')
+    )
+    results.append(('active_dough_card_name_never_paints_under_the_buttons', ok173, r173))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

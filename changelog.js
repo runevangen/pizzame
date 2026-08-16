@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.815",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "På deig-kortene under «Deiger» kunne et langt navn male seg under Åpne-knappen når plassen ble trang. Navnekolonnen manglet krympe- og brytereglene som Ferdige-kortet allerede hadde — nå deler begge kortene samme oppskrift, og lange navn bryter pent i stedet for å krasje med knappene."
+    ],
+    "changes_en": [
+      "On the dough cards under \"Doughs\", a long name could paint itself under the Open button when space got tight. The name column was missing the shrink and wrap rules the Finished card already had — now both cards share the same recipe, and long names wrap neatly instead of colliding with the buttons."
+    ]
+  },
+  {
     "v": "0.814",
     "d": "august 2026",
     "d_en": "August 2026",
