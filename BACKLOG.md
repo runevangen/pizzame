@@ -752,6 +752,18 @@ samme temperatur hele veien, så forklaringen var UTELUKKENDE hevetid:
 siste emne fikk ~en time mer etterheving. Gjær kan ikke fikse dette —
 den flytter hele vinduet, ikke bredden (1,5→1,6 g ≈ 10–12 min).
 
+**Tilleggsmåling samme dag (rekalibrering venter på flere bakst):**
+kjøkkenet holdt trolig 23–23,5°C, ikke de 22 planen antok — og det gjør
+avviket STØRRE: varmere rom skulle gitt «klar» 10–15 % tidligere, men
+deigen trengte +1 time. Netto lå modellen anslagsvis 20–30 % for
+optimistisk for dette baket (deigstart 25–26°C, beskjeden bulk ved
+forming, siste emne best etter +1t). Mistenkte, i rekkefølge: tørrgjærens
+alder (1,5 g er lite nok til at dødt gjærstøv synes), salt 2,8 %,
+formiddagens urolige oppstart. IKKE juster CALIBRATION på n=1 — men
+fingertest-utfall + faktisk romtemperatur bør noteres de neste bakstene;
+gjentar mønsteret seg, er det tf()/HOPTS-kurven for Hurtigdeig som skal
+ses på, ikke gjærmengden.
+
 To tiltak, i stigende kostnad:
 1. **Tekst i strekk-og-stek-steget (nesten gratis):** «Bak det slappeste/
    mest modne emnet først, det fasteste sist» + fingertest per emne, ikke
