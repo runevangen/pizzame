@@ -9222,6 +9222,46 @@ const svSched=window._pizzatidSchedule;
     ok174 = all(r174.values())
     results.append(('reopened_dough_keeps_its_saved_start_anchor', ok174, r174))
 
+    # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
+    # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
+    # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
+    # aapnet boks var hovedmistenkt (F38). Fryser: fersk er identisk med foer
+    # (0.75/1.5), «lenge» ganger opp alle metodene (ogsaa hurtig/kveld som
+    # regner gjaeren i egne grener), hurtig-PROSAEN bruker samme tall som
+    # recipeFor (hurtigSteps leser naa recipeFor — F17; en lokal duplikat
+    # ville vaert to dommere), mania er unntatt (sitert kildeoppskrift), og
+    # «egen 50 %» dobler.
+    r175 = page.evaluate("""() => {
+      resetTestState();
+      const base=()=>{S.type='napoletana';S.mel=500;S.hydro=62;S.temp=22;S.gjaer='torr';
+        S.kjokkenmaskin='ankarsrum';S.fridgeC=3;S.poolishAndel=0.5;S.poolishCold=false;
+        S.poolishH=14;S.bigaH=18;S.cold=48;S.hurtigH=6;S.kveldH=10;S.gjaertest=false;};
+      base(); S.gjaerTilstand='fersk'; S.gjaerStyrkePct=100;
+      S.method='standard'; const stdFersk=recipeFor().yDry;
+      S.method='hurtig'; const huFersk=recipeFor().yDry;
+      S.gjaerTilstand='lenge';
+      S.method='standard'; const stdLenge=recipeFor().yDry;
+      S.method='kveld'; const kvFersk=(S.gjaerTilstand='fersk',recipeFor().yDry); S.gjaerTilstand='lenge';
+      const kvLenge=recipeFor().yDry;
+      S.method='hurtig'; const rec=recipeFor(); const huLenge=rec.yDry;
+      const st1=hurtigSteps(new Date('2026-08-16T09:00:00')).steps;
+      const prosaHarTall=st1[0].desc.includes(`${rec.yDry}g`);
+      S.method='mania'; const mF=(S.gjaerTilstand='fersk',recipeFor().yDry); S.gjaerTilstand='lenge';
+      const maniaLik=recipeFor().yDry===mF;
+      S.method='standard'; S.gjaerTilstand='egen'; S.gjaerStyrkePct=50;
+      const stdEgen=recipeFor().yDry;
+      S.gjaerTilstand='fersk'; S.gjaerStyrkePct=100;
+      return { stdFersk, huFersk, stdLenge, kvFersk, kvLenge, huLenge, prosaHarTall, maniaLik, stdEgen };
+    }""")
+    ok175 = (
+      r175['stdFersk'] == 0.75 and r175['huFersk'] == 1.5 and
+      r175['stdLenge'] == 1.08 and r175['huLenge'] == 2.14 and
+      abs(r175['kvLenge'] - r175['kvFersk'] / 0.7) < 0.02 and
+      r175['prosaHarTall'] and r175['maniaLik'] and
+      r175['stdEgen'] == 1.51
+    )
+    results.append(('opened_yeast_scales_amount_everywhere_prose_agrees_mania_exempt', ok175, r175))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

@@ -1123,7 +1123,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="engine.js?v=1"></script>
 <script src="guide.js?v=1"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishAndel:0.5,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishAndel:0.5,poolishPauseH:0,meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,gjaerTilstand:'fersk',gjaerStyrkePct:100,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -1365,6 +1365,7 @@ function syncStaticI18nUI(){
   st('mob-cold-lbl','Kjøleskapsheving','Cold proof');
   st('mob-temp-lbl','Romtemperatur','Room temperature');
   st('mob-ggj-lbl','Gjærtype','Yeast type');
+  st('mob-ggjt-lbl','Gjærens tilstand','Yeast condition');
   st('mob-ggj-hint','Velg én','Choose one');
   st('mob-gkm-lbl','Kjøkkenmaskin','Stand mixer');
   st('mob-gkm-hint','Velg én','Choose one');
@@ -1449,7 +1450,7 @@ function isAtDefaultConfig(){
 // den faktisk brukte) — men de har i tillegg sin egen nøkkel, slik `showSubsteps`
 // har hatt siden F2. Åpner du en lagret deig, styrer dens config visningen; det
 // er riktig, for da ser du på nettopp den deigen.
-const PREF_FIELDS=['gjaertest','favMethod'];
+const PREF_FIELDS=['gjaertest','favMethod','gjaerTilstand','gjaerStyrkePct'];
 const PREF_KEY='pizzaPrefs';
 function loadPrefs(){
   try{
@@ -3351,7 +3352,10 @@ function hurtigSteps(anchor){
   // som modellen (kickVannG/KICK_TEMP).
   const wk=kickVannG(),wr=w-wk;
   const ktxt=`${KICK_TEMP.mn}–${KICK_TEMP.mx}`;
-  const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
+  // v0.817 (F17-grepet): gjæren leses fra recipeFor() — samme kilde som
+  // oppskriftsfanen. Var en lokal duplikat av HOPTS-utregningen; med gjærens
+  // tilstand i bildet ville to utregninger vært to dommere som kunne sprike.
+  const _r4y=recipeFor(),yd=_r4y.yDry,yf=_r4y.yFresh;
   const ya=S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
   const tmp=S.oven==='pizza'?o.tp:o.tv;
   // v6.12 (BACKLOG #6): begge gjæringsfasene skaleres med tf(). Bulk (ba) var
@@ -3878,6 +3882,41 @@ function ballWeightRows(){
 // Poenget med raden: en gjærtest som bare viser det NYE tallet er ikke en test,
 // det er en endring. Du skal se hva du bytter bort, ellers kan du ikke vurdere
 // resultatet etterpå.
+// v0.817: Finjuster-noten for gjærens tilstand. Viser BEGGE tall (normalt →
+// justert) fra samme kilde som oppskriften (recipeFor med tilstanden midlertidig
+// satt til fersk — samme grep som recipeWithoutGjaertest), sier at 85/70 er
+// anslag, og gir «Målt %» et tallfelt for duelltest-resultatet.
+function gjaerTilstandFoer(){
+  if(typeof gjaerStyrke!=='function'||gjaerStyrke()>=1) return null;
+  if(S.method==='mania') return null; // sitert kildeoppskrift — unntatt
+  const sv=S.gjaerTilstand; S.gjaerTilstand='fersk';
+  try{ return recipeFor(); } finally{ S.gjaerTilstand=sv; }
+}
+function renderGjaerTilstandNote(){
+  const el=document.getElementById('mob-ggjt-note');
+  if(!el) return;
+  const st=gjaerStyrke();
+  const egen=S.gjaerTilstand==='egen';
+  const inputHtml=egen?`<div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+      <label for="mob-ggjt-pct" style="font-size:12px;color:var(--forno-text)">${L('Målt styrke','Measured strength')}</label>
+      <input id="mob-ggjt-pct" type="number" min="10" max="100" step="5" value="${Number(S.gjaerStyrkePct)||100}"
+        onchange="S.gjaerStyrkePct=Math.max(10,Math.min(100,Number(this.value)||100));persistSetup();renderGjaerTilstandNote();mobGen();"
+        style="width:70px;padding:6px;border:1px solid var(--forno-border,#ddd);border-radius:8px;font-size:13px;background:var(--forno-bg-raised,#fff);color:var(--forno-text)"> %
+    </div>`:'';
+  let tallHtml='';
+  const foer=gjaerTilstandFoer();
+  if(foer&&window._planChosen){
+    const naa=recipeFor();
+    const a=S.gjaer==='torr'?foer.yDry:foer.yFresh, b=S.gjaer==='torr'?naa.yDry:naa.yFresh;
+    if(a&&b&&a!==b) tallHtml=`<div style="margin-top:6px;padding:7px 10px;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:8px;font-size:11.5px;font-weight:600;color:var(--forno-accent-text)">${L(`${b}g i stedet for ${a}g — samme virkning som fersk gjær.`,`${b}g instead of ${a}g — same effect as fresh yeast.`)}</div>`;
+  }
+  if(S.method==='mania'&&st<1){
+    tallHtml=`<div style="margin-top:6px;font-size:11px;color:var(--forno-text-faint)">${L('Mania-poolish følger kildeoppskriften ordrett og justeres ikke.','Mania poolish follows the source recipe verbatim and is not adjusted.')}</div>`;
+  }
+  el.innerHTML=`<div style="font-size:11px;color:var(--forno-text-faint);line-height:1.5">${L(
+    'Åpnet tørrgjær mister styrke av fukt og romtemperatur — mengden ganges opp så virkningen blir som fersk, og hevetidene står. 85/70 % er anslag; mål din egen med to glass lunkent vann og honning (gammel mot fersk gjær, sammenlign skummet etter 10 min) og velg «Målt %».',
+    'Opened dry yeast loses strength to moisture and room temperature — the amount is scaled up so the effect matches fresh yeast, and the rise times hold. 85/70% are estimates; measure your own with two glasses of lukewarm water and honey (old vs fresh yeast, compare the foam after 10 min) and choose "Measured %".')}</div>${inputHtml}${tallHtml}`;
+}
 function gjaertestRows(){
   const før=(typeof recipeWithoutGjaertest==='function')?recipeWithoutGjaertest():null;
   if(!før) return [];
@@ -7709,6 +7748,8 @@ function syncMobControls(){
   mobHydroUI();
   mobPillGroup('mob-gtype','type');
   mobPillGroup('mob-ggj','gjaer');
+  mobPillGroup('mob-ggjt','gjaerTilstand');
+  renderGjaerTilstandNote();
   mobPillGroup('mob-gkm','kjokkenmaskin');
   syncMobMeltypeSelect();
   updatePcountDisp(); // v6.34: init også Finjuster-antallet
@@ -7759,6 +7800,9 @@ function mobPillGroup(id,key){
   const vals={
     type:[{v:'napoletana',t:'Napoletansk'},{v:'newyork',t:'New York'},{v:'langpanne',t:'Langpanne'},{v:'chicago',t:'Chicago'},{v:'ingenelting',t:'Ingen elting'}],
     gjaer:[{v:'torr',t:'Tørrgjær',e:'Dry yeast'},{v:'fersk',t:'Fersk gjær',e:'Fresh yeast'}],
+    // v0.817: gjærens tilstand — åpnet tørrgjær mister styrke; mengden ganges
+    // opp så virkningen blir som fersk (gjaerStyrke() i engine.js).
+    gjaerTilstand:[{v:'fersk',t:'Fersk/uåpnet',e:'Fresh/unopened'},{v:'nylig',t:'Åpnet nylig',e:'Opened recently'},{v:'lenge',t:'Åpnet lenge',e:'Open a while'},{v:'egen',t:'Målt %',e:'Measured %'}],
     kjokkenmaskin:[{v:'ankarsrum',t:'Ankarsrum',e:'Ankarsrum'},{v:'manuell',t:'Manuell elting',e:'Manual kneading'},{v:'annen',t:'Annen maskin',e:'Other machine'}],
     oven:[{v:'pizza',t:'Pizzaovn',e:'Pizza oven'},{v:'vanlig',t:'Vanlig ovn',e:'Regular oven'}],
     // F13: soner forankret i Mattilsynets 0–4°C for riktig innstilt kjøleskap;
@@ -7805,6 +7849,7 @@ function mobPillGroup(id,key){
       S[key]=v;
       if(changed && PROGRESS_RESETTING_FIELDS.has(key)) clearStepProgress();
       mobPillGroup(id,key);
+      if(key==='gjaerTilstand') renderGjaerTilstandNote();
       if(key==='type'){const r=HREC[S.type];S.hydro=r;document.getElementById('mob-hsl').value=r;mobHydroUI();applyMobTypeUI();}
       mobGen();
     };
@@ -10973,6 +11018,9 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="mob-section-lbl" id="mob-ggj-lbl">Gjærtype</div>
     <div id="mob-ggj-hint" style="display:none;font-size:10.5px;color:#854F0B;padding:0 1rem 4px;margin-top:-4px">Velg én</div>
     <div class="mob-pill-wrap" id="mob-ggj"></div>
+    <div class="mob-section-lbl" id="mob-ggjt-lbl">Gjærens tilstand</div>
+    <div class="mob-pill-wrap" id="mob-ggjt"></div>
+    <div id="mob-ggjt-note" style="padding:0 1rem .5rem"></div>
     </div>
 
     <div id="mob-gkm-wrap">

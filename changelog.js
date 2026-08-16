@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.817",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny innstilling i Finjuster: «Gjærens tilstand». En åpnet boks tørrgjær mister styrke av fukt og romtemperatur — gjæren kan boble i koppen og likevel dra deigen 20–30 % bak skjema, slik dagens bakst viste. Velg «Åpnet nylig» (~85 %) eller «Åpnet lenge» (~70 %), så ganges mengden opp slik at virkningen blir som fersk gjær og alle hevetider står.",
+      "Prosentene er anslag og merket som det. Vil du ha ditt eget tall: sett to glass lunkent vann med honning, samme mengde gammel og fersk gjær i hvert, sammenlign skummet etter 10 minutter — og velg «Målt %». Finjuster viser begge tall («2,1g i stedet for 1,5g»), så du ser hva justeringen gjør.",
+      "Gjelder alle metoder unntatt Mania-poolish, som følger kildeoppskriften sin ordrett. Samtidig leser Hurtigdeig-stegene nå gjæren fra samme kilde som oppskriftsfanen, i stedet for en egen utregning — så de to aldri kan vise ulike tall."
+    ],
+    "changes_en": [
+      "New setting under Fine-tune: \"Yeast condition\". An opened tin of dry yeast loses strength to moisture and room temperature — the yeast can bubble in the cup and still drag the dough 20–30% behind schedule, as today's bake showed. Choose \"Opened recently\" (~85%) or \"Open a while\" (~70%), and the amount is scaled up so the effect matches fresh yeast and all rise times hold.",
+      "The percentages are estimates and labelled as such. Want your own number? Set up two glasses of lukewarm water with honey, the same amount of old and fresh yeast in each, compare the foam after 10 minutes — and choose \"Measured %\". Fine-tune shows both numbers (\"2.1g instead of 1.5g\"), so you can see what the adjustment does.",
+      "Applies to every method except Mania poolish, which follows its source recipe verbatim. At the same time, the Quick dough steps now read the yeast from the same source as the recipe tab instead of their own calculation — so the two can never show different numbers."
+    ]
+  },
+  {
     "v": "0.816",
     "d": "august 2026",
     "d_en": "August 2026",

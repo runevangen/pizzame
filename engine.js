@@ -114,8 +114,28 @@ function yeastMultiplier(){
   }
   return coldMultForHours(S.cold)*prefermentYeastMult()*fridgeYeastMult();
 }
+// v0.817: gjærens tilstand. En åpnet boks tørrgjær mister styrke (fukt +
+// romtemperatur), og «lever» er ikke «full styrke»: bakst 16.08.2026 viste
+// synlige kickstart-bobler, men en deig 20–30 % bak modellen tross varmt
+// kjøkken — åpnet boks var hovedmistenkt (F38-notatet). Mengden ganges opp
+// med 1/styrke, så VIRKNINGEN blir som fersk gjær og alle hevetider står.
+// Prosentene for «nylig»/«lenge» er anslag (merket i Finjuster); «egen» er
+// brukerens egen måling fra to-glass-duelltesten. Ganges inn der slutt-
+// mengden regnes: R() (standard/poolish/biga/ingen elting) og recipeFor
+// sine hurtig- og kveldsgrener. Mania er MED VILJE unntatt — det er en
+// sitert kildeoppskrift med faste gram (samme grunn som at gjærtesten og
+// kjøleskapskompensasjonen ikke rører den).
+function gjaerStyrke(){
+  if(S.gjaerTilstand==='nylig') return 0.85;
+  if(S.gjaerTilstand==='lenge') return 0.7;
+  if(S.gjaerTilstand==='egen'){
+    const p=Number(S.gjaerStyrkePct);
+    if(Number.isFinite(p)&&p>=10&&p<=100) return p/100;
+  }
+  return 1;
+}
 function R(){
-  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*effSugarPct()/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*yeastMultiplier()*100)/100,yf=Math.round(yd*3*10)/10;
+  const m=S.mel,w=Math.round(m*S.hydro/100),sa=Math.round(m*BSALT[S.type]/100*10)/10,oi=Math.round(m*BOIL[S.type]/100),bu=Math.round(m*(BBUTTER[S.type]||0)/100),su=Math.round(m*effSugarPct()/100*10)/10,yd=Math.round(m*BYEAST[S.type]/100*yeastMultiplier()/gjaerStyrke()*100)/100,yf=Math.round(yd*3*10)/10;
   const ns=window._lang==='en'
     ?{napoletana:'Neapolitan pizza',newyork:'New York pizza',langpanne:'Sheet-pan pizza',chicago:'Chicago deep dish',ingenelting:'No-knead pizza'}
     :{napoletana:'Napoletansk pizza',newyork:'New York-pizza',langpanne:'Langpannepizza',chicago:'Chicago deep dish',ingenelting:'Ingen elting-pizza'};
@@ -181,13 +201,13 @@ function recipeFor(){
   if(S.type==='ingenelting') return rec;
   if(S.method==='hurtig'){
     const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3], f=S.mel/500;
-    rec.yDry=Math.round(o.yp*f*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
+    rec.yDry=Math.round(o.yp*f/gjaerStyrke()*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
   }else if(S.method==='kveld'){
     // v0.741: Kveldsdeig regner gjæren her, ikke via yeastMultiplier — så
     // gjærtesten må gripe inn på dette stedet for at den skal gjelde metoden.
     const q=gjaertestActive()?gjaertestMult():null;
     const mult=(q!==null)?q:(KCOLDMULT[S.kveldH]||2.0)*fridgeYeastMult(); // F13: kveld kaldhever også
-    rec.yDry=Math.round(S.mel*BYEAST[S.type]/100*mult*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
+    rec.yDry=Math.round(S.mel*BYEAST[S.type]/100*mult/gjaerStyrke()*100)/100; rec.yFresh=Math.round(rec.yDry*3*10)/10;
   }else if(S.method==='mania'){
     const rm=maniaRecipe();
     rec.water=rm.poolishVann+rm.vann1+rm.vann2;
