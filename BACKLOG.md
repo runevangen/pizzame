@@ -743,6 +743,26 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
+### F38. Flere pizzaer = stekevindu, ikke stekepunkt
+
+Målt 16.08.2026 (Hurtigdeig 6t, 3 emner, pizzaovn): en time fra første til
+siste pizza, og kvaliteten steg for hver — første fikk «litt oven spring»,
+siste ble perfekt (åpen kant, leopard). IR-måling viste at dekket holdt
+samme temperatur hele veien, så forklaringen var UTELUKKENDE hevetid:
+siste emne fikk ~en time mer etterheving. Gjær kan ikke fikse dette —
+den flytter hele vinduet, ikke bredden (1,5→1,6 g ≈ 10–12 min).
+
+To tiltak, i stigende kostnad:
+1. **Tekst i strekk-og-stek-steget (nesten gratis):** «Bak det slappeste/
+   mest modne emnet først, det fasteste sist» + fingertest per emne, ikke
+   per bakst. Ved N>1 pizzaer.
+2. **Vindussikting:** appen vet antall pizzaer og kan anslå stekevinduet
+   (~15–20 min per pizza i pizzaovn, mer i vanlig ovn). Sikt etterhevingen
+   mot MIDTEN av vinduet i stedet for første pizza — da er første emne
+   «nesten klar», siste «såvidt over», i stedet for dagens «første tidlig,
+   siste perfekt». Krever at etterhevingens mål flyttes ~halvparten av
+   vindusbredden frem, og at steget sier hvorfor.
+
 ### F36. Flytt steketiden ETTER oppstart — med vindusvarsling (v0.813-oppfølger)
 
 v0.813 ga − / + på Steketid-raden, men kun som ren forskyvning før start.
