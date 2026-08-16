@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.812",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Hurtigdeigens kickstart ber om 60g vann på 40–43°C — men varmeregnskapet bak anbefalt vanntemperatur regnet ALT vannet som likt temperert. Fulgte du planen bokstavelig, landet deigen rundt 26°C der planen lovet 24. Samme vann sto altså med to temperaturer i to steg.",
+      "Nå bokføres kickstartvannet som sitt eget, varme ledd i varmebalansen, og resten av vannet beregnes kaldere for å kompensere: for en typisk plan (500g mel, 20°C kjøkken) sier eltesteget nå 15°C i stedet for 20°C — og deigen treffer faktisk 24°C.",
+      "Kickstartens temperaturspenn har én kilde som både stegteksten og regnestykket leser, så de to kan ikke lenger drive fra hverandre. De andre metodene er uberørt — de har ingen varm kickstart."
+    ],
+    "changes_en": [
+      "Quick dough's kickstart calls for 60g of water at 40–43°C — but the heat budget behind the recommended water temperature counted ALL the water at one temperature. Following the plan literally landed the dough around 26°C where the plan promised 24. The same water was booked at two temperatures in two steps.",
+      "The kickstart water is now its own warm term in the heat balance, and the rest of the water is computed colder to compensate: for a typical plan (500g flour, 20°C kitchen) the kneading step now says 15°C instead of 20°C — and the dough actually hits 24°C.",
+      "The kickstart's temperature range has one source that both the step text and the calculation read, so the two can no longer drift apart. The other methods are untouched — they have no warm kickstart."
+    ]
+  },
+  {
     "v": "0.811",
     "d": "august 2026",
     "d_en": "August 2026",

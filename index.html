@@ -2676,6 +2676,17 @@ function mixWorkNote(){
 const C_MEL=1.8, C_VANN=4.186;                          // kJ/kg·K
 const FRIKSJON_C={ankarsrum:4, manuell:1.5, annen:8};   // reell oppvarming fra elting
 function friksjonC(){ return FRIKSJON_C[S.kjokkenmaskin] ?? 5; }
+// v0.812: Hurtigdeigens kickstart ber om 60g vann på 40–43°C, men varmebalansen
+// bokførte ALT vannet på den beregnede temperaturen — samme vann sto altså med
+// to ulike temperaturer i to steg. Målt (500g mel, 62 %, 20°C rom, Ankarsrum):
+// planen lovet 24°C ferdig deig, å følge den bokstavelig ga ~26,5°C. Nå er
+// kickstartvannet et eget, fast ledd i balansen (midtpunktet av spennet), og
+// resten av vannet beregnes til å treffe målet — for samme scenario: 15°C.
+// Én kilde: både stegteksten og modellen leser KICK_TEMP.
+const KICK_TEMP={mn:40,mx:43};
+function kickVannG(){
+  return (S.method==='hurtig' && S.type!=='ingenelting') ? Math.round(60*S.mel/500) : 0;
+}
 // Newton: en bolle nærmer seg omgivelsene eksponentielt, og tidskonstanten følger
 // massen. 2,2 timer for 500g er anslaget tempereringstiden er bygget på — samme
 // tall begge steder, så de to ikke kan sprike.
@@ -2711,6 +2722,13 @@ function deigKomponenter(vannC){
   if(fd) return [[fd.melG/1000,C_MEL,fd.tempC],[fd.vannG/1000,C_VANN,fd.tempC],
                  [(melG-fd.melG)/1000,C_MEL,S.temp],
                  [Math.max(0,vannG-fd.vannG)/1000,C_VANN,vannC]];
+  // v0.812: kickstartvannet (Hurtigdeig) er et fast, varmt ledd — bare resten
+  // av vannet er spaken. Siste ledd må forbli spaken: calcWaterTempRaw løser
+  // for k[k.length-1].
+  const kick=kickVannG();
+  if(kick>0 && vannG>kick)
+    return [[melG/1000,C_MEL,S.temp],[kick/1000,C_VANN,(KICK_TEMP.mn+KICK_TEMP.mx)/2],
+            [(vannG-kick)/1000,C_VANN,vannC]];
   return [[melG/1000,C_MEL,S.temp],[vannG/1000,C_VANN,vannC]];
 }
 function deigTempC(vannC){
@@ -3315,10 +3333,15 @@ function hurtigSteps(anchor){
   const o=HOPTS.find(x=>x.h===S.hurtigH)||HOPTS[3],r=R(),ie=S.mode==='end';
   const w=Math.round(S.mel*S.hydro/100),f=S.mel/500;
   // Kickstarten vekker gjæren i en LITEN, varm porsjon av vannet (wk); resten
-  // (wr) tilsettes i eltesteget på DDT-temperaturen. wk+wr=w, så hydreringen er
-  // uendret og ~24°C-målet på ferdig deig holder fortsatt (bulken av vannet er
-  // fremdeles DDT-temperert). Vann og gjær skal derfor kun telles ÉN gang.
-  const wk=Math.round(60*f),wr=w-wk;
+  // (wr) tilsettes i eltesteget. wk+wr=w, så hydreringen er uendret, og vann
+  // og gjær telles kun ÉN gang. v0.812: kommentaren her påsto tidligere at
+  // 24°C-målet holdt «fordi bulken av vannet er DDT-temperert» — det stemte
+  // ikke: kickstartens 60g på ~41°C løftet deigen ~2,5°C over målet. Nå står
+  // kickstartvannet som eget ledd i deigKomponenter, og calcWaterTempC()
+  // kompenserer med kaldere restvann. wk og temperatur leses fra samme kilde
+  // som modellen (kickVannG/KICK_TEMP).
+  const wk=kickVannG(),wr=w-wk;
+  const ktxt=`${KICK_TEMP.mn}–${KICK_TEMP.mx}`;
   const yd=Math.round(o.yp*f*100)/100,yf=Math.round(yd*3*10)/10;
   const ya=S.gjaer==='torr'?L(`${yd}g tørrgjær`,`${yd}g dry yeast`):L(`${yf}g fersk gjær`,`${yf}g fresh yeast`);
   const tmp=S.oven==='pizza'?o.tp:o.tv;
@@ -3338,10 +3361,10 @@ function hurtigSteps(anchor){
   const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
     {title:'Vekk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
-      desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (40–43°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min til det bobler og skummer. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (40–43°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min until it bubbles and foams. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
+      desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min til det bobler og skummer. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min until it bubbles and foams. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
       needs:[`🫙 ${ya}`, L(`💧 ${wk}g lunkent vann`,`💧 ${wk}g lukewarm water`), L('🍯 1 ts honning','🍯 1 tsp honey')],
       substeps:[
-        L(`Rør ${ya} ut i ${wk}g lunkent vann (40–43°C)`,`Stir ${ya} into ${wk}g lukewarm water (40–43°C)`),
+        L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C)`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C)`),
         L('Tilsett en teskje honning','Add a teaspoon of honey'),
         L('La stå ca. 5 min til det bobler og skummer','Let it sit about 5 min until it bubbles and foams')
       ],

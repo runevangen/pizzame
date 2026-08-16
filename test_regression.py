@@ -3953,7 +3953,10 @@ def _atferd_5(page, results):
         annenHas10: /\\b10°C\\b/.test(stdAnnen) && stdAnnen.includes('kaldt vann fra springen'),
         // Og ingen av dem faar kalle vann under 15 grader «romtemperert».
         ingenLoegn: [std22,pl22,bg22,std26,stdAnnen].every(d=>!/romtemperert vann/.test(d)),
-        hurtig19: hu22.includes('19°C'),
+        // v0.812: var 19°C. Kickstartens 60g @ 40-43°C bokfores naa i
+        // varmebalansen, saa restvannet maa vaere kaldere for samme 24°C-maal:
+        // (0,9·22 + 0,25116·41,5 + 1,10929·t)/2,26045 = 24-4 → t=13,5 → 14°C.
+        hurtig19: hu22.includes('14°C'),
         ingeneltingQualitative: ie.includes('ikke iskaldt') && !ie.includes('anbefalt')
       };
     }""")
@@ -9060,6 +9063,48 @@ const svSched=window._pizzatidSchedule;
     }""")
     ok170 = all(r170.values())
     results.append(('passive_steps_show_bare_duration_active_keep_their_mark', ok170, r170))
+
+    # v0.812: Hurtigdeigens kickstart ber om 60g vann paa 40-43°C, men
+    # varmebalansen bokforte ALT vannet paa den beregnede temperaturen — samme
+    # vann sto med to temperaturer i to steg, og aa folge planen bokstavelig ga
+    # ~26,5°C deig der planen lovet 24 (funnet i DEL 1-gjennomgang av en ekte
+    # plan, 16.08.2026). Naa er kickstartvannet et fast ledd i deigKomponenter.
+    # Fryser: (1) fikspunktet 15°C restvann for gjennomgangsscenarioet,
+    # (2) aerlighetssjekken — aa BOKSTAVELIG blande 60g @ midtpunktet + resten
+    # @ anbefalt temperatur lander paa ~24°C (regnet uavhengig i testen, ikke
+    # via deigTempC), (3) prosa==modell i steg 2 (to dommere), og (4) at de
+    # andre metodene staar urort paa sine gamle verdier.
+    r171 = page.evaluate("""() => {
+      resetTestState();
+      S.kjokkenmaskin='ankarsrum'; S.gjaer='torr'; S.mode='start';
+      S.method='hurtig'; S.type='napoletana'; S.mel=500; S.hydro=62; S.temp=20; S.hurtigH=8;
+      const wt=calcWaterTempC();
+      const deig=deigTempC(wt);
+      const st=hurtigSteps(new Date('2026-08-16T07:44:00')).steps;
+      const m=(st[1].desc.match(/\\((\\d+)g, (\\d+)°C\\)/)||[]).slice(1);
+      // uavhengig varmebalanse: mel 20°C + kickstart @ KICK_TEMP-midtpunkt +
+      // rest @ wt + Ankarsrum-friksjon — ren aritmetikk, ingen appfunksjoner
+      const wk=kickVannG(), w=Math.round(S.mel*S.hydro/100);
+      const C=0.5*1.8 + wk/1000*4.186 + (w-wk)/1000*4.186;
+      const E=0.5*1.8*20 + wk/1000*4.186*(KICK_TEMP.mn+KICK_TEMP.mx)/2 + (w-wk)/1000*4.186*wt;
+      const bokstavelig=E/C+4;
+      const kickTekst=st[0].desc.includes(`${KICK_TEMP.mn}–${KICK_TEMP.mx}°C`);
+      S.method='standard'; S.hydro=65; S.temp=22; const stdWt=calcWaterTempC();
+      S.method='kveld'; const kveldWt=calcWaterTempC();
+      S.method='poolish'; S.poolishCold=false; S.poolishH=14; const poolishWt=calcWaterTempC();
+      return { wt, deig:Math.round(deig*100)/100, proseVann:m[0], proseTemp:m[1],
+               bokstavelig:Math.round(bokstavelig*100)/100, kickTekst, wk,
+               stdWt, kveldWt, poolishWt };
+    }""")
+    ok171 = (
+      r171['wt'] == 15 and
+      abs(r171['deig'] - 24) <= 0.2 and
+      abs(r171['bokstavelig'] - 24) <= 0.2 and
+      r171['proseVann'] == '250' and int(r171['proseTemp']) == r171['wt'] and
+      r171['kickTekst'] and r171['wk'] == 60 and
+      r171['stdWt'] == 19 and r171['kveldWt'] == 19 and r171['poolishWt'] == 8
+    )
+    results.append(('kickstart_water_heat_is_booked_and_the_rest_compensates', ok171, r171))
 
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
