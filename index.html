@@ -3799,6 +3799,47 @@ function scrollToNextStep(){
   }
 }
 
+// v0.818: flytting-ved-åpning. Hakene er innholdsnøklet (tittel + tallene i
+// teksten) — riktig for LIVE endringer (r31c: endrer du oppskriften, skal ikke
+// et gammelt hak påstå at det nye steget er gjort), men galt ved gjenåpning
+// av en påbegynt deig: baket 16.08 spente over v0.810–0.817, og hver versjon
+// som omskrev et tall i et steg gjorde hakene foreldreløse («huskes ikke»).
+// Regelen: et hak som ikke matcher noe nåværende steg eksakt, men hvis TITTEL
+// matcher nøyaktig ETT steg, flyttes dit — gjort er gjort selv om en app-
+// oppdatering omformulerte tallene. To steg med samme tittel → ingen flytting
+// (heller et tapt hak enn et gjettet). Steg som har BYTTET tittel kan ikke
+// gjenkjennes — kjent begrensning, samme for ingredienshak (utenfor denne
+// runden: de kan ikke flyttes uten å vite radverdiene). Kalles KUN fra
+// openBake — live-oppførselen er urørt.
+function migrerHakVedApning(){
+  const steps=window._steps||[];
+  if(!steps.length) return false;
+  let endret=false;
+  const perTittel={};
+  steps.forEach(s=>{ const t=String(s.title||''); (perTittel[t]=perTittel[t]||[]).push(s); });
+  const ck=window._checked;
+  if(ck&&ck.size){
+    const naa=new Set(steps.map(stepSig));
+    [...ck].forEach(sig=>{
+      if(typeof sig!=='string'||!sig.startsWith('S|')||naa.has(sig)) return;
+      const kand=perTittel[sig.split('|')[1]||'']||[];
+      if(kand.length===1){ ck.delete(sig); ck.add(stepSig(kand[0])); endret=true; }
+    });
+  }
+  const cs=window._checkedSubsteps;
+  if(cs&&cs.size){
+    const naaB=new Set(); steps.forEach(s=>(s.substeps||[]).forEach((_,j)=>naaB.add(substepSig(s,j))));
+    [...cs].forEach(sig=>{
+      if(typeof sig!=='string'||!sig.startsWith('B|')||naaB.has(sig)) return;
+      const deler=sig.split('|'), j=Number(deler[2]);
+      const kand=perTittel[deler[1]||'']||[];
+      if(kand.length===1&&Number.isFinite(j)&&(kand[0].substeps||[]).length>j){
+        cs.delete(sig); cs.add(substepSig(kand[0],j)); endret=true;
+      }
+    });
+  }
+  return endret;
+}
 async function persistCheckedSteps(){
   const id = window._activeDeigId;
   if(!id) return; // Ulagret oppsett: avhaking lever kun i denne økten
@@ -10577,6 +10618,7 @@ function openBake(id){
     mobSetMode(uiMode());
     mobShowTab('plan');
     mobGen();
+    if(migrerHakVedApning()){ mobGen(); persistCheckedSteps(); persistCheckedSubsteps(); }
   }else{
     const p = S.mode==='end' ? 'e' : 's';
     const dEl=document.getElementById(p+'d'), tEl=document.getElementById(p+'t');
@@ -10586,6 +10628,7 @@ function openBake(id){
     showTab('plan', document.querySelector('.topnav .tab'));
     clearTimeout(AT);
     gen();
+    if(migrerHakVedApning()){ gen(); persistCheckedSteps(); persistCheckedSubsteps(); }
     closeDeigerModal();
   }
 }

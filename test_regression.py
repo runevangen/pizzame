@@ -9262,6 +9262,47 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('opened_yeast_scales_amount_everywhere_prose_agrees_mania_exempt', ok175, r175))
 
+    # v0.818: hakene er innholdsnoeklet, saa en appoppdatering som omskrev et
+    # TALL i et steg gjorde lagrede hak foreldreloese ved gjenaapning (meldt
+    # inn etter baket 16.08, som spente over v0.810-0.817). Naa flyttes et hak
+    # som ikke matcher eksakt, men hvis tittel matcher noeyaktig ETT steg —
+    # gjort er gjort selv om tallene ble omformulert. Fryser regelen: flytting
+    # ved unik tittel (steg + understeg), INGEN flytting ved tittelkollisjon
+    # eller ukjent tittel, og live-oppfoerselen (r31c) er uroert siden
+    # migreringen kun kalles fra openBake.
+    r176 = page.evaluate("""() => {
+      resetTestState();
+      const ut={};
+      window._steps=[{title:'A',desc:'1g',substeps:['x 1g']},{title:'A',desc:'2g'},{title:'B',desc:'3g'}];
+      window._checked=new Set(['S|A|999','S|B|999']);
+      window._checkedSubsteps=new Set(['B|A|0|999']);
+      migrerHakVedApning();
+      ut.kollisjonUrort=window._checked.has('S|A|999');
+      ut.bFlyttet=window._checked.has(stepSig(window._steps[2]));
+      ut.substepKollisjonUrort=window._checkedSubsteps.has('B|A|0|999');
+      setLayout('mob');
+      const cfg={type:'napoletana',method:'hurtig',hurtigH:6,mel:500,hydro:62,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'};
+      Object.assign(S,cfg); S.mode='start'; S.gjaerTilstand='fersk'; S.gjaerStyrkePct=100;
+      window._planChosen=true; window._activeAnchorISO=null;
+      window._checked=new Set(); window._checkedSubsteps=new Set();
+      mobShowTab('plan'); mobGen();
+      const sig1=stepSig(window._steps[0]), sub1=substepSig(window._steps[0],0);
+      const bake={id:'t9',name:'Test',status:'active',ownerId:currentUserId(),
+                  config:{...cfg},anchorMode:'start',anchorISO:'2026-08-16T09:47:00',
+                  checkedSteps:[sig1,'S|Finnes ikke|1'],checkedSubsteps:[sub1],checkedIngredients:[]};
+      window._bakesCache=[bake];
+      S.gjaerTilstand='lenge';
+      openBake('t9');
+      ut.stegOverlever=stepChecked(window._steps[0],0);
+      ut.substepOverlever=window._checkedSubsteps.has(substepSig(window._steps[0],0));
+      ut.ukjentTittelIkkeFlyttet=window._checked.has('S|Finnes ikke|1');
+      closeActiveDeig(); S.gjaerTilstand='fersk'; S.gjaerStyrkePct=100; window._bakesCache=[];
+      window._checked=new Set(); window._checkedSubsteps=new Set();
+      return ut;
+    }""")
+    ok176 = all(r176.values())
+    results.append(('reopened_dough_checkmarks_survive_recipe_rewording', ok176, r176))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

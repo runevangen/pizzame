@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.818",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Åpnet du en lagret deig, kunne avhakede steg stå som ugjort igjen. Hakene kjenner stegene på innholdet — og hvis en appoppdatering (eller en innstilling som «Gjærens tilstand») hadde omformulert et tall i stegteksten siden sist, kjente ikke haket igjen steget sitt.",
+      "Nå flyttes haket ved gjenåpning: matcher det ikke lenger eksakt, men stegtittelen finnes nøyaktig én gang i planen, følger haket med — et gjort steg er gjort selv om tallene i teksten er skrevet om. Gjelder også understeg.",
+      "Flyttingen gjetter aldri: har to steg samme tittel, eller finnes ikke tittelen lenger, står haket urørt. Og redigerer du planen mens du står i den, faller haket på et endret steg som før — det er fortsatt riktig at et nytt steg ikke er gjort."
+    ],
+    "changes_en": [
+      "When you opened a saved dough, checked-off steps could show as not done. Checkmarks recognise steps by their content — and if an app update (or a setting like \"Yeast condition\") had reworded a number in the step text since then, the checkmark no longer recognised its step.",
+      "The checkmark now moves on reopening: if it no longer matches exactly but the step title occurs exactly once in the plan, the checkmark follows — a done step is done even if the numbers in the text were rewritten. This also applies to sub-steps.",
+      "The move never guesses: if two steps share a title, or the title no longer exists, the checkmark is left untouched. And if you edit the plan while in it, a checkmark on a changed step drops as before — it is still true that a new step has not been done."
+    ]
+  },
+  {
     "v": "0.817",
     "d": "august 2026",
     "d_en": "August 2026",
