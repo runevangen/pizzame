@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.813",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Nye − / + -knapper på Steketid-raden øverst i Tidsplan: hvert trykk flytter hele planen et kvarter — oppstarten følger med, og deigen er identisk. Vil du spise en time tidligere, er det fire trykk i stedet for en tur innom Juster og klokkeslettvelgeren.",
+      "Knappene sitter på raden du faktisk styrer: i «spis kl.»-modus er det steketiden som er ankeret. I «starter nå»-modus finnes de ikke — der starter planen når du starter, og det er ingen tid å flytte.",
+      "Forskyvningen skrur på de samme feltene som Planlegging leser, så knappene og veiviseren kan aldri være uenige om når du skal spise. Kolliderer den nye tiden med «Ledig tid», sier de vanlige varslene fra som før."
+    ],
+    "changes_en": [
+      "New − / + buttons on the Baking time row at the top of the Timeline: each tap shifts the whole plan by a quarter hour — the start moves with it, and the dough is identical. Want to eat an hour earlier? Four taps instead of a trip into Adjust and the time picker.",
+      "The buttons sit on the row you actually control: in \"eat at\" mode the baking time is the anchor. In \"starting now\" mode they don't exist — there the plan starts when you do, and there is no time to move.",
+      "The shift turns the same fields the planner reads, so the buttons and the wizard can never disagree about when you eat. If the new time collides with your free time, the usual warnings speak up as before."
+    ]
+  },
+  {
     "v": "0.812",
     "d": "august 2026",
     "d_en": "August 2026",

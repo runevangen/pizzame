@@ -8887,6 +8887,24 @@ function mobGetAnchor(p){
   const t=document.getElementById('mob-'+p+'t').value||'08:00';
   return d?new Date(d+'T'+t):new Date();
 }
+// v0.813: − / + på Steketid-raden i Tidsplan-toppen — forskyver HELE planen i
+// kvarters steg (meldt inn fra et ekte bak: «en litt tidligere oppstart var
+// helt greit, og det samme med å spise en time tidligere»). Ren forskyvning:
+// deigen er identisk, bare tidspunktene flytter, og oppstarten følger med.
+// Kun «spis kl.»-modus — der er ankeret et redigerbart tidspunkt. «Starter
+// nå»-modus har ingen tid å flytte; planen regnes fra nå ved hver rendring.
+// Skrur på SAMME felt som Planlegging leser (mob-ed/mob-et via mobGetAnchor),
+// ingen egen kopi av ankeret — så Juster og knappene aldri kan sprike.
+function skyvAnker(min){
+  if(S.mode!=='end') return;
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  if(!dEl||!tEl) return;
+  const cur=dEl.value?new Date(dEl.value+'T'+(tEl.value||'08:00')):new Date();
+  const ny=new Date(cur.getTime()+min*60000);
+  dEl.value=fd(ny);
+  tEl.value=`${String(ny.getHours()).padStart(2,'0')}:${String(ny.getMinutes()).padStart(2,'0')}`;
+  mobGen();
+}
 
 
 function aiNoteHTML(){
@@ -10306,7 +10324,9 @@ function deigStatusBarHTML(steps, showActions, showDelta){
     </div>
     ${toolbarHTML}
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:3px">${L('🚀 Oppstart:','🚀 Start:')} <b style="color:var(--forno-text,#222)">${escH(startTxt)}</b>${deltaHTML}</div>
-    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🍕 Steketid:','🍕 Baking time:')} <b style="color:var(--forno-text,#222)">${escH(bakeTxt)}</b></div>
+    ${''/* v0.813 (skisse A): − / + sitter på ankerraden — tallet du eier. Raden
+          uten knapper styres av den med, så det er synlig hva som styrer hva. */}
+    <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px;display:flex;align-items:center;gap:4px"><span>${L('🍕 Steketid:','🍕 Baking time:')} <b style="color:var(--forno-text,#222)">${escH(bakeTxt)}</b></span>${(showActions&&S.mode==='end')?`<span style="margin-left:auto;display:inline-flex;flex-shrink:0" title="${L('Flytter hele planen 15 min — oppstarten følger med','Shifts the whole plan 15 min — the start moves with it')}"><button onclick="skyvAnker(-15)" aria-label="${L('15 minutter tidligere','15 minutes earlier')}" style="width:28px;height:24px;border:1px solid var(--forno-border,#ddd);border-right:none;border-radius:7px 0 0 7px;background:transparent;color:var(--forno-accent-text,#e8590c);font-size:14px;font-weight:800;cursor:pointer;line-height:1">−</button><button onclick="skyvAnker(15)" aria-label="${L('15 minutter senere','15 minutes later')}" style="width:28px;height:24px;border:1px solid var(--forno-border,#ddd);border-radius:0 7px 7px 0;background:transparent;color:var(--forno-accent-text,#e8590c);font-size:14px;font-weight:800;cursor:pointer;line-height:1">+</button></span>`:''}</div>
     <div style="font-size:11px;color:var(--forno-text-faint,#999);margin-top:1px">${L('🌾 Mel:','🌾 Flour:')} <b style="color:var(--forno-text,#222)">${escH(mtName(MELTYPER.find(m=>m.v===S.meltype)))}</b></div>
     ${amountHTML}
     ${actionsHTML}

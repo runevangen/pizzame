@@ -9106,6 +9106,46 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('kickstart_water_heat_is_booked_and_the_rest_compensates', ok171, r171))
 
+    # v0.813 (skisse A): − / + paa Steketid-raden i Tidsplan-toppen forskyver
+    # HELE planen i kvarters steg (meldt inn fra et ekte bak). Fryser at
+    # forskyvningen er REN: hvert steg flytter noeyaktig like mye, varighetene
+    # er uendret, og ankerfeltene (mob-ed/mob-et — samme felt Planlegging
+    # leser) foelger med. Knappene finnes KUN i «spis kl.»-modus; «starter
+    # naa» har ingen tid aa flytte, og der er skyvAnker en no-op.
+    r172 = page.evaluate("""() => {
+      resetTestState();
+      setLayout('mob');
+      S.type='napoletana'; S.method='hurtig'; S.hurtigH=8; S.mel=500; S.hydro=62;
+      S.temp=20; S.gjaer='torr'; S.mode='end';
+      document.getElementById('mob-ed').value='2026-08-16';
+      document.getElementById('mob-et').value='17:00';
+      window._planChosen=true;
+      mobShowTab('plan'); mobGen();
+      const iso=s=>s.map(x=>new Date(x.at).getTime());
+      const foer=iso(window._steps), durFoer=window._steps.map(s=>s.dur||0);
+      const html1=document.getElementById('mob-plan-content').innerHTML;
+      skyvAnker(-15); skyvAnker(-15);
+      const etter=iso(window._steps);
+      const skift=[...new Set(etter.map((t,i)=>(t-foer[i])/60000))];
+      const feltT=document.getElementById('mob-et').value;
+      S.mode='start'; mobGen();
+      const html2=document.getElementById('mob-plan-content').innerHTML;
+      skyvAnker(-15);
+      const noop=document.getElementById('mob-et').value===feltT;
+      S.mode='end';
+      return { skift, feltT,
+               durUendret: JSON.stringify(durFoer)===JSON.stringify(window._steps.map(s=>s.dur||0)),
+               knapperEnd: html1.includes('skyvAnker(-15)') && html1.includes('skyvAnker(15)'),
+               knapperStart: html2.includes('skyvAnker('),
+               noop };
+    }""")
+    ok172 = (
+      r172['skift'] == [-30] and r172['feltT'] == '16:30' and
+      r172['durUendret'] and r172['knapperEnd'] and
+      not r172['knapperStart'] and r172['noop']
+    )
+    results.append(('plan_shift_buttons_move_everything_together_end_mode_only', ok172, r172))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 
