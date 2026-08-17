@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.821",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Innloggingen leder nå med løftet i stedet for navnet: «Si når du vil spise. Appen finner ut resten.» står som overskrift, med appnavnet som liten etikett over. Det er appens kjerneidé i én setning — planen tilpasses livet ditt, ikke omvendt — og nå er det det første en ny bruker møter."
+    ],
+    "changes_en": [
+      "The login now leads with the promise instead of the name: \"Say when you want to eat. The app works out the rest.\" stands as the headline, with the app name as a small label above. It is the app's core idea in one sentence — the plan adapts to your life, not the other way around — and it is now the first thing a new user meets."
+    ]
+  },
+  {
     "v": "0.820",
     "d": "august 2026",
     "d_en": "August 2026",

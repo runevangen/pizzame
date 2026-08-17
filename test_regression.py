@@ -9378,6 +9378,34 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('finished_card_buttons_wrap_below_instead_of_squeezing_text', ok178, r178))
 
+    # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
+    # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut
+    # resten.») som overskrift, appnavnet som liten etikett over. Fryser begge
+    # spraak (i18n via st/syncI18nUI) og at etiketten fortsatt finnes.
+    r179 = page.evaluate("""() => {
+      resetTestState();
+      const ov=document.getElementById('auth-overlay');
+      window._lang='no'; try{syncI18nUI();}catch(e){}
+      const ut={
+        tag1:document.getElementById('auth-tag1').textContent,
+        tag2:document.getElementById('auth-tag2').textContent,
+        etikett:ov.textContent.includes('UltimatePizza')
+      };
+      window._lang='en'; try{syncI18nUI();}catch(e){}
+      ut.tag1en=document.getElementById('auth-tag1').textContent;
+      ut.tag2en=document.getElementById('auth-tag2').textContent;
+      window._lang='no'; try{syncI18nUI();}catch(e){}
+      return ut;
+    }""")
+    ok179 = (
+      r179['tag1'] == 'Si når du vil spise.' and
+      r179['tag2'] == 'Appen finner ut resten.' and
+      r179['etikett'] and
+      r179['tag1en'] == 'Say when you want to eat.' and
+      r179['tag2en'] == 'The app works out the rest.'
+    )
+    results.append(('login_leads_with_the_promise_in_both_languages', ok179, r179))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 
