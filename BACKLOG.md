@@ -1,7 +1,9 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 11.08.2026 · v0.784–0.788 ute: kald poolish står der den faktisk står, kjøleskapspausen tempereres, finere timeraster, 30 %-poolish som variant, og vinkelengden er blitt et valg. Vanntemperaturen regnes nå av en varmebalanse som teller fordeigen med. Testriggen er delt i sju grupper, og CI kjører på hver push med nattlig stabilitetssjekk.
-**Venter på bakst:** F33 (ny), F24. **Venter på avgjørelse:** F26, F12. **Ikke startet:** F29, F30, F32, T-i18n2.
+Sist oppdatert: 17.08.2026 · v0.820 i prod. Søndagsbaket 16.08 drev åtte versjoner (v0.813–0.820): skyveknapper på steketiden, kickstart-tekst kalibrert, startanker ved gjenåpning, «Gjærens tilstand» (åpnet boks kompenseres), hak som overlever omskrivinger, «Hvorfor gikk det feil?» under Mer, og to kort-layoutfikser for stor skrift. Ankarsrum-friksjonen er MÅLT (4,5–5 °C — dokumentert ved FRIKSJON_C). 210 tester.
+**Venter på bakst/målinger:** F33 (protokoll klar), F24, F34 (treningsdata), F38-tilleggsmåling (fingertest + faktisk romtemp neste bakst), gjær-duelltesten (gammel mot fersk boks).
+**Venter på Runes avgjørelse:** kickstart til Langtidsdeig/Kveldsdeig (anbefalt, med varmeregnskap à la v0.812) · navnebytte Hurtigdeig → Sammedagsdeig · METHODS-opprydding (fem hardkodede navnekopier — anbefalt uansett) · F26 · F12 · T-i18n2 (parkert bevisst).
+**Besluttet mønster, ikke bygget:** F36, F37, F38 (tiltak 1 — bakerekkefølge-teksten — er nesten gratis). **Store løft for senere:** F29 (`uses:{}` per steg), F32 (stegbilder, motivliste klar).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
