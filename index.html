@@ -10198,15 +10198,15 @@ function bakeCardHTML(b, mob){
             krympes eller brytes, og malte seg under Åpne-knappen. Meldt inn
             med skjermbilde. Nå samme mønster som Ferdige-kortet, pluss
             overflow-wrap så også navn uten mellomrom bryter. */}
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="min-width:0;flex:1;display:flex;gap:6px;align-items:flex-start">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:6px 8px">
+        <div style="min-width:0;flex:1 1 180px;display:flex;gap:6px;align-items:flex-start">
           ${starBtn}
           <div style="flex:1;min-width:0">
             <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text);overflow-wrap:anywhere">${escH(b.name)}${badge}</div>
             <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''}</div>
           </div>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:auto">
           <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid #e8590c;border-radius:8px;background:#e8590c;color:#fff;font-size:11px;font-weight:600;cursor:pointer">${mine?L('Åpne','Open'):L('Åpne som ny','Open as new')}</button>
           ${mine?`<button onclick="finishBakePrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${L('Ferdig','Finished')}</button>`:''}
         </div>
@@ -10217,19 +10217,25 @@ function bakeCardHTML(b, mob){
   const finDt = b.finishedAt ? (()=>{try{return fDT(new Date(b.finishedAt));}catch(e){return '';}})() : '';
   const ratingHtml = b.rating ? `<div style="margin-top:4px;font-size:13px;color:#EFAB27">${'★'.repeat(b.rating)}${'☆'.repeat(5-b.rating)}</div>` : '';
   const photoHtml = b.photo ? `<img src="${b.photo}" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:6px">` : '';
+  // v0.820: toppraden kan brytes (flex-wrap) — tre knapper delte linje med
+  // teksten, og ved stor skrift/smal skjerm ble tekstkolonnen så smal at
+  // meta-linja sto med ETT ord per linje mens knappene lå oppå navnet
+  // (meldt inn med skjermbilde). Venstrekolonnen krever 180px basis; er
+  // det ikke plass til knappene ved siden av, faller de ned på egen linje
+  // under. Samme grep på det aktive kortet lenger opp.
   return `<div style="border:1px solid ${b.favorite&&mine?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <div style="min-width:0;display:flex;gap:6px;align-items:flex-start;flex:1">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:6px 8px">
+      <div style="min-width:0;display:flex;gap:6px;align-items:flex-start;flex:1 1 180px">
         ${starBtn}
         <div style="flex:1;min-width:0">
-          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text)">${escH(b.name)}${badge}</div>
+          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text);overflow-wrap:anywhere">${escH(b.name)}${badge}</div>
           <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''} · ${L('Ferdig:','Finished:')} ${finDt}</div>
           ${ratingHtml}
           ${photoHtml}
           ${b.note?`<div style="font-size:12px;color:var(--dyn-text);margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>${b.noteBy?`<div style="font-size:10px;color:var(--dyn-faint);margin-top:2px">— ${escH(b.noteBy)}</div>`:''}`:''}
         </div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
+      <div style="display:flex;gap:6px;flex-shrink:0;margin-left:auto">
         ${mine?`<button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer" title="${b.rating||b.photo?L('Rediger vurdering','Edit rating'):L('Gi vurdering','Give a rating')}">✏️</button>`:''}
         <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${mine?L('Se','View'):L('Se / kopier','View / copy')}</button>
         ${mine?`<button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:#993C1D;font-size:11px;cursor:pointer">${L('Slett','Delete')}</button>`:''}

@@ -9339,6 +9339,45 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('why_did_it_go_wrong_lives_under_more_with_seven_symptoms', ok177, r177))
 
+    # v0.820: Ferdige-kortet — tre knapper delte linje med teksten, og ved
+    # stor skrift/smal skjerm ble tekstkolonnen saa smal at meta-linja sto med
+    # ETT ord per linje mens knappene laa oppaa navnet (meldt inn med
+    # skjermbilde, fs-large aktiv). Naa kan toppraden brytes (flex-wrap):
+    # faar ikke knappene plass ved siden av, faller de ned paa egen linje og
+    # teksten faar full bredde. Fryses med geometri: ingen knapp overlapper
+    # navnet, og meta-linja faar minst 75 % av kortbredden ved 280px.
+    # (Alle rect-maal skjer i samme zoom — fs-large skalerer alt likt.)
+    r178 = page.evaluate("""() => {
+      resetTestState();
+      const prov=(bredde,status)=>{
+        const bake={id:'t1',name:'Søndagspizza',status,favorite:false,
+                    config:{type:'napoletana',method:'hurtig',hydro:62,cold:48},
+                    anchorMode:'start',anchorISO:'2026-08-16T09:47:00',savedBy:'Rune',
+                    finishedAt:'2026-08-17T08:44:00',rating:4,note:'Fulgte plan rimelig nøyaktig.'};
+        const holder=document.createElement('div');
+        holder.style.cssText=`position:fixed;top:0;left:0;width:${bredde}px;background:#fff;z-index:9999`;
+        holder.innerHTML=bakeCardHTML(bake,true);
+        document.body.appendChild(holder);
+        const kort=holder.firstElementChild.getBoundingClientRect();
+        const navnEl=[...holder.querySelectorAll('div')].find(x=>x.textContent.startsWith('Søndagspizza')&&x.style.fontWeight==='600');
+        const meta=holder.querySelector('.admin-umeta').getBoundingClientRect();
+        const knapper=[...holder.querySelectorAll('button')];
+        const a=navnEl.getBoundingClientRect();
+        let overlapp=false;
+        knapper.forEach(k=>{const c=k.getBoundingClientRect();
+          if(!(a.right<=c.left||c.right<=a.left||a.bottom<=c.top||c.bottom<=a.top)) overlapp=true;});
+        holder.remove();
+        return {overlapp, metaAndel:Math.round(meta.width/kort.width*100), knapper:knapper.length};
+      };
+      return { ferdig:prov(280,'finished'), aktiv:prov(280,'active') };
+    }""")
+    ok178 = (
+      r178['ferdig']['overlapp'] is False and r178['ferdig']['metaAndel'] >= 75 and
+      r178['ferdig']['knapper'] >= 3 and
+      r178['aktiv']['overlapp'] is False and r178['aktiv']['metaAndel'] >= 75
+    )
+    results.append(('finished_card_buttons_wrap_below_instead_of_squeezing_text', ok178, r178))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

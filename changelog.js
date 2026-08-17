@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.820",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "På Ferdige-kortene under «Deiger» delte knappene (✏️ / Se / Slett) linje med teksten — og med stor skrift på telefonen ble tekstkolonnen så smal at det sto ett ord per linje, mens knappene la seg oppå navnet. Nå bryter knappene ned på egen linje under teksten når det er trangt, og teksten får hele bredden. Samme grep på de aktive kortene."
+    ],
+    "changes_en": [
+      "On the Finished cards under \"Doughs\", the buttons (✏️ / View / Delete) shared a line with the text — and with large text on the phone, the text column got so narrow it showed one word per line, while the buttons sat on top of the name. The buttons now wrap onto their own line below the text when space is tight, and the text gets the full width. Same treatment on the active cards."
+    ]
+  },
+  {
     "v": "0.819",
     "d": "august 2026",
     "d_en": "August 2026",
