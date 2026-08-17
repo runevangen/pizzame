@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.819",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ny side under Mer: «🩺 Hvorfor gikk det feil?» — lærdommen fra ekte bakst, ordnet etter symptomet du står med: deigen hever tregt, emnene ser flate ut, første pizza ble dårligst, ingen luftig kant, deigen rakner, klokka stemmer ikke, kickstarten bobler ikke.",
+      "Hvert symptom får årsakene i sannsynlighetsrekkefølge og en konkret test eller fiks — fingertesten, gjærens tilstand, romtemperaturmåling, IR mot stekedekket, bakerekkefølgen ved flere pizzaer. Kort nok til å skumme med deig på fingrene."
+    ],
+    "changes_en": [
+      "New page under More: \"🩺 Why did it go wrong?\" — lessons from real bakes, organised by the symptom in front of you: dough rising slowly, balls looking flat, first pizza worst, no airy rim, dough tearing, clock not matching, kickstart not bubbling.",
+      "Each symptom gets its causes in order of likelihood and a concrete test or fix — the finger test, yeast condition, measuring room temperature, IR on the baking surface, bake order with several pizzas. Short enough to skim with dough on your fingers."
+    ]
+  },
+  {
     "v": "0.818",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -840,6 +840,12 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
      melkurven, og samme grunn: en innstilling som treffer overalt kan ikke bo
      inne i én fane. Ingen sammenslåing her — i en egen boks er det ingenting
      å skjule bak. -->
+<div id="feilsok-modal" class="modal-overlay" onclick="if(event.target===this)closeFeilsokModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b id="feilsok-modal-tittel">🩺 Hvorfor gikk det feil?</b><button class="modal-x" onclick="closeFeilsokModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="feilsok-body"></div>
+  </div>
+</div>
 <div id="pizzatid-modal" class="modal-overlay" onclick="if(event.target===this)closePizzatidModal()">
   <div class="modal-box">
     <div class="modal-head"><b id="pizzatid-modal-tittel">🗓️ Når er du ledig?</b><button class="modal-x" onclick="closePizzatidModal()" aria-label="Lukk">✕</button></div>
@@ -943,6 +949,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <!-- v0.797: PC har ingen Mer-fane, så samme boks nås herfra. -->
     <div class="menu-row" id="pc-menu-tilbud" onclick="sidenavGo(openTilbudModal)">🎛️ Hva du blir tilbudt</div>
     <div class="menu-row" id="pc-menu-pizzatid" onclick="sidenavGo(openPizzatidModal)">🗓️ Når er du ledig?</div>
+    <div class="menu-row" id="pc-menu-feilsok" onclick="sidenavGo(openFeilsokModal)">🩺 Hvorfor gikk det feil?</div>
     <div class="menu-row" id="pc-menu-feedback" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
     <div class="menu-row" id="pc-menu-share" onclick="sidenavGo(shareApp)">📤 Del appen</div>
     <div style="height:1px;background:#F2F2F7"></div>
@@ -1414,6 +1421,9 @@ function syncStaticI18nUI(){
   // begge stedene i stedet for å peke på skjermen du tilfeldigvis står i.
   st('pizzatid-modal-tittel','🗓️ Når er du ledig?','🗓️ When are you free?');
   st('mer-tilbud-pizzatid','🗓️ Når er du ledig?','🗓️ When are you free?');
+  st('mer-feilsok','🩺 Hvorfor gikk det feil?','🩺 Why did it go wrong?');
+  st('feilsok-modal-tittel','🩺 Hvorfor gikk det feil?','🩺 Why did it go wrong?');
+  st('pc-menu-feilsok','🩺 Hvorfor gikk det feil?','🩺 Why did it go wrong?');
   st('pc-menu-pizzatid','🗓️ Når er du ledig?','🗓️ When are you free?');
   // help contains HTML, so set innerHTML instead of textContent
   { const el=document.getElementById('mob-pizzatid-help'); if(el) el.innerHTML=L('Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: Smart-plan <b style="color:var(--forno-text)">foreslår</b> oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.','Set up the fixed times you are free to make pizza, per weekday. The app uses them in two places: Smart plan <b style="color:var(--forno-text)">suggests</b> recipes that fit your time, and elsewhere in the app it <b style="color:var(--forno-text)">warns</b> you if a step lands at a time you have not set aside.'); }
@@ -5051,6 +5061,46 @@ function renderReturnBar(){
 // stien kaller dem, og «fold ut tidene» betyr nå «vis meg tidene».
 function syncPizzatidToggleLabel(){}
 function togglePizzatidMinimized(){ openPizzatidModal(); }
+// v0.819: «Hvorfor gikk det feil?» under Mer — dagens funn som feilsøking,
+// ordnet etter SYMPTOM (det er det brukeren står med, ikke årsaken). Innholdet
+// er bevisst statisk og kvalitativt: ingen plantall som kan drifte fra
+// motoren (ingen ny to-dommere-flate), men navngitte dører til verktøyene
+// som finnes. Bygget på målingene fra baket 16.08.2026: gjærstyrke,
+// kjøkkentemperatur, stekevindu, fingertest, oven spring.
+function feilsokHTML(){
+  const sec=(sym,body)=>`<div class="feilsok-sym" style="margin-bottom:12px"><div style="font-size:13px;font-weight:700;color:var(--forno-text);margin-bottom:3px">${sym}</div><div style="font-size:12px;line-height:1.55;color:var(--forno-text-muted)">${body}</div></div>`;
+  return [
+    sec(L('«Deigen hevet mindre eller tregere enn planen sa»','"The dough rose less or slower than the plan said"'),
+        L('Vanligste årsak: en åpnet boks tørrgjær har mistet styrke — gjæren kan boble i koppen og likevel jobbe 20–30 % for sakte. Sett <b>«Gjærens tilstand»</b> i Finjuster, eller mål styrken selv: to glass lunkent vann med honning, samme mengde gammel og fersk gjær, sammenlign skummet etter 10 min. Ellers: er kjøkkenet kaldere enn <b>Romtemperatur</b>-innstillingen (mål!), eller kom deigen kald ut av maskinen (termometer rett etter elting — sikt på ca. 24°C)?',
+          'Most common cause: an opened tin of dry yeast has lost strength — it can bubble in the cup and still work 20–30% too slowly. Set <b>"Yeast condition"</b> under Fine-tune, or measure it yourself: two glasses of lukewarm water with honey, the same amount of old and fresh yeast, compare the foam after 10 min. Otherwise: is the kitchen colder than the <b>Room temperature</b> setting (measure!), or did the dough come out of the machine cold (thermometer right after kneading — aim for about 24°C)?')),
+    sec(L('«Emnene ser flate ut»','"The dough balls look flat"'),
+        L('Som regel helt normalt: avslappede emner vokser <b>sidelengs</b> i boksen, ikke i høyden — høyden kommer i ovnen. Fingertesten dømmer, ikke øynene: trykk lett — fjærer gropa sakte halvveis tilbake, er emnet klart.',
+          'Usually completely normal: relaxed balls grow <b>sideways</b> in the container, not upwards — the height comes in the oven. The finger test judges, not your eyes: press lightly — if the dent springs slowly halfway back, the ball is ready.')),
+    sec(L('«Første pizza ble dårligst»','"The first pizza was the worst"'),
+        L('Med flere pizzaer er steketiden et <b>vindu</b>, ikke et punkt — siste emne kan få en time mer etterheving enn første. Bak det slappeste/mest modne emnet først og det fasteste sist, og ta fingertesten per emne, ikke per bakst.',
+          'With several pizzas the bake time is a <b>window</b>, not a point — the last ball can get an hour more proofing than the first. Bake the slackest/ripest ball first and the firmest last, and do the finger test per ball, not per bake.')),
+    sec(L('«Ingen luftig kant — pizzaen hevet ikke i ovnen»','"No airy rim — the pizza did not rise in the oven"'),
+        L('Tre helt ulike årsaker, hver med sin test: <b>overhevet</b> (fingergropa blir stående, deigen rakner ved strekking), <b>underhevet</b> (gropa spretter raskt helt tilbake), eller <b>stekedekket er ikke gjennomvarmt</b> — lufta blir varm lenge før steinen. Har du IR-termometer: mål der pizzaen skal ligge, ikke flammen.',
+          'Three quite different causes, each with its own test: <b>overproofed</b> (the finger dent stays, the dough tears when stretching), <b>underproofed</b> (the dent springs right back), or <b>the baking surface is not heated through</b> — the air gets hot long before the stone does. If you have an IR thermometer: measure where the pizza will sit, not the flame.')),
+    sec(L('«Deigen rakner eller er klissete ved strekking»','"The dough tears or is sticky when stretching"'),
+        L('Den er over toppen. En rask romtemperatur-deig har et vindu på 1–2 timer etter «klar» — kjøleskapet er pauseknappen om noen skal spise senere (ta emnet ut 30–45 min før). Sterkere mel gir lengre platå; langtidshevet deig i kjøleskap har et vindu målt i timer og døgn, ikke minutter.',
+          'It is past its peak. A quick room-temperature dough has a window of 1–2 hours after "ready" — the fridge is the pause button if someone is eating later (take the ball out 30–45 min ahead). Stronger flour gives a longer plateau; cold-fermented dough has a window measured in hours and days, not minutes.')),
+    sec(L('«Ferdig for tidlig eller for sent i forhold til klokka»','"Ready too early or too late compared to the clock"'),
+        L('Temperaturen avviker fra det planen antar — sjekk <b>Romtemperatur</b>-innstillingen mot et termometer. Og husk − / + på Steketid-raden: hvert trykk flytter hele planen et kvarter.',
+          'The temperature differs from what the plan assumes — check the <b>Room temperature</b> setting against a thermometer. And remember − / + on the Baking time row: each tap shifts the whole plan a quarter of an hour.')),
+    sec(L('«Kickstarten boblet ikke»','"The kickstart did not bubble"'),
+        L('Ingen bobler i det hele tatt etter 5–10 min betyr død gjær. Bytt den <b>nå</b> — ikke etter at melet er blandet inn. (Små bobler og en tynn film er derimot friskt: med så lite gjær kommer det aldri noe skumberg.)',
+          'No bubbles at all after 5–10 min means dead yeast. Replace it <b>now</b> — not after the flour has been mixed in. (Small bubbles and a thin film, however, are healthy: with this little yeast there will never be a foam dome.)'))
+  ].join('');
+}
+function openFeilsokModal(){
+  const b=document.getElementById('feilsok-body');
+  if(b) b.innerHTML=feilsokHTML();
+  const m=document.getElementById('feilsok-modal'); if(m) m.style.display='flex';
+}
+function closeFeilsokModal(){
+  const m=document.getElementById('feilsok-modal'); if(m) m.style.display='none';
+}
 function openPizzatidModal(){
   try{ renderPizzatidDays(); }catch(e){}
   const m=document.getElementById('pizzatid-modal'); if(m) m.style.display='flex';
@@ -11112,6 +11162,10 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openPizzatidModal()">
       <span id="mer-tilbud-pizzatid" style="font-size:13px;color:var(--dyn-text);font-weight:500">🗓️ Når er du ledig?</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
+    </div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="openFeilsokModal()">
+      <span id="mer-feilsok" style="font-size:13px;color:var(--dyn-text);font-weight:500">🩺 Hvorfor gikk det feil?</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div style="height:1px;background:var(--forno-border);margin:1.2rem 1rem .2rem"></div>

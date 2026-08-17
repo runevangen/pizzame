@@ -9303,6 +9303,42 @@ const svSched=window._pizzatidSchedule;
     ok176 = all(r176.values())
     results.append(('reopened_dough_checkmarks_survive_recipe_rewording', ok176, r176))
 
+    # v0.819: «Hvorfor gikk det feil?» under Mer — funnene fra baket 16.08 som
+    # symptomordnet feilsoeking. Fryser: doer i Mer-fanen OG PC-menyen, modal
+    # aapner/lukker, NOEYAKTIG 7 symptomer, noekkelinnhold paa begge spraak
+    # (doerene til verktoeyene: Gjaerens tilstand, fingertesten, stekevinduet,
+    # IR-maalingen), og at innholdet er statisk kvalitativt (ingen gramtall
+    # fra en plan — ingen ny to-dommere-flate).
+    r177 = page.evaluate("""() => {
+      resetTestState();
+      const ut={};
+      window._lang='no'; openFeilsokModal();
+      const m=document.getElementById('feilsok-modal');
+      const h=document.getElementById('feilsok-body').innerHTML;
+      ut.aapen=m&&m.style.display==='flex';
+      ut.antallSymptomer=document.querySelectorAll('#feilsok-body .feilsok-sym').length;
+      ut.harGjaerdoer=h.includes('Gjærens tilstand');
+      ut.harFingertest=/[Ff]ingertest/.test(h);
+      ut.harVindu=h.includes('vindu');
+      ut.harIR=h.includes('IR-termometer');
+      ut.ingenPlangram=!/\\d+g /.test(h.replace(/&nbsp;/g,' '));
+      closeFeilsokModal();
+      ut.lukket=m.style.display==='none';
+      window._lang='en'; openFeilsokModal();
+      ut.engelsk=document.getElementById('feilsok-body').innerHTML.includes('Yeast condition');
+      closeFeilsokModal(); window._lang='no';
+      ut.merRad=!!document.getElementById('mer-feilsok');
+      ut.pcDoer=!!document.getElementById('pc-menu-feilsok');
+      return ut;
+    }""")
+    ok177 = (
+      r177['aapen'] and r177['antallSymptomer'] == 7 and
+      r177['harGjaerdoer'] and r177['harFingertest'] and r177['harVindu'] and
+      r177['harIR'] and r177['ingenPlangram'] and r177['lukket'] and
+      r177['engelsk'] and r177['merRad'] and r177['pcDoer']
+    )
+    results.append(('why_did_it_go_wrong_lives_under_more_with_seven_symptoms', ok177, r177))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 
