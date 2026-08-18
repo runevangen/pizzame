@@ -2166,7 +2166,13 @@ def _atferd_3(page, results):
         return {allBilingual, count, enShowsEnglish, noShowsNorwegian, langAware};
       } finally { window._lang=_lang; }
     }""")
-    ok51 = (r51.get('allBilingual') and r51.get('count')>=190
+    # v0.827: terskelen var >=190 («fila er ikke amputert»). Månedsrutinen
+    # kondenserer nå eldre måneder til samleposter (detaljene bor tapsfritt i
+    # CHANGELOG-ARKIV.md), så antallet SKAL synke ved månedsskiftene. Gulvet
+    # senkes til et strukturelt minimum: minst inneværende + forrige måneds
+    # detaljposter pluss samleposter er alltid godt over 30; under det er noe
+    # reelt galt (feilkjørt rydding, avkuttet fil).
+    ok51 = (r51.get('allBilingual') and r51.get('count')>=30
             and r51.get('enShowsEnglish') and r51.get('noShowsNorwegian') and r51.get('langAware'))
     results.append(('changelog_is_bilingual_and_language_aware', ok51, r51))
 

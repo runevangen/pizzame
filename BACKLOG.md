@@ -4,6 +4,7 @@ Sist oppdatert: 18.08.2026 · v0.826 i prod. Batchen 18.08 tok hele «kan starte
 **Venter på bakst/målinger:** F33 (protokoll klar), F24, F34 (treningsdata), F38-tilleggsmåling (fingertest + faktisk romtemp neste bakst), gjær-duelltesten (gammel mot fersk boks).
 **Venter på Runes avgjørelse:** navnebytte Hurtigdeig → Sammedagsdeig (nå én linje i METHODS) · F26 · F12 · T-i18n2 (parkert bevisst).
 **Besluttet mønster, ikke bygget:** F38 (tiltak 1 — bakerekkefølge-teksten — er nesten gratis). **Store løft for senere:** F29 (`uses:{}` per steg), F32 (stegbilder, motivliste klar).
+**Fast månedsrutine (fra v0.827):** ved månedsskiftet ryddes forrige hele måned ut av endringsloggen — `python3 rydd_changelog.py "<måned år>"` flytter detaljpostene tapsfritt til `CHANGELOG-ARKIV.md` (selv-verifiserende), deretter skrives én redaksjonell samlepost inn der blokken sto. Siste måned står alltid i full detalj i appen.
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).

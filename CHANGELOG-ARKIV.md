@@ -1,0 +1,1364 @@
+# Endringslogg — arkiv (UltimatePizza)
+
+Tapsfri flytting av eldre endringslogg-poster som er ryddet ut av appen
+(månedsrutinen fra v0.827: siste måned står i full detalj i appen, eldre
+måneder kondenseres der til én samlepost hver — detaljene bor her).
+Nyeste måned øverst; innen hver måned nyeste versjon først.
+
+## juli 2026 (v0.470 – v0.642)
+
+### v0.642
+- Deiger er nå <b>private per bruker</b>. Du ser dine egne deiger + de som er delt med alle — ikke lenger alle andres. Hver av dine egne deiger har en «🔒 Privat — del med alle»-bryter; deler du, dukker den opp i «🌐 Delt med alle» for de andre, som kan åpne og kopiere den (men ikke endre den). «Min favoritt» er også per bruker nå.
+- Deiger som allerede lå der beholdes som delt (synlige for alle) — ingenting forsvinner. Bare nye deiger er private som standard.
+
+*English (July 2026):*
+- Doughs are now <b>private per user</b>. You see your own doughs + the ones shared with everyone — no longer everyone else's. Each of your own doughs has a "🔒 Private — share with everyone" toggle; share one and it shows up in "🌐 Shared with everyone" for the others, who can open and copy it (but not edit it). "My favorite" is also per user now.
+- Doughs that were already there stay shared (visible to everyone) — nothing disappears. Only new doughs are private by default.
+
+### v0.641
+- Rettet datofeltet i Smart-plan som ble stående blankt hvis man brukte «tøm»-knappen på iPhone. Nå fylles en fornuftig standard-dato tilbake automatisk, så feltet aldri står tomt.
+
+*English (July 2026):*
+- Fixed the date field in Smart plan going blank if you used the "clear" button on iPhone. Now a sensible default date is filled back in automatically, so the field is never empty.
+
+### v0.640
+- Rettet datofeltet i Smart-plan som lå litt skjevt på iPhone — det stakk ut til høyre forbi klokkeslett-boksen og «Finn oppskriften»-knappen. Nå fyller det raden likt som de andre.
+
+*English (July 2026):*
+- Fixed the date field in Smart plan that sat slightly off on iPhone — it stuck out to the right past the time box and the "Find the recipe" button. Now it fills the row evenly like the others.
+
+### v0.639
+- Nytt versjonsnummer: vi har lagt om til en 0.x-skala på vei mot 1.0, så tallet «hopper» fra 6.40 til 0.639. Hele endringsloggen er nummerert om til samme skala — innholdet i hver oppføring er uendret.
+- Rettet blank skjerm når man byttet fra PC til mobil: den aktive mobil-fanen ble aldri rendret ved bytte (bare ved oppstart), så innholdet uteble. Nå får fanen innhold uansett hvordan du havner i mobilvisning.
+
+*English (July 2026):*
+- New version number: we've switched to a 0.x scale on the way to 1.0, so the number "jumps" from 6.40 to 0.639. The whole changelog has been renumbered to the same scale — the content of each entry is unchanged.
+- Fixed a blank screen when switching from PC to mobile: the active mobile tab was never rendered on switch (only at startup), so the content didn't show. Now the tab gets content no matter how you end up in mobile view.
+
+### v0.638
+- Lettere å gå tilbake til mobilvisning fra PC: «Til mobil»-knappen oppe til høyre er nå større og tydeligere (den satt for smått og gjemt i hjørnet før), og det er lagt til et eget «📱 Bytt til mobilvisning»-valg i ☰ Meny.
+
+*English (July 2026):*
+- Easier to get back to mobile view from PC: the "To mobile" button in the top right is now bigger and clearer (it was too small and hidden in the corner before), and a dedicated "📱 Switch to mobile view" option has been added to the ☰ Menu.
+
+### v0.637
+- PC-versjonen har fått samme varme «Forno»-følelse som mobilen: kremfargede flater i stedet for kald hvit/grå, brent-oransje aksent i stedet for grønn, og overskriftsfonten på tvers. Rent visuelt — alt fungerer som før, det ser bare ut som samme app enten du er på telefon eller skjerm.
+
+*English (July 2026):*
+- The PC version now has the same warm "Forno" feel as mobile: cream-colored surfaces instead of cold white/gray, a burnt-orange accent instead of green, and the heading font throughout. Purely visual — everything works as before, it just looks like the same app whether you're on your phone or a screen.
+
+### v0.636
+- Ny <b>Fokus-modus</b> i Tidsplan: trykk «🔎 Fokus» og få det aktive steget i fullskjerm med stor skrift — laget for telefonen på benken mens du baker. Viser ett steg om gangen (tid, hva du gjør og understegene), åpner på steget du er kommet til, og du blar med store «Ferdig»/«Forrige»-knapper. Understeg kan hakes av her og deler fremdrift med Tidsplan. Skjermen holdes våken mens fokus er på, og lys/mørk følger resten av appen.
+
+*English (July 2026):*
+- New <b>Focus mode</b> in Schedule: tap "🔎 Focus" to get the current step full-screen in large type — made for the phone on the counter while you bake. It shows one step at a time (time, what you do, and the substeps), opens on the step you've reached, and you page through with big "Done"/"Previous" buttons. Substeps can be checked off here and share progress with Schedule. The screen stays awake while focus is on, and light/dark follows the rest of the app.
+
+### v0.635
+- Fjernet «Kom i gang»-vinduet som poppet opp ved første besøk. Inngangsskjermen og hjelpetekstene underveis (metodekort, «hvorfor», tips, «Holder dette?») dekker det nå — ingen modal i ansiktet lenger. Den fulle <b>Bruksanvisningen</b> finnes fortsatt i Info-fanen (og bak logoen/menyen på PC).
+
+*English (July 2026):*
+- Removed the "Getting started" window that popped up on your first visit. The entry screen and the in-context help (method cards, "why", tips, "Does this hold up?") cover it now — no more modal in your face. The full <b>User guide</b> is still in the Info tab (and behind the logo/menu on PC).
+
+### v0.634
+- Ryddet inngangsskjermen: fjernet «Ny til pizzadeig? Slik funker det»-lenka. Guiden nås fortsatt fra Info-fanen.
+
+*English (July 2026):*
+- Tidied up the entry screen: removed the "New to pizza dough? Here's how it works" link. The guide is still reachable from the Info tab.
+
+### v0.633
+- Du kan nå endre <b>meltype</b> og <b>antall</b> direkte under <b>⚙️ Finjuster</b> — ikke bare i veiviser-stegene. (Appen lovet allerede at meltype lå der; nå stemmer det.) Endringer synkes begge veier med stegene.
+
+*English (July 2026):*
+- You can now change <b>flour type</b> and <b>quantity</b> directly under <b>⚙️ Fine-tune</b> — not just in the wizard steps. (The app already promised flour type was there; now it actually is.) Changes sync both ways with the steps.
+
+### v0.632
+- Ryddet i fanelinja på mobil: fra 7 til <b>5 faner</b>. <b>Oppskrift</b> er nå en veksler øverst i <b>Tidsplan</b> (Tidsplan ↔ Oppskrift), og <b>Notater</b> ligger nå i <b>Deiger</b> (notatfeltet for den aktive deigen vises øverst der). Ingenting er borte — bare samlet der det hører hjemme, så fanelinja blir luftigere.
+
+*English (July 2026):*
+- Tidied up the tab bar on mobile: from 7 down to <b>5 tabs</b>. <b>Recipe</b> is now a toggle at the top of <b>Schedule</b> (Schedule ↔ Recipe), and <b>Notes</b> now lives in <b>Doughs</b> (the note field for the active dough shows at the top there). Nothing is gone — just gathered where it belongs, so the tab bar feels less crowded.
+
+### v0.631
+- Fant og fikset den egentlige årsaken til det tomme feltet nederst på iPhone (installert app): høyden ble regnet fra en skjermhøyde som iOS rapporterer for kort i standalone-modus. Appen bruker nå hele skjermhøyden, så fanelinja ligger helt i bunn.
+
+*English (July 2026):*
+- Found and fixed the real cause of the empty area at the bottom on iPhone (installed app): the height was calculated from a screen height that iOS reports as too short in standalone mode. The app now uses the full screen height, so the tab bar sits all the way at the bottom.
+
+### v0.630
+- Bedre fiks for at appen ikke fylte hele skjermen på iPhone (installert på hjemskjerm): app-skallet festes nå til alle fire skjermkanter i stedet for å regne skjermhøyde — så fanelinja ligger helt i bunn uten tomt felt under.
+
+*English (July 2026):*
+- Better fix for the app not filling the whole screen on iPhone (installed to the home screen): the app shell is now pinned to all four screen edges instead of calculating screen height — so the tab bar sits all the way at the bottom with no empty area underneath.
+
+### v0.629
+- Fikset at appen ikke fylte hele skjermen på iPhone (installert på hjemskjerm) — fanelinja lå for høyt med et tomt felt under. Appen strekker seg nå helt ned til bunnen.
+
+*English (July 2026):*
+- Fixed the app not filling the whole screen on iPhone (installed to the home screen) — the tab bar sat too high with an empty area beneath it. The app now stretches all the way to the bottom.
+
+### v0.628
+- Fikset en <b>hvit stripe nederst på skjermen</b> (under fanelinja, ved home-indikatoren på iPhone) i mørk modus — bakgrunnen følger nå temaet helt ut i kantene.
+
+*English (July 2026):*
+- Fixed a <b>white strip at the bottom of the screen</b> (below the tab bar, near the home indicator on iPhone) in dark mode — the background now follows the theme all the way to the edges.
+
+### v0.627
+- Fikset at <b>logoen/navnet øverst</b> lå for høyt og havnet under statuslinja / Dynamic Island på iPhone. Topplinja tar nå hensyn til det trygge området øverst på skjermen.
+
+*English (July 2026):*
+- Fixed the <b>logo/name at the top</b> sitting too high and ending up under the status bar / Dynamic Island on iPhone. The top bar now accounts for the safe area at the top of the screen.
+
+### v0.626
+- Appen har byttet navn til <b>UltimatePizza</b>. Samme app — oppdatert overalt du ser det: tittel, logo, innlogging, del-tekst, guiden og PWA-ikon. (Er appen installert på hjemskjermen, kan ikonnavnet henge igjen til du installerer på nytt — det styres av telefonen, ikke appen.)
+
+*English (July 2026):*
+- The app has been renamed to <b>UltimatePizza</b>. Same app — updated everywhere you see it: title, logo, login, share text, the guide, and the PWA icon. (If the app is installed on your home screen, the icon name may linger until you reinstall — that's controlled by the phone, not the app.)
+
+### v0.625
+- Appen velger nå språk automatisk <b>første gang</b>: har du norsk (bokmål/nynorsk) i nettleseren eller på telefonen, starter den på norsk — ellers på engelsk. Har du valgt språk selv, huskes valget som før og overstyrer alltid gjettingen.
+
+*English (July 2026):*
+- The app now picks a language automatically the <b>first time</b>: if your browser or phone is set to Norwegian (Bokmål/Nynorsk), it starts in Norwegian — otherwise in English. If you've picked a language yourself, that choice is remembered as before and always overrides the guess.
+
+### v0.624
+- Smart-plan: tidsvelgeren er redesignet. «Steketidspunkt» er byttet til det tydeligere spørsmålet <b>«Når skal deigen være klar?»</b> (med undertittel «Ferdig hevet og klar for ovnen») — det er akkurat tidspunktet planen regner mot. Klokkeslettet vises nå <b>stort og trykkbart</b> i fokus, med datoen under.
+
+*English (July 2026):*
+- Smart plan: the time picker has been redesigned. "Bake time" has been changed to the clearer question <b>"When should the dough be ready?"</b> (with the subtitle "Fully risen and ready for the oven") — that's exactly the moment the plan counts toward. The time is now shown <b>large and tappable</b> front and center, with the date below.
+
+### v0.623
+- Inngangs-skjermen ønsker deg nå velkommen med «<b>La oss starte!</b>».
+- «Når er du ledig?» er blitt tydeligere og mer fleksibel: hver tidsrad er nå merket <b>Fra</b> og <b>Til</b>, og du kan legge inn <b>flere tidsrom per dag</b> med en «<b>+ Legg til tid</b>»-knapp (f.eks. ledig både morgen, lunsj og kveld). Hver rad har et ✕ for å fjerne den igjen.
+- Rettet en underliggende feil der endring av ledig tid på én hverdag kunne smitte over på de andre hverdagene — nå er hver dag helt uavhengig.
+
+*English (July 2026):*
+- The entry screen now welcomes you with "<b>Let's get started!</b>".
+- "When are you free?" has become clearer and more flexible: each time row is now labeled <b>From</b> and <b>To</b>, and you can add <b>several time slots per day</b> with a "<b>+ Add time</b>" button (e.g. free in the morning, at lunch, and in the evening). Each row has an ✕ to remove it again.
+- Fixed an underlying bug where changing free time on one weekday could carry over to the other weekdays — now each day is fully independent.
+
+### v0.622
+- Appen har byttet navn til <b>Pizzame</b> (tidligere «Pizzaplanlegger»). Samme app, kortere navn — oppdatert overalt du ser det: tittel, logo, innlogging, del-tekst og PWA-ikon. (Er appen installert på hjemskjermen, kan ikonnavnet henge igjen til du installerer på nytt — det styres av telefonen, ikke appen.)
+
+*English (July 2026):*
+- The app has been renamed to <b>Pizzame</b> (formerly "Pizzaplanlegger"). Same app, shorter name — updated everywhere you see it: title, logo, login, share text, and the PWA icon. (If the app is installed on your home screen, the icon name may linger until you reinstall — that's controlled by the phone, not the app.)
+
+### v0.621
+- Fikset en <b>blank skjerm</b>: valgte du «Smart-plan» og trykket deretter «Planlegging», ble skjermen tom. Nå kommer du tilbake til startvalget (de to dørene) i stedet.
+- Logoen øverst tar deg nå <b>tilbake til startvalget</b> (Smart-plan / velg selv). Oppsettet ditt beholdes — det er bare en snarvei tilbake til inngangen. (Guiden når du fortsatt fra menyen og Info-fanen.)
+- Fikset at hele <b>deig-lista</b> kunne feile med «Kunne ikke hente deiger» hvis én enkelt lagret deig var uleselig — én rar post veltet alt, så du fikk verken sett eller slettet noe. Nå hoppes en slik post over, og resten av deigene vises som normalt.
+
+*English (July 2026):*
+- Fixed a <b>blank screen</b>: if you chose "Smart plan" and then tapped "Planner", the screen went empty. Now you're taken back to the starting choice (the two doors) instead.
+- The logo at the top now takes you <b>back to the starting choice</b> (Smart plan / choose yourself). Your setup is kept — it's just a shortcut back to the entrance. (You can still reach the guide from the menu and the Info tab.)
+- Fixed the whole <b>dough list</b> failing with "Couldn't load doughs" if a single saved dough was unreadable — one odd entry toppled everything, so you couldn't view or delete anything. Now such an entry is skipped, and the rest of your doughs show up as normal.
+
+### v0.620
+- Ny <b>inngang</b>: når du åpner appen på nytt møter du nå to likestilte dører — <b>🧭 Smart-plan</b> («si når du har tid og når du vil spise, så finner appen metoden som passer livet ditt») og <b>🍕 Jeg vet hva jeg vil ha</b> (velg type og metode selv, som før). Ett trykk og du er i riktig løype. Har du et påbegynt oppsett, hopper vi rett inn i det uten å avbryte.
+- Funksjonen som før het «<b>Beta</b>» heter nå <b>Smart-plan</b> — samme motor (den søker på tvers av alle metoder etter den som passer din ledige tid best), men uten «uferdig»-stempelet den aldri fortjente. Første gang du åpner den, foldes «Når er du ledig?» automatisk ut, så anbefalingen faktisk bygger på din tid og ikke en generisk standard.
+- Mykere språk når en plan ikke passer perfekt: «Krever litt jobbing utenom din vanlige ledige tid» i stedet for «2 avvik».
+
+*English (July 2026):*
+- New <b>entry point</b>: when you reopen the app you now meet two equal doors — <b>🧭 Smart plan</b> ("tell us when you have time and when you want to eat, and the app finds the method that fits your life") and <b>🍕 I know what I want</b> (pick type and method yourself, as before). One tap and you're on the right track. If you have a setup in progress, we jump straight into it without interrupting.
+- The feature previously called "<b>Beta</b>" is now <b>Smart plan</b> — same engine (it searches across every method for the one that best fits your free time), but without the "unfinished" label it never deserved. The first time you open it, "When are you free?" unfolds automatically, so the recommendation actually builds on your time and not a generic default.
+- Gentler wording when a plan doesn't fit perfectly: "Needs a little work outside your usual free time" instead of "2 deviations".
+
+### v0.619
+- Språkvask og småfikser etter en grundig gjennomgang. Lange varigheter vises nå som «8 t 24 min» i stedet for rå «504 min», og «1.3 time» er ryddet til «1 t 15 min». Entall håndteres riktig når det bare er én av noe («1 emne», «1 boks» — ikke «1 emner»). Kopi-teksten skriver «Mania-poolish» (ikke «mania») og «Antall … : 1» uten det engelske «pcs». På engelsk er en rekke formuleringer gjort mer naturlige (bl.a. amerikansk «flavor», «warm up» i stedet for «temper» om deig, og «sheet pans»/«pizzas» oversatt i antall-linja). På norsk: «Vekk gjæren» (ikke «Væk»), «veiviseren» konsekvent, og «stjerner» der appen faktisk viser ★ (ikke «terningkast»).
+
+*English (July 2026):*
+- Language cleanup and small fixes after a thorough review. Long durations now show as "8 h 24 min" instead of raw "504 min", and "1.3 hours" is tidied up to "1 h 15 min". Singular is handled correctly when there's just one of something ("1 topic", "1 box" — not "1 topics"). The copy text now writes "Mania poolish" (not "mania") and "Count … : 1" without the odd "pcs". In English, a number of phrasings have been made more natural (including American "flavor", "warm up" instead of "temper" for dough, and "sheet pans"/"pizzas" translated in the count line). In Norwegian: "Wake the yeast" (not "Væk"), "the guide" used consistently, and "stars" where the app actually shows ★ (not "dice roll").
+
+### v0.618
+- Fikset at en nettopp sendt <b>tilbakemelding</b> så ut til å forsvinne. To ting: (1) tilbakemeldings-vinduet lukket seg selv etter ett sekund, så du rakk ikke se at meldingen kom inn — nå blir det stående åpent. (2) Lista var sortert etter stemmer, så en fersk melding (0 stemmer) havnet nederst — nå vises den du nettopp sendte <b>øverst</b>, tydelig merket «✓ nettopp sendt», selv om serveren skulle henge et øyeblikk. Meldingene ble alltid lagret; de var bare vanskelige å få øye på.
+
+*English (July 2026):*
+- Fixed a just-sent piece of <b>feedback</b> appearing to vanish. Two things: (1) the feedback window closed itself after one second, so you didn't have time to see the message arrive — now it stays open. (2) The list was sorted by votes, so a fresh message (0 votes) landed at the bottom — now the one you just sent shows <b>at the top</b>, clearly marked "✓ just sent", even if the server hangs for a moment. Messages were always saved; they were just hard to spot.
+
+### v0.617
+- Bedre <b>kalender-eksport</b> (📅 Påminnelser). Kalenderfila følger nå språk og enheter du har valgt (engelske titler og oz/°F når det er valgt), varsel kommer 10 min før hvert <b>handlingssteg</b> (ikke lenger et pling før hver passive heving), og hvert innslag har fått «trenger»-liste og sted (kjøleskap/benk/ovn). Under panseret er fila gjort robust etter kalender-standarden — den manglet et påkrevd tidsstempel og escaping, som kunne få enkelte kalendere (bl.a. Google) til å avvise eller vise hendelser feil.
+
+*English (July 2026):*
+- Better <b>calendar export</b> (📅 Reminders). The calendar file now follows the language and units you've chosen (English titles and oz/°F when selected), a reminder comes 10 min before each <b>action step</b> (no longer a ping before every passive rise), and each entry now has a "needs" list and location (fridge/counter/oven). Under the hood the file has been made robust per the calendar standard — it was missing a required timestamp and escaping, which could cause some calendars (including Google) to reject or display events incorrectly.
+
+### v0.616
+- Ny <b>lys modus</b> ved siden av den mørke. Under <b>Info → Visning → Tema</b> velger du <b>System</b> (følger telefonens innstilling), <b>Lys</b> eller <b>Mørk</b>. Den lyse paletten er en varm krem/pergament-tone med samme oransje aksent som før. Valget huskes, og standard er fortsatt mørk — så ingenting endrer seg før du selv velger noe annet.
+
+*English (July 2026):*
+- New <b>light mode</b> alongside the dark one. Under <b>Info → Display → Theme</b> you can choose <b>System</b> (follows your phone's setting), <b>Light</b> or <b>Dark</b>. The light palette is a warm cream/parchment tone with the same orange accent as before. Your choice is remembered, and the default is still dark — so nothing changes until you choose something else yourself.
+
+### v0.615
+- Avhaking av steg følger nå <b>innholdet</b> i steget, ikke bare posisjonen. Justerer du melmengde, hydrering, temperatur eller kjøletid <i>etter</i> at du har haket av noe, faller haken automatisk av de stegene som faktisk endret seg (nye grammengder, temperaturer eller minutter) — mens steg som ikke ble berørt beholder haken. Før kunne en hake bli stående på et tall som var endret (f.eks. en avhaket «500 g mel» etter at du dro til 600 g). Haken rives aldri vekk midt i et glidebryter-dra, og den overlever språk- og enhetsbytte.
+
+*English (July 2026):*
+- Checking off steps now follows the <b>content</b> of the step, not just its position. If you adjust flour amount, hydration, temperature or chill time <i>after</i> you've checked something off, the checkmark automatically drops off the steps that actually changed (new gram amounts, temperatures or minutes) — while steps that weren't touched keep their checkmark. Before, a checkmark could stay on a number that had changed (e.g. a checked-off "500 g flour" after you dragged it to 600 g). The checkmark is never torn off mid slider-drag, and it survives language and unit switches.
+
+### v0.614
+- Appen finnes nå på <b>engelsk</b>, og du kan vise mål i <b>imperiske enheter</b> (oz og °F). Begge deler er egne, uavhengige brytere under <b>Info → Språk / Enheter</b> — du kan f.eks. ha norsk tekst med imperiske enheter, eller engelsk med metrisk. Hele mobilappen er oversatt: oppskrifter, tidsplan, alle sju metodene, veiviser, varsler, «📋 Kopier»-teksten, bruksanvisningen og Tips &amp; teknikk. Engelsk er <b>maskinoversatt (AI)</b> — et lite varsel minner om å dobbeltsjekke kritiske steg — og selve utregningen er uendret; det er kun visningen som bytter språk/enhet.
+
+*English (July 2026):*
+- The app is now available in <b>English</b>, and you can show measurements in <b>imperial units</b> (oz and °F). Both are separate, independent toggles under <b>Info → Language / Units</b> — you can, for example, have Norwegian text with imperial units, or English with metric. The entire mobile app is translated: recipes, schedule, all seven methods, guide, notifications, the "📋 Copy" text, the instructions and Tips &amp; techniques. English is <b>machine-translated (AI)</b> — a small notice reminds you to double-check critical steps — and the calculation itself is unchanged; only the display switches language/unit.
+
+### v0.613
+- Ny <b>«👉 Neste»-stripe</b> øverst i tidsplanen: den viser hva neste steg er og teller ned til det — «Ta ut av kjøleskap · om 3 t 20 min» — så du slipper å scrolle gjennom hele planen for å se hva som skjer nå. Nedtellingen oppdaterer seg selv, og et trykk på stripa hopper rett til neste steg. Står du midt i en lang heving, peker den på slutten av hevingen; er alt gjort, sier den fra. (Er du på etterskudd og har steg som skulle vært gjort, viser den «på tide».)
+
+*English (July 2026):*
+- New <b>"👉 Next" strip</b> at the top of the schedule: it shows what the next step is and counts down to it — "Take out of fridge · in 3 h 20 min" — so you don't have to scroll through the whole plan to see what's happening now. The countdown updates itself, and a tap on the strip jumps straight to the next step. If you're in the middle of a long rise, it points to the end of the rise; if everything's done, it lets you know. (If you're behind and have steps that should already be done, it shows "time to".)
+
+### v0.612
+- Understeg er nå en fullverdig, husket visning — ikke lenger merket som «utprøving». To ting huskes: (1) <b>Avhakingen av understeg</b> lagres nå sammen med deigen og synkes mellom enheter, akkurat som hovedsteg og ingredienser. Legger du fra deg telefonen midt i en flerdagers heving, står understegene du har haket av der når du kommer tilbake — også på en annen enhet. (2) <b>Selve understeg-visningen</b> huskes mellom økter: slår du den på, er den på neste gang du åpner appen (som skriftstørrelse og layout). Knappen heter nå «📋 Vis understeg».
+- Et påbegynt oppsett overlever nå en full sideoppfriskning. Før husket appen valgene dine bare mens fanen var åpen — lastet du siden på nytt, var pizzatype, metode og finjusteringer tilbake på standard. Nå gjenopprettes hele oppsettet automatisk, og «Fortsetter: … »-linja i planleggeren dukker opp igjen der du slapp. «Start ny deig» nullstiller som før. (Åpner du en lagret deig, styrer den som vanlig — dette gjelder det ulagrede oppsettet du holder på med.)
+
+*English (July 2026):*
+- Sub-steps are now a full, remembered view — no longer marked as "experimental". Two things are remembered: (1) <b>Checking off sub-steps</b> is now saved with the dough and synced between devices, just like main steps and ingredients. If you put your phone down in the middle of a multi-day rise, the sub-steps you've checked off are still there when you come back — even on another device. (2) <b>The sub-step view itself</b> is remembered between sessions: if you turn it on, it's on the next time you open the app (like font size and layout). The button is now called "📋 Show sub-steps".
+- A setup in progress now survives a full page refresh. Before, the app only remembered your choices while the tab was open — if you reloaded the page, pizza type, method and fine-tuning were back to default. Now the whole setup is restored automatically, and the "Continuing: … " line in the planner reappears where you left off. "Start new dough" resets as before. (If you open a saved dough, it takes charge as usual — this applies to the unsaved setup you're working on.)
+
+### v0.611
+- Rettet en feil der avhaking kunne bli stående på utdatert innhold: bytter du <b>ovntype</b> eller <b>gjærtype</b> mens du har haket av steg, nullstilles avhakingen nå — på samme måte som ved bytte av pizzatype eller metode. Før kunne f.eks. «Varm pizzaovnen til 430°C» stå avhaket selv etter at du byttet til vanlig ovn (som sier 250°C), og gjær-chips beholde gammel grammengde. Gjelder både PC og mobil. (Melmengde/hydrering/temperatur/kjøletid nullstiller bevisst <b>ikke</b> — de justeres med glidebrytere som beveger seg kontinuerlig, og en nullstilling der ville rive vekk flere dagers avhaking midt i et dra.)
+- Hurtigdeig: rettet at etterhevingen ikke fulgte kjøkkentemperaturen. Bulk-hevingen ble justert etter romtemperatur (varmere = raskere), men etterhevingen sto fast — så ved et varmt kjøkken (26–28°C) reagerte deigens to gjæringsfaser ulikt, og planen ble internt inkonsistent. Nå skaleres begge fasene likt med temperaturen. Ved 22°C er tidsplanen uendret; forskjellen merkes bare ved kjøligere eller varmere kjøkken.
+
+*English (July 2026):*
+- Fixed a bug where checkmarks could stay on outdated content: if you switch <b>oven type</b> or <b>yeast type</b> while you have steps checked off, the checkmarks are now cleared — the same way as when switching pizza type or method. Before, for example "Heat the pizza oven to 430°C" could stay checked off even after you switched to a regular oven (which says 250°C), and the yeast chips could keep the old gram amount. Applies to both PC and mobile. (Flour amount/hydration/temperature/chill time deliberately do <b>not</b> reset — they're adjusted with sliders that move continuously, and a reset there would tear away several days of checkmarks mid-drag.)
+- Quick dough: fixed the final proof not following the kitchen temperature. The bulk rise was adjusted to room temperature (warmer = faster), but the final proof was fixed — so in a warm kitchen (26–28°C) the dough's two fermentation phases reacted differently, and the plan became internally inconsistent. Now both phases scale equally with temperature. At 22°C the schedule is unchanged; the difference is only noticeable in a cooler or warmer kitchen.
+
+### v0.610
+- Tre praktiske kald-gjæring-råd lagt til: (1) «Sett i kjøleskap»-steget minner nå om å <b>ikke stable boksene tett i høyden</b> — det kan blokkere luftsirkulasjonen og gi ujevn kjøling — og om at kjøleskapstallet på hjulet ikke er til å stole på (1–5-skalaene varierer mellom merker; sjekk med termometer at det ligger rundt 2–5°C). (2) «Hvorfor»-teksten på kjøleskapshevingen nevner at kald gjæring er <b>tilgivende</b>: siden kulda bremser hele prosessen, tåler deigen litt mer gjær enn man skulle tro før det blir et problem. Gjelder alle metoder med kjøleskapsheving.
+
+*English (July 2026):*
+- Three practical cold-fermentation tips added: (1) The "Put in fridge" step now reminds you <b>not to stack the boxes tightly on top of each other</b> — it can block air circulation and cause uneven cooling — and that the fridge dial number isn't to be trusted (the 1–5 scales vary between brands; check with a thermometer that it's around 2–5°C). (2) The "why" text on the fridge rise notes that cold fermentation is <b>forgiving</b>: since the cold slows the whole process, the dough tolerates a bit more yeast than you'd think before it becomes a problem. Applies to all methods with a fridge rise.
+
+### v0.609
+- Gjæringsstegene forteller nå ikke bare <b>når</b>, men <b>hva du ser etter</b> — og hva du gjør hvis deigen henger etter eller er kommet for langt. Klokka er fortsatt planen, men tida stemmer sjelden på minuttet: kjøleskap og kjøkken varierer. Under «💡 Tips» får de kalde hevingene, romtemperatur-/bulk-hevingene, benktida og poolish-gjæringen et fast mønster med tegn å kjenne igjen (størrelse, bobler, lukt, fingertrykk) og et konkret «gi den mer tid» / «bak tidligere». Kald deig: fingertrykk-testen holdes bevisst ute — den er upålitelig når deigen er stiv av kulde. Gjelder alle metoder (Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania).
+
+*English (July 2026):*
+- The fermentation steps now tell you not just <b>when</b>, but <b>what to look for</b> — and what to do if the dough is lagging behind or has gone too far. The clock is still the plan, but the timing rarely lands to the minute: fridges and kitchens vary. Under "💡 Tips", the cold rises, the room-temperature/bulk rises, the counter time and the poolish fermentation get a consistent pattern with signs to recognize (size, bubbles, smell, finger poke) and a concrete "give it more time" / "bake earlier". Cold dough: the finger-poke test is deliberately left out — it's unreliable when the dough is stiff from the cold. Applies to all methods (Long-ferment dough, Poolish, Biga, Quick dough, Evening dough, Mania).
+
+### v0.608
+- Ny teknikk: «🧊 Poolish kjøleskapspause». Er tidene vanskelige å få til å gå opp, kan du la den ferdige poolishen «vente» kaldt (opptil 18t) mellom «poolish er klar» og «bland ferdig deig». Det skyver resten av planen inn i den ledige tiden din — <b>uten å endre når du spiser</b>. Slå den av/på under Metode → «Poolish kjøleskapspause», eller trykk «🧊 Sett inn kjøleskapspause» rett i tidskonflikt-varselet når den dukker opp. Appen velger den korteste pausen (6/12/18t) som gir færrest steg utenfor tiden din, og viser pausen som et eget steg. Beta-søket «Finn oppskrift» kjenner også teknikken og kan foreslå den.
+
+*English (July 2026):*
+- New technique: "🧊 Poolish fridge pause". If the timings are hard to make line up, you can let the finished poolish "wait" cold (up to 18h) between "poolish is ready" and "mix the final dough". This shifts the rest of the plan into your free time — <b>without changing when you eat</b>. Turn it on/off under Method → "Poolish fridge pause", or tap "🧊 Insert fridge pause" right in the timing-conflict alert when it appears. The app picks the shortest pause (6/12/18h) that leaves the fewest steps outside your time, and shows the pause as its own step. The Beta "Find recipe" search also knows the technique and can suggest it.
+
+### v0.607
+- «Ta ut av kjøleskap»-steget forklarer nå benktida (tempereringen) etter kjøleskapsfermenteringen bedre: den gjør to ting på én gang — glutenet slapper av så deigen blir strekkbar, og gjæren våkner fra kulda og gir en siste, kort heving som gjør skorpa luftig. Hopper du over den, blir deigen både vanskelig å strekke og tettere stekt. Tipset er også utvidet: for kort gir stiv, tett deig; altfor lenge kan overheve. Gjelder alle metoder med kjøleskapsheving (Langtidsdeig, Poolish, Biga).
+
+*English (July 2026):*
+- The "Take out of fridge" step now better explains the counter time (warming up) after the fridge fermentation: it does two things at once — the gluten relaxes so the dough becomes stretchy, and the yeast wakes from the cold and gives one last, short rise that makes the crust airy. Skip it, and the dough becomes both hard to stretch and denser when baked. The tip is also expanded: too short gives stiff, dense dough; far too long can overproof. Applies to all methods with a fridge rise (Long-ferment dough, Poolish, Biga).
+
+### v0.606
+- Rettet tre tidsbeskrivelser som ikke stemte med selve tidsplanen (funnet ved manuell kvalitetssjekk): (1) kjøleskaps-steget skrev «ca. 24 timer» selv om den faktiske urørte kjøletiden er kortere — de siste 4 timene av den kalde fasen er temperering ute (eget steg). Teksten viser nå den reelle kjøletiden (f.eks. ca. 19,8 timer), i tråd med tidslinja på steget. (2) «Total heving» i den kopierte oppskriften viste bare den kalde halen (f.eks. 24t), ikke den reelle totaltiden — nå står «Total tid fra start til steking: ca. X timer» regnet fra første steg til steking (for en poolish med 24t kald hale blir det ca. 40 timer). (3) Fagteksten om poolish sa «har allerede fermentert mesteparten av deigen» — poolishen er halvparten av melet, så det står nå «halvparten av melet og bidrar med mye av smak- og aromautviklingen».
+
+*English (July 2026):*
+- Fixed three time descriptions that didn't match the actual schedule (found during a manual quality check): (1) the fridge step said "about 24 hours" even though the actual undisturbed chill time is shorter — the last 4 hours of the cold phase are warming up on the counter (a separate step). The text now shows the real chill time (e.g. about 19.8 hours), in line with the timeline on the step. (2) "Total rise" in the copied recipe showed only the cold tail (e.g. 24h), not the real total time — now it says "Total time from start to bake: about X hours" counted from the first step to baking (for a poolish with a 24h cold tail, that's about 40 hours). (3) The technical text about poolish said "has already fermented most of the dough" — the poolish is half the flour, so it now says "half the flour and contributes much of the flavor and aroma development".
+
+### v0.605
+- "📋 Kopier" tar nå med en sjekk-instruksjon øverst ("Sjekk denne pizzaoppskriften systematisk for feil i ingredienser, matematikk og tidsplan — se spesielt etter avvik fra det jeg selv har oppgitt:"), pluss appversjon og dato/klokkeslett for kopieringen. Nyttig hvis du vil lime hele oppskriften rett inn i en manuell kvalitetssjekk — og det blir sporbart hvilken versjon planen kom fra.
+
+*English (July 2026):*
+- "📋 Copy" now includes a check instruction at the top ("Systematically check this pizza recipe for errors in ingredients, math and schedule — look especially for deviations from what I entered myself:"), plus the app version and the date/time of the copy. Useful if you want to paste the whole recipe straight into a manual quality check — and it becomes traceable which version the plan came from.
+
+### v0.604
+- Beta-fanen er ryddet: "Pizzatid" heter nå "Når er du ledig?", med en forklaringsboks som sier hva den er og hvordan den påvirker appen — den brukes både til å foreslå oppskrifter som passer tiden din, og til å varsle hvis et steg havner på en tid du ikke har satt av. "Eller velg et populært tidspunkt" har fått tydeligere skille fra feltene over og en kort forklaring av hva knappene gjør. Elementene følger nå samme stil som resten av appen.
+
+*English (July 2026):*
+- The Beta tab has been tidied up: "Pizza time" is now "When are you free?", with an explanation box that says what it is and how it affects the app — it's used both to suggest recipes that fit your time, and to warn you if a step lands at a time you haven't set aside. "Or pick a popular time" now has a clearer separation from the fields above and a short explanation of what the buttons do. The elements now follow the same style as the rest of the app.
+
+### v0.603
+- Ny "📤 Del appen"-knapp (under Info → Del, og i ☰ Meny på PC). På mobil åpner den delingsmenyen så du kan sende appen videre i meldinger, e-post osv.; på PC kopieres lenken til utklippstavla. Løser at det ikke fantes noen adresse å kopiere når appen kjøres installert fra hjemskjermen (da er nettleserens adressefelt skjult). Bruksanvisningen er oppdatert med dette.
+
+*English (July 2026):*
+- New "📤 Share app" button (under Info → Share, and in ☰ Menu on PC). On mobile it opens the share menu so you can pass the app along in messages, email, etc.; on PC the link is copied to the clipboard. This solves there being no address to copy when the app runs installed from the home screen (where the browser's address bar is hidden). The instructions have been updated with this.
+
+### v0.602
+- Ny "📖 Bruksanvisning" under Info-fanen: en komplett, pedagogisk gjennomgang av hele appen — alle fanene, innstillingene, metodene og de smarte funksjonene (veiviseren og Sjekk, understeg/tips/juster, varsler og pizzatid, lagring og terningkast, kopier/kalender, install på hjemskjerm, og Beta-søket). Den har en innholdsfortegnelse øverst så du kan hoppe rett til det du lurer på. Bruksanvisningen holdes oppdatert i takt med appen.
+
+*English (July 2026):*
+- New "📖 User guide" under the Info tab: a complete, walk-you-through tour of the whole app — every tab, all the settings, the methods and the smart features (the wizard and Check, sub-steps/tips/adjust, notifications and pizza time, saving and the dice roll, copy/calendar, install to home screen, and the Beta search). It has a table of contents at the top so you can jump straight to whatever you're wondering about. The guide is kept up to date as the app evolves.
+
+### v0.601
+- Tidskonflikt-varselet ("Et steg havner i tid du ikke har satt av til pizza") er tonet ned i Tidsplan: steget som kolliderer får nå bare et lite «⚠ utenfor spisetid»-merke rett på steg-raden, i stedet for hele kortet. Det fulle varselet — med forklaringen og valgene «Rediger pizzatiden» og «Fortsett likevel» — bor nå i wizardens «Sjekk», som er der du blir gjort oppmerksom på det før du starter. På mobil tar et trykk på merket deg rett til å redigere pizzatiden.
+- Rettet en reell feil i Hurtigdeig-kickstarten fra v6.01: hele vannmengden og gjæren ble listet i BÅDE kickstarten og eltesteget, så fulgte du stegene bokstavelig tilsatte du dobbelt av begge. Nå vekkes gjæren i en liten, varm porsjon av vannet, mens resten tilsettes i eltesteget på den beregnede temperaturen — vann og gjær telles én gang, og deigen sikter fortsatt mot ca. 24°C.
+- Ny "Legg til på hjemskjerm"-knapp: på Android får du den ekte installasjonsdialogen, på iPhone en kort veiledning via Del-ikonet i Safari. Appen kan nå også installeres og brukes offline.
+- Rettet en feil som kunne gi en kort "hikke" ved lasting på mobil for innloggede brukere — et internt oppstartssteg kunne kjøre før mobilvisningen var ferdig bygget. Ingen synlig endring utover at oppstarten er stødigere.
+
+*English (July 2026):*
+- The timing-conflict warning ("A step lands during time you haven't set aside for pizza") has been toned down in the Schedule: the clashing step now just gets a small "⚠ outside eating time" badge right on the step row, instead of taking over the whole card. The full warning — with the explanation and the "Edit pizza time" and "Continue anyway" choices — now lives in the wizard's "Check", which is where you're alerted to it before you start. On mobile, tapping the badge takes you straight to editing the pizza time.
+- Fixed a real bug in the Quick dough kickstart from v6.01: the entire amount of water and the yeast were listed in BOTH the kickstart and the kneading step, so if you followed the steps literally you added double of both. Now the yeast is woken up in a small, warm portion of the water, while the rest is added in the kneading step at the calculated temperature — water and yeast are counted once, and the dough still aims for about 24°C.
+- New "Add to home screen" button: on Android you get the real install dialog, on iPhone a short guide via the Share icon in Safari. The app can now also be installed and used offline.
+- Fixed a bug that could cause a brief "hiccup" while loading on mobile for logged-in users — an internal startup step could run before the mobile view had finished building. No visible change beyond a steadier startup.
+
+### v0.600
+- Ny "Start ny deig"-knapp på wizardens første steg. Den vises kun som en liten "Fortsetter: X · Y"-linje når du faktisk ikke er på standardverdier — kommer du tilbake til wizarden og alt er nullstilt fra før, ser du ingenting ekstra.
+- Rettet en reell feil: å bytte pizzatype eller metode midt i økten kunne la gamle avhukinger (steg, ingredienser, understeg) henge igjen og vises feilaktig som fullført på det nye innholdet. Bytter du nå, nullstilles alle tre riktig — men et trykk på samme type/metode du allerede har valgt endrer ingenting, som forventet.
+- Hurtigdeig har fått et nytt første steg: en gjær-kickstart der du rører gjæren ut i lunkent vann med litt honning og lar den boble noen minutter før melet tilsettes — en enkel sjekk på at gjæren faktisk lever, og et forsprang før den skal konkurrere med melet om maten.
+- Steketrinnet i Hurtigdeig har fått et tips om å bruke semulegryn i stedet for vanlig mel til utbakingen — tåler høyere varme bedre.
+
+*English (July 2026):*
+- New "Start new dough" button on the wizard's first step. It only shows up as a small "Continuing: X · Y" line when you're actually not on the default values — come back to the wizard with everything already reset, and you'll see nothing extra.
+- Fixed a real bug: switching pizza type or method mid-session could leave old checkmarks (steps, ingredients, sub-steps) hanging around and showing up incorrectly as done on the new content. Now when you switch, all three reset correctly — but tapping the same type/method you've already chosen changes nothing, as expected.
+- Quick dough got a new first step: a yeast kickstart where you stir the yeast into lukewarm water with a little honey and let it bubble for a few minutes before the flour goes in — a simple check that the yeast is actually alive, and a head start before it has to compete with the flour for food.
+- The baking step in Quick dough got a tip to use semolina instead of regular flour for shaping — it handles higher heat better.
+
+### v0.599
+- "Prøv understeg" er flyttet ned til statuslinjen, rett ved siden av "⚙️ Juster" — og en ny "💡 Tips"-bryter har fått plass der også. Alle tre står nå samlet på én rad i Tidsplan, med pizzatype og metode alene på linjen over. Tips-bryteren fungerte tidligere kun på PC; den virker nå på mobil også.
+- Wizardens egne statuslinjer (Metode, Sjekk, Finjuster) er urørt — Juster ligger fortsatt rett ved navnet der, uten Understeg eller Tips i veien.
+
+*English (July 2026):*
+- "Try sub-steps" has moved down to the status line, right next to "⚙️ Fine-tune" — and a new "💡 Tips" toggle has found a spot there too. All three now sit together on one row in the Schedule, with pizza type and method alone on the line above. The Tips toggle used to work only on desktop; it now works on mobile as well.
+- The wizard's own status lines (Method, Check, Fine-tune) are untouched — Fine-tune still sits right by the name there, with no Sub-steps or Tips in the way.
+
+### v0.598
+- Understeg finnes nå på alle steg, i alle metoder — Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania-poolish og Ingen elting. Selve steketrinnet (som var det siste, gjentagende hullet) er også dekket nå, for alle pizzatyper og begge ovnstyper.
+
+*English (July 2026):*
+- Sub-steps now exist on every step, in every method — Long-rise dough, Poolish, Biga, Quick dough, Evening dough, Mania poolish and No-knead. The baking step itself (which was the last, recurring gap) is covered now too, for all pizza types and both oven types.
+
+### v0.597
+- Fant hvorfor "Prøv understeg" kunne føles som den ikke gjorde noe: knappen virket helt fint, men Kveldsdeig hadde ennå ikke fått understeg skrevet — bare Langtidsdeig hadde det. Alt falt derfor tilbake til gammel tekst, og ingenting synlig endret seg når du trykket. Kveldsdeig har nå understeg på alle sine steg unntatt selve stekingen.
+
+*English (July 2026):*
+- Found out why "Try sub-steps" could feel like it did nothing: the button worked fine, but Evening dough hadn't had its sub-steps written yet — only Long-rise dough had them. So everything fell back to the old text, and nothing visibly changed when you tapped. Evening dough now has sub-steps on all of its steps except the baking itself.
+
+### v0.596
+- Fant selv at "📋 Prøv understeg"-knappen fra forrige versjon var plassert for langt ned — den satt etter statuslinjen, som på mange oppskrifter er høy nok til å skyve knappen under skjermkanten uten at du visste den var der. Den bor nå helt øverst på Tidsplan, ved siden av det lille pizzaikonet, synlig med det samme uten å scrolle.
+
+*English (July 2026):*
+- Noticed ourselves that the "📋 Try sub-steps" button from the last version was placed too far down — it sat after the status line, which on many recipes is tall enough to push the button below the edge of the screen without you knowing it was there. It now lives right at the top of the Schedule, next to the little pizza icon, visible immediately without scrolling.
+
+### v0.595
+- Ny utprøvende knapp på Tidsplan: "📋 Prøv understeg". Slår du den på, deles teksten i hvert steg opp i nummererte understeg du kan hake av én etter én, i stedet for ett sammenhengende avsnitt — så langt bygget for Langtidsdeig. Slår du den av igjen er alt akkurat som før, ingenting er borte. Passive steg (som venting i romtemperatur eller kjøleskap) får understeg uten avhaking, siden det ikke er noe å gjøre der.
+- Avhakingen på understeg er kun lagret i økten så lenge dette utprøves — den blir ikke husket når du laster siden på nytt.
+
+*English (July 2026):*
+- New experimental button on the Schedule: "📋 Try sub-steps". Turn it on and the text in each step is broken up into numbered sub-steps you can check off one by one, instead of one continuous paragraph — so far built for Long-rise dough. Turn it back off and everything is exactly as before, nothing is lost. Passive steps (like resting at room temperature or in the fridge) get sub-steps without checkboxes, since there's nothing to do there.
+- Checking off sub-steps is only saved within the session while this is being tested — it won't be remembered when you reload the page.
+
+### v0.594
+- Hvert steg som bruker målte ingredienser viser nå en liten rad med "trenger du"-chips over selve teksten — f.eks. vann, mel, salt og gjær med mengder — så du kan se hva du trenger uten å lese deg gjennom hele avsnittet først. Selve teksten er uendret, mengdene står fortsatt der også.
+- Gjelder alle metoder — Langtidsdeig, Poolish, Biga, Hurtigdeig, Kveldsdeig, Mania-poolish og Ingen elting — både på mobil og PC.
+
+*English (July 2026):*
+- Every step that uses measured ingredients now shows a small row of "what you need" chips above the text itself — e.g. water, flour, salt and yeast with amounts — so you can see what you need without reading through the whole paragraph first. The text itself is unchanged, and the amounts are still there too.
+- Applies to all methods — Long-rise dough, Poolish, Biga, Quick dough, Evening dough, Mania poolish and No-knead — on both mobile and desktop.
+
+### v0.593
+- Rettet en feil som gjorde at lagring av bakst kunne feile med meldingen "currentUserName is not defined". En funksjon for a hente navnet ditt til lagringen ble kalt fire steder, men var aldri skrevet noe sted i koden -- den feilet før selve lagringen i det hele tatt rakk å starte. Lagring av bakst og notater skal nå fungere normalt igjen.
+
+*English (July 2026):*
+- Fixed a bug that made saving a bake fail with the message "currentUserName is not defined". A function to fetch your name for the save was called in four places, but was never written anywhere in the code — it failed before the save itself even got a chance to start. Saving bakes and notes should now work normally again.
+
+### v0.592
+- Ingen synlig endring i appen denne runden — rendyrket arbeid på test-sikkerhetsnettet bak kulissene. Tre tester feilet når regresjonssuiten kjørte sent på kvelden, fordi de planla bakover fra en dato som ikke lenger ga nok margin mot å havne i fortiden. De søker nå aktivt etter et tidspunkt som faktisk er konfliktfritt, i stedet for å gjette ett fast klokkeslett. Ny delt resetTestState()-hjelper rydder global tilstand mellom tester.
+
+*English (July 2026):*
+- No visible change in the app this round — pure behind-the-scenes work on the test safety net. Three tests failed when the regression suite ran late at night, because they planned backwards from a date that no longer left enough margin against ending up in the past. They now actively search for a time that's genuinely conflict-free, instead of guessing one fixed clock time. A new shared resetTestState() helper cleans up global state between tests.
+
+### v0.591
+- Rettet "Ikke vis igjen"-knappen i velkomstguiden på PC — den var mørk med mørk tekst og vanskelig å lese. Årsaken var en reserveverdi i CSS-en som aldri faktisk ble brukt, så knappen alltid endte opp i den mobile, mørke fargen selv på PC. Retter seg nå etter samme lyse/mørke-mekanisme som resten av knappene i appen.
+
+*English (July 2026):*
+- Fixed the "Don't show again" button in the welcome guide on desktop — it was dark with dark text and hard to read. The cause was a fallback value in the CSS that was never actually used, so the button always ended up in the mobile, dark color even on desktop. It now follows the same light/dark mechanism as the rest of the app's buttons.
+
+### v0.590
+- Varselet om at et steg havner utenfor tiden du har satt av, eller på natten, har fått en tredje knapp: "Dette er greit — fortsett likevel". Noen ganger vet du at du kan ordne deigen på et upassende tidspunkt akkurat denne ene gangen, uten å gå inn og endre pizzatiden din for godt. Trykker du den, blir varselet til en nøytral bekreftelse i stedet for å bare forsvinne — sjekken sier "Planen holder — med ett godtatt forbehold" i stedet for å late som ingenting eller late som noe fortsatt står uløst. Et "Angre"-alternativ tar deg tilbake til varselet.
+- Gjelder kun disse to varslene — ikke meltype, overfermentering eller varmt kjøkken, som handler om deigens fysiske grenser og ikke bør kunne "godtas bort".
+
+*English (July 2026):*
+- The warning that a step lands outside the time you've set aside, or during the night, has gained a third button: "This is fine — continue anyway". Sometimes you know you can handle the dough at an awkward time just this once, without going in and changing your pizza time for good. Tap it and the warning turns into a neutral confirmation instead of just disappearing — the check says "The plan holds — with one accepted exception" rather than pretending nothing happened or pretending something's still unresolved. An "Undo" option takes you back to the warning.
+- Applies only to these two warnings — not flour type, over-fermentation or a warm kitchen, which are about the dough's physical limits and shouldn't be able to be "accepted away".
+
+### v0.589
+- Fjernet velkomstskjermen som dukket opp ved ny oppstart med knappene Bruk samme som sist og Åpne favoritten min. Den ga et løfte den ikke helt holdt — den gjenbrukte det meste av forrige oppsett, men ikke tidspunktet du planla for — og hoppet forbi hele wizarden, inkludert sjekken som nå ser over planen din. Favoritten din er fortsatt like lett å finne via Mine deiger. Appen går nå rett til første steg hver gang du starter noe nytt.
+
+*English (July 2026):*
+- Removed the welcome screen that appeared on a fresh start with the buttons "Use same as last time" and "Open my favorite". It made a promise it didn't quite keep — it reused most of your previous setup, but not the time you'd planned for — and skipped past the whole wizard, including the check that now looks over your plan. Your favorite is still just as easy to find via My doughs. The app now goes straight to the first step every time you start something new.
+
+### v0.588
+- To navn byttet ut fordi de var for generiske. Fanen som viser tidsplanen din (oppstart, steketid, alle stegene) het bare Steg, rett ved siden av fanen Planlegging — forvirrende likt. Den heter nå Tidsplan. Wizardens siste steg het Holder? i den lille etiketten øverst, mens de to andre etikettene er substantiv — den heter nå Sjekk.
+
+*English (July 2026):*
+- Two names swapped out because they were too generic. The tab that shows your schedule (start, baking time, all the steps) was just called Steps, right next to the Planner tab — confusingly alike. It's now called Schedule. The wizard's last step was called "Holds?" in the little label at the top, while the other two labels are nouns — it's now called Check.
+
+### v0.587
+- Rettet en feil som fikk appen til å vise en nesten blank skjerm rett etter forrige oppdatering. En tekstlinje i endringsloggen manglet et avsluttende anførselstegn, noe som stanset all JavaScript fra og med den linjen. Ingen funksjonell endring i appen for øvrig.
+
+*English (July 2026):*
+- Fixed a bug that made the app show a nearly blank screen right after the last update. A line of text in the changelog was missing a closing quotation mark, which stopped all JavaScript from that line onward. No functional change in the app otherwise.
+
+### v0.586
+- "Passer godt"-teksten under metodekortene var ustabil — kunne mangle helt, eller vise et svar som ikke stemte med tiden du faktisk hadde satt av. To årsaker: kortene ble tegnet før datofeltene fikk sin første verdi, så den aller første visningen manglet alltid teksten; og kortene ble aldri tegnet på nytt når du kom inn på Metode-steget, så teksten viste alltid resultatet fra forrige gang et kort ble klikket — ikke det som stemte med datoen du nettopp hadde satt på forrige steg. Metodekortene oppdaterer seg nå hver gang du åpner Metode-steget."
+
+*English (July 2026):*
+- The "Good fit" text under the method cards was unstable — it could be missing entirely, or show an answer that didn't match the time you'd actually set aside. Two causes: the cards were drawn before the date fields got their first value, so the very first view always lacked the text; and the cards were never redrawn when you entered the Method step, so the text always showed the result from the last time a card was clicked — not what matched the date you'd just set on the previous step. The method cards now refresh every time you open the Method step."
+
+### v0.585
+- "Steketidspunkt" og "Populære tidspunkt for pizza" i Beta-fanen var to helt uavhengige søk som ikke hadde noe med hverandre å gjøre — et populært tidspunkt skrev til sin egen boks uten å røre feltene over. Nå fyller et klikk på et populært tidspunkt de samme feltene og viser svaret i det samme resultatfeltet som det frie søket bruker. Ett svar om gangen, uansett hvilken vei du kommer inn.
+- Standarddatoen i det frie søket var alltid "i dag kl. 19:00", selv om klokken alt var passert — et forslag som kunne være ugjennomførbart før du rakk å lese det. Den er nå alltid neste gjennomførbare kl. 19:00, i dag eller i morgen.
+
+*English (July 2026):*
+- "Baking time" and "Popular times for pizza" in the Beta tab were two completely independent searches that had nothing to do with each other — a popular time wrote to its own box without touching the fields above. Now clicking a popular time fills those same fields and shows the answer in the same result field the free search uses. One answer at a time, no matter which way you come in.
+- The default date in the free search was always "today at 19:00", even if that time had already passed — a suggestion that could be impossible before you'd finished reading it. It's now always the next doable 19:00, today or tomorrow.
+
+### v0.584
+- Fjernet "Tidligst mulig"-linjen under Når vil du spise-spørsmålet på første wizardsteg. Skulle du be om et tidspunkt som ikke går opp, får du i stedet det tydelige varselet fra v5.84 med en ferdig utregnet knapp — det tar seg av akkurat den situasjonen bedre enn en passiv linje gjorde.
+
+*English (July 2026):*
+- Removed the "Earliest possible" line under the "When do you want to eat" question on the first wizard step. If you ask for a time that doesn't work out, you instead get the clear warning from v5.84 with a ready-calculated button — it handles that exact situation better than a passive line did.
+
+### v0.583
+- Velger du et steketidspunkt som er for tett på, kunne appen regne seg bakover til en oppstart som allerede hadde passert — og vise den uten å si fra. Nå får du et tydelig varsel både i kvalitetssjekken og på Steg-fanen, med en knapp som flytter steketiden til det tidligste tidspunktet som faktisk går, ferdig utregnet for metoden og innstillingene dine.
+- Beta-fanens søk fikk denne sperren allerede i v5.52 — nå gjelder den også når du planlegger direkte i wizarden.
+
+*English (July 2026):*
+- If you picked a baking time that was too close, the app could calculate its way back to a start time that had already passed — and show it without telling you. Now you get a clear warning both in the quality check and on the Steps tab, with a button that moves the baking time to the earliest slot that actually works, fully calculated for your method and settings.
+- The Beta tab's search got this guard back in v5.52 — now it also applies when you plan directly in the wizard.
+
+### v0.582
+- Spørsmålet om når er nå to ærlige valg: "Planlagt steketid" med dato og klokkeslett, eller "Jeg begynner nå" — der planlegges deigen fra nå, og steketiden regnes ut for deg. Datofeltene på nå-grenen er fjernet: de har en stund vært uten funksjon (appen brukte alltid nå-tidspunktet uansett hva du skrev), så de sto der og så redigerbare ut uten å være det.
+- "Tidligst mulig"-hintet og metodekortenes passform regnes nå ut av den samme motoren som bygger selve tidsplanen, for alle seks metoder. Før brukte de en egen forenklet formel som manglet Kveldsdeig og Mania-poolish — begge fremsto derfor som klare umiddelbart, og Kveldsdeig-kortet sa "passer godt" selv når du ville spise om en time.
+- Overskriften på spørsmålet følger nå valget ditt med en gang du trykker, i stedet for først neste gang du kom inn på steget.
+
+*English (July 2026):*
+- The "when" question is now two honest choices: "Scheduled baking time" with a date and time, or "I'm starting now" — where the dough is planned from now and the baking time is calculated for you. The date fields on the now branch are gone: they've been non-functional for a while (the app always used the current time no matter what you typed), so they sat there looking editable without actually being editable.
+- The "Earliest possible" hint and the method cards' fit are now calculated by the same engine that builds the actual schedule, for all six methods. Before, they used a separate simplified formula that was missing Evening dough and Mania poolish — so both looked ready immediately, and the Evening dough card said "good fit" even when you wanted to eat in an hour.
+- The question's heading now follows your choice the moment you tap, instead of only the next time you came back to the step.
+
+### v0.581
+- Spørsmålet om når du vil spise sto med samme overskrift to ganger på første wizardsteg. Den ene er borte.
+
+*English (July 2026):*
+- The question about when you want to eat showed the same heading twice on the first wizard step. One is gone.
+
+### v0.580
+- Finjuster er ikke lenger et eget steg i wizarden. Den nås nå derfra du oppdager at du trenger den: hvert varsel i kvalitetssjekken har fått en "Se i Finjuster"-lenke som tar deg rett til spaken som hører til akkurat det problemet — hydreringen for melvarselet, kjøleskapstiden for lang gjæring, romtemperaturen for varmt kjøkken. ⚙️ Juster øverst i statuslinjen åpner Finjuster som før.
+- Wizarden er dermed tre steg igjen: Pizza, Metode, Holder? Rekkefølgen var blitt bakvendt — du finjusterte før du fikk vite om det var noe å finjustere.
+- Både knappen og et dra til siden tar deg tilbake til sjekken du kom fra når du er ferdig i Finjuster.
+
+*English (July 2026):*
+- Fine-tune is no longer a separate step in the wizard. You now reach it from wherever you discover you need it: every warning in the quality check has a "See in Fine-tune" link that takes you straight to the slider tied to that exact problem — hydration for the flour warning, fridge time for a long ferment, room temperature for a warm kitchen. ⚙️ Adjust at the top of the status bar opens Fine-tune as before.
+- That leaves the wizard at three steps: Pizza, Method, Ready? The order had gotten backwards — you fine-tuned before you knew whether there was anything to fine-tune.
+- Both the button and a swipe to the side take you back to the check you came from when you're done in Fine-tune.
+
+### v0.579
+- Kvalitetssjekken på siste wizardsteg sjekker nå også deigen, ikke bare tidene. Passer ikke melet til gjæringstiden, er hydreringen utenfor det melet tåler, blir gjæringen så lang at deigen kan bryte sammen, eller er kjøkkenet for varmt for hurtigdeigen — så står det der, sammen med tidskonfliktene. Står alt riktig, sier den fortsatt fra om det.
+- Grunnen til at de hører hjemme akkurat der: inne i wizarden er det ett swipe tilbake til spaken som fikser problemet. Fra Steg-fanen måtte du bytte fane og lete.
+- Er det flere ting å se på, teller sjekken dem opp øverst. Og et varsel du har trykket bort med krysset dukker likevel opp i sjekken — der har du nettopp bedt om dommen, så der holder vi ikke noe tilbake.
+
+*English (July 2026):*
+- The quality check on the last wizard step now checks the dough too, not just the timing. If the flour doesn't suit the ferment time, the hydration is beyond what that flour can handle, the ferment gets so long the dough might collapse, or the kitchen is too warm for the quick dough — it says so, right alongside the timing conflicts. If everything's right, it still tells you that.
+- Why they belong right there: inside the wizard it's one swipe back to the slider that fixes the problem. From the Steps tab you had to switch tabs and go hunting.
+- If there's more than one thing to look at, the check counts them up at the top. And a warning you dismissed with the X still shows up in the check — you just asked for the verdict, so we hold nothing back.
+
+### v0.578
+- Fjernet den lille meldingen som spratt opp øverst på skjermen hver gang du byttet pizzatype. Den var morsom én gang og i veien de neste tjue.
+
+*English (July 2026):*
+- Removed the little message that popped up at the top of the screen every time you switched pizza type. It was fun once and in the way the next twenty times.
+
+### v0.577
+- Wizarden er bygget om til fire steg. Antall pizzaer og når du vil spise er flyttet opp til første steg, sammen med pizzatypen — det er tingene du allerede vet når du bestemmer deg for å lage pizza. Viktigere: metodevalget avhenger av hvor mye tid du har, og nå vet appen det før du velger. Metodekortene sier derfor selv om de passer, i stedet for at du får en advarsel etterpå.
+- Finjuster er nå et vanlig steg i rekken i stedet for en sidedør, så du kan bla forbi den eller innom den som du vil.
+- Siste steg er nytt: en kvalitetssjekk som svarer på om planen holder. Står alt riktig, sier den fra om det — appen har hittil bare snakket når noe var galt. Kolliderer et steg med tiden du har satt av, viser den den utregnede fiksen, og er planen låst fast sier den det rett ut og foreslår en annen metode.
+- Du kan nå dra til siden for å bla mellom stegene i wizarden, i tillegg til knappene og stegprikkene. Sliderne i Finjuster virker som før — et dra som starter på en slider stiller slideren, det bytter ikke steg.
+
+*English (July 2026):*
+- The wizard is rebuilt into four steps. The number of pizzas and when you want to eat have moved up to the first step, together with the pizza type — those are the things you already know when you decide to make pizza. More importantly: the method choice depends on how much time you have, and now the app knows that before you choose. So the method cards say for themselves whether they fit, instead of you getting a warning afterward.
+- Fine-tune is now a regular step in the sequence instead of a side door, so you can page past it or into it as you like.
+- The last step is new: a quality check that answers whether the plan holds up. If everything's right, it says so — until now the app only spoke up when something was wrong. If a step collides with the time you've set aside, it shows the calculated fix, and if the plan is locked solid it says so outright and suggests a different method.
+- You can now swipe to the side to page between the wizard steps, in addition to the buttons and step dots. The sliders in Fine-tune work as before — a drag that starts on a slider adjusts the slider, it doesn't change steps.
+
+### v0.576
+- Knappene i varslene som sender deg et annet sted — "Rediger pizzatiden din", "Juster kjøleskapstid", "Se i Finjuster", "Se i Metode" — var enveisdører. Du landet et sted, endret noe, og fikk aldri vite om problemet du kom for å løse faktisk ble borte. Nå dukker det opp en linje nederst på skjermen du ble sendt til, med en vei tilbake dit du kom fra.
+- Linjen svarer mens du redigerer. Justerer du pizzatiden til at steget passer, sier den fra med det samme at alle steg ligger innenfor — du trenger ikke gå ut og inn for å sjekke. Står konflikten fortsatt, sier den hvilket steg det gjelder og når. Linjen vises bare når du faktisk ble sendt dit av et varsel, og forsvinner så snart du navigerer videre på egen hånd.
+
+*English (July 2026):*
+- The buttons in the warnings that send you elsewhere — "Edit your pizza time", "Adjust fridge time", "See in Fine-tune", "See in Method" — were one-way doors. You landed somewhere, changed something, and never found out whether the problem you came to solve actually went away. Now a line appears at the bottom of the screen you were sent to, with a way back to where you came from.
+- The line responds while you edit. Adjust the pizza time so the step fits, and it tells you right away that all steps are within range — you don't need to go out and back in to check. If the conflict remains, it says which step it's about and when. The line only shows when you were actually sent there by a warning, and disappears as soon as you navigate on somewhere on your own.
+
+### v0.575
+- Fikset at varselet om opptatt tid ble hengende med gammelt svar når du endret pizzatiden din i Beta-fanen. Redigeringen lagret riktig, men planen ble aldri regnet ut på nytt, så varselet svarte på tilstanden fra før endringen. Nå oppdaterer planen seg med en gang du endrer et tidspunkt.
+- I tillegg regnes planen alltid ut på nytt når du går inn på Steg-fanen. Det er en generell sikring: ingen endring gjort i en annen fane skal kunne etterlate et varsel som svarer på gammel tilstand.
+- Et halvferdig tidsrom midt i redigeringen — der du har fylt inn "fra" men ikke "til" ennå — teller ikke lenger som en gyldig periode.
+
+*English (July 2026):*
+- Fixed the busy-time warning getting stuck with an old answer when you changed your pizza time in the Beta tab. The edit saved correctly, but the plan was never recalculated, so the warning was answering the state from before the change. Now the plan updates the moment you change a time.
+- On top of that, the plan is always recalculated when you enter the Steps tab. It's a general safeguard: no change made in another tab should be able to leave a warning answering an old state.
+- A half-finished time range mid-edit — where you've filled in "from" but not "to" yet — no longer counts as a valid period.
+
+### v0.574
+- Varselet om at et steg havner på et dårlig tidspunkt tilbyr nå bare knapper som faktisk kan løse akkurat det problemet. Tidligere fikk du "Juster kjøleskapstid" uansett — men steg som "Ta ut av kjøleskap" ligger fast fire timer før steking, så kjøleskapstiden kan ikke flytte dem i det hele tatt når du planlegger bakover fra et måltid. Du kunne justere så mye du ville uten at varselet forsvant.
+- I stedet regner appen ut hvor mye du må flytte måltidet for at hele planen skal gå opp, og tilbyr det ferdig: "Spis tir 20:00 i stedet" — med en forklaring av hva det gjør med steget som kolliderte. Finnes det ingen spisetid som fungerer, sier varselet det rett ut i stedet for å tilby knapper som ikke virker, og peker mot en metode med kortere temperering.
+
+*English (July 2026):*
+- The warning that a step lands at a bad time now only offers buttons that can actually solve that particular problem. Before, you got "Adjust fridge time" regardless — but steps like "Take out of fridge" sit fixed four hours before baking, so fridge time can't move them at all when you're planning backward from a meal. You could adjust all you wanted without the warning going away.
+- Instead, the app calculates how much you need to move the meal for the whole plan to work out, and offers it ready-made: "Eat Tue 20:00 instead" — with an explanation of what that does to the step that collided. If there's no meal time that works, the warning says so outright instead of offering buttons that don't work, and points toward a method with shorter tempering.
+
+### v0.573
+- Alle varsler har fått et kryss oppe i høyre hjørne som skjuler varselet for denne gangen. Det gjelder også nattevarselet — unntak finnes, du kan være våken uansett, eller ha lagt opp til det med vilje for smakens skyld.
+- Krysset husker den konkrete konflikten, ikke varseltypen. Skjuler du "Ta ut av kjøleskap tir 14:00" og siden endrer noe slik at problemet flytter seg til et annet tidspunkt, dukker varselet opp igjen — men et uendret problem forblir skjult. Ingenting lagres: "denne gangen" varer til du laster appen på nytt.
+
+*English (July 2026):*
+- Every warning has gotten an X in the top right corner that hides the warning for this time. That includes the night warning — exceptions exist, you might be up anyway, or have planned it that way on purpose for the flavor.
+- The X remembers the specific conflict, not the warning type. Hide "Take out of fridge Tue 14:00" and then change something so the problem moves to a different time, and the warning comes back — but an unchanged problem stays hidden. Nothing is saved: "this time" lasts until you reload the app.
+
+### v0.572
+- Varselet "Et steg havner i arbeidstiden din" bygger nå på din egen Pizzatid fra Beta-fanen i stedet for en fast antakelse om at alle jobber mandag til fredag 08–16. Setter du opp når du faktisk er ledig, følger varselet det — og varselet har fått en knapp rett inn til redigeringen. Pizzatiden lagres per bruker på serveren, så den følger deg mellom telefon og PC.
+- Rydding under panseret: appen hadde tre uavhengige oppfatninger av når du er ledig — varselets hardkodede 08–16, "Mine faste tidspunkter" sitt eget hardkodede sett, og Pizzatid. Nå er Pizzatid eneste kilde for alle tre. Standardverdiene er de samme tallene som før, så ingenting endrer seg for deg før du selv redigerer timeplanen. Nattevarselet (23–06) er fortsatt en universell regel.
+
+*English (July 2026):*
+- The "A step lands in your working hours" warning is now based on your own Pizza time from the Beta tab instead of a fixed assumption that everyone works Monday to Friday 08–16. Set up when you're actually free, and the warning follows it — and the warning has gotten a button straight into the editor. Pizza time is saved per user on the server, so it follows you between phone and PC.
+- Cleanup under the hood: the app had three independent notions of when you're free — the warning's hardcoded 08–16, "My fixed times" with its own hardcoded set, and Pizza time. Now Pizza time is the only source for all three. The default values are the same numbers as before, so nothing changes for you until you edit the schedule yourself. The night warning (23–06) is still a universal rule.
+
+### v0.571
+- Fjernet "Da starter du: …"-linjen under Kjøleskapsheving på Når?-steget, og under Poolish- og Biga-varigheten på Metode-steget. Etter at kjøleskapsblokken ble flyttet opp i v5.71 gjentok den bare oppstartstidspunktet statuslinjen viser noen linjer over.
+- I stedet viser statuslinjen nå hvor mye oppstart flyttet seg når du justerer kjøleskapstid, poolish-varighet eller biga-varighet — en liten brikke ved siden av oppstartstidspunktet som sier f.eks. "6 t tidligere". Den forsvinner av seg selv etter noen sekunder. Trykker du flere ganger raskt etter hverandre summeres differansen mot der du startet, i stedet for å vise ett steg om gangen.
+
+*English (July 2026):*
+- Removed the "So you start: …" line under Fridge proofing on the When? step, and under the Poolish and Biga duration on the Method step. After the fridge block was moved up in v5.71, it just repeated the start time the status bar shows a few lines above.
+- Instead, the status bar now shows how much the start moved when you adjust fridge time, poolish duration, or biga duration — a little chip next to the start time that says, e.g., "6 h earlier". It disappears on its own after a few seconds. Tap several times in quick succession and the difference is summed from where you started, instead of showing one step at a time.
+
+### v0.570
+- Kjøleskapshevingen på wizardens Når?-steg er flyttet opp og ligger nå rett under statuslinjen med oppstart og steketid, i stedet for nederst på siden. Kjøleskapstiden er den enkeltinnstillingen som flytter oppstartstidspunktet mest, og nå står årsak og virkning ved siden av hverandre. Blokken skjules fortsatt automatisk for Hurtigdeig og Kveldsdeig, som ikke har noen kjølefase.
+- Fjernet forklaringsteksten "⚙️ Juster åpner flere valg: mel, gjærtype, meltype osv." under statuslinjen på samme steg — den leste rart løsrevet fra lenken den opprinnelig hørte til (fjernet i v5.67).
+
+*English (July 2026):*
+- The fridge proofing on the wizard's When? step has moved up and now sits right under the status bar with the start and baking time, instead of at the bottom of the page. Fridge time is the single setting that moves the start time the most, and now cause and effect sit side by side. The block still hides automatically for Quick dough and Evening dough, which have no chilling phase.
+- Removed the explanatory text "⚙️ Adjust opens more choices: flour, yeast type, flour type, etc." under the status bar on that step — it read oddly detached from the link it originally belonged to (removed in v5.67).
+
+### v0.569
+- Ny dynamisk "hvorfor"-boks under metodevalg-kortene på wizardens Metode-steg — viser en kort forklaring av hvorfor du velger den metoden du har trykket på, i stedet for kun den korte strukturbeskrivelsen kortet selv har. Poolish og Biga gjenbruker de allerede eksisterende forklaringstekstene fra Steg-visningen; Langtidsdeig, Hurtigdeig, Kveldsdeig og Mania-poolish har fått nye korte tekster i samme stil.
+
+*English (July 2026):*
+- New dynamic "why" box under the method-choice cards on the wizard's Method step — shows a short explanation of why you'd pick the method you've tapped, instead of only the brief structure description the card itself has. Poolish and Biga reuse the existing explanations from the Steps view; Long-ferment dough, Quick dough, Evening dough and Mania poolish have gotten new short texts in the same style.
+
+### v0.568
+- Lagt til ±-knapper ved siden av alle fire sliderne i Finjuster (Melmengde, Hydrering, Kjøleskapsheving, Romtemperatur) — native slidere er vanskelige å treffe presist på mobil. Slideren selv er uendret og virker som før; knappene gir et nøyaktig ett-steg samtidig.
+
+*English (July 2026):*
+- Added ± buttons next to all four sliders in Fine-tune (Flour amount, Hydration, Fridge proofing, Room temperature) — native sliders are hard to hit precisely on mobile. The slider itself is unchanged and works as before; the buttons give you an exact single step.
+
+### v0.567
+- Fjernet "🌙 Maks smak"-boksen på wizardens steg 3. Den var kun en snarvei til ett bestemt tall — ikke en sikkerhetsmekanisme, siden det uavhengige varselsystemet for gjæringstid uansett fanger opp for lang eller kort kjøletid. ±-steppen for kjøleskapstid er uendret og fortsatt der.
+
+*English (July 2026):*
+- Removed the "🌙 Max flavor" box on wizard step 3. It was just a shortcut to one particular number — not a safety mechanism, since the independent warning system for ferment time catches too long or too short a chill anyway. The ± stepper for fridge time is unchanged and still there.
+
+### v0.566
+- Fjernet den overflødige lenken "⚙️ Finjuster (mel, gjærtype, meltype osv.)" nederst på wizardens steg 3 — den gjorde nøyaktig det samme som "⚙️ Juster"-knappen i statuslinjen øverst på samme skjerm. Forklaringsteksten "mel, gjærtype, meltype osv." er flyttet opp som en liten undertekst under Juster-knappen, kun synlig på steg 3.
+
+*English (July 2026):*
+- Removed the redundant "⚙️ Fine-tune (flour, yeast type, flour type, etc.)" link at the bottom of wizard step 3 — it did exactly the same thing as the "⚙️ Adjust" button in the status bar at the top of the same screen. The explanatory text "flour, yeast type, flour type, etc." has moved up as a small subtext under the Adjust button, only visible on step 3.
+
+### v0.565
+- Metoden "Standard" heter nå "Langtidsdeig" overalt i appen (PC og mobil) — fullfører et tidsbasert navnesystem sammen med Hurtigdeig og Kveldsdeig. Kun visningsnavnet er endret; ingenting i lagrede bakster eller egen logikk er rørt.
+
+*English (July 2026):*
+- The "Standard" method is now called "Long-ferment dough" everywhere in the app (PC and mobile) — completing a time-based naming system together with Quick dough and Evening dough. Only the display name has changed; nothing in saved bakes or the logic itself has been touched.
+
+### v0.564
+- Tre tekstrettelser: stegtittelen "Kjøleskapsheiving" var en skrivefeil for "Kjøleskapsheving" (Standard/Poolish/Biga). "klede tørker ut overflaten" rettet til "kluter" (to steder, Standard og Kveldsdeig). Den kopierte tidsplanens toppfelt viste "Kjøleskapsheving: X timer" for Standard/Poolish/Biga, men det tallet inkluderer også 4 timers fast romtemperering og formingstid — ikke ren kjøletid. Endret til "Total heving: X timer" for å stemme med hva tallet faktisk er. Kveldsdeigs tilsvarende linje var allerede riktig (der er hele tallet ren kjøletid) og er ikke endret.
+
+*English (July 2026):*
+- Three text fixes: the step title "Kjøleskapsheiving" was a typo for "Kjøleskapsheving" (fridge rise) (Standard/Poolish/Biga). "cloth dries out the surface" corrected to "cloths" (two places, Standard and Evening dough). The copied schedule's header showed "Fridge rise: X hours" for Standard/Poolish/Biga, but that number also includes 4 hours of fixed room-temperature resting and shaping time — not pure fridge time. Changed to "Total rise: X hours" to match what the number actually is. Evening dough's equivalent line was already correct (there the whole number is pure fridge time) and is unchanged.
+
+### v0.563
+- Stegpunktene øverst i wizarden (Pizzatype → Metode → Når?) kan nå klikkes både fram og tilbake — tidligere var det kun mulig å hoppe tilbake til steg du allerede hadde vært innom. Ikke-besøkte steg vises fortsatt med tall (ikke hake), men får nå en tynn aksentkant som viser at de er klikkbare.
+
+*English (July 2026):*
+- The step markers at the top of the wizard (Pizza type → Method → When?) can now be clicked both forward and back — previously you could only jump back to steps you'd already visited. Unvisited steps still show a number (not a checkmark), but now get a thin accent border showing they're clickable.
+
+### v0.562
+- Oppskriftsvisningen for Hurtigdeig og Kveldsdeig på mobil manglet radene for Romtemperatur og Ovntype som PC alltid har hatt — lagt til slik at PC og mobil viser nøyaktig samme informasjon. Kveldsdeig på mobil brukte også en kortere tekst ("Kjøleskap"/"10t") enn PC ("Kjøleskapsheving"/"10 timer") — nå samme ordlyd begge steder. Ny testtype (pc_mobil_1to1_*) sjekker fra nå av at PC og mobil er innholdsmessig identiske for alle tre metodene, ikke bare at hver plattform er intern-konsistent.
+
+*English (July 2026):*
+- The recipe view for Quick dough and Evening dough on mobile was missing the Room temperature and Oven type rows that desktop has always had — added so desktop and mobile show exactly the same information. Evening dough on mobile also used shorter text ("Fridge"/"10h") than desktop ("Fridge rise"/"10 hours") — now the same wording in both places. A new test type (pc_mobil_1to1_*) now checks that desktop and mobile are content-identical for all three methods, not just that each platform is internally consistent.
+
+### v0.561
+- Arkitekturtiltak (ingen synlig endring): de 8 stedene i koden som bygde opp ingredienslisten (Mel/Vann/Salt/olje/smør/sukker/Gjær) hver for seg — for både PC og mobil, på tvers av Standard/Hurtigdeig/Kveldsdeig — er samlet i én felles funksjon (baseIngredientRows). De to nesten-identiske rendringsfunksjonene for oppskriftsradene (én for PC, én for mobil) er slått sammen til én. Ny regresjonstest fryser nå også selve HTML-utdataen fra dette laget, som tidligere ikke var testdekket.
+
+*English (July 2026):*
+- Architecture work (no visible change): the 8 places in the code that built the ingredient list (Flour/Water/Salt/oil/butter/sugar/Yeast) separately — for both desktop and mobile, across Standard/Quick dough/Evening dough — are now consolidated into one shared function (baseIngredientRows). The two nearly-identical rendering functions for the recipe rows (one for desktop, one for mobile) have been merged into one. A new regression test now also freezes the actual HTML output from this layer, which previously wasn't test-covered.
+
+### v0.560
+- Arkitekturtiltak (ingen synlig endring): Endringsloggen (denne listen) er flyttet ut av index.html og inn i en egen fil, changelog.js. Reduserer hovedfilens størrelse med ca. 15% og gjør fremtidige endringer i selve appen billigere å jobbe med.
+
+*English (July 2026):*
+- Architecture work (no visible change): The changelog (this list) has been moved out of index.html and into its own file, changelog.js. Reduces the main file's size by about 15% and makes future changes to the app itself cheaper to work with.
+
+### v0.559
+- Rullet ut valg-vs-handling-skillet fra Finjuster-testen (v5.55) til resten av wizarden: Pizzatype-pillene og Metode-kortene bruker nå samme omriss+hake for valgt alternativ, og begge "Neste"-knappene bruker samme dempede farge som de andre "gå videre"-knappene. Metodekortenes egen fargefremheving for Hurtigdeig/Kveldsdeig er fjernet til fordel for ett enhetlig valgspråk overalt.
+
+*English (July 2026):*
+- Rolled out the selection-vs-action distinction from the Fine-tune test (v5.55) to the rest of the wizard: the Pizza type pills and Method cards now use the same outline+checkmark for the selected option, and both "Next" buttons use the same muted color as the other "continue" buttons. The Method cards' own color highlight for Quick dough/Evening dough has been removed in favor of one consistent selection language everywhere.
+
+### v0.558
+- Fjernet den pulserende prikken over "Steg" i bunnmenyen — den var ment å dytte deg mot Steg-fanen for å se konsekvensen av en endring, men det gjør deig-statuslinjen i wizarden allerede (oppstart/steketid vises der du står, uten å bytte fane). Overflødig nå, ryddet bort sammen med tilhørende kode.
+
+*English (July 2026):*
+- Removed the pulsing dot over "Steps" in the bottom menu — it was meant to nudge you toward the Steps tab to see the effect of a change, but the dough status bar in the wizard already does that (start/bake time show right where you are, without switching tabs). Redundant now, cleaned up along with its related code.
+
+### v0.557
+- Fjernet den sticky Kopier/Kalender/Lagre-baren (som av og til roter til skjermen) og lagt de tre handlingene inn i deig-statuslinjen i stedet — vanlig plassert, ikke sticky. Alle tre likestilt, ingen fremhevet fremfor de andre. Ryddet samtidig bort en del gammel, skjør JavaScript-logikk som fantes bare for å holde den forrige sticky-baren riktig plassert.
+
+*English (July 2026):*
+- Removed the sticky Copy/Calendar/Save bar (which sometimes cluttered the screen) and put the three actions into the dough status bar instead — placed normally, not sticky. All three treated equally, none highlighted over the others. At the same time cleaned up some old, fragile JavaScript logic that existed only to keep the previous sticky bar correctly positioned.
+
+### v0.556
+- Deiger-fanen (lagrede oppskrifter) fikk samme fargepalette som resten av appen — kortene brukte fortsatt hardkodede lyse farger (hvit bakgrunn, lyse rammer) fra før Forno-restylingen, i stedet for de delte tokenene alt annet bruker. Bakgrunn, rammer og dempet tekst matcher nå riktig i mørk modus.
+
+*English (July 2026):*
+- The Doughs tab (saved recipes) got the same color palette as the rest of the app — the cards still used hardcoded light colors (white background, light borders) from before the Forno restyling, instead of the shared tokens everything else uses. Background, borders, and muted text now match correctly in dark mode.
+
+### v0.555
+- "Pizzatid" i Beta-fanen starter nå minimert (skjult som standard) — trykk "Vis" for å åpne de syv dagene med ledig tid. Mindre å scrolle forbi hver gang du bare vil sjekke Steketidspunkt eller Populære tidspunkt.
+
+*English (July 2026):*
+- "Pizza time" in the Beta tab now starts minimized (hidden by default) — tap "Show" to open the seven days of free time. Less to scroll past every time you just want to check Bake time or Popular times.
+
+### v0.554
+- Testrunde av valg-vs-handling-skillet (Skisse A) på Finjuster sine Gjærtype/Kjøkkenmaskin/Ovntype-grupper: valgt alternativ vises nå med tykt omriss + liten hake i stedet for fylt bakgrunn. De to "gå videre"-knappene ("Se steg for steg →" og "Ferdig") bruker nå en dempet, mørkere oransje i stedet for den vanlige aksentfargen, for å skille handling fra valg. Lagt til (klar, men ikke synlig i praksis siden alle felt har standardverdi): en advarselsramme + "Velg én"-tekst rundt en gruppe hvis ingenting er valgt.
+
+*English (July 2026):*
+- Test round of the selection-vs-action distinction (Sketch A) on Fine-tune's Yeast type/Stand mixer/Oven type groups: the selected option now shows with a thick outline + small checkmark instead of a filled background. The two "continue" buttons ("See step by step →" and "Done") now use a muted, darker orange instead of the usual accent color, to separate action from selection. Added (ready, but not visible in practice since every field has a default value): a warning border + "Pick one" text around a group if nothing is selected.
+
+### v0.553
+- Deig-statuslinjen (oppstart + steketid) er nå også synlig i wizardens Metode-steg, Planlegging-steg og Finjuster — ikke bare i Steg-fanen. Oppdateres live idet du justerer noe, slik at du ser konsekvensen med en gang i stedet for å måtte bytte fane.
+
+*English (July 2026):*
+- The dough status bar (start + bake time) is now also visible in the wizard's Method step, Planner step, and Fine-tune — not just in the Steps tab. Updates live as you adjust something, so you see the effect right away instead of having to switch tabs.
+
+### v0.552
+- Ny deig-statuslinje øverst i Steg-fanen: viser pizzatype/metode, 🚀 oppstartstid og 🍕 steketid for oppsettet du jobber med — samme mønster som Beta-fanens kort. Oppdateres live når du endrer noe.
+- Fast "⚙️ Juster"-knapp i statuslinjen som tar deg rett til Finjuster, med en "Se steg →"-knapp der for å hoppe rett tilbake — en tydelig juster-og-prøv-sløyfe mellom Steg og innstillingene.
+- Liten orienteringshjelp i wizarden: "Gå fritt frem og tilbake — Steg-fanen viser alltid planen for gjeldende valg."
+
+*English (July 2026):*
+- New dough status bar at the top of the Steps tab: shows pizza type/method, 🚀 start time and 🍕 bake time for the setup you're working on — same pattern as the Beta tab's cards. Updates live when you change something.
+- A fixed "⚙️ Adjust" button in the status bar that takes you straight to Fine-tune, with a "See steps →" button there to jump right back — a clear adjust-and-try loop between Steps and the settings.
+- A little orientation tip in the wizard: "Move freely back and forth — the Steps tab always shows the plan for your current choices."
+
+### v0.551
+- Fikset at Beta-fanens søk kunne foreslå en oppskrift som krevde oppstart FØR akkurat nå — matematisk "riktig" ut fra reglene, men umulig å faktisk følge. Søket prioriterer nå alltid kombinasjoner du faktisk rekker å starte, og faller kun tilbake til de umulige (med en tydelig advarsel) hvis absolutt ingenting annet finnes.
+
+*English (July 2026):*
+- Fixed the Beta tab's search suggesting a recipe that required starting BEFORE right now — mathematically "correct" per the rules, but impossible to actually follow. The search now always prioritizes combinations you can actually still start, and only falls back to the impossible ones (with a clear warning) if nothing else exists at all.
+
+### v0.550
+- "Faste tider" i Beta-fanen døpt om til "Populære tidspunkt for pizza", med en tydelig visuell strek mot "Steketidspunkt"-søket over. Hvert resultat viser nå både 🚀 oppstartstid og 🍕 planlagt steketid direkte i kortet, i stedet for at du må trykke "Bruk denne" og hoppe til Steg-fanen for å se det.
+
+*English (July 2026):*
+- "Fixed times" in the Beta tab renamed to "Popular times for pizza", with a clear visual divider from the "Bake time" search above. Each result now shows both 🚀 start time and 🍕 planned bake time directly in the card, instead of you having to tap "Use this" and jump to the Steps tab to see it.
+
+### v0.549
+- Døpt om "Egen tid" til "Steketidspunkt" i Beta-fanen — tydeligere navn, matcher terminologien appen allerede bruker andre steder.
+
+*English (July 2026):*
+- Renamed "Custom time" to "Bake time" in the Beta tab — a clearer name that matches the terminology the app already uses elsewhere.
+
+### v0.548
+- Fant den faktiske årsaken til at "Finn oppskrift" i Beta-fanen så ut til å ikke gjøre noe: resultatet vises ikke lenger nederst under hele "Faste tider"-listen (fem kort du måtte scrolle forbi) — det vises nå rett under selve knappen, og scrolles automatisk inn i synsfeltet.
+
+*English (July 2026):*
+- Found the real reason "Find recipe" in the Beta tab looked like it did nothing: the result no longer appears at the bottom below the entire "Fixed times" list (five cards you had to scroll past) — it now shows right under the button itself, and scrolls automatically into view.
+
+### v0.547
+- Beta-fanens "Finn oppskrift"-knapp kunne feile stille (ingenting synlig skjedde) hvis datofeltet var tomt/ugyldig, eller hvis noe uventet gikk galt under selve søket. Viser nå alltid en tydelig tilbakemelding — "Sett en dato først", "Ugyldig dato/klokkeslett", eller en feilmelding hvis søket faktisk krasjer — i stedet for å bare ikke gjøre noe. Samme robusthet lagt til for "Faste tider"-listen.
+
+*English (July 2026):*
+- The Beta tab's "Find recipe" button could fail silently (nothing visible happened) if the date field was empty/invalid, or if something unexpected went wrong during the search itself. It now always shows clear feedback — "Set a date first", "Invalid date/time", or an error message if the search actually crashes — instead of just doing nothing. The same robustness was added for the "Fixed times" list.
+
+### v0.546
+- Ny fane: 🧭 Beta — "omvendt planlegger". I stedet for å velge innstillinger og se når du må starte, oppgir du når du er ledig og når du vil spise, og får en anbefalt oppskrift tilbake. Søker på tvers av ALLE metoder (Standard, Poolish begge varianter, Biga, Mania-poolish, Hurtigdeig, Kveldsdeig) — ikke bare Poolish/Biga.
+- "Pizzatid": din ukentlige ledige tid, mandag–søndag, med inntil to perioder per dag. Lagres delt på tvers av enheter (ny backend-funksjon pizzatid.js), ikke bare i denne nettleseren.
+- "Egen tid": fritt spisetidspunkt, én søkeknapp. "Faste tider" (de fem tidligere målene) er flyttet hit fra Planlegging-steget, ikke duplisert.
+- Resultatet viser toppanbefaling direkte (rangert på færrest tidskonflikter, deretter lengst trygg gjæring som "best smak"), med en "se flere alternativer"-lenke som åpner de neste to. Viser også ærlig hvilke meltyper som faktisk tåler den anbefalte gjæringstiden — eller sier rett ut hvis ingen gjør det.
+- PC fikk en enkel lenke inn til samme fane (via ☰ Meny → "Finn oppskrift (Beta)"), som bytter til mobilvisning.
+
+*English (July 2026):*
+- New tab: 🧭 Beta — a "reverse planner". Instead of picking settings and seeing when you have to start, you enter when you're free and when you want to eat, and get a recommended recipe back. It searches across ALL methods (Standard, Poolish both variants, Biga, Mania poolish, Quick dough, Evening dough) — not just Poolish/Biga.
+- "Pizza time": your weekly free time, Monday–Sunday, with up to two periods per day. Saved shared across devices (new backend function pizzatid.js), not just in this browser.
+- "Custom time": a freely chosen eating time, one search button. "Fixed times" (the five previous targets) has been moved here from the Planner step, not duplicated.
+- The result shows the top recommendation directly (ranked by fewest time conflicts, then longest safe fermentation as "best flavor"), with a "see more options" link that opens the next two. It also honestly shows which flour types can actually handle the recommended fermentation time — or says outright if none can.
+- Desktop got a simple link into the same tab (via ☰ Menu → "Find recipe (Beta)"), which switches to mobile view.
+
+### v0.545
+- Ny metode: Mania-poolish (oppkalt etter Pizzamania, kilden til oppskriften) — et eget metodekort ved siden av Poolish/Biga. Strukturelt annerledes enn de andre: poolish gjæres 12t romtemperatur og kjøles ned FØR den blandes inn i hoveddeigen, hele deigen kjøleskapheves udelt i 10t og deles i emner ETTERPÅ, med en lang 10-timers romtemperaturheving til slutt (i stedet for kort etterheving) — total gjæringstid ca. 37 timer. Egen, korrekt oppskrift (64% hydrering, todelt Poolish/Hoveddeig-ingrediensliste) i Oppskrift-fanen, ikke den generiske beregningen.
+
+*English (July 2026):*
+- New method: Mania poolish (named after Pizzamania, the source of the recipe) — its own method card alongside Poolish/Biga. Structurally different from the others: the poolish ferments 12h at room temperature and is chilled down BEFORE it's mixed into the main dough, the whole dough cold-proofs undivided for 10h and is divided into balls AFTERWARD, with a long 10-hour room-temperature proof at the end (instead of a short final proof) — total fermentation time about 37 hours. Its own, correct recipe (64% hydration, split Poolish/Main dough ingredient list) in the Recipe tab, not the generic calculation.
+
+### v0.544
+- "Mine faste tidspunkter" fant tidligere en løsning uten reelle konflikter for lørdag/søndag 19:00 — men romtemperatur-Poolish sitt smale 12-16 timers justeringsrom var noen ganger for trangt til at NOEN verdi unngikk natt-kollisjon ("Lag poolish" kl. 05:40 var "minst ille", ikke en reell løsning). Søket prøver nå automatisk kjøleskaps-varianten (12-48t) også når romtemperatur ikke strekker til, og bruker den hvis den faktisk finner noe bedre — vises som "Alt passer ✓ (krever ❄️ Kjøleskap-poolish)". Fant en reell løsning for lørdag 19:00 som tidligere manglet.
+
+*English (July 2026):*
+- "My fixed times" used to find a solution with no real conflicts for Saturday/Sunday 19:00 — but room-temperature Poolish's narrow 12-16 hour adjustment window was sometimes too tight for ANY value to avoid a nighttime collision ("Make poolish" at 05:40 was "least bad", not a real solution). The search now automatically tries the fridge variant (12-48h) as well when room temperature isn't enough, and uses it if it actually finds something better — shown as "Everything fits ✓ (requires ❄️ Fridge poolish)". Found a real solution for Saturday 19:00 that was previously missing.
+
+### v0.543
+- Rettet "Mine faste tidspunkter": helger (lørdag/søndag) er ledige hele dagen bortsett fra natt — en helt annen, enklere regel enn hverdagenes to smale vinduer. Tidligere ble den samme, smale hverdags-regelen brukt for alle dager, som gjorde at "Ta ut av kjøleskap" feilaktig ble markert som et problem midt på lørdags-/søndagsettermiddagen. Alle fire helgemålene viser nå riktig "Alt passer ✓".
+
+*English (July 2026):*
+- Fixed "My fixed times": weekends (Saturday/Sunday) are free all day except at night — a completely different, simpler rule than weekdays' two narrow windows. Previously the same narrow weekday rule was applied to all days, which made "Take out of fridge" incorrectly flagged as a problem in the middle of Saturday/Sunday afternoon. All four weekend targets now correctly show "Everything fits ✓".
+
+### v0.542
+- "Mine faste tidspunkter" gjort om fra rent oppslagsverk til reell søking: for hvert av de fem målene finner den nå den beste kombinasjonen av hevetid og kjøleskapstid som får flest mulig steg til å havne i dine egne ledige vinduer (16:00–23:30 og 06:30–08:00) — helt uavhengig av dagens dato, som avtalt. Trykk på et mål for å sette opp akkurat den kombinasjonen direkte. Avdekket samtidig en strukturell begrensning: "Ta ut av kjøleskap" ligger alltid fast 4 timer før spisetidspunktet uansett hva som justeres, og havner for alle fem målene midt i hullet mellom vinduene dine (12:00–15:00) — ingen kombinasjon kan fikse akkurat det steget per i dag.
+
+*English (July 2026):*
+- "My fixed times" reworked from a pure lookup tool into a real search: for each of the five targets it now finds the best combination of proofing time and fridge time that gets as many steps as possible to land inside your own free windows (16:00–23:30 and 06:30–08:00) — completely independent of today's date, as agreed. Tap a target to set up exactly that combination directly. At the same time it revealed a structural limitation: "Take out of fridge" is always fixed 4 hours before the meal time no matter what's adjusted, and for all five targets lands right in the gap between your windows (12:00–15:00) — no combination can fix that particular step as of now.
+
+### v0.541
+- Forenklet "Mine faste tidspunkter" kraftig: fjernet ✅/⚠️-vurderingen og "for kort varsel"-sjekken helt. Den er nå et rent oppslagsverk — viser bare beregnet starttidspunkt for hvert av de fem faste målene med din nåværende metode/hevetid, uten å dømme om det er lurt eller mulig.
+
+*English (July 2026):*
+- Greatly simplified "My fixed times": removed the ✅/⚠️ assessment and the "too short notice" check entirely. It's now a pure lookup tool — it just shows the calculated start time for each of the five fixed targets with your current method/proofing time, without judging whether it's wise or possible.
+
+### v0.540
+- Fikset "Mine faste tidspunkter": den sjekket bare om steg havnet innenfor dine ledige vinduer, men aldri om planen faktisk var mulig å starte FRA NÅ — et mål bare timer unna (som fredag når det allerede er torsdag) kunne be deg starte poolishen tidligere på dagen enn klokka faktisk er, altså i fortiden. Vises nå tydelig som "For kort varsel" i stedet for en misvisende status. Rettet samtidig en beslektet risiko: forhåndsvisningen leste ikke "Starter nå/Steketid"-valget riktig for Hurtigdeig/Kveldsdeig, som kunne gitt feil resultat der også.
+
+*English (July 2026):*
+- Fixed "My fixed times": it only checked whether steps landed within your free windows, but never whether the plan was actually possible to start FROM NOW — a target just hours away (like Friday when it's already Thursday) could ask you to start the poolish earlier in the day than it actually is, i.e. in the past. It's now clearly shown as "Too short notice" instead of a misleading status. At the same time fixed a related risk: the preview didn't read the "Start now/Bake time" choice correctly for Quick dough/Evening dough, which could have given wrong results there too.
+
+### v0.539
+- Ny konsept-test i Planlegging-fanen: "🍕 Mine faste tidspunkter" — en snarvei som viser om nåværende metode/hevetid passer med fem faste mål (fre 19:00, lør 16:00/19:00, søn 16:00/19:00), sjekket mot dine egne, hardkodede ledige tidsvinduer (16:00–23:30 og 06:30–08:00). ✅/⚠️ per mål, trykk for å sette opp akkurat den planen direkte. Helt isolert fra det generelle natt/arbeidstid-varselet — endrer ingenting automatisk, kun en rask oversikt du kan hente frem når du vil.
+
+*English (July 2026):*
+- New concept test in the Planner tab: "🍕 My fixed times" — a shortcut that shows whether the current method/proofing time fits with five fixed targets (Fri 19:00, Sat 16:00/19:00, Sun 16:00/19:00), checked against your own, hardcoded free time windows (16:00–23:30 and 06:30–08:00). ✅/⚠️ per target, tap to set up exactly that plan directly. Completely isolated from the general night/work-hours warning — it changes nothing automatically, just a quick overview you can pull up whenever you like.
+
+### v0.538
+- Fikset at "arbeidstid"-varselet feilaktig fyrte i helgen — det sjekket bare klokkeslettet, ikke ukedagen, i motsetning til "Finn beste kombinasjon" som allerede korrekt utelot lørdag/søndag. De to var ikke enige med hverandre; nå bruker begge samme regel.
+
+*English (July 2026):*
+- Fixed the "work hours" warning incorrectly firing on weekends — it only checked the time of day, not the weekday, unlike "Find best combination" which already correctly excluded Saturday/Sunday. The two didn't agree with each other; now both use the same rule.
+
+### v0.537
+- Nytt alternativ for Poolish: "❄️ Kjøleskap" ved siden av "🌡️ Romtemperatur" i Metode-steget. Med kjøleskap-varianten blander du poolishen 1,5t i romtemperatur for å sette i gang gjæren, deretter i kjøleskap i en mye bredere og friere periode (12–48t i steg à 6t, i stedet for det smale 12–16t-vinduet) — nøyaktig klokkeslett blir langt mindre kritisk, siden kulda holder poolishen stabil til du er klar for neste steg.
+- "🔍 Finn beste kombinasjon"-knapp lagt til i natt/arbeidstid-varselet for Poolish/Biga — søker gjennom hevetid og kjøleskapstid og finner alternativet med færrest forstyrrelser, i stedet for at du må teste deg fram manuelt.
+- "Prøv Kveldsdeig i stedet"-knapp lagt til samme sted — et reelt alternativ når ingen Poolish/Biga-kombinasjon blir god nok innenfor tiden du har.
+- Ny påminnelse når du velger Poolish/Biga onsdag–fredag: "Planlegger du helgepizza? Start så tidlig du kan for mest fleksibilitet."
+
+*English (July 2026):*
+- New option for Poolish: "❄️ Fridge" alongside "🌡️ Room temperature" in the Method step. With the fridge variant you mix the poolish for 1.5h at room temperature to kick-start the yeast, then in the fridge for a much wider and freer period (12–48h in 6h steps, instead of the narrow 12–16h window) — the exact time becomes far less critical, since the cold keeps the poolish stable until you're ready for the next step.
+- "🔍 Find best combination" button added to the night/work-hours warning for Poolish/Biga — it searches through proofing time and fridge time and finds the option with the fewest disruptions, instead of you having to test your way there manually.
+- "Try Evening dough instead" button added in the same place — a real alternative when no Poolish/Biga combination is good enough within the time you have.
+- New reminder when you choose Poolish/Biga Wednesday–Friday: "Planning weekend pizza? Start as early as you can for the most flexibility."
+
+### v0.536
+- Nytt varsel i Steg-fanen hvis et steg som faktisk krever at du gjør noe (blande, forme, ta ut av kjøleskap, steke — ikke bare vente) havner midt på natten (23:00–06:00) eller i arbeidstiden din (08:00–16:00, hardkodet foreløpig), med hurtigknapper for å justere hevetid (Poolish/Biga) eller kjøleskapstid direkte.
+- Live forhåndsvisning av beregnet starttidspunkt når du justerer hevetid i Poolish/Biga eller kjøleskapstid i Planlegging — slipper å bla til Steg-fanen for å sjekke.
+- Standard/Poolish/Biga sine tre første aktive steg (bland, la heve, form emner) er nå tydelig merket som én sammenhengende arbeidsøkt, med et lite banner som viser hvor lang tid du bør sette av.
+- Rettet Ankarsrum-terminologi i tekstene — "rullekniv" fantes ikke, riktig er "deigrullen" (ruller) og "deigkniv"/skraper (to separate deler brukt sammen).
+- Nytt tips: "Kjøleskapspause" for Poolish/Biga — hvordan pause et forspill i kjøleskapet hvis livet kommer i veien.
+- Feedback viser nå hvem som sendte den inn, samme mønster som lagrede deiger og notater.
+- Fikset at bakgrunnen kunne scrolle gjennom modaler (Admin og andre) på mobil — manglende overscroll-behation er nå satt.
+- Fikset at overskriftene i Tips og teknikk var lyse og uleselige — samme mangel på mørk-modus som flere tidligere runder.
+- LØST en ekte backend-bug: sletting av bruker og "Ny PIN" i Admin-visningen brukte feil lagringsnøkkel og virket aldri, selv om ingen feilmelding vistes — brukere lagres med normalisert navn som nøkkel, ikke intern id. Krever ny users.js på serveren.
+
+*English (July 2026):*
+- New warning in the Steps tab if a step that actually requires you to do something (mix, shape, take out of fridge, bake — not just wait) lands in the middle of the night (23:00–06:00) or during your work hours (08:00–16:00, hardcoded for now), with quick buttons to adjust proofing time (Poolish/Biga) or fridge time directly.
+- Live preview of the calculated start time when you adjust proofing time in Poolish/Biga or fridge time in the Planner — no need to flip to the Steps tab to check.
+- Standard/Poolish/Biga's first three active steps (mix, let proof, shape balls) are now clearly marked as one continuous work session, with a small banner showing how much time you should set aside.
+- Fixed Ankarsrum terminology in the texts — "roller knife" didn't exist, the correct terms are "the dough roller" (roller) and "dough knife"/scraper (two separate parts used together).
+- New tip: "Fridge pause" for Poolish/Biga — how to pause a preferment in the fridge if life gets in the way.
+- Feedback now shows who submitted it, the same pattern as saved doughs and notes.
+- Fixed the background being able to scroll through modals (Admin and others) on mobile — a missing overscroll behavior is now set.
+- Fixed the headings in Tips and technique being light and unreadable — the same lack of dark mode as several earlier rounds.
+- SOLVED a genuine backend bug: deleting a user and "New PIN" in the Admin view used the wrong storage key and never worked, even though no error was shown — users are stored with their normalized name as the key, not an internal id. Requires a new users.js on the server.
+
+### v0.535
+- Kjøleskapsheving viste "dager" i stedet for timer når verdien tilfeldigvis traff et helt døgn (f.eks. "1 dag" for 24 timer) — inkonsekvent med resten av det nye time-baserte systemet. Viser nå alltid timer, overalt.
+
+*English (July 2026):*
+- Cold proofing showed "days" instead of hours when the value happened to hit a whole day (e.g. "1 day" for 24 hours) — inconsistent with the rest of the new hour-based system. It now always shows hours, everywhere.
+
+### v0.534
+- Poolish og Biga sin forspill-varighet er nå justerbar (12–16t for Poolish, 16–24t for Biga, med navngitte alternativer — samme mønster som Hurtigdeig/Kveldsdeig), i stedet for fast 14t/18t. Gjærmengden i forspillet skaleres automatisk med valgt varighet. Standardverdiene (14t/18t) gir nøyaktig samme oppskrift som før — ingen endring for deg som ikke rører denne nye innstillingen. Motivert av at kontroll på nettopp denne fasen (den minst fleksible, siden forspill og ferdig-blanding er rigid låst til hverandre) lar deg justere når disse to øyeblikkene faktisk havner på klokka. Foreløpig kun på mobil — PC-visningen bruker fortsatt de faste standardverdiene.
+
+*English (July 2026):*
+- Poolish and Biga's preferment duration is now adjustable (12–16h for Poolish, 16–24h for Biga, with named options — the same pattern as Quick dough/Evening dough), instead of a fixed 14h/18h. The amount of yeast in the preferment scales automatically with the chosen duration. The default values (14h/18h) give exactly the same recipe as before — no change for you if you don't touch this new setting. Motivated by the fact that control over precisely this phase (the least flexible one, since the preferment and final mix are rigidly locked to each other) lets you adjust when those two moments actually land on the clock. For now only on mobile — the PC view still uses the fixed default values.
+
+### v0.533
+- Kjøleskapsheving for Standard/Poolish/Biga er byttet fra hele dager til timer, med finere 6-timers steg — samme presisjonsnivå som Hurtigdeig/Kveldsdeig allerede hadde. Gjærmengde-tabellen som var koblet til antall dager er bygget om til en jevnt interpolert versjon i timer, basert på nøyaktig de samme, allerede uttestede verdiene som før — ingen ny gjetning, bare finere oppløsning mellom de kjente punktene. "Maks smak" utnytter nå melets faktiske gjæringsgrense mye bedre: f.eks. Caputo Nuvola (maks 48t) fikk tidligere kun 24t foreslått siden systemet rundet ned til hele døgn — nå foreslår den 42t. Fant og rettet samtidig en tredje, uavhengig kopi av gjæringstid-regnestykket i overmodning-varselet som ikke ble fanget opp i forrige versjon.
+
+*English (July 2026):*
+- Cold proofing for Standard/Poolish/Biga has been switched from whole days to hours, with finer 6-hour steps — the same level of precision that Quick dough/Evening dough already had. The yeast-amount table that was tied to number of days has been rebuilt into a smoothly interpolated version in hours, based on exactly the same, already tested values as before — no new guessing, just finer resolution between the known points. "Max flavor" now makes much better use of the flour's actual fermentation limit: e.g. Caputo Nuvola (max 48h) previously only got 24h suggested since the system rounded down to whole days — now it suggests 42h. At the same time found and fixed a third, independent copy of the fermentation-time calculation in the over-proofing warning that wasn't caught in the previous version.
+
+### v0.532
+- Gjæringstid-regnestykket (brukt av meltype-varselet og "Maks smak") tok ikke med romtemperaturhevingen FØR kjøleskapet — bare forspill (Poolish/Biga) og kjøleskapsdager ble talt. Lagt til, og samtidig rettet et lite avvik der Biga sitt forspill ble regnet som 20 timer ett sted i koden og 18 timer et annet — alt bruker nå samme, delte regnestykke, så det aldri kan drive fra hverandre igjen.
+
+*English (July 2026):*
+- The fermentation-time calculation (used by the flour-type warning and "Max flavor") didn't include the room-temperature proof BEFORE the fridge — only the preferment (Poolish/Biga) and cold-proofing days were counted. Added it, and at the same time fixed a small discrepancy where Biga's preferment was counted as 20 hours in one place in the code and 18 hours in another — everything now uses the same, shared calculation, so it can never drift apart again.
+
+### v0.531
+- Gjort det tydeligere at wizardens Metode- og Planlegging-steg begge har to separate valg: hvert valg har nå en liten nummerert markør ("①"/"②") foran en kort overskrift, samme mønster på begge sider.
+- Rettet rekkefølgen på Planlegging-steget slik at "Når vil du spise?" kommer først (matcher tittelen), og "Antall pizzaer" kommer etter — som Metode-steget sitt mønster.
+- Ryddet opp i "Når vil du spise?"-valget: for Standard/Poolish/Biga (lang gjæring) er "Starter nå" fjernet helt — det ga ikke mening der. For Hurtigdeig/Kveldsdeig beholdes begge alternativene, men spørsmålet er nå det nøytrale "Planlegg fra:", med "🍕 Når jeg vil spise" og "▶ Nå" som to likestilte svar.
+- Kjøleskapsheving er nå synlig direkte i Planlegging-steget for Standard/Poolish/Biga (i tillegg til i Finjuster), sammen med en ny "🌙 Maks smak"-knapp — den setter automatisk lengst trygge kjøleskapstid, begrenset av enten tiden du har til spisetidspunktet eller hva valgt meltype tåler, og forteller alltid hvilken av de to som faktisk var flaskehalsen.
+
+*English (July 2026):*
+- Made it clearer that the wizard's Method and Planner steps both have two separate choices: each choice now has a small numbered marker ("①"/"②") in front of a short heading, the same pattern on both sides.
+- Fixed the order of the Planner step so that "When do you want to eat?" comes first (matching the title), and "Number of pizzas" comes after — like the Method step's pattern.
+- Cleaned up the "When do you want to eat?" choice: for Standard/Poolish/Biga (long fermentation) "Start now" has been removed entirely — it didn't make sense there. For Quick dough/Evening dough both options are kept, but the question is now the neutral "Plan from:", with "🍕 When I want to eat" and "▶ Now" as two equal answers.
+- Cold proofing is now visible directly in the Planner step for Standard/Poolish/Biga (in addition to in Fine-tune), together with a new "🌙 Max flavor" button — it automatically sets the longest safe fridge time, limited by either the time you have until the meal or what the chosen flour type can handle, and always tells you which of the two was actually the bottleneck.
+
+### v0.530
+- Fant den egentlige, underliggende årsaken til flere runder med "må scrolle for å finne resten"-bugs på mobil, som har dukket opp flere steder over tid: CSS zoom (brukt til skriftstørrelse-innstillingen) skalerer alt synlig innhold opp med zoom-faktoren, men "100dvh" — som hele mobilvisningens høyde er satt til — regnes ut fra den ekte, uskalerte skjermhøyden. Resultatet: hele siden ble malt zoom-faktoren ganger for høy (f.eks. 30% for høy ved "Stor" skrift), som gjorde HELE siden — ikke bare enkeltfaner — scrollbar, og en hvilken som helst ting som trigget sidescroll (som et fokusert dato-/tidsfelt) kunne skyve toppen av et wizard-steg ut av syne. Bekreftet med Chrome sin mobil-emulering (samme miljø som avslørte feilen), og fikset ved å regne ut mobilvisningens høyde eksplisitt i ekte skjerm-piksler, uavhengig av zoom-nivå.
+
+*English (July 2026):*
+- Found the real, underlying cause of several rounds of "have to scroll to find the rest" bugs on mobile, which have shown up in several places over time: CSS zoom (used for the font-size setting) scales all visible content up by the zoom factor, but "100dvh" — which the entire mobile view's height is set to — is calculated from the real, unscaled screen height. The result: the whole page was painted the zoom factor times too tall (e.g. 30% too tall at "Large" text), which made the ENTIRE page — not just individual tabs — scrollable, and anything that triggered a page scroll (like a focused date/time field) could push the top of a wizard step out of view. Confirmed with Chrome's mobile emulation (the same environment that revealed the bug), and fixed by calculating the mobile view's height explicitly in real screen pixels, independent of the zoom level.
+
+### v0.529
+- "Se i Finjuster"-lenken i meltype-varselet (Steg-fanen) gjorde ingenting synlig — den forberedte Finjuster-innholdet bak kulissene, men byttet aldri selve fanen til Innstillinger, hvor Finjuster faktisk bor. Lenken bytter nå fane først, så du faktisk ser endringen.
+
+*English (July 2026):*
+- The "See in Fine-tune" link in the flour-type warning (Steps tab) did nothing visible — it prepared the Fine-tune content behind the scenes, but never switched the actual tab to Settings, where Fine-tune actually lives. The link now switches the tab first, so you actually see the change.
+
+### v0.528
+- Fikset selve feedback-listen (de innsendte tilbakemeldingene, ikke bare kategori-boblene) som var nesten uleselig — kortene rundt hver tilbakemelding hadde fortsatt hvit bakgrunn, mens teksten inni allerede var riktig lysnet, altså lys tekst på hvit bunn. Siden denne listen deles mellom PC og mobil, er den nå fikset med ordentlige delte fargevariabler (samme mønster som resten av appen) i stedet for en snarvei — bekreftet at mobil viser mørkt kort/lys tekst og PC fortsatt viser hvitt kort/mørk tekst, helt uendret.
+
+*English (July 2026):*
+- Fixed the feedback list itself (the submitted feedback, not just the category bubbles) which was nearly unreadable — the cards around each piece of feedback still had a white background, while the text inside was already correctly lightened, meaning light text on a white base. Since this list is shared between PC and mobile, it's now fixed with proper shared color variables (the same pattern as the rest of the app) instead of a shortcut — confirmed that mobile shows dark card/light text and PC still shows white card/dark text, completely unchanged.
+
+### v0.527
+- Fikset meltype-nedtrekksmenyen i wizarden som var hvit på hvit — samme "mangler mørk-modus"-mønster som flere andre steder. Systematisk gjennomgang av alle gjenværende lyse bakgrunner fant tre til: statistikk-boksene ("Antall"/"Emnestørrelse") på Oppskrift-fanen, og en feilskrevet klassenavn som gjorde at Ankarsrum-instruksjonsboksen på samme fane brukte PC sin lyse stil i stedet for mobilens mørke. Alle fire rettet og verifisert med fargemålinger.
+
+*English (July 2026):*
+- Fixed the flour-type dropdown menu in the wizard that was white on white — the same "missing dark mode" pattern as several other places. A systematic review of all remaining light backgrounds found three more: the statistics boxes ("Count"/"Ball size") on the Recipe tab, and a misspelled class name that made the Ankarsrum instruction box on the same tab use the PC's light style instead of mobile's dark one. All four fixed and verified with color measurements.
+
+### v0.526
+- Rettet 8 flere steder med samme "mørk tekst på mørk bunn"-mønster som "Hva er nytt" hadde: selve "Hva er nytt"-teksten og datoene, "Lukk"-knappen der, Guide sin "Ikke vis igjen"-knapp (som en tidligere fiks ikke tok skikkelig), introtekstene i Feedback/Formler/Fullfør bakst-modalene, "av [navn]"-linjen på deig-kort, og gjennomstreket tekst på avhakede ingredienser. Funnet ved systematisk gjennomgang av alle hardkodede grå/mørke tekstfarger i mobilvisningen, ikke bare det ene rapporterte stedet.
+
+*English (July 2026):*
+- Fixed 8 more spots with the same "dark text on a dark background" pattern that "What's new" had: the "What's new" text and dates themselves, the "Close" button there, the Guide's "Don't show again" button (which an earlier fix didn't fully catch), the intro text in the Feedback/Formulas/Finish bake modals, the "by [name]" line on dough cards, and the strikethrough text on checked-off ingredients. Found by systematically going through every hardcoded gray/dark text color in the mobile view, not just the one reported spot.
+
+### v0.525
+- Meltype-valget er flyttet fra Finjuster inn i wizardens Metode-steg (steg 2), rett under gjærtype/kjøkkenmaskin — synlig når du faktisk tar det valget, i stedet for gjemt bak "Finjuster". Meltype endres fortsatt ikke automatisk når du bytter pizzatype (i motsetning til hydrering), siden det handler om hvilket mel du faktisk har i skapet, ikke en beregnet anbefaling.
+- Nytt varsel når valgt metode ikke passer med god tid til rådighet — f.eks. Hurtigdeig valgt samtidig som du planlegger å spise om flere dager. Samme mønster som meltype-varselet: forklaring, en "Bytt til Standard"-hurtigknapp, og en lenke tilbake til Metode-steget.
+
+*English (July 2026):*
+- The flour-type choice has moved out of Fine-tune and into the wizard's Method step (step 2), right below yeast type/stand mixer — visible when you're actually making that choice, instead of hidden behind "Fine-tune". Flour type still doesn't change automatically when you switch pizza type (unlike hydration), since it's about which flour you actually have in the cupboard, not a calculated recommendation.
+- New warning when the chosen method doesn't fit the time you have available — e.g. Quick dough selected while you're planning to eat several days from now. Same pattern as the flour-type warning: an explanation, a "Switch to Standard" quick button, and a link back to the Method step.
+
+### v0.524
+- Lysnet den dempede/svake tekstfargen (brukt på etiketter, tidsstempler og sekundær tekst gjennom hele mobilvisningen) — teknisk sett innenfor tilgjengelighetskravene fra før, men for svak til å lese komfortabelt i praksis, spesielt i liten skriftstørrelse. Kontrasten er nå 6,2:1 (opp fra 5,1:1).
+
+*English (July 2026):*
+- Lightened the muted/faint text color (used on labels, timestamps and secondary text throughout the mobile view) — technically within the accessibility requirements already, but too faint to read comfortably in practice, especially at small font sizes. Contrast is now 6.2:1 (up from 5.1:1).
+
+### v0.523
+- Fikset den andre halvparten av v5.23-bugen: forrige fiks gjorde riktignok teksten lys, men flere av radene/boksene den satt på (Info-fanens menyrader, skriftstørrelse-velgeren, valg-boblene for gjærtype/kjøkkenmaskin/ovntype/pizzatype i wizarden, dato-/tidsfeltene) hadde fortsatt hvit bakgrunn — så lys tekst på hvit bunn ble like usynlig, bare omvendt. Alle disse er nå rettet til å bruke mørk bunn på mobil. Fant også separate, litt andre farge-instanser i wizardens JavaScript-genererte valg-bobler som ikke hang sammen med v5.23-fiksen i det hele tatt — samme rettet.
+
+*English (July 2026):*
+- Fixed the other half of the v5.23 bug: the previous fix did make the text light, but several of the rows/boxes it sat on (the Info tab's menu rows, the font-size picker, the choice bubbles for yeast type/stand mixer/oven type/pizza type in the wizard, the date/time fields) still had a white background — so light text on white was just as invisible, only in reverse. All of these are now fixed to use a dark background on mobile. Also found separate, slightly different color instances in the wizard's JavaScript-generated choice bubbles that weren't connected to the v5.23 fix at all — fixed those too.
+
+### v0.522
+- Fant og rettet en systemisk variant av admin-fargefeilen fra forrige versjon: Guide-teksten, Info-sidens menyrader, Formler-tabellen, Feedback-listen, deig-kortene og flere andre steder brukte alle den samme hardkodede mørke tekstfargen fra før restylingen — usynlig mot den nye mørke mobilbakgrunnen. I stedet for å lappe hvert sted for seg, er dette nå rettet med én delt fargevariabel (47 steder samtidig) som automatisk følger lys/mørk-modus riktig — PC-visningen er bekreftet uendret.
+
+*English (July 2026):*
+- Found and fixed a systemic variant of the admin color bug from the previous version: the Guide text, the Info page's menu rows, the Formulas table, the Feedback list, the dough cards and several other spots all used the same hardcoded dark text color from before the restyle — invisible against the new dark mobile background. Instead of patching each spot individually, this is now fixed with one shared color variable (47 spots at once) that automatically follows light/dark mode correctly — the desktop view is confirmed unchanged.
+
+### v0.521
+- Fikset at brukernavnene i Admin-visningen var usynlige på mobil — teksten hadde hardkodet mørk farge fra før restylingen, som forsvant mot den nye mørke modal-bakgrunnen. Admin-listen bruker nå farger som tilpasser seg både lys (PC) og mørk (mobil) visning. Samme feil rettet i Notater-fanens overskrift.
+- Lagrede deiger og notater viser nå hvem som står bak: deig-kortene i "Mine deiger" viser "av [navn]" på deiger lagret fra nå av, og notater viser "sist lagret av [navn]" (og en signaturlinje under notatet på ferdige deiger). Eldre deiger og notater lagret før denne versjonen har ikke navn registrert, og vises uten.
+
+*English (July 2026):*
+- Fixed usernames in the Admin view being invisible on mobile — the text had a hardcoded dark color from before the restyle that disappeared against the new dark modal background. The Admin list now uses colors that adapt to both light (desktop) and dark (mobile) views. Same bug fixed in the Notes tab heading.
+- Saved doughs and notes now show who's behind them: the dough cards in "My doughs" show "by [name]" on doughs saved from now on, and notes show "last saved by [name]" (plus a signature line under the note on finished doughs). Older doughs and notes saved before this version have no name recorded, and show without one.
+
+### v0.520
+- Fremtidige steg i "Steg"-fanen er nå tydelig leselige (demping myknet fra 40 % til 75 % synlighet), slik at du kan lese hele oppskriften og få oversikt over alle stegene — dagens steg skiller seg fortsatt ut med den oransje kanten. Valgt som den enkleste av tre skisserte løsninger; en innholdsfortegnelse øverst kan bygges på toppen senere om behovet fortsatt er der.
+- Avkrysningsboksene på stegene er gjort mye lettere å se: større (24px), med en lys, varm kantfarge som faktisk synes mot det mørke kortet — tidligere hadde kanten nesten samme farge som bakgrunnen. Haket tilstand fylles med ember-oransje.
+
+*English (July 2026):*
+- Future steps in the "Steps" tab are now clearly readable (dimming eased from 40% to 75% visibility), so you can read the whole recipe and get an overview of all the steps — today's step still stands out with its orange border. Chosen as the simplest of three sketched solutions; a table of contents at the top could be built on later if the need is still there.
+- The checkboxes on the steps are much easier to see: bigger (24px), with a light, warm border color that actually shows against the dark card — previously the border was nearly the same color as the background. The checked state fills with ember orange.
+
+### v0.519
+- Fant og fikset den egentlige årsaken til at nye brukere feilaktig fikk "Hei igjen! Du har brukt appen før" (v5.19 sin diagnose var ufullstendig og løste ikke problemet): deig-lageret er med vilje DELT for hele gruppen, men wizarden brukte "finnes det en aktiv deig eller favoritt i det delte lageret?" som bevis på at akkurat DU hadde brukt appen før — dermed fikk enhver ny bruker "Hei igjen" så lenge noen som helst i gruppen hadde en deig liggende. Avgjørelsen tas nå kun på det reelle per-bruker-signalet (ditt eget sist brukte oppsett); favoritt-snarveien vises fortsatt, men bare for faktisk tilbakevendende brukere.
+- Fikset også at skjermen kunne stå scrollet nedover (og se tom ut) rett etter innlogging: tastatur/fokus på navn- og PIN-feltene scroller skjermen bak innloggingsbildet, og ingenting nullstilte dette før etter et nettverkskall. Scroll nullstilles nå umiddelbart når innloggingsbildet lukkes.
+
+*English (July 2026):*
+- Found and fixed the real reason new users were wrongly getting "Welcome back! You've used the app before" (v5.19's diagnosis was incomplete and didn't solve the problem): the dough store is deliberately SHARED for the whole group, but the wizard used "is there an active dough or favorite in the shared store?" as proof that YOU specifically had used the app before — so any new user got "Welcome back" as long as anyone at all in the group had a dough lying around. The decision is now based solely on the real per-user signal (your own last-used setup); the favorite shortcut still shows, but only for actually returning users.
+- Also fixed the screen sometimes staying scrolled down (and looking empty) right after login: the keyboard/focus on the name and PIN fields scrolls the screen behind the login screen, and nothing reset it until after a network call. The scroll is now reset immediately when the login screen closes.
+
+### v0.518
+- Fikset en variant av wizard-regresjonen fra tidligere: en ny bruker på en nettleser/enhet som tidligere er brukt av en annen konto kunne bli møtt med "Hei igjen!" og feil favoritt-status. Årsaken var beslektet med forrige fiks, men på et annet felt — syncFavoriteButton() kjørte ved sideinnlasting, før innlogging var reell, og window._favoriteId ble aldri hentet på nytt etter at den faktiske brukeren logget inn. Nå henter authComplete() riktig favoritt-status før wizarden avgjør noe.
+
+*English (July 2026):*
+- Fixed a variant of the earlier wizard regression: a new user on a browser/device previously used by another account could be greeted with "Welcome back!" and the wrong favorite status. The cause was related to the previous fix, but on a different field — syncFavoriteButton() ran on page load, before login was real, and window._favoriteId was never re-fetched after the actual user logged in. Now authComplete() correctly fetches the favorite status before the wizard decides anything.
+
+### v0.517
+- Dempet "Hvorfor"/"Tips"-boksene i "Steg"-fanen, som følte seg for kraftige og stjal oppmerksomhet fra selve steget. Byttet fra fylt bakgrunnsfarge til en tynn kantstrek uten fyll (ett av tre skisserte alternativer) — beholder nok visuell distinksjon til å skille tilleggsinfo fra hovedteksten, uten å konkurrere med steget selv.
+
+*English (July 2026):*
+- Toned down the "Why"/"Tips" boxes in the "Steps" tab, which felt too heavy and stole attention from the step itself. Switched from a filled background color to a thin outline with no fill (one of three sketched options) — keeps enough visual distinction to separate the extra info from the main text, without competing with the step itself.
+
+### v0.516
+- Fikset at fanebytte og wizard-navigering kunne vise en synlig hopp-bevegelse i scroll-posisjonen ("starter litt opp og ned"). Den forrige fiksen rettet selve sluttresultatet, men kunne fortsatt vise et kort, forvirrende hopp underveis. Fanen holdes nå usynlig helt til scroll-posisjonen er bekreftet på plass, i stedet for å vise feil posisjon og så korrigere den — brukeren ser aldri lenger selve hoppet. Samme forbedring gjort for wizard-steg-navigering, med en liten justering slik at "Se i Finjuster"-fremhevingen fortsatt fungerer korrekt sammen med det.
+
+*English (July 2026):*
+- Fixed tab switches and wizard navigation sometimes showing a visible jump in scroll position ("starts a bit up and down"). The previous fix corrected the end result, but could still show a brief, confusing jump along the way. The tab is now kept invisible until the scroll position is confirmed in place, instead of showing the wrong position and then correcting it — the user never sees the jump itself anymore. Same improvement made for wizard step navigation, with a small tweak so the "See in Fine-tune" highlight still works correctly alongside it.
+
+### v0.515
+- Fikset at en ny bruker på samme nettleser/enhet kunne bli møtt med "Hei igjen!" og en annen brukers siste innstillinger. Årsaken var at "sist brukte oppsett" ble lagret under én delt nøkkel i nettleserens lokale lagring, uten kobling til hvilken bruker som faktisk var innlogget — nå lagres og leses dette per bruker-id, så en fersk registrering på samme enhet aldri lenger arver en annen brukers historikk. Bekreftet med to simulerte brukere på samme nettleser.
+
+*English (July 2026):*
+- Fixed a new user on the same browser/device being greeted with "Welcome back!" and another user's last settings. The cause was that "last-used setup" was saved under one shared key in the browser's local storage, with no link to which user was actually logged in — now it's saved and read per user id, so a fresh registration on the same device never inherits another user's history anymore. Confirmed with two simulated users on the same browser.
+
+### v0.514
+- Fullført Forno-restylingen av wizarden (Pizzatype → Metode → Planlegging → Finjuster), som brukte fargekoder direkte i HTML-en (ikke CSS-klasser) og derfor ikke arvet tokens automatisk fra forrige runde. Nå Forno-stylet: alle knapper og kort, metode-valg-kortene, pizza-teller, "Starter nå"/"Steketid"-bryteren, dato-/tidsfeltene, Finjuster sine seksjoner, og oppskrift-fanens ingrediensliste. Bekreftet med fargemålinger for alle wizard-steg.
+
+*English (July 2026):*
+- Completed the Forno restyle of the wizard (Pizza type → Method → Planner → Fine-tune), which used color codes directly in the HTML (not CSS classes) and therefore didn't inherit tokens automatically from the previous round. Now Forno-styled: all buttons and cards, the method-choice cards, the pizza counter, the "Starting now"/"Bake time" toggle, the date/time fields, Fine-tune's sections, and the recipe tab's ingredient list. Confirmed with color measurements for all wizard steps.
+
+### v0.513
+- Startet restylingen til "Forno"-retningen (valgt av to skisserte alternativer): kullsvart bunn, ember-oransje aksent, Archivo Black/IBM Plex Mono-typografi. Bygget som en tokens-basert bunnstruktur (CSS-variabler for farger/fonter definert ett sted, arvet automatisk) fremfor å style hver fane for seg. Dekker foreløpig: hele mobil-skallet (toppfelt, bunn-menyfaner, fane-bakgrunn), steg-kortene i "Steg"-fanen (den mest brukte skjermen), dag-overskrifter, innstillings-rader/slidere, og alle modal-vinduer (Feedback/Formler/Hva er nytt/Guide). Bekreftet med fargemålinger i headless nettleser. PC-visningen og enkelte inline-stylede detaljer i wizarden (pizza-teller, metode-kort) er ikke omfattet ennå — naturlig neste steg.
+
+*English (July 2026):*
+- Started the restyle toward the "Forno" direction (chosen from two sketched options): coal-black background, ember-orange accent, Archivo Black/IBM Plex Mono typography. Built as a token-based foundation (CSS variables for colors/fonts defined in one place, inherited automatically) rather than styling each tab separately. Covers so far: the whole mobile shell (top bar, bottom-menu tabs, tab background), the step cards in the "Steps" tab (the most-used screen), day headers, settings rows/sliders, and all modal windows (Feedback/Formulas/What's new/Guide). Confirmed with color measurements in a headless browser. The desktop view and some inline-styled details in the wizard (pizza counter, method cards) aren't covered yet — the natural next step.
+
+### v0.512
+- Fjernet "Aa"-knappen (hurtig skriftstørrelse-bytte) fra toppen av mobilvisningen, i forkant av en større restyling av appen. Skriftstørrelse kan fortsatt justeres via segmentert-kontrollen i Info-fanen.
+
+*English (July 2026):*
+- Removed the "Aa" button (quick font-size toggle) from the top of the mobile view, ahead of a larger restyle of the app. Font size can still be adjusted via the segmented control in the Info tab.
+
+### v0.511
+- Styrket scroll-nullstillingen ved bytte av wizard-steg og faner ytterligere (dobbel animasjonsramme + en liten etterfølgende sjekk), samt lagt til "overflow-anchor:none" som ekstra sikring mot at nettleseren selv justerer scroll-posisjonen når innhold endrer størrelse rett etter et fanebytte. Gjelder spesielt "Planlegging"-steget i wizarden, som kan bli høyere enn skjermen på ekte telefon (native dato-/tidsfelt rendres ofte høyere på iOS enn i vanlige testverktøy) uten at det alltid lot seg gjenskape i testing her.
+
+*English (July 2026):*
+- Further strengthened the scroll reset when switching wizard steps and tabs (double animation frame + a small follow-up check), and added "overflow-anchor:none" as extra insurance against the browser itself adjusting the scroll position when content changes size right after a tab switch. Applies especially to the "Planner" step in the wizard, which can be taller than the screen on a real phone (native date/time fields often render taller on iOS than in ordinary test tools) without always being reproducible in testing here.
+
+### v0.510
+- Meltype-varselet har nå en "⚙️ Se i Finjuster"-lenke i tillegg til hurtigknappene, for de som heller vil forstå og justere selv i stedet for å bruke en hurtigknapp. Den relevante seksjonen (Hydrering, eller Kjøleskapsheving ved gjæringstid-avvik) markeres kort med en gul fremheving og scrolles til automatisk, så du raskt ser hvor endringen bør gjøres.
+
+*English (July 2026):*
+- The flour-type warning now has a "⚙️ See in Fine-tune" link in addition to the quick buttons, for those who'd rather understand and adjust it themselves instead of using a quick button. The relevant section (Hydration, or Cold proof for a fermentation-time mismatch) is briefly marked with a yellow highlight and scrolled to automatically, so you quickly see where the change should be made.
+
+### v0.509
+- Fikset at fanebytte på mobil (spesielt Info-fanen) av og til landet scrollet nedover i stedet for øverst. Rot-årsaken var en kappløps-situasjon: scroll-nullstillingen skjedde synkront rett etter at fanen byttet fra skjult til synlig, og noen ganger rakk ikke nettleseren å oppdatere fanens scroll-område før nullstillingen ble utført, så den ble uten effekt. Nullstillingen skjer nå i neste "frame" i stedet, samme mønster som allerede brukes andre steder i appen for tilsvarende mål-etter-rendring-situasjoner. Samme fiks lagt til i wizardens steg-navigering for konsekvens.
+
+*English (July 2026):*
+- Fixed tab switches on mobile (especially the Info tab) sometimes landing scrolled down instead of at the top. The root cause was a race condition: the scroll reset happened synchronously right after the tab switched from hidden to visible, and sometimes the browser hadn't updated the tab's scroll area before the reset ran, so it had no effect. The reset now happens on the next frame instead, the same pattern already used elsewhere in the app for similar measure-after-render situations. The same fix was added to the wizard's step navigation for consistency.
+
+### v0.508
+- Fikset et ekte tilfelle av toppfeltet på mobil som overlappet innholdet under (f.eks. et meltype-varsel) — toppfeltet hadde fast høyde og rakk ikke plass til både navn/versjon og tidsstempel på to linjer. Toppfeltet vokser nå naturlig ved behov i stedet for å klippe/overlappe. Bekreftet med skjermbilde-mål.
+- Meltype-varselet (gjæringstid/hydrering stemmer ikke) har nå også en hurtigknapp for selve gjæringstiden — "Øk hevetiden"/"Reduser hevetiden" — i tillegg til hydrerings- og melbytte-knappene som fantes fra før. Justerer time-/dags-innstillingen for gjeldende metode (Hurtigdeig, Kveldsdeig, eller kjøleskapsdager for Standard/Poolish/Biga), og bytter om nødvendig bort fra en fordeig-metode hvis selve fordeigen alene bruker mer tid enn melet tåler.
+- Fjernet to overflødige elementer fra mobilvisningen: "startoppsett"-varselet ("Velg pizzatype... eller åpne en lagret deig") som overlappet med badgen på 🍽️ Mine deiger-knappen i toppen, og stjerne/favoritt-snarveien i toppen (favorittdeigen er fortsatt tilgjengelig via "Mine deiger"-listen, og via ★ Min favoritt i PC-menyen).
+- Fikset at tekst inni modal-vinduer (Feedback, Formler, Hva er nytt, Guide) sluttet å vokse med skriftstørrelse-innstillingen, og dermed ble merkbart mindre enn resten av appen — spesielt tydelig på Feedback-siden. Dette var en bevisst, men for streng, avveining fra v5.8 sin fiks (se under) som skulle hindre at modalen ble høyere enn skjermen. Modal-boksens maks-høyde regnes nå ut i ekte skjerm-piksler via JavaScript i stedet for CSS zoom-kansellering, så teksten kan skalere normalt igjen samtidig som lukkeknappen garantert forblir synlig uansett skriftstørrelse. Bekreftet med skjermbilder og faktiske mål på alle tre nivåer.
+
+*English (July 2026):*
+- Fixed a real case of the top bar on mobile overlapping the content below it (e.g. a flour-type warning) — the top bar had a fixed height and couldn't fit both the name/version and the timestamp on two lines. The top bar now grows naturally when needed instead of clipping/overlapping. Confirmed with screenshot measurements.
+- The flour-type warning (fermentation time/hydration doesn't match) now also has a quick button for the fermentation time itself — "Increase proof time"/"Reduce proof time" — in addition to the hydration and flour-swap buttons that were already there. It adjusts the hours/days setting for the current method (Quick dough, Evening dough, or cold-proof days for Standard/Poolish/Biga), and switches away from a preferment method if needed when the preferment alone uses more time than the flour can handle.
+- Removed two redundant elements from the mobile view: the "initial setup" prompt ("Choose a pizza type... or open a saved dough") that overlapped with the badge on the 🍽️ My doughs button at the top, and the star/favorite shortcut at the top (the favorite dough is still available via the "My doughs" list, and via ★ My favorite in the desktop menu).
+- Fixed text inside modal windows (Feedback, Formulas, What's new, Guide) no longer growing with the font-size setting, and therefore ending up noticeably smaller than the rest of the app — especially clear on the Feedback page. This was a deliberate, but too strict, trade-off from v5.8's fix (see below) meant to keep the modal from being taller than the screen. The modal box's max height is now calculated in real screen pixels via JavaScript instead of CSS zoom cancellation, so the text can scale normally again while the close button is guaranteed to stay visible regardless of font size. Confirmed with screenshots and actual measurements at all three levels.
+
+### v0.507
+- Større font og ikon på bunn-menyfanene (mobil) — lettere å lese/treffe uansett skriftstørrelse-innstilling.
+- Fikset tomrommet mellom Kopier/Kalender/Lagre-raden og bunn-fanelinja på "Steg"-fanen, som varierte med skriftstørrelse-innstillingen. Rot-årsaken var strukturell: knapperaden var "sticky" i forhold til selve fane-innholdet (som må kunne vokse med skriftstørrelsen for lesbarhet), mens bunn-menyen er sticky i forhold til hele siden — to ulike referanserammer som ikke alltid stemte overens. Knapperaden er nå "fixed" i forhold til selve skjermen, med posisjonen regnet ut i ekte skjerm-piksler via JavaScript, uavhengig av skriftstørrelse-innstillingen.
+- Chicago sitt "Rund godt med begge hender"-steg presiserer nå at emnet presses ut i den runde jernpanna ved steking — samme presisering som Langpanne allerede hadde, for å unngå misforståelsen om at Chicago formes fritt for hånd som en napoletansk pizza.
+- "Om appen" heter nå "Info" i bunn-menyen på mobil.
+- "Tips og teknikk" er nå en egen knapp i Info-fanen (ved siden av Guide) i stedet for å alltid vises øverst — fanen blir kortere og ryddigere, og du slår opp teknikk-tipsene når du faktisk vil ha dem.
+- Ryddet opp Info-fanen: gruppert i Hjelp (Guide/Tips og teknikk/Feedback), Admin (Formler/Admin) og Konto (Logg ut), med pil (›) på klikkbare rader. Versjonsnummer og "Hva er nytt" flyttet fra toppen til en rolig fotnote nederst.
+- Forsøkt rettet: skriftstørrelse-kontrollen kunne overlappe radene under på enkelte enheter — flyttet mot-zoom-korreksjonen fra selve kontrollen til hele omsluttende boks, samme mønster som løste knapperad-avviket. Ikke bekreftet på ekte enhet ennå.
+
+*English (July 2026):*
+- Larger font and icons on the bottom menu tabs (mobile) — easier to read and tap regardless of your font-size setting.
+- Fixed the gap between the Copy/Calendar/Save row and the bottom tab bar on the "Steps" tab, which varied with your font-size setting. The root cause was structural: the button row was "sticky" relative to the tab content itself (which has to be able to grow with the font size for readability), while the bottom menu is sticky relative to the whole page — two different frames of reference that didn't always line up. The button row is now "fixed" relative to the screen itself, with its position calculated in real screen pixels via JavaScript, independent of the font-size setting.
+- Chicago's "Round well with both hands" step now clarifies that the dough is pressed out into the round pan during baking — the same clarification Sheet pan already had, to avoid the misconception that Chicago is shaped freehand like a Neapolitan pizza.
+- "About the app" is now called "Info" in the bottom menu on mobile.
+- "Tips and technique" is now its own button in the Info tab (next to Guide) instead of always showing at the top — the tab is shorter and tidier, and you pull up the technique tips when you actually want them.
+- Tidied up the Info tab: grouped into Help (Guide/Tips and technique/Feedback), Admin (Formulas/Admin) and Account (Log out), with an arrow (›) on clickable rows. The version number and "What's new" moved from the top to a quiet footnote at the bottom.
+- Attempted fix: the font-size control could overlap the rows below it on some devices — moved the counter-zoom correction from the control itself to the whole surrounding box, the same pattern that fixed the button-row discrepancy. Not yet confirmed on a real device.
+
+### v0.506
+- Wizarden på mobil: "antall pizzaer" er flyttet fra Finjuster til Planlegging-steget, rett under "Når vil du spise?" — melmengde i gram ligger fortsatt alene i Finjuster.
+- Lagt til app-ikon for hjemskjerm på iPhone og Android (manifest + apple-touch-icon), slik at "Legg til på Hjem-skjerm" viser et ordentlig ikon og navn i stedet for standard nettleser-favicon.
+- Egen avkrysningsboks lagt til venstre for det grønne steg-nummeret i "Steg"-fanen, for å gjøre det tydeligere at steg kan hakes av — hele raden er fortsatt tap-mål for avhaking.
+- Fikset en rot-årsak som ga to synlige feil: Kopier/Kalender/Lagre-knapperaden i "Steg"-fanen var ikke reelt sticky (måtte scrolle helt ned for å se den, eller den dukket opp midt i steg-listen i stedet for rett over bunn-menyen), og fanebytte kunne se tomt ut. Den fulle årsaken viste seg å være to ting sammen: mobil-visningen manglet en avgrenset skjermhøyde, og selve "Steg"-fanen manglet "min-height:0" som flex-element — uten den vokser fanen seg like høy som innholdet i stedet for å bli klippet til tilgjengelig skjermplass, uansett hvor lang tidsplanen er. Bekreftet rettet med faktiske skjermbilde-tester. I samme slengen: navigering mellom wizardens steg (Pizzatype → Metode → Planlegging → Finjuster) nullstiller nå også scroll-posisjonen, og en gammel duplikat-id i markupen (to elementer med samme id) er ryddet opp.
+- Fikset at "Hva er nytt" (og andre modal-vinduer) kunne miste lukkeknappen ved "Ekstra stor" skrift-innstilling — modalen ble da fysisk høyere enn skjermen og sentrerte seg slik at toppen (med ✕-knappen) havnet utenfor synsfeltet. Modal-vinduer bruker nå samme mot-zoom-teknikk som knapper og faner allerede gjorde, slik at de alltid forblir innenfor skjermen uansett skriftstørrelse-innstilling. (Denne teknikken ble senere forbedret i v5.9 — se over.)
+- Fikset en regresjon der nye brukere ikke fikk se wizarden ved aller første innlogging.
+- Lagt til "Logg ut" i PC-versjonens ☰ Meny (fantes tidligere kun på mobil).
+- Feedback-listen vises nå direkte når du åpner "Feedback", i stedet for bak en "Se tidligere tilbakemeldinger"-toggle. Alle tilbakemeldinger kan nå stemmes opp (👍, én stemme per person per sak). "Merk som løst" og "Slett" er strammet inn til kun å vises for admin — disse var tidligere synlige for alle ved en feil.
+
+*English (July 2026):*
+- Mobile wizard: "number of pizzas" moved from Fine-tune to the Planner step, right below "When do you want to eat?" — flour amount in grams still lives on its own in Fine-tune.
+- Added a home-screen app icon for iPhone and Android (manifest + apple-touch-icon), so "Add to Home Screen" shows a proper icon and name instead of the default browser favicon.
+- Added a dedicated checkbox to the left of the green step number in the "Steps" tab, to make it clearer that steps can be checked off — the whole row is still a tap target for checking off.
+- Fixed a root cause behind two visible bugs: the Copy/Calendar/Save button row in the "Steps" tab wasn't truly sticky (you had to scroll all the way down to see it, or it appeared in the middle of the step list instead of just above the bottom menu), and switching tabs could look empty. The full cause turned out to be two things together: the mobile view lacked a bounded screen height, and the "Steps" tab itself lacked "min-height:0" as a flex element — without it, the tab grows as tall as its content instead of being clipped to the available screen space, no matter how long the schedule is. Confirmed fixed with actual screenshot tests. In the same pass: navigating between the wizard's steps (Pizza type → Method → Planner → Fine-tune) now also resets the scroll position, and an old duplicate id in the markup (two elements with the same id) was cleaned up.
+- Fixed "What's new" (and other modal windows) potentially losing the close button at the "Extra large" font setting — the modal became physically taller than the screen and centered itself so the top (with the ✕ button) ended up out of view. Modal windows now use the same counter-zoom technique that buttons and tabs already did, so they always stay within the screen regardless of the font-size setting. (This technique was later improved in v5.9 — see above.)
+- Fixed a regression where new users didn't see the wizard on their very first login.
+- Added "Log out" to the PC version's ☰ Menu (previously only on mobile).
+- The feedback list now shows directly when you open "Feedback", instead of behind a "See earlier feedback" toggle. All feedback can now be upvoted (👍, one vote per person per item). "Mark as resolved" and "Delete" have been tightened to only show for admins — these were previously visible to everyone by mistake.
+
+### v0.505
+- "Pizzaplanlegger"-fanen på mobil heter nå "Planlegging".
+- "Neste steg å gjøre" vises nå alltid fullt lesbart, selv om du ligger foran skjema og klokken teknisk sett ikke har nådd steget ennå.
+- Skriftstørrelse-skalaen er forskjøvet ett hakk opp: "Normal" er nå det som før het "Stor", "Stor" er det som før het "Ekstra stor" (ny standard for alle nye brukere), og "Ekstra stor" er et helt nytt, enda større nivå.
+- Dato-overskriften i steg-listen er forstørret, for tydeligere skille mellom dager.
+- Litt større skrift på bunn-fanene (Planlegging/Steg/Oppskrift/Notater/Deiger/Om appen).
+- Finjuster-skjermen har nå en ekte tilbakepil øverst (går til Planlegging-steget) og en tydelig, fylt "✓ Ferdig — se steg for steg"-knapp nederst — venstrepilen betydde tidligere "avslutt alt", noe som lett kunne forveksles med wizardens vanlige tilbake-navigasjon.
+- Fjernet stjerne-ikonet fra vurderings-knappen på ferdige deiger (var forvirrende ved siden av favoritt-stjernen på samme kort) — viser nå konsekvent et blyant-ikon.
+- Wizardens fremdriftsindikator er bygget om til en tydelig tidslinje — nummererte/hakede sirkler med linjer mellom, og alle tre stegnavn synlige samtidig (oppdateres til dine faktiske valg etter hvert). Innholdet starter også litt lenger ned fra toppen for mer luft.
+- "Starter nå" viser ikke lenger et dato/tid-felt å fylle ut — bruker nåværende tidspunkt stille i bakgrunnen. Feltet finnes fortsatt under "Steketid", der det faktisk gir mening å oppgi et tidspunkt.
+- Tre nye meltyper lagt til: Vanlig hvetemel, Regal Pizzamel og Regal Tipo 00 — proteininnhold hentet fra faktisk næringsinnhold, mens hydrerings- og fermenteringstall er merket "(anslått)" siden disse ikke er produsent-oppgitt slik de er for Caputo-melene.
+
+*English (July 2026):*
+- The "Pizza planner" tab on mobile is now called "Planner".
+- "Next step to do" now always shows fully readable, even if you're ahead of schedule and the clock technically hasn't reached the step yet.
+- The font-size scale has been shifted up one notch: "Normal" is now what used to be "Large", "Large" is what used to be "Extra large" (the new default for all new users), and "Extra large" is a brand-new, even larger level.
+- The date heading in the step list has been enlarged, for a clearer distinction between days.
+- Slightly larger text on the bottom tabs (Planner/Steps/Recipe/Notes/Doughs/About the app).
+- The Fine-tune screen now has a real back arrow at the top (goes to the Planner step) and a clear, filled "✓ Done — see step by step" button at the bottom — the left arrow previously meant "exit everything", which was easy to confuse with the wizard's normal back navigation.
+- Removed the star icon from the rating button on finished doughs (it was confusing next to the favorite star on the same card) — now consistently shows a pencil icon.
+- The wizard's progress indicator has been rebuilt into a clear timeline — numbered/checked circles with lines between them, and all three step names visible at once (updated to your actual choices as you go). The content also starts a little further down from the top for more breathing room.
+- "Starting now" no longer shows a date/time field to fill in — it quietly uses the current time in the background. The field still exists under "Bake time", where specifying a time actually makes sense.
+- Three new flour types added: Plain wheat flour, Regal Pizzamel and Regal Tipo 00 — protein content taken from actual nutritional info, while hydration and fermentation figures are marked "(estimated)" since these aren't provided by the manufacturer the way they are for the Caputo flours.
+
+### v0.504
+- Meltype-varselet (gjæringstid/hydrering stemmer ikke) har nå hurtigjustering direkte i varselet — "Sett hydrering til X%" og/eller "Bytt til [meltype]" — i stedet for at du må bytte til Pizzaplanlegger-fanen for å justere. Bruker nøyaktig samme funksjoner som selve fanen, så resultatet blir identisk uansett hvor du justerer fra. Fungerer likt på PC og mobil.
+
+*English (July 2026):*
+- The flour-type warning (fermentation time/hydration don't match) now has a quick adjustment right in the warning — "Set hydration to X%" and/or "Switch to [flour type]" — instead of having to switch to the Pizza planner tab to adjust. It uses exactly the same functions as the tab itself, so the result is identical no matter where you adjust from. Works the same on PC and mobile.
+
+### v0.503
+- Trykk på logoen ("🍕 Pizzaplanlegger") for å åpne Guiden — både PC og mobil. Versjonsnummeret under logoen åpner fortsatt "Hva er nytt" som før, uavhengig av dette.
+
+*English (July 2026):*
+- Tap the logo ("🍕 Pizza planner") to open the Guide — on both PC and mobile. The version number under the logo still opens "What's new" as before, independently of this.
+
+### v0.502
+- Lagt til en tydelig "Lukk"-knapp nederst i "Hva er nytt" — en veldig lang endringslogg kunne gjøre ✕-knappen øverst vanskelig å nå uten å scrolle helt tilbake opp.
+- Fikset en reell feil: wizarden på mobil viste seg ikke ved aller første sideinnlasting — måtte bytte fane frem og tilbake for at den skulle dukke opp. Innstillinger-fanen var allerede markert aktiv i selve HTML-en fra start, så koblingen som skulle starte wizarden ble aldri utløst automatisk.
+- "Tips" er slått sammen med "Om appen" til én fane — samler tips, skriftstørrelse, versjon/Hva er nytt, Guide, Feedback, Formler og Admin på ett sted. Innstillinger-fanen (wizarden) er nå ren konfigurasjon, uten noe av dette.
+- Nullstill-knappen er fjernet, både PC og mobil — "Start noe nytt" i wizarden dekker samme behov på mobil.
+- Guiden har nå en "Prøv det nå →"-knapp på mobil som starter wizarden direkte, i stedet for å bare beskrive stegene i tekst.
+
+*English (July 2026):*
+- Added a clear "Close" button at the bottom of "What's new" — a very long changelog could make the ✕ button at the top hard to reach without scrolling all the way back up.
+- Fixed a real bug: the wizard on mobile didn't show on the very first page load — you had to switch tabs back and forth for it to appear. The Settings tab was already marked active in the HTML itself from the start, so the trigger meant to start the wizard was never fired automatically.
+- "Tips" has been merged with "About the app" into one tab — gathering tips, font size, version/What's new, Guide, Feedback, Formulas and Admin in one place. The Settings tab (the wizard) is now pure configuration, without any of this.
+- The Reset button has been removed, on both PC and mobile — "Start something new" in the wizard covers the same need on mobile.
+- The Guide now has a "Try it now →" button on mobile that starts the wizard directly, instead of just describing the steps in text.
+
+### v0.501
+- Ny wizard-flyt for innstillinger på mobil — erstatter den lange ettsides listen med tre korte steg (Pizzatype → Metode → Når vil du spise), med brødsmule-sti øverst du kan trykke på for å hoppe rett tilbake til et tidligere valg.
+- Returnerende brukere møtes av et valg først: "Bruk samme som sist", "Åpne favoritten min", eller "Start noe nytt" — for å unngå at wizarden blir tungvint hvis du baker samme oppskrift ofte.
+- "Finjuster"-lenke på siste steg åpner alle de andre innstillingene (mel, hydrering, gjærtype, meltype osv.) samlet, for de som vil justere mer.
+- Kun mobil — PC-versjonen er uendret.
+
+*English (July 2026):*
+- New wizard flow for settings on mobile — replaces the long single-page list with three short steps (Pizza type → Method → When do you want to eat), with a breadcrumb trail at the top you can tap to jump straight back to an earlier choice.
+- Returning users are met with a choice first: "Use the same as last time", "Open my favorite", or "Start something new" — to avoid the wizard becoming a hassle if you bake the same recipe often.
+- A "Fine-tune" link on the last step opens all the other settings (flour, hydration, yeast type, flour type, etc.) together, for those who want to adjust more.
+- Mobile only — the PC version is unchanged.
+
+### v0.500
+- Mobilens "Steg for steg"-fane er kortet ned til "Steg" — den forrige teksten ble dårlig wrappet i bunnmenyen.
+- Dytt-videre-indikatoren er endret fra en engangs-pulsering til noe varig: den vises nå konsekvent hver gang du er på Innstillinger-fanen (du har nettopp valgt noe, gå videre til Steg), og skjules kun mens du faktisk står i Steg-fanen — ikke en engangsting du kan "bruke opp".
+
+*English (July 2026):*
+- The mobile "Step by step" tab has been shortened to "Steps" — the previous text wrapped badly in the bottom menu.
+- The nudge-forward indicator has changed from a one-time pulse to something lasting: it now shows consistently every time you're on the Settings tab (you've just chosen something, move on to Steps), and hides only while you're actually on the Steps tab — not a one-time thing you can "use up".
+
+### v0.499
+- "Tidsplan" heter nå "Steg for steg" — mer tydelig for nye brukere at det er her selve fremgangsmåten vises, ikke bare en kalenderoversikt.
+- Ny pulserende prikk på "Steg for steg"-fanen på mobil, synlig helt til du besøker den første gang — en tydelig dytt videre etter at du har valgt pizzatype/metode i innstillinger.
+
+*English (July 2026):*
+- "Schedule" is now called "Step by step" — clearer for new users that this is where the actual method is shown, not just a calendar overview.
+- New pulsing dot on the "Step by step" tab on mobile, visible until you visit it for the first time — a clear nudge forward after you've chosen pizza type/method in settings.
+
+### v0.498
+- Fikset en reell feil i gjærregnskapet for Poolish og Biga — kun 50% (Poolish) og 10% (Biga) av beregnet gjærmengde ble faktisk brukt i oppskriftene, resten forsvant sporløst. All gjæren legges nå riktig i selve for-deigen (poolishen/bigaen), ingenting tilsettes i sluttblandingen — det er slik det faktisk skal gjøres.
+- Rettet en upresis forklaring om melkesyrebakterier i Poolish-teknikken — det er primært enzymer, gjærens egne fermenteringsprodukter og milde organiske syrer som bygger smak, ikke melkesyrebakterier (som spiller en mye større rolle i ekte surdeig).
+- "Poolish gir løsere glutenstruktur" er endret til riktig beskrivelse: poolish gjør deigen mer extensibel (lettere å strekke), ikke løsere.
+- New York-pizzaens steketemperatur er endret fra et absolutt tak ("ikke over 350°C") til et veiledende intervall med rom for justering etter egen ovn.
+
+*English (July 2026):*
+- Fixed a real bug in the yeast calculation for Poolish and Biga — only 50% (Poolish) and 10% (Biga) of the calculated yeast amount was actually used in the recipes, the rest vanished without a trace. All the yeast is now correctly placed in the preferment itself (the poolish/biga), with nothing added to the final mix — which is how it's actually supposed to be done.
+- Corrected an imprecise explanation about lactic acid bacteria in the Poolish technique — it's primarily enzymes, the yeast's own fermentation products and mild organic acids that build flavor, not lactic acid bacteria (which play a much bigger role in real sourdough).
+- "Poolish gives a looser gluten structure" has been changed to the correct description: poolish makes the dough more extensible (easier to stretch), not looser.
+- The New York pizza's baking temperature has been changed from an absolute cap ("no higher than 350°C") to a guiding range with room to adjust for your own oven.
+
+### v0.497
+- Fikset en oppstartsfeil på mobil der Pizzatype og Metode kunne vises tomme når appen ble åpnet direkte på telefon (ikke via "bytt til mobil" på PC) — mobil-innholdet ligger fysisk etter hovedskriptet i selve filen, og kunne i noen tilfeller forsøke å fylles ut før den delen av siden var ferdig lastet inn. Lagt til et sikkerhetsnett som garantert fyller alt på nytt når absolutt alt er klart.
+
+*English (July 2026):*
+- Fixed a startup bug on mobile where Pizza type and Method could show empty when the app was opened directly on the phone (not via "switch to mobile" on PC) — the mobile content sits physically after the main script in the file itself, and in some cases could try to be filled in before that part of the page had finished loading. Added a safety net that is guaranteed to refill everything once absolutely everything is ready.
+
+### v0.496
+- Rettet en upresis forklaring på romtemperaturheving/bulk-heving — den blandet en generell påstand om gjærbiologi ("gjæren er mest aktiv 25–35°C") med et urelatert 60-minutters referansetall, uavhengig av hvor lang selve hevingen faktisk var. Forklaringen viser nå riktig, faktisk varighet for akkurat det steget.
+- Elting nevner nå et mål for sluttdeigtemperatur (ca. 24°C for Hurtigdeig, ca. 20–22°C for Kveldsdeig) i tillegg til minuttall — mer robust enn ren tid, siden kjøkkenmaskiner og mel varierer.
+- Forvarming i Hurtigdeig presiserer nå at vanlig ovn med pizzastein/-stål trenger 45–60 min forvarming, ikke bare selve lufttemperaturen — samme presisjon Standard-metoden allerede hadde.
+- Rettet en gjenstående entall/flertall-feil ("1 timer" → "1 time") i visning av hevetider.
+
+*English (July 2026):*
+- Corrected an imprecise explanation of room-temperature proofing/bulk fermentation — it mixed a general claim about yeast biology ("yeast is most active at 25–35°C") with an unrelated 60-minute reference figure, regardless of how long the proof actually was. The explanation now shows the correct, actual duration for that specific step.
+- Kneading now mentions a target final dough temperature (about 24°C for Quick dough, about 20–22°C for Evening dough) in addition to minutes — more robust than time alone, since stand mixers and flour vary.
+- Preheating in Quick dough now clarifies that a regular oven with a pizza stone/steel needs 45–60 min of preheating, not just the air temperature itself — the same precision the Standard method already had.
+- Fixed a remaining singular/plural error ("1 hours" → "1 hour") in the display of proofing times.
+
+### v0.495
+- Fikset et avvik i "Kopier"-funksjonen: gjærmengden i ingredienslisten stemte ikke alltid med det som faktisk sto i selve tidsplan-steget for Hurtigdeig og Kveldsdeig, siden kopieringen brukte en annen (generell) beregning enn de to metodene faktisk bruker.
+
+*English (July 2026):*
+- Fixed a discrepancy in the "Copy" function: the yeast amount in the ingredient list didn't always match what was actually shown in the schedule step itself for Quick dough and Evening dough, since the copy used a different (general) calculation than the two methods actually use.
+
+### v0.494
+- Hurtigdeig bruker nå en beregnet vanntemperatur i stedet for et fast "lunkent, 35–38°C" — basert på samme "ønsket deigtemperatur"-formel profesjonelle bakere bruker (3 × måltemperatur − romtemperatur × 2 − friksjon fra eltemetoden). Målet er ca. 24°C ferdig deig uansett timevalg, siden det er gjærmengden som skal styre hvor fort deigen går — ikke vanntemperaturen. Tallet endrer seg med romtemperatur og valgt kjøkkenmaskin.
+- Ny forklaring i Teknikk om hvorfor vanntemperaturen nå regnes ut i stedet for å være fast.
+
+*English (July 2026):*
+- Quick dough now uses a calculated water temperature instead of a fixed "lukewarm, 35–38°C" — based on the same "desired dough temperature" formula professional bakers use (3 × target temperature − room temperature × 2 − friction from the kneading method). The goal is about 24°C finished dough regardless of the chosen hours, since it's the yeast amount that should control how fast the dough goes — not the water temperature. The number changes with room temperature and the chosen stand mixer.
+- New explanation in Technique about why the water temperature is now calculated instead of fixed.
+
+### v0.493
+- Meltype-varselet sjekker nå også hydrering, ikke bare gjæringstid — velger du f.eks. Dallari pizzamel (55–60%) mens hydreringen står på 65%, får du nå beskjed om det. Viser begge problemene samlet hvis både tid og hydrering ikke stemmer.
+
+*English (July 2026):*
+- The flour-type warning now also checks hydration, not just fermentation time — if you choose, say, Dallari pizzamel (55–60%) while hydration is set to 65%, you now get told about it. Shows both problems together if both time and hydration are off.
+
+### v0.492
+- "★ Min favoritt" er flyttet fra en egen knapp i sidepanelet til en handling i "☰ Meny". Fikset samtidig en underliggende svakhet — å åpne favoritten kunne feile stille hvis "Deiger" aldri var åpnet i økten ennå.
+- Guiden vises nå automatisk hver gang du logger inn, helt til du trykker "Ikke vis igjen" — å bare lukke den med ✕ viser den på nytt neste gang.
+- Standard kjøleskapsheving er endret fra 3 til 1 dag — 3 dager kombinert med standard meltype (Doppio Zero) ga et gjæringsvarsel til nesten alle nye brukere med en gang, siden 72 timer ligger utenfor Doppio Zero sitt 24-timers vindu. Gjelder også ved Nullstill.
+
+*English (July 2026):*
+- "★ My favorite" has been moved from its own button in the side panel to an action in the "☰ Menu". At the same time fixed an underlying weakness — opening the favorite could fail silently if "Doughs" had never been opened in the session yet.
+- The Guide now shows automatically every time you log in, until you press "Don't show again" — just closing it with ✕ shows it again next time.
+- The default refrigerator proof has been changed from 3 to 1 day — 3 days combined with the default flour type (Doppio Zero) gave a fermentation warning to almost every new user right away, since 72 hours is outside Doppio Zero's 24-hour window. Also applies on Reset.
+
+### v0.491
+- Fikset en reell feil: etter å ha lagret en deig på PC, viste appen fortsatt "Ulagret oppsett" til du gjorde en annen endring — lagringen fungerte, men visningen oppdaterte seg ikke med en gang.
+- Overskriften viser nå navnet på lagret deig, f.eks. "Langpannepizza · standard · Runes lagrede pizza".
+- "Pålogget som [navn]" vises nå nederst i sidepanelet.
+- Feedback-skjemaet lukker seg selv kort tid etter vellykket sending, i stedet for at du må trykke ✕ manuelt.
+
+*English (July 2026):*
+- Fixed a real bug: after saving a dough on PC, the app still showed "Unsaved setup" until you made another change — the save worked, but the display didn't update right away.
+- The heading now shows the name of the saved dough, e.g. "Sheet pan pizza · standard · Rune's saved pizza".
+- "Logged in as [name]" now shows at the bottom of the side panel.
+- The feedback form closes itself shortly after a successful send, instead of you having to press ✕ manually.
+
+### v0.490
+- Kalender-påminnelser ("📅 Påminnelser") tilbake på PC — lastet ned som en .ics-fil med varsel 10 min før hvert steg. Fantes fra før kun på mobil.
+- Ferdige deiger kan nå få et bilde og en stjernevurdering (1–5) — trykk "Ferdig" på en aktiv deig, eller "✏️"/"⭐" på en allerede ferdig deig for å legge til eller endre i etterkant.
+- Ingredienser i Oppskrift-fanen kan nå hakes av (mel, vann, salt osv.) mens du henter dem frem — lagres sammen med deigen, akkurat som avhaking av steg i Tidsplan.
+- Guiden nevner nå at Tips, Deiger, Feedback og mer finnes i "☰ Meny" øverst.
+- "⋯ Mer" er omdøpt til "☰ Meny" for å signalisere navigasjon tydeligere, og "IngenElting" skrives nå "Ingen elting" i alle visningstekster.
+
+*English (July 2026):*
+- Calendar reminders ("📅 Reminders") are back on PC — downloaded as an .ics file with an alert 10 min before each step. Previously only on mobile.
+- Finished doughs can now get a photo and a star rating (1–5) — press "Done" on an active dough, or "✏️"/"⭐" on an already-finished dough to add or change it afterward.
+- Ingredients in the Recipe tab can now be checked off (flour, water, salt, etc.) as you pull them out — saved together with the dough, just like checking off steps in the Schedule.
+- The Guide now mentions that Tips, Doughs, Feedback and more are found in the "☰ Menu" at the top.
+- "⋯ More" has been renamed to "☰ Menu" to signal navigation more clearly, and "IngenElting" is now written "No-knead" in all display text.
+
+### v0.489
+- Nytt gjennomgående design — kjøligere fargepalett, hvite kort med skygge i stedet for synlige kanter, og et strammere visuelt uttrykk gjennom hele appen.
+- Meltype er endret fra piller til en vanlig nedtrekksmeny (dropdown) — seks lange melnavn i pille-form så rotete ut, spesielt på mobil der hover-tekst uansett ikke fungerer.
+- Gjærtype, Kjøkkenmaskin og Ovntype vises nå som en ekte segmentert kontroll (én sammenhengende boks) i stedet for løse piller, både på PC og mobil.
+- Sidenav (Guide/Tips/Deiger/Feedback/Formler/Admin) er samlet i én kompakt "⋯ Mer"-meny i stedet for seks alltid-synlige knapper.
+- Knapper er redusert til to konsekvente stiler i hele appen — fylt primær og nøytral "ghost" — med fast høyde.
+- Skriftstørrelse-innstillingen påvirker nå kun lesetekst (steg, forklaringer) — knapper, piller og navigasjon holder fast størrelse uansett innstilling.
+
+*English (July 2026):*
+- A new design throughout — a cooler color palette, white cards with shadow instead of visible borders, and a tighter visual look across the whole app.
+- Flour type has been changed from pills to a regular dropdown menu — six long flour names in pill form looked cluttered, especially on mobile where hover text doesn't work anyway.
+- Yeast type, Stand mixer and Oven type now show as a real segmented control (one continuous box) instead of loose pills, on both PC and mobile.
+- The side nav (Guide/Tips/Doughs/Feedback/Formulas/Admin) has been gathered into one compact "⋯ More" menu instead of six always-visible buttons.
+- Buttons have been reduced to two consistent styles across the whole app — filled primary and neutral "ghost" — with a fixed height.
+- The font-size setting now only affects reading text (steps, explanations) — buttons, pills and navigation keep a fixed size regardless of the setting.
+
+### v0.488
+- Fjernet dupliserte "Vis/skjul forklaringer"-kontroller (fantes både i sidepanelet/mobil-Visning og i handlingsgruppen) — finnes nå kun ett sted.
+- "Planlegging" (når du vil spise) er flyttet opp til rett etter Metode, både på PC og mobil — tidligere lå den nederst, bak seks andre innstillinger, selv om det ofte er den første beslutningen man faktisk tar.
+- Ny "❓ Guide"-lenke lagt til på mobil — fantes tidligere kun på PC (bortsett fra automatisk førstegangsvisning).
+- Visuelt skille i navigasjonen mellom verktøy for alle (Guide/Tips/Deiger/Feedback) og admin-verktøy (Formler/Admin), på både PC og mobil.
+
+*English (July 2026):*
+- Removed duplicate "Show/hide explanations" controls (they existed both in the side panel/mobile View and in the action group) — now there's just one.
+- "Planner" (when you want to eat) has moved up to right after Method, on both desktop and mobile — it used to sit at the bottom, behind six other settings, even though it's often the first decision you actually make.
+- New "❓ Guide" link added on mobile — it was previously only on desktop (apart from the automatic first-time view).
+- Visual separation in the navigation between tools for everyone (Guide/Tips/Doughs/Feedback) and admin tools (Formulas/Admin), on both desktop and mobile.
+
+### v0.487
+- Ny "📊 Formler"-side i sidenav — viser salt/olje/gjær/hydrering for alle pizzatyper. Åpen for alle å se, redigerbar for admin.
+- Admin kan nå endre disse kjernetallene direkte i appen, uten å be meg redigere kode og deploye på nytt. Forrige verdi vises alltid ved siden av, med en "↺ angre"-knapp.
+- Vanlige brukere kan foreslå en ny verdi for et tall (med begrunnelse) — admin ser innsendte forslag i Formler-siden og kan bruke eller avvise dem med ett trykk.
+- Appen venter nå på å hente disse tallene fra serveren før noe vises ved oppstart, slik at ingen noensinne ser utdaterte tall.
+
+*English (July 2026):*
+- New "📊 Formulas" page in the side nav — shows salt/oil/yeast/hydration for every pizza type. Open for anyone to view, editable by admin.
+- Admin can now change these core numbers directly in the app, without asking me to edit code and redeploy. The previous value is always shown alongside, with a "↺ undo" button.
+- Regular users can suggest a new value for a number (with a reason) — admin sees submitted suggestions on the Formulas page and can apply or reject them with one tap.
+- The app now waits to fetch these numbers from the server before showing anything at startup, so no one ever sees outdated numbers.
+
+### v0.486
+- Meltype viser nå protein, styrke (W), hydrering og fermenteringsvindu i en alltid-synlig infolinje under pillene — fungerer på mobil, der den gamle hover-teksten aldri var synlig i utgangspunktet siden touch-skjermer ikke har hover.
+
+*English (July 2026):*
+- Flour type now shows protein, strength (W), hydration and fermentation window in an always-visible info line under the pills — works on mobile, where the old hover text was never visible in the first place since touch screens don't have hover.
+
+### v0.485
+- Neste steg å gjøre får nå en tydelig blå markering ("👉 neste") — det er det første ikke-avhakede steget, og henger sammen med klokka: er du på etterskudd peker den på det du mangler, er du i rute faller den sammen med den vanlige "nå"-fremhevingen (og vises da ikke som en ekstra boks).
+- Haker du av et steg, scroller siden nå automatisk til neste steg — nyttig på en lang tidsplan der du ellers må lete etter hvor du var.
+
+*English (July 2026):*
+- The next step to do now gets a clear blue highlight ("👉 next") — it's the first unchecked step, and it ties in with the clock: if you're behind, it points to what you're missing; if you're on track, it lines up with the usual "now" highlight (and then isn't shown as an extra box).
+- Check off a step and the page now scrolls automatically to the next one — handy on a long schedule where you'd otherwise have to hunt for where you were.
+
+### v0.484
+- Fikset lukkeknappen på popup-vinduer (Tips, Hva er nytt, Deiger, Feedback, Guide, Admin) på telefoner med hakk/dynamisk øy — vinduet kunne tidligere rendres bak den øverste sikkerhetssonen, slik at ✕ ble vanskelig eller umulig å treffe.
+
+*English (July 2026):*
+- Fixed the close button on popup windows (Tips, What's new, Doughs, Feedback, Guide, Admin) on phones with a notch/dynamic island — the window could previously render behind the top safe zone, making the ✕ hard or impossible to hit.
+
+### v0.483
+- Gjærtype, Kjøkkenmaskin, Meltype og Ovntype er samlet bak "⚙️ Avanserte innstillinger" i sidepanelet, lukket som standard — kjernevalgene (Pizzatype, Metode, Melmengde, Planlegging) er nå det eneste en ny bruker møter først.
+- Ny "❓ Guide"-lenke i sidepanelet — en kort 4-stegs quickstart som viser seg automatisk første gang du logger inn, og er tilgjengelig når som helst etterpå.
+- "Teknikk" heter nå "Tips" — samme innhold, mindre teknisk klingende navn.
+
+*English (July 2026):*
+- Yeast type, Stand mixer, Flour type and Oven type are now grouped behind "⚙️ Advanced settings" in the side panel, closed by default — the core choices (Pizza type, Method, Flour amount, Planner) are now the only thing a new user meets first.
+- New "❓ Guide" link in the side panel — a short 4-step quickstart that shows automatically the first time you log in, and is available any time afterward.
+- "Technique" is now called "Tips" — same content, a less technical-sounding name.
+
+### v0.482
+- Enkel innlogging med navn + 4-sifret PIN — første gang du skriver navnet ditt, lager du en PIN; neste gang logger du inn med samme navn og PIN. Forblir innlogget til du selv logger ut.
+- Ny admin-visning (lenke nederst på innloggingsskjermen, passordbeskyttet) for å se alle brukere, sette ny PIN, og slette brukere.
+
+*English (July 2026):*
+- Simple login with name + 4-digit PIN — the first time you enter your name, you create a PIN; next time you log in with the same name and PIN. You stay logged in until you log out yourself.
+- New admin view (link at the bottom of the login screen, password-protected) to see all users, set a new PIN, and delete users.
+
+### v0.481
+- Favoritt-merking av lagrede deiger (★ på kortet i Mine deiger) — kun én av gangen. En ny "★ Min favoritt"-knapp dukker opp i sidepanelet (og mobiltoppfeltet) og åpner favoritten direkte, uten å lete gjennom listen.
+- Ny "Gi tilbakemelding"-funksjon — send inn kategori (mel/feil/forslag/annet) + melding, med versjon og gjeldende innstillinger sendt med automatisk. Lagres delt via Netlify Blobs, med en egen liste du kan se og merke som løst inne i appen.
+
+*English (July 2026):*
+- Favorite-marking of saved doughs (★ on the card in My doughs) — only one at a time. A new "★ My favorite" button appears in the side panel (and the mobile top bar) and opens the favorite directly, without hunting through the list.
+- New "Give feedback" feature — submit a category (flour/bug/suggestion/other) + message, with the version and current settings sent along automatically. Stored shared via Netlify Blobs, with its own list you can view and mark as resolved inside the app.
+
+### v0.480
+- Hurtigdeig utvidet fra 2–10 til 2–16 timer — de tre nye alternativene (12/14/16t) er kalibrert for et kjøligere kjøkken (18–20°C), etter research som viser at dette er helt vanlig praksis ved lavere romtemperatur.
+- Beskrivelsen er endret fra "uten kjøleskapsheving" til "romtemperatur", siden det er det som faktisk kjennetegner metoden.
+- Nytt varsel hvis du velger en lang hurtigdeig-variant (12t+) samtidig som romtemperaturen er stilt til 22°C eller høyere — de lange alternativene forutsetter et kjøligere kjøkken enn det.
+
+*English (July 2026):*
+- Quick dough extended from 2–10 to 2–16 hours — the three new options (12/14/16h) are calibrated for a cooler kitchen (18–20°C), following research showing this is completely normal practice at lower room temperatures.
+- The description has changed from "without cold-proofing" to "room temperature", since that's what actually characterizes the method.
+- New alert if you pick a long quick-dough option (12h+) while room temperature is set to 22°C or higher — the long options assume a cooler kitchen than that.
+
+### v0.479
+- Caputo Pizzeria og Nuvola sitt gjæringstak økt fra hhv. 36t/40t til 48t, etter kryssjekk mot Maschmanns (norsk Caputo-distributør) — Doppio Zero sitt tak på 24t stemte allerede.
+- Mindre presiseringer i protein/styrke-tall for Couco og Manitoba Oro basert på samme kryssjekk.
+- Fikset en timing-illusjon: pille- og kortvalg (pizzatype, metode, meltype, gjærtype, kjøkkenmaskin, ovntype, timevalg, nullstill) oppdaterer nå tidsplanen umiddelbart i stedet for etter en liten forsinkelse — klikker du fort gjennom flere valg, henger ikke visningen lenger igjen på det forrige valget.
+
+*English (July 2026):*
+- Caputo Pizzeria and Nuvola's fermentation cap raised from 36h/40h respectively to 48h, after cross-checking with Maschmanns (the Norwegian Caputo distributor) — Doppio Zero's 24h cap was already correct.
+- Minor refinements to protein/strength figures for Couco and Manitoba Oro based on the same cross-check.
+- Fixed a timing illusion: pill and card choices (pizza type, method, flour type, yeast type, stand mixer, oven type, hour choice, reset) now update the schedule immediately instead of after a slight delay — click quickly through several choices and the display no longer lags behind on the previous one.
+
+### v0.478
+- Nytt valg: Meltype (Dallari, Caputo Doppio Zero/Pizzeria/Nuvola/Couco/Manitoba Oro) — basert på MENY sin meloversikt, med protein, styrke (W) og anbefalt fermenteringsvindu per mel.
+- Nytt varsel direkte øverst i Tidsplan hvis planlagt total gjæringstid ligger utenfor det valgte melets anbefalte vindu — for kort tid gir dårlig glutenutvikling, for lang tid kan bryte ned gluten. Regner riktig uansett metode (dager for Standard/Poolish/Biga, timer for Hurtigdeig/Kveldsdeig/IngenElting).
+
+*English (July 2026):*
+- New choice: Flour type (Dallari, Caputo Doppio Zero/Pizzeria/Nuvola/Couco/Manitoba Oro) — based on MENY's flour overview, with protein, strength (W) and recommended fermentation window per flour.
+- New alert right at the top of Schedule if the planned total fermentation time falls outside the chosen flour's recommended window — too short gives poor gluten development, too long can break down gluten. Calculates correctly regardless of method (days for Standard/Poolish/Biga, hours for Quick dough/Evening dough/No-knead).
+
+### v0.477
+- Chicago: lagt til smør som egen ingrediens (12% av melvekten), i tillegg til oljen — etter sammenligning med flere anerkjente oppskrifter som viste at appen brukte 2–3× for lite fett for den karakteristiske flakete Chicago-skorpen.
+- Chicago: hydrering justert ned fra 59% til 55%, nærmere det som er vanlig i ekte deep dish-oppskrifter.
+- Gjærkurven for lange kaldhevinger (Standard/Poolish/Biga, 1–6 dager) er skalert ned ~25% — samme type justering som Kveldsdeig fikk, etter at sammenligning med AVPN-kilder viste at kurven lå i overkant for flerdagers kaldheving.
+- Ny forklaring i Teknikk om hvorfor Chicago har mer smør enn andre stiler, med valgfri "laminering"-teknikk for en ekstra flakete skorpe.
+
+*English (July 2026):*
+- Chicago: added butter as its own ingredient (12% of the flour weight), in addition to the oil — after comparing several respected recipes that showed the app was using 2–3× too little fat for the characteristic flaky Chicago crust.
+- Chicago: hydration adjusted down from 59% to 55%, closer to what's common in real deep dish recipes.
+- The yeast curve for long cold-proofs (Standard/Poolish/Biga, 1–6 days) has been scaled down ~25% — the same kind of adjustment Evening dough got, after comparing with AVPN sources showed the curve was running a bit high for multi-day cold proofing.
+- New explanation in Tips about why Chicago has more butter than other styles, with an optional "lamination" technique for an extra flaky crust.
+
+### v0.476
+- Salt for Napoletansk økt fra 2,5% til 2,8% (12,5g → 14g ved 500g mel) etter tilbakemelding om bedre smak ved høy steketemperatur.
+- Kveldsdeig utvidet til 5–24 timer (var 5–15t) — nye valg på 18 og 24 timer gir et ekte "kveld til neste kveld"-vindu, ikke bare korte varianter. Tempereringstiden øker til 2 timer for de lengste variantene.
+
+*English (July 2026):*
+- Salt for Neapolitan raised from 2.5% to 2.8% (12.5g → 14g at 500g flour) after feedback about better flavor at high baking temperatures.
+- Evening dough extended to 5–24 hours (was 5–15h) — new options at 18 and 24 hours give a true "evening to next evening" window, not just short variants. The tempering time increases to 2 hours for the longest variants.
+
+### v0.475
+- Kveldsdeig: gjærmengden er redusert ca. 25% etter tilbakemelding om at den lå i overkant — mindre margin for overgjæring, spesielt i varmere kjøleskap.
+- Kveldsdeig: mindre skråsikker "hvorfor kaldt vann"-forklaring — presiserer at det handler om kontroll på deigtemperatur, ikke en påstand om at lunkent vann gir "ukontrollert" gjæring.
+
+*English (July 2026):*
+- Evening dough: the yeast amount has been reduced about 25% after feedback that it was running a bit high — less margin for over-fermentation, especially in warmer fridges.
+- Evening dough: less dogmatic "why cold water" explanation — clarifies that it's about controlling dough temperature, not a claim that lukewarm water gives "uncontrolled" fermentation.
+
+### v0.474
+- Ny metode: Kveldsdeig — 5–15 timer i kjøleskapet, mellom Hurtigdeig (samme dag, romtemperatur) og Standard (flere dagers planlegging). Bland om kvelden, stek neste dag.
+- Bruker kaldt vann i blandefasen (ikke lunkent som Hurtigdeig), for bedre kontroll på gjæringen før kjøleskapet kjøler ned deigen.
+- Egen gjærkurve for kort kaldheving, og kortere temperering (90 min) enn Standard-metodens 4 timer siden deigen ikke har vært kald like lenge.
+
+*English (July 2026):*
+- New method: Evening dough — 5–15 hours in the fridge, between Quick dough (same day, room temperature) and Standard (several days' planning). Mix in the evening, bake the next day.
+- Uses cold water in the mixing phase (not lukewarm like Quick dough), for better control of fermentation before the fridge cools the dough down.
+- Its own yeast curve for short cold-proofing, and shorter tempering (90 min) than the Standard method's 4 hours since the dough hasn't been cold as long.
+
+### v0.473
+- Ny "rund opp"-knapp for Langpanne/IngenElting — dukker kun opp når melmengden din gir en ujevnt fylt langpanne, og foreslår nøyaktig hvor mye ekstra mel som trengs for å fylle den helt. Endrer aldri noe automatisk — du må selv trykke.
+
+*English (July 2026):*
+- New "round up" button for Sheet pan/No-knead — only appears when your flour amount gives an unevenly filled sheet pan, and suggests exactly how much extra flour is needed to fill it completely. Never changes anything automatically — you have to tap it yourself.
+
+### v0.472
+- Varsel ved fare for overfermentering — dukker opp i Teknikk ved lang gjæringstid, og regner med forgjæringen i poolish/biga (ikke bare kjøleskapsdager alene).
+- Steg som er passert i tid uten å være avhaket, får nå en tydelig "ikke avhaket"-markering.
+- Skriftstørrelse flyttet til "Denne deigen" som en enkel +/− -knapp, med en snarveiknapp ("Aa") og et to-fingers sveip opp/ned for rask justering på mobil.
+- Kun én Nullstill-knapp igjen (var to) — den viser nå "velg pizzatype"-hintet på nytt, som om appen er helt fersk.
+- "IngenElting" er flyttet fra Metode til Pizzatype, siden den alltid gir samme resultat (fokaccia-aktig pannepizza) uansett hvilken metode som var valgt før.
+- Antall "pizzaer" for Langpanne og IngenElting viser nå riktig antall langpanner (beregnet fra formstørrelse), i stedet for å late som de er runde enkeltpizzaer.
+- Bytter du pizzatype, dukker det opp en kort, corny animasjon som bekrefter valget.
+- Varselbjelken for aktive deiger øverst i vinduet er fjernet — telling ligger fortsatt i sidepanelet og mobiltoppfeltet.
+- "Lagre deig"-knappen har samme nøytrale stil som resten av knapperaden, i stedet for å skille seg ut i grønt.
+
+*English (July 2026):*
+- Alert when there's a risk of over-fermentation — appears in Tips at long fermentation times, and counts the pre-ferment in poolish/biga (not just cold-proof days alone).
+- Steps that are past due without being checked off now get a clear "not checked off" marking.
+- Font size moved to "This dough" as a simple +/− button, with a shortcut button ("Aa") and a two-finger swipe up/down for quick adjustment on mobile.
+- Only one Reset button left (there were two) — it now shows the "pick a pizza type" hint again, as if the app were brand new.
+- "No-knead" has moved from Method to Pizza type, since it always gives the same result (focaccia-like pan pizza) regardless of which method was selected before.
+- The number of "pizzas" for Sheet pan and No-knead now shows the correct number of sheet pans (calculated from pan size), instead of pretending they're round individual pizzas.
+- Switch pizza type and a short, corny animation pops up to confirm the choice.
+- The alert bar for active doughs at the top of the window has been removed — the count is still in the side panel and mobile top bar.
+- The "Save dough" button has the same neutral style as the rest of the button row, instead of standing out in green.
+
+### v0.471
+- Nytt valg: Kjøkkenmaskin (Ankarsrum / Manuell elting / Annen maskin) — instruksjonene i tidsplanen og Teknikk-fanen tilpasser seg faktisk til valget, ikke bare tekst/etiketter.
+- Manuell elting skiller mellom vanlig "press, brett, drei"-teknikk og fransk elting (slap-and-fold) ved høy hydrering, siden våt deig ikke lar seg elte for hånd på vanlig vis.
+- Ny forklaring i Teknikk om vanntemperatur tilpasset kjøkkenmaskin — vanlige kjøkkenmaskiner tilfører mye mer friksjonsvarme enn Ankarsrum/håndelting, og trenger derfor kaldere vann for å nå samme deigtemperatur.
+- Gjærtype, Kjøkkenmaskin og Ovntype bruker nå samme visuelle stil (piller) i sidepanelet, i stedet for to ulike stiler som før.
+
+*English (July 2026):*
+- New choice: Stand mixer (Ankarsrum / Hand kneading / Other mixer) — the instructions in the schedule and the Tips tab actually adapt to the choice, not just the text/labels.
+- Hand kneading distinguishes between the usual "press, fold, turn" technique and French kneading (slap-and-fold) at high hydration, since wet dough can't be kneaded by hand the usual way.
+- New explanation in Tips about water temperature adapted to the stand mixer — regular stand mixers add much more friction heat than an Ankarsrum/hand kneading, and therefore need colder water to reach the same dough temperature.
+- Yeast type, Stand mixer and Oven type now use the same visual style (pills) in the side panel, instead of two different styles as before.
+
+### v0.470
+- Deiger kan lagres delt (Netlify Blobs) — lagre, åpne og fullfør samme deig fra flere enheter, sammen med familie/venner.
+- Notater er nå knyttet direkte til hver deig i stedet for en generell logg i nettleseren.
+- Steg i tidsplanen kan hakes av, og fremdriften lagres sammen med deigen.
+- Ny "Deiger"-oversikt viser aktive og ferdige bakster, med varselbjelke og telling som viser hvor mange som er aktive.
+- Teknikk og Deiger åpnes nå som popup-vinduer i stedet for faner, og forstyrrer ikke tidsplanen du står i.
+- Alle handlingsknapper (Lagre, Mine deiger, Kopier, Vis/skjul forklaringer) samlet i én gruppe.
+- Meltype er fjernet som eget valg — informasjon om meltyper og vannmengde ligger nå i Teknikk.
+- Overskriften viser nå metode og antall pizzaer tydelig, og hovedvinduet er tonet ned til du gjør ditt første valg.
+
+*English (July 2026):*
+- Doughs can be saved shared (Netlify Blobs) — save, open and finish the same dough from several devices, together with family/friends.
+- Notes are now tied directly to each dough instead of a general log in the browser.
+- Steps in the schedule can be checked off, and the progress is saved along with the dough.
+- New "Doughs" overview shows active and finished bakes, with an alert bar and count showing how many are active.
+- Tips and Doughs now open as popup windows instead of tabs, and don't disturb the schedule you're on.
+- All action buttons (Save, My doughs, Copy, Show/hide explanations) gathered into one group.
+- Flour type has been removed as a separate choice — information about flour types and water amount is now in Tips.
+- The heading now clearly shows method and number of pizzas, and the main window is toned down until you make your first choice.
