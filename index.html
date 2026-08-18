@@ -1145,7 +1145,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="engine.js?v=1"></script>
 <script src="guide.js?v=1"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishAndel:0.5,poolishPauseH:0,kaldBulk:false,sammaltPct:0,sammaltType:'rug',meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,gjaerTilstand:'fersk',gjaerStyrkePct:100,showHelp:true,showSubsteps:false};
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishAndel:0.5,poolishPauseH:0,kaldBulk:false,kveldHvile:true,sammaltPct:0,sammaltType:'rug',meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,gjaerTilstand:'fersk',gjaerStyrkePct:100,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -2037,6 +2037,7 @@ function applyMobTypeUI(){
   const cw=g('mob-cwrap');if(cw)cw.style.display=(isIE||!methodShowsColdSlider(S.method))?'none':'block';
   const kbw=g('mob-kaldbulk-wrap');if(kbw)kbw.style.display=(!isIE&&S.method==='standard')?'block':'none';
   try{ renderKaldBulkToggle(); }catch(e){}
+  try{ renderKveldHvileToggle(); }catch(e){}
   try{ renderSammaltUI(); }catch(e){}
   const fjg=g('mob-gfridge-group');if(fjg)fjg.style.display=(isIE||!methodUsesFridge(S.method))?'none':'block';
   const gkw=g('mob-gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
@@ -3536,13 +3537,21 @@ function kveldSteps(anchor){
   // F13/F17: gjæren leses fra recipeFor() (KCOLDMULT × fridgeYeastMult) i stedet
   // for en lokal duplikat-utregning — samme kilde som oppskriftsfanen og kopien.
   const ya=yLabelFor(recipeFor());
+  // v0.829 (valgt av to skisserte alternativer): bulkhvile mellom elting og
+  // forming, PÅ som standard. Meldt inn via ekstern gjennomgang: deigen gikk
+  // fra eltekrok via runding rett i kulda, uten ett varmt minutt som samlet
+  // deig — glutenet fikk ikke slappe av, og kaldhevingen startet fra null.
+  // 40 min ved romtemperatur teller omtrent som 3–4 timer i kjøleskapet
+  // (Q10). Bryteren er S.kveldHvile (i DEF → lagres med deigen); «rekker
+  // ikke»-varselet i spis kl.-modus tilbyr å droppe hvilen med ett trykk.
+  const HVILE_MIN=S.kveldHvile?40:0;
   const MIX_DUR=15, FORM_DUR=15, KVELD_MIN=kh*60, TEMPER_MIN=kh<=15?90:120;
   // v0.824: kickstarten foerst — doed gjaer skal oppdages i kveld, ikke i
   // morgen tidlig naar deigen ikke har hevet i kjoleskapet.
-  const total=KICK_DUR+MIX_DUR+FORM_DUR+KVELD_MIN+TEMPER_MIN;
+  const total=KICK_DUR+MIX_DUR+HVILE_MIN+FORM_DUR+KVELD_MIN+TEMPER_MIN;
   const t0=ie?sM(anchor,total):anchor;
   const yw=kickVannG(), mixAt=aM(t0,KICK_DUR);
-  const formAt=aM(mixAt,MIX_DUR), coldAt=aM(formAt,FORM_DUR), temperAt=aM(coldAt,KVELD_MIN), bakeAt=aM(temperAt,TEMPER_MIN);
+  const hvileAt=aM(mixAt,MIX_DUR), formAt=aM(hvileAt,HVILE_MIN), coldAt=aM(formAt,FORM_DUR), temperAt=aM(coldAt,KVELD_MIN), bakeAt=aM(temperAt,TEMPER_MIN);
   const p=pc();
   const steps=[
     kickstartStep(t0, yw, r.water-yw, ya),
@@ -3561,6 +3570,14 @@ function kveldSteps(anchor){
       ],
       why:L('Kaldt vann gjør det enklere å holde ønsket deigtemperatur og gir mer kontroll på gjæringen før kjøleskapet kjøler den ned.','Cold water makes it easier to hold the target dough temperature and gives more control over fermentation before the fridge cools it down.'),
       tip:L('Deigtemperatur etter elting bør ligge på 20–22°C — litt kaldere enn standardmetoden er helt greit her, siden kjøleskapet uansett overtar snart.','Dough temperature after kneading should be 20–22°C — a bit colder than the standard method is perfectly fine here, since the fridge takes over soon anyway.')},
+    ...(S.kveldHvile?[{title:'Hvile i bollen',loc:'benk',at:hvileAt,dur:HVILE_MIN,passive:true,
+      desc:L(`La deigen hvile tildekket i bollen i ca. ${HVILE_MIN} minutter før du ${N('former den til et emne','deler den i emner')}.`,`Let the dough rest covered in the bowl for about ${HVILE_MIN} minutes before you ${N('shape it into a ball','divide it into balls')}.`),
+      substeps:[
+        L('Dekk bollen med lokk eller plast','Cover the bowl with a lid or plastic wrap'),
+        L(`La deigen stå på benken i ca. ${HVILE_MIN} minutter`,`Let the dough sit on the counter for about ${HVILE_MIN} minutes`)
+      ],
+      why:L(`Glutenet slapper av, så ${N('emnet','emnene')} blir lettere å runde med godt spenn — og gjæringen får en varm start før kjøleskapet bremser den. ${HVILE_MIN} minutter ved romtemperatur teller omtrent som 3–4 timer i kjøleskapet.`,`The gluten relaxes, so ${N('the ball is','the balls are')} easier to round with good tension — and fermentation gets a warm start before the fridge slows it down. ${HVILE_MIN} minutes at room temperature counts for roughly 3–4 hours in the fridge.`),
+      tip:L('Trangt om tiden i kveld? Hvilen kan slås av under metodevalget — da går deigen rett fra elting til forming, slik Kveldsdeig gjorde før.','Short on time tonight? The rest can be turned off under the method choice — then the dough goes straight from kneading to shaping, the way Evening dough used to.')}]:[]),
     {title:'Form emner → kjøleskap',loc:'kjol',at:formAt,dur:FORM_DUR,
       desc:L(`Del i ${p.count} emne${p.count>1?'r':''} à ca. ${p.perPizza}g. Rund godt med begge hender. Legg i ${p.count>1?'oljede bokser':'oljet boks'} med tett lokk. Sett rett i kjøleskap.`,`Divide into ${p.count} ball${p.count>1?'s':''} of about ${p.perPizza}g${p.count>1?' each':''}. Round well with both hands. Place in ${p.count>1?'oiled containers with tight lids':'an oiled container with a tight lid'}. Put straight into the fridge.`),
       needs:[L(`📦 ${p.count} boks${p.count>1?'er':''} m/lokk`,`📦 ${p.count} container${p.count>1?'s':''} w/lid${p.count>1?'s':''}`), L('🫒 litt olje','🫒 a little oil')],
@@ -6152,13 +6169,19 @@ function pastStartWarningHTML(){
   if(lateMs < 2*60000) return ''; // to minutters slingring, ellers maser den mens man skriver
   let dt=''; try{ dt=fDT(at); }catch(e){}
   let btn='';
+  // v0.829: er det bulkhvilen (40 min) som gjør at Kveldsdeig ikke rekker det,
+  // tilbys den ærlige utveien først — dropp hvilen, behold steketiden. Kun når
+  // det faktisk redder planen (forsinkelsen er mindre enn hvilen + slingringen).
+  if(S.method==='kveld' && S.kveldHvile && lateMs <= 42*60000){
+    btn+=`<div style="margin-top:.6rem"><button onclick="setKveldHvile(false)" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L('Dropp hvilen (40 min) — behold steketiden','Skip the rest (40 min) — keep the baking time')}</button></div>`;
+  }
   const eb=earliestBakeAt();
   if(eb){
     // Rund opp til neste kvarter med litt margin, så knappen gir et tidspunkt
     // som fortsatt holder når man faktisk trykker på den.
     const t=new Date(Math.ceil((eb.getTime()+5*60000)/(15*60000))*(15*60000));
     let tTxt=''; try{ tTxt=fDT(t); }catch(e){}
-    if(tTxt) btn=`<div style="margin-top:.6rem"><button onclick="applyAnchorShift('${t.toISOString()}')" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Spis ${escH(tTxt)} i stedet`,`Eat at ${escH(tTxt)} instead`)}</button></div>`;
+    if(tTxt) btn+=`<div style="margin-top:.6rem"><button onclick="applyAnchorShift('${t.toISOString()}')" style="padding:6px 12px;border:none;border-radius:8px;background:#e8590c;color:#fff;font-size:12px;font-weight:600;cursor:pointer">${L(`Spis ${escH(tTxt)} i stedet`,`Eat at ${escH(tTxt)} instead`)}</button></div>`;
   }
   return warningWrapHTML(`paststart|${dt}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
     <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:.3rem">${L('⏰ Oppstarten har allerede passert','⏰ The start time has already passed')}</div>
@@ -8215,6 +8238,29 @@ function setKaldBulk(kb){
   armStartDelta();
   S.kaldBulk=!!kb;
   renderKaldBulkToggle();
+  mobGen();
+}
+// v0.829: bulkhvile-velgeren for Kveldsdeig — samme toknapps-mønster som
+// kald bulk (renderKaldBulkToggle over). PÅ som standard; «rekker ikke»-
+// varselet (pastStartWarningHTML) tilbyr å slå den av med ett trykk.
+function renderKveldHvileToggle(){
+  const mBtn=document.getElementById('mob-kh-med-btn'), uBtn=document.getElementById('mob-kh-uten-btn');
+  const hint=document.getElementById('mob-kh-hint');
+  if(!mBtn||!uBtn) return;
+  const med=!!S.kveldHvile;
+  const on='flex:1;padding:8px;border-radius:8px;font-weight:600;font-size:12px;text-align:center;cursor:pointer;border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text)';
+  const av='flex:1;padding:8px;border-radius:8px;font-weight:400;font-size:12px;text-align:center;cursor:pointer;border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-faint)';
+  mBtn.style.cssText=med?on:av; uBtn.style.cssText=med?av:on;
+  mBtn.textContent=L('Med hvile (40 min)','With rest (40 min)');
+  uBtn.textContent=L('Rett i forming','Straight to shaping');
+  if(hint) hint.textContent=med
+    ?L('Deigen hviler tildekket i bollen før forming: glutenet slapper av og gjæringen får en varm start før kulda. Anbefalt — koster 40 minutter av kvelden.','The dough rests covered in the bowl before shaping: the gluten relaxes and fermentation gets a warm start before the cold. Recommended — costs 40 minutes of the evening.')
+    :L('Deigen går rett fra elting til forming og kjøleskap — korteste kveld, men emnene er strammere å runde og kaldhevingen starter fra null.','The dough goes straight from kneading to shaping and the fridge — shortest evening, but the balls are tighter to round and the cold proof starts from zero.');
+}
+function setKveldHvile(v){
+  armStartDelta();
+  S.kveldHvile=!!v;
+  renderKveldHvileToggle();
   mobGen();
 }
 function setPoolishCold(cold){
@@ -11231,6 +11277,13 @@ document.addEventListener('change', firstInteractionCheck, true);
       </div>
       <div id="mob-ksub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-krows" style="padding:.4rem 1rem;display:flex;flex-direction:column;gap:2px"></div>
+        <div id="mob-kveldhvile-wrap" style="padding:0 1rem .6rem">
+          <div style="display:flex;gap:7px">
+            <div id="mob-kh-med-btn" onclick="setKveldHvile(true)"></div>
+            <div id="mob-kh-uten-btn" onclick="setKveldHvile(false)"></div>
+          </div>
+          <div id="mob-kh-hint" style="font-size:10.5px;color:var(--forno-text-faint);line-height:1.5;margin-top:5px"></div>
+        </div>
       </div>
       <div id="mob-psub" style="display:none;background:var(--forno-bg-raised);border-bottom:1px solid var(--forno-border-soft)">
         <div id="mob-psub-lbl" style="padding:.5rem 1rem 0;font-size:10px;color:var(--forno-text-faint)">Poolish-varighet</div>

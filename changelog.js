@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.829",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kveldsdeig har fått en bulkhvile: deigen hviler nå ca. 40 minutter tildekket i bollen mellom elting og forming, før den går i kjøleskapet. Glutenet slapper av så emnene blir lettere å runde med godt spenn, og gjæringen får en varm start før kulda — 40 minutter på benken teller omtrent som 3–4 timer i kjøleskapet. Meldt inn via en ekstern gjennomgang: før gikk deigen fra eltekrok via runding rett i kulda, uten ett varmt minutt som samlet deig.",
+      "Hvilen er på som standard, men kan slås av med to knapper under metodevalget («Med hvile» / «Rett i forming») når kvelden er knapp — da er Kveldsdeig nøyaktig som før.",
+      "Og appen hjelper deg med regnestykket: planlegger du med «spis kl.» og hvilen gjør at oppstarten ikke rekkes, tilbyr varselet å droppe hvilen med ett trykk — men bare når det faktisk redder steketiden."
+    ],
+    "changes_en": [
+      "Evening dough has gained a bulk rest: the dough now rests about 40 minutes covered in the bowl between kneading and shaping, before going into the fridge. The gluten relaxes so the balls are easier to round with good tension, and fermentation gets a warm start before the cold — 40 minutes on the counter counts for roughly 3–4 hours in the fridge. Reported via an external review: before, the dough went from dough hook via rounding straight into the cold, without a single warm minute as one dough.",
+      "The rest is on by default, but can be turned off with two buttons under the method choice (\"With rest\" / \"Straight to shaping\") when the evening is short — then Evening dough is exactly as before.",
+      "And the app helps with the arithmetic: if you plan with \"eat at\" and the rest means you can't make the start time, the warning offers to skip the rest with one tap — but only when that actually saves the baking time."
+    ]
+  },
+  {
     "v": "0.828",
     "d": "august 2026",
     "d_en": "August 2026",

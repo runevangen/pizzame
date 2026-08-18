@@ -4136,7 +4136,7 @@ def _atferd_5(page, results):
       S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;
       try{ mobSetMode(uiMode()); }catch(e){}
       return {
-        kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1235, // v0.824: +5 min kickstart
+        kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1275, // v0.824: +5 kickstart · v0.829: +40 bulkhvile
         hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===980,
         standardNoFit: byM.standard&&!byM.standard.best&&byM.standard.minSpan===1545,
         ranked, startOk,
@@ -4267,10 +4267,12 @@ def _atferd_5(page, results):
       applyWindowCandidate(cKeep.method,cKeep.key,cKeep.best.val);
       const bakeKept=document.getElementById('mob-ed').value==='2026-08-06'
                   && document.getElementById('mob-et').value==='18:00';
-      // sivilisert tilfelle: 21:00 → 18:00 (21t) gir kveldsdeig 18t (20t30m
-      // inkl. 30 min elting/forming) med oppstart 21:30 — utenfor natta.
-      setUp('2026-08-05T21:00','2026-08-06','18:00');
-      const cDay=windowCandidates(new Date('2026-08-06T18:00'),21*60).filter(x=>x.best);
+      // sivilisert tilfelle: 20:30 → 18:00 (21t30m) gir kveldsdeig 18t (21t15m
+      // inkl. kickstart, bulkhvile og elting/forming) med oppstart 20:45 —
+      // utenfor natta. (v0.829: vinduet utvidet 30 min da bulkhvilen kom inn i
+      // kjeden — intensjonen er uendret: toppkandidaten skal være en dagstart.)
+      setUp('2026-08-05T20:30','2026-08-06','18:00');
+      const cDay=windowCandidates(new Date('2026-08-06T18:00'),21*60+30).filter(x=>x.best);
       const hDay=document.getElementById('mob-winres').innerHTML;
       const topIsDay=cDay.length&&!cDay[0].night;
       const noBadgeOnTop=topIsDay && hDay.indexOf('maks smak')>=0;
@@ -9681,6 +9683,69 @@ const svSched=window._pizzatidSchedule;
     }""")
     ok185 = all(r185.values())
     results.append(('checked_step_offers_to_reanchor_the_plan', ok185, r185))
+
+    # v0.829: bulkhvile i Kveldsdeig (alternativ A, valgt av Rune). Meldt inn
+    # via ekstern gjennomgang: deigen gikk fra eltekrok via runding rett i
+    # kulda uten ett varmt minutt som samlet deig. Naa: passivt 40-minutters
+    # «Hvile i bollen» mellom elting og forming, PAA som standard
+    # (S.kveldHvile i DEF → lagres med deigen), toknapps-velger i metodevalget
+    # (kaldBulk-moensteret), og «rekker ikke»-varselet tilbyr aa droppe hvilen
+    # med ett trykk — men BARE naar det faktisk redder steketiden (<=42 min
+    # for sent). Kjeden avhenger kun av S, aldri av veggklokka (bevisst valg
+    # mot alternativ B — en klokkestyrt kjede ville restrukturert planen
+    # midt i baket). Memo-noekkelen i currentFermentLoad maa kjenne bryteren
+    # (v0.822-laerdommen).
+    r186 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      setLayout('mob');
+      S.type='napoletana'; S.method='kveld'; S.kveldH=10; S.mel=500; S.hydro=65;
+      S.temp=22; S.fridgeC=3; S.gjaer='torr'; S.mode='start';
+      window._planChosen=true; window._checked=new Set();
+      ut.standardPaa = DEF.kveldHvile===true && SETUP_FIELDS.includes('kveldHvile');
+      const a=new Date('2026-08-25T21:30:00');
+      const med=kveldSteps(a).steps;
+      const hvIdx=med.findIndex(s=>s.title==='Hvile i bollen');
+      ut.hvilePlassert = med.length===8 && hvIdx===2 && med[hvIdx].passive===true
+        && med[hvIdx].dur===40 && med[1].title.includes('bland deig')
+        && med[3].title==='Form emner → kjøleskap';
+      S.kveldHvile=false;
+      const uten=kveldSteps(a).steps;
+      ut.utenHvile = uten.length===7 && !uten.some(s=>s.title==='Hvile i bollen');
+      ut.skyver40 = (new Date(med[med.length-1].at)-new Date(uten[uten.length-1].at))/60000===40;
+      S.kveldHvile=true;
+      const l1=currentFermentLoad(); S.kveldHvile=false; const l2=currentFermentLoad(); S.kveldHvile=true;
+      ut.lastSkiller = l1!==null && l2!==null && l1!==l2;
+      mobShowTab('settings'); applyMobTypeUI();
+      ut.velgerSynlig = document.getElementById('mob-ksub').style.display!=='none'
+        && document.getElementById('mob-kh-med-btn').textContent.includes('40');
+      setKveldHvile(false);
+      ut.velgerVirker = S.kveldHvile===false;
+      setKveldHvile(true);
+      // «rekker ikke»-varselet: steketid satt saa oppstarten er ~20 min i
+      // fortiden — dropp-knappen skal vises, og et klikk skal redde planen.
+      S.mode='end'; mobShowTab('plan');
+      const tot=5+15+40+15+10*60+90;
+      const sett=(minSlakk)=>{
+        const bake=new Date(Date.now()+(tot+minSlakk)*60000);
+        document.getElementById('mob-ed').value=fd(bake);
+        document.getElementById('mob-et').value=fT(bake);
+        mobGen();
+        return document.getElementById('mob-plan-content').innerHTML;
+      };
+      const h1=sett(-20);
+      ut.varselMedDropp = /Oppstarten har allerede passert/.test(h1) && /Dropp hvilen \\(40 min\\)/.test(h1);
+      setKveldHvile(false);
+      const h2=document.getElementById('mob-plan-content').innerHTML;
+      ut.droppRedder = S.kveldHvile===false && !/Oppstarten har allerede passert/.test(h2);
+      setKveldHvile(true);
+      const h3=sett(-70);
+      ut.forSentIngenDropp = /Oppstarten har allerede passert/.test(h3) && !/Dropp hvilen/.test(h3);
+      S.mode='start'; S.kveldHvile=true; mobGen();
+      return ut;
+    }""")
+    ok186 = all(r186.values())
+    results.append(('evening_dough_bulk_rest_default_on_with_honest_escape', ok186, r186))
 
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut

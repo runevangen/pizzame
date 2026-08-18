@@ -223,7 +223,7 @@ const GUIDE = [
         '<b>Poolish</b> — løs fordeig (12–16 t) for kompleks smak. Har en <b>❄️ Kjøleskap</b>-variant som gir langt friere tidspunkt, og en valgfri <b>🧊 Poolish kjøleskapspause</b> (se «Sjekk & varsler») for å få tiden til å gå opp.',
         '<b>Biga</b> — fast, tørr fordeig (16–24 t). Nøtteaktig smak og seigere struktur. Lages alltid for hånd.',
         '<b>Hurtigdeig</b> — samme dag, ingen lang kjøletid; mer gjær kompenserer for tiden. Starter med en <b>gjær-kickstart</b> (gjæren vekkes i litt lunkent vann med honning før melet).',
-        '<b>Kveldsdeig</b> — kortere kjøletid (5–24 timer, ikke dager). Elt i kveld, stek i morgen. Mer smak enn Hurtigdeig.',
+        '<b>Kveldsdeig</b> — kortere kjøletid (5–24 timer, ikke dager). Elt i kveld, la deigen hvile ca. 40 minutter i bollen (kan slås av om kvelden er knapp), form emner og sett i kjøleskap — stek i morgen. Mer smak enn Hurtigdeig.',
         '<b>Ingen elting</b> — ingen elting, ingen maskin. Rør med skje, la stå natten over.',
         '<b>Mania-poolish</b> — to-trinns oppskrift med fast fasit (64 % hydrering), ingen justerbare variabler.'
       ]},
