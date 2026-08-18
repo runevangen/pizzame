@@ -4947,13 +4947,12 @@ function renderGjaertest(){
       <span style="flex:1">
         <span style="display:block;font-size:13px;font-weight:600;color:var(--forno-text)">${L('Teste ny måte å regne ut gjærmengden','Test a new way of working out the yeast')}</span>
         <span style="display:block;font-size:11px;color:var(--forno-text-faint);line-height:1.5;margin-top:3px">${L(
-          // v0.762: si hva testen GJØR, ikke bare hvor den virker. Og si
-          // retningen — men ikke som «mindre gjær». Det er sant for Poolish og
-          // Biga, og GALT for Kveldsdeig, som får over dobbelt så mye. En tekst
-          // som lover en forsiktig nedjustering ville lært folk å la bryteren
-          // stå på i den ene metoden der den koster deg deigen.
-          `Regner gjæren etter hvor mye gjæringen rekker ved temperaturen deigen står i, i stedet for etter faste tabeller. På Poolish og Biga gir det mindre gjær — på Kveldsdeig gir det mer, ofte over det dobbelte. Du ser begge tallene og kan bake dem mot hverandre.`,
-          `Works out the yeast from how much fermentation happens at the temperature the dough sits at, instead of from fixed tables. On Poolish and Biga that means less yeast — on Evening dough it means more, often more than double. You see both numbers and can bake them against each other.`)}</span>
+          // v0.762: si hva testen GJØR, ikke bare hvor den virker — og
+          // retningen. v0.828: Kveldsdeig er tatt ut av registeret (Q10 var
+          // ren ekstrapolering der og ga dobbel gjærmengde — se METHODS), så
+          // retningen er nå entydig nedover og teksten kan si det rett ut.
+          `Regner gjæren etter hvor mye gjæringen rekker ved temperaturen deigen står i, i stedet for etter faste tabeller. På Poolish og Biga gir det mindre gjær — ofte halvparten. Du ser begge tallene og kan bake dem mot hverandre.`,
+          `Works out the yeast from how much fermentation happens at the temperature the dough sits at, instead of from fixed tables. On Poolish and Biga that means less yeast — often half. You see both numbers and can bake them against each other.`)}</span>
       </span>
     </div>
     ${on?`<div style="${boks}">${gjaertestStatusHTML()}</div>`:''}`;

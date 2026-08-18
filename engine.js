@@ -277,7 +277,14 @@ const METHODS={
   biga:    {no:'Biga',        en:'Biga',              noShort:'Biga',        enShort:'Biga',        coldSlider:true, smartPlan:true, fridgeTemp:true, yeastTest:true},
   mania:   {no:'Mania-poolish',en:'Mania poolish',    noShort:'Mania',       enShort:'Mania',       coldSlider:false,smartPlan:true, fridgeTemp:false},
   hurtig:  {no:'Hurtigdeig',  en:'Quick dough',       noShort:'Hurtigdeig',  enShort:'Quick',       coldSlider:false,smartPlan:true, fridgeTemp:false},
-  kveld:   {no:'Kveldsdeig',  en:'Evening dough',     noShort:'Kveldsdeig',  enShort:'Evening',     coldSlider:false,smartPlan:true, fridgeTemp:true, yeastTest:true},
+  // v0.828: Kveldsdeig tatt UT av gjærtesten. Q10-utfordreren ga +103–133%
+  // (18t: 0,90→1,83g) — men Q10_K er kalibrert der belastningen er 9,9–19,7
+  // ekvivalenttimer, og Kveldsdeig ligger på 3,9–6,1: ren ekstrapolering.
+  // Tre uavhengige spor peker mot tabellen: kveldgjæren ble alt redusert 25%
+  // etter ekte bak (v0.475), eksterne normtall for 18t kald ligger på 0,5–1g,
+  // og en ekstern gjennomgang flagget 1,83g som høyt. Skal spørsmålet
+  // gjenåpnes, må det BAKES (duell 0,9 mot 1,83) — da settes flagget tilbake.
+  kveld:   {no:'Kveldsdeig',  en:'Evening dough',     noShort:'Kveldsdeig',  enShort:'Evening',     coldSlider:false,smartPlan:true, fridgeTemp:true, yeastTest:false},
   ingenelting:{no:'Ingen elting',en:'No-knead',       noShort:'Ingen elting',enShort:'No-knead',    coldSlider:false,smartPlan:false,fridgeTemp:false}
 };
 

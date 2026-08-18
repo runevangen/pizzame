@@ -7013,8 +7013,13 @@ def _atferd_7(page, results):
       const lagresMedDeig = SETUP_FIELDS.includes('gjaertest');
 
       // Registeret bestemmer hvem som kan utfordres — ingen liste duplisert her.
+      // v0.828 (tilsiktet endring): Kveldsdeig UT av registeret. Q10-utfordreren
+      // ga +103–133% der, men var ren ekstrapolering (K kalibrert paa belastning
+      // 9,9–19,7 ekvivalenttimer, kveld ligger paa 3,9–6,1), og baade v0.475-
+      // empirien og eksterne normtall stoetter tabellen. Gjenaapnes kun ved aa
+      // BAKE duellen — da flyttes metoden tilbake hit.
       const kanUtfordres = Object.keys(METHODS).filter(methodAllowsYeastTest).sort();
-      const forventet = ['biga','kveld','poolish'];
+      const forventet = ['biga','poolish'];
       const registerStemmer = JSON.stringify(kanUtfordres)===JSON.stringify(forventet);
 
       const ut={};
@@ -7026,14 +7031,15 @@ def _atferd_7(page, results):
         ut[m]={av,paa,endret:av!==paa,harRad:rad.length===1,
                radTekst:rad.length?rad[0].v:null};
       }
-      // De tre skal endre seg OG ha sammenligningsrad; de tre andre ingen av delene.
+      // De to skal endre seg OG ha sammenligningsrad; de fire andre ingen av
+      // delene — kveld staar naa i nei-gruppen (v0.828).
       const endrerRiktige = forventet.every(m=>ut[m].endret && ut[m].harRad)
-                         && ['standard','mania','hurtig'].every(m=>!ut[m].endret && !ut[m].harRad);
+                         && ['standard','mania','hurtig','kveld'].every(m=>!ut[m].endret && !ut[m].harRad);
       // Raden må oppgi det gamle tallet, ikke bare en prosent uten referanse.
       const radViserBegge = forventet.every(m=>ut[m].radTekst && ut[m].radTekst.includes(String(ut[m].av)));
-      // Retningen: poolish/biga ned, kveld opp. Går en av dem feil vei, er noe galt
-      // i koblingen — kveld regnes et annet sted enn de to andre.
-      const retning = ut.poolish.paa<ut.poolish.av && ut.biga.paa<ut.biga.av && ut.kveld.paa>ut.kveld.av;
+      // Retningen: poolish/biga ned. (Kveld pekte opp — det var nettopp
+      // ekstrapoleringen som fikk den ut av registeret i v0.828.)
+      const retning = ut.poolish.paa<ut.poolish.av && ut.biga.paa<ut.biga.av;
 
       // F17: stegene må vise samme gjær som oppskriften, også med testen på.
       let stegStemmer=true;
@@ -7082,7 +7088,7 @@ def _atferd_7(page, results):
         'standardAv', 'lagresMedDeig', 'registerStemmer', 'endrerRiktige', 'radViserBegge',
         'retning', 'stegStemmer', 'kopiSierFra', 'kopiSierHvorMye', 'kopiHarBareEttTall',
         'kopiTierNårAv'])
-    results.append(('yeast_test_challenges_three_methods_off_by_default', ok119, r119))
+    results.append(('yeast_test_challenges_two_methods_off_by_default', ok119, r119))
 
     # v0.742: fem funn fra en gjennomgang av en generert plan (200g mel,
     # napoletansk, Langtidsdeig, pizzaovn). Alle fem er motsigelser mellom to
@@ -7392,13 +7398,13 @@ def _atferd_7(page, results):
       const tierOmGramUtenValg = !/\d+([.,]\d+)?g/.test(utenValg)
                               && /Slår inn når du har valgt/.test(utenValg);
 
-      // Og beskrivelsen må si retningen BEGGE veier. «Mindre gjær» alene er
-      // sant for Poolish og Biga og GALT for Kveldsdeig, som får over dobbelt
-      // så mye — nettopp metoden der en glemt bryter koster deg deigen.
+      // v0.828: Kveldsdeig er ute av registeret, saa retningen er entydig
+      // nedover — og beskrivelsen skal IKKE lenger love mer gjaer til kveld.
+      // (Foer v0.828 krevde denne begge retninger, fordi kveld pekte opp.)
       sett('poolish',true);
       const beskr=panel();
-      const sierBeggeRetninger = /mindre gjær/.test(beskr) && /gir det mer/.test(beskr)
-                              && /Kveldsdeig/.test(beskr);
+      const sierBeggeRetninger = /mindre gjær/.test(beskr) && !/gir det mer/.test(beskr)
+                              && !/Kveldsdeig gir det mer/.test(beskr);
 
       // Ingen elting er det ene hullet etiketten IKKE kan tette: den sier at
       // Poolish er med, men testen virker likevel ikke. Den ene ekte

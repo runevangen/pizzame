@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.828",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Gjærtesten gjelder ikke lenger Kveldsdeig. Utfordrer-modellen (Q10) er kalibrert på Langtidsdeigens lange, romtempererte kjeder — for Kveldsdeigens nesten rene kaldtid var den ren ekstrapolering, og ga over dobbel gjærmengde (18 timer: 1,83 g mot tabellens 0,9 g). Både appens egen bake-erfaring og eksterne normtall støtter tabellen, som en ekstern gjennomgang nå også påpekte.",
+      "Kveldsdeig bruker dermed alltid den uttestede tabellen, uansett om gjærtest-bryteren står på. For Poolish og Biga virker testen som før — der peker den nedover, og spørsmålet er fortsatt åpent til det er bakt."
+    ],
+    "changes_en": [
+      "The yeast test no longer applies to Evening dough. The challenger model (Q10) is calibrated on the Long-ferment method's long, room-temperature chains — for Evening dough's almost pure cold time it was pure extrapolation, giving more than double the yeast (18 hours: 1.83g vs the table's 0.9g). Both the app's own baking experience and external reference amounts support the table, as an external review now also pointed out.",
+      "Evening dough therefore always uses the proven table, regardless of the yeast-test switch. For Poolish and Biga the test works as before — there it points downward, and the question stays open until it has been baked."
+    ]
+  },
+  {
     "v": "0.827",
     "d": "august 2026",
     "d_en": "August 2026",
