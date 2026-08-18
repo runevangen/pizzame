@@ -9378,6 +9378,85 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('finished_card_buttons_wrap_below_instead_of_squeezing_text', ok178, r178))
 
+    # v0.822: kald bulk-variant av Langtidsdeig (Pizzamani-moensteret): 2t bulk
+    # rom -> S.cold timer kaldt I BULK -> forme kald deig -> lang etterheving
+    # (8t ved 22°) -> stek. Fryser: kjedens rekkefoelge og varigheter, tf-
+    # skalering av begge romfasene (18° -> ×1,6), ankertreff i end-modus,
+    # at Q10-integralet gir MINDRE gjaer enn emne-varianten (flere romtimer =
+    # mer last -> mindre gjaer, helt uten egen kurve), at standardvarianten er
+    # uendret, og at UI-bryteren kun vises for Langtidsdeig.
+    r180 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no';
+      S.type='napoletana'; S.method='standard'; S.mel=500; S.hydro=65; S.cold=48;
+      S.temp=22; S.gjaer='torr'; S.kjokkenmaskin='ankarsrum'; S.fridgeC=3;
+      S.gjaerTilstand='fersk'; S.mode='end'; S.gjaertest=false; S.sammaltPct=0;
+      const anchor=new Date('2026-08-22T17:00:00');
+      S.kaldBulk=false; const yStd=recipeFor().yDry; const stdN=stepsForAnchor(anchor).length;
+      S.kaldBulk=true;  const yKB=recipeFor().yDry; const st=stepsForAnchor(anchor);
+      const titler=st.map(x=>x.title);
+      const dur=t=>{const x=st.find(s=>s.title.startsWith(t)); return x?x.dur:null;};
+      const kjede=st.filter(s=>s.dispLoc!=='ovn');
+      let mono=true;
+      for(let i=0;i<kjede.length-1;i++){const e=new Date(kjede[i].at).getTime()+(kjede[i].dur||0)*60000;
+        if(Math.abs(e-new Date(kjede[i+1].at).getTime())>60000) mono=false;}
+      const siste=new Date(st[st.length-1].at);
+      S.temp=18; const eh18=(stepsForAnchor(anchor).find(s=>s.title.startsWith('Etterheving'))||{}).dur;
+      S.temp=22;
+      setLayout('mob'); applyMobTypeUI();
+      const wrap=document.getElementById('mob-kaldbulk-wrap');
+      const uiStd=wrap&&wrap.style.display!=='none';
+      S.method='poolish'; applyMobTypeUI();
+      const uiPoolish=wrap.style.display!=='none';
+      S.method='standard'; S.kaldBulk=false; applyMobTypeUI();
+      return { rekkefoelge: titler.join('|'),
+               bulk:dur('Bulk-heving'), kald:dur('Kjøleskapsheving'), eh:dur('Etterheving'),
+               eh18, mono, anker: siste.getHours()===17&&siste.getMinutes()===0,
+               yStd, yKB, stdN };
+    }""")
+    ok180 = (
+      r180['rekkefoelge'] == 'Ankarsrum — bland og autolyse|Tilsett gjær og salt — elt ferdig|Bulk-heving i romtemperatur|Kjøleskapsheving i bulk|Form emner (kald deig)|Etterheving (8 t)|Sett på ovnen 🔥|Strekk og stek 🔥' and
+      r180['bulk'] == 120 and r180['kald'] == 2880 and r180['eh'] == 480 and
+      r180['eh18'] == 768 and r180['mono'] and r180['anker'] and
+      r180['yKB'] < r180['yStd'] and r180['yStd'] == 0.75 and r180['yKB'] == 0.53 and
+      r180['stdN'] == 8
+    )
+    results.append(('cold_bulk_variant_chains_correctly_and_q10_adapts_yeast', ok180, r180))
+
+    # v0.823: sammalt-innslag i melblandingen (Pizzamani-signaturen: ~10 % fin
+    # sammalt rug/emmer). VISNINGSDELING av samme total: mel-raden viser
+    # blandingen, stegprosaen beholder totalen (sann — du tilsetter
+    # blandingen), grunnmelets vindu styrer planen. Fryser: 0 % identisk med
+    # foer, delingen summerer til totalen, begge typene navngis, Mania er
+    # unntatt, og typevelgeren vises kun naar et innslag er valgt.
+    r181 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no';
+      S.type='napoletana'; S.method='standard'; S.mel=500;
+      const rad=()=>baseIngredientRows({mel:S.mel,vann:325,hydro:65,salt:14,gjaer:'1g'})[0].v;
+      S.sammaltPct=0; const r0=rad();
+      S.sammaltPct=10; S.sammaltType='rug'; const r10=rad();
+      S.sammaltPct=15; S.sammaltType='emmer'; const r15=rad();
+      const sp=sammaltSplitt(500);
+      S.method='mania'; const rM=rad(); S.method='standard';
+      setLayout('mob'); applyMobTypeUI();
+      const typeSynlig=document.getElementById('mob-gsamt-row').style.display!=='none';
+      S.sammaltPct=0; renderSammaltUI();
+      const typeSkjult0=document.getElementById('mob-gsamt-row').style.display==='none';
+      S.method='mania'; renderSammaltUI();
+      const skjultMania=document.getElementById('mob-sammalt-wrap').style.display==='none';
+      S.method='standard'; S.sammaltPct=0; renderSammaltUI();
+      return { r0, r10, r15, rM, sum: sp?sp.basis+sp.sam:null,
+               typeSynlig, typeSkjult0, skjultMania };
+    }""")
+    ok181 = (
+      r181['r0'] == '500g' and r181['r10'] == '450g + 50g sammalt rug' and
+      r181['r15'] == '425g + 75g sammalt emmer' and r181['rM'] == '500g' and
+      r181['sum'] == 500 and r181['typeSynlig'] and r181['typeSkjult0'] and
+      r181['skjultMania']
+    )
+    results.append(('wholemeal_share_splits_the_flour_row_and_spares_mania', ok181, r181))
+
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut
     # resten.») som overskrift, appnavnet som liten etikett over. Fryser begge

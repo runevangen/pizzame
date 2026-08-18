@@ -596,8 +596,9 @@ function fermentLoadHours(steps){
 let _q10Busy=false,_q10Memo={k:null,v:null};
 function currentFermentLoad(){
   if(_q10Busy) return null;
+  // v0.822: kaldBulk endrer stegkjeden (og dermed lasten) for Langtidsdeig.
   const key=[S.method,S.type,S.cold,S.temp,S.fridgeC,S.poolishH,S.poolishPauseH,
-             S.poolishCold,S.bigaH,S.kveldH,S.hurtigH,S.mode].join('|');
+             S.poolishCold,S.bigaH,S.kveldH,S.hurtigH,S.mode,S.kaldBulk].join('|');
   if(_q10Memo.k===key) return _q10Memo.v;
   _q10Busy=true;
   let v=null;

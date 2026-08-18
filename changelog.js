@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.822",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Langtidsdeig har fått en variant: «Kald bulk» (etter Pizzamanis mønster). Deigen kjøles samlet i én boks, formes til emner ETTER kjøleskapet — kald deig er fastere og lettere å runde stramt — og får en lang etterheving (ca. 8 timer ved 22°C). Det gir svært strekkbare emner og et bredt stekevindu: ferdighevde emner med så lite gjær holder seg i timevis. Velges under Kjøleskapsheving i Finjuster; gjærmengden regnes om automatisk av samme gjæringsmodell som ellers.",
+      "Ny innstilling under Meltype: «Sammalt innslag» — 5, 10 eller 15 % fin sammalt rug eller emmer i melblandingen, for smak og sprøhet (10 % er Pizzamanis klassiske andel). Melraden i oppskriften viser blandingen («450g + 50g sammalt rug»), totalen er uendret, og grunnmelets gjæringsvindu styrer fortsatt planen. Skalaen stopper på 15 % fordi sammalt svekker gluten. Mania-poolish følger kildeoppskriften sin og er unntatt fra begge."
+    ],
+    "changes_en": [
+      "Long-ferment dough has a new variant: \"Cold bulk\" (after Pizzamani's pattern). The dough is chilled whole in one container, shaped into balls AFTER the fridge — cold dough is firmer and easier to round tightly — and gets a long final proof (about 8 hours at 22°C). That gives very stretchable balls and a wide baking window: fully proofed balls with this little yeast keep for hours. Chosen under Cold fermentation in Fine-tune; the yeast amount is recalculated automatically by the same fermentation model as everything else.",
+      "New setting under Flour type: \"Wholemeal share\" — 5, 10 or 15% fine wholemeal rye or emmer in the flour blend, for flavour and crispness (10% is Pizzamani's classic share). The flour row in the recipe shows the blend (\"450g + 50g wholemeal rye\"), the total is unchanged, and the base flour's fermentation window still governs the plan. The scale stops at 15% because wholemeal weakens gluten. Mania poolish follows its source recipe and is exempt from both."
+    ]
+  },
+  {
     "v": "0.821",
     "d": "august 2026",
     "d_en": "August 2026",
