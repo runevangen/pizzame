@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.824",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Gjær-kickstarten (vekk gjæren i litt lunkent vann med honning) finnes nå også i Langtidsdeig og Kveldsdeig — død gjær skal avsløres før melet er brukt, ikke når hevingen uteblir timer eller et døgn senere. I Langtidsdeig gjøres den mens autolysen hviler og koster null ekstra tid; i Kveldsdeig ligger den først og legger fem minutter til planen.",
+      "Varmeregnskapet er med: det lunkne kickstartvannet bokføres i varmebalansen, så anbefalt vanntemperatur i blandesteget er justert tilsvarende ned (typisk et par grader). Deigen lander fortsatt på målet.",
+      "Poolish, Biga og Mania trenger ingen kickstart — fordeigen er selv gjærtesten. Det står nå eksplisitt i stegene: boblene (og bigaens heving) er samtidig kvitteringen på at gjæren lever."
+    ],
+    "changes_en": [
+      "The yeast kickstart (wake the yeast in a little lukewarm water with honey) now also exists in Long-ferment dough and Evening dough — dead yeast should be exposed before the flour is used, not when the rise fails to appear hours or a day later. In Long-ferment dough it is done while the autolyse rests and costs zero extra time; in Evening dough it comes first and adds five minutes to the plan.",
+      "The heat accounting comes along: the lukewarm kickstart water is booked in the heat balance, so the recommended water temperature in the mixing step is adjusted down accordingly (typically a couple of degrees). The dough still lands on target.",
+      "Poolish, Biga and Mania need no kickstart — the preferment is itself the yeast test. The steps now say so explicitly: the bubbles (and the biga's rise) double as your receipt that the yeast is alive."
+    ]
+  },
+  {
     "v": "0.823",
     "d": "august 2026",
     "d_en": "August 2026",

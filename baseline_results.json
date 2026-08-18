@@ -19,9 +19,10 @@
       "title": "Strekk og stek 🔥",
       "iso": "2026-08-03T17:45:00.000Z"
     },
-    "stepCount": 8,
+    "stepCount": 9,
     "stepTitles": [
       "Ankarsrum — bland og autolyse",
+      "Vekk gjæren (kickstart)",
       "Tilsett gjær og salt — elt ferdig",
       "Romtemperaturheving",
       "Form emner → kjøleskap",
@@ -212,15 +213,16 @@
       "yFresh": 2.3
     },
     "firstStep": {
-      "title": "Ankarsrum — bland deig",
+      "title": "Vekk gjæren (kickstart)",
       "iso": "2026-08-01T16:00:00.000Z"
     },
     "lastStep": {
       "title": "Strekk og stek 🔥",
-      "iso": "2026-08-02T04:00:00.000Z"
+      "iso": "2026-08-02T04:05:00.000Z"
     },
-    "stepCount": 6,
+    "stepCount": 7,
     "stepTitles": [
+      "Vekk gjæren (kickstart)",
       "Ankarsrum — bland deig",
       "Form emner → kjøleskap",
       "Kjøleskapsheving (10t)",

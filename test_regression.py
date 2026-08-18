@@ -1093,7 +1093,7 @@ def _atferd_1(page, results):
       return { mobChips, pcChips, stdChips };
     }""")
     ok25 = (
-      r25['mobChips'] == ['💧 325g vann', '🫙 1.01g tørrgjær', '🌾 500g mel', '🧂 14g salt'] and
+      r25['mobChips'] == ['🫙 1.01g tørrgjær', '💧 20g lunkent vann', '🍯 1 ts honning'] and # v0.824: kickstarten foerst
       r25['pcChips'] == r25['mobChips'] and
       len(r25['stdChips']) > 0
     )
@@ -1246,7 +1246,7 @@ def _atferd_2(page, results):
     # `kveld`-baselinen, som er stedet det hører hjemme.
     ok27 = (
       r27['n'] >= 5 and r27['descsBefore'] == r27['n'] and r27['substepLists'] == r27['n'] and
-      r27['descsAfter'] == 0 and r27['firstItems'] == 4
+      r27['descsAfter'] == 0 and r27['firstItems'] == 3 # v0.824: foerste steg er kickstarten (3 understeg)
     )
     results.append(('substep_coverage_extended_to_kveldsdeig', ok27, r27))
 
@@ -3942,15 +3942,20 @@ def _atferd_5(page, results):
         // foelger tallet. Testen fryser derfor tallet og krever i tillegg at
         // ordet stemmer med det: det var nettopp «kjolig eller romtemperert
         // vann (anbefalt ca. 4°C)» som ble meldt inn.
-        std22Has17: /\\b17°C\\b/.test(std22) && std22.includes('kjølig vann'),
+        // v0.824: kickstarten kom til Langtidsdeig — 20g av vannet holdes nå
+        // lunkent (41,5° midtpunkt) i varmebalansen, så restvannet må ned:
+        // (20·2,26045 − 19,8 − 0,08372·41,5)/1,27673 = 17,2 ved mål 24; med
+        // frasens mål 23 lander visningen på 15°C (var 17). Ordet følger med
+        // (15 ≤ 20 → fortsatt «kjølig vann»).
+        std22Has17: /\\b15°C\\b/.test(std22) && std22.includes('kjølig vann'),
         pl22Has4: /\\b4°C\\b/.test(pl22) && pl22.includes('rett fra kjøleskapet'),
         bg22Has14: /\\b14°C\\b/.test(bg22) && bg22.includes('kaldt vann fra springen'),
         // 26°C rom ga 9°C med den gamle formelen. Den vektet rom, mel og vann
         // likt (1/3 hver), men vannet er ~60 % av varmekapasiteten i en 65 %
         // deig — saa den overkompenserte i et varmt kjokken: 9°C vann gir
         // faktisk 19,8°C deig, ikke 23. 14°C treffer.
-        std26Has14: /\\b14°C\\b/.test(std26) && std26.includes('kaldt vann fra springen'),
-        annenHas10: /\\b10°C\\b/.test(stdAnnen) && stdAnnen.includes('kaldt vann fra springen'),
+        std26Has14: /\\b13°C\\b/.test(std26) && std26.includes('kaldt vann fra springen'), // v0.824: 14->13 (kick-leddet)
+        annenHas10: /\\b8°C\\b/.test(stdAnnen) && stdAnnen.includes('kaldt vann fra springen'), // v0.824: 10->8 (kick-leddet)
         // Og ingen av dem faar kalle vann under 15 grader «romtemperert».
         ingenLoegn: [std22,pl22,bg22,std26,stdAnnen].every(d=>!/romtemperert vann/.test(d)),
         // v0.812: var 19°C. Kickstartens 60g @ 40-43°C bokfores naa i
@@ -4125,7 +4130,7 @@ def _atferd_5(page, results):
       S.hurtigH=saved.hurtigH;S.kveldH=saved.kveldH;S.cold=saved.cold;
       try{ mobSetMode(uiMode()); }catch(e){}
       return {
-        kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1230,
+        kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1235, // v0.824: +5 min kickstart
         hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===980,
         standardNoFit: byM.standard&&!byM.standard.best&&byM.standard.minSpan===1545,
         ranked, startOk,
@@ -4703,20 +4708,21 @@ def _atferd_5(page, results):
           S.method='standard'; S.mel=mel; S.hydro=65; S.kjokkenmaskin=km; S.cold=48;
           const st=stepsForAnchor(new Date(2020,0,1,12,0));
           const total=recipeFor(S).water;
-          const s1=st[0], s2=st[1];
+          // v0.824: gjærvannet bor nå i kicksteget (st[1]); eltesteget er st[2].
+          const s1=st[0], s2=st[1], s3=st[2];
           // Autolysemengden og gjærvannet leses ut av selve teksten brukeren ser.
           const m1=s1.desc.match(/Hell (\\d+)g/);
-          const m2=s2.desc.match(/i de (\\d+)g vannet du holdt av/);
+          const m2=s2.desc.match(/ut i (\\d+)g lunkent vann/);
           const held=s1.desc.match(/hold av (\\d+)g vann/);
           const sum = m1&&m2 ? (+m1[1] + +m2[1]) : -1;
           if(sum!==total) { allSum=false; out['sum_'+km+'_'+mel]=[sum,total]; }
           // Samme tall må stå begge steder — ellers holder du av 20g og bruker 15g.
           if(!held || +held[1]!==(m2?+m2[1]:-1)) allSum=false;
           // Ingen «litt vann» igjen noe sted: det var nettopp vagheten som skjulte feilen.
-          if(/i litt vann/.test(s1.desc+s2.desc+s2.substeps.join(' '))) allNoVague=false;
+          if(/i litt vann/.test(s1.desc+s2.desc+s3.desc+s3.substeps.join(' '))) allNoVague=false;
           // «Hvorfor»-teksten sa at gjæren løses i vannet «på forhånd» — altså før
           // autolysen, som er umulig når autolysen er steg 1.
-          if(/på forhånd/.test(s2.why||'')) allWhyOk=false;
+          if(/på forhånd/.test(s3.why||'')) allWhyOk=false;
           // Det avsatte vannet må stå i «du trenger» på steget der det brukes,
           // ellers står du med gjæren og uten vann å løse den i.
           const n1=s1.needs.join(' '), n2=s2.needs.join(' ');
@@ -8832,7 +8838,7 @@ const svSched=window._pizzatidSchedule;
     ok167 = (
       # Ordene foelger tallet, og lyver ikke om det.
       r167.get('kaldTall') == 4 and 'kjøleskapet' in (r167.get('kaldFrase') or '')
-      and r167.get('kjoligTall') == 17 and 'kjølig' in (r167.get('kjoligFrase') or '')
+      and r167.get('kjoligTall') == 15 and 'kjølig' in (r167.get('kjoligFrase') or '') # v0.824: 17->15, kick-leddet i standard
       and r167.get('bigaTall') == 14 and 'springen' in (r167.get('bigaFrase') or '')
       and r167.get('ingenLoegn') is True
       and r167.get('uliktOrd') is True
@@ -9102,7 +9108,7 @@ const svSched=window._pizzatidSchedule;
       abs(r171['bokstavelig'] - 24) <= 0.2 and
       r171['proseVann'] == '250' and int(r171['proseTemp']) == r171['wt'] and
       r171['kickTekst'] and r171['wk'] == 60 and
-      r171['stdWt'] == 19 and r171['kveldWt'] == 19 and r171['poolishWt'] == 8
+      r171['stdWt'] == 17 and r171['kveldWt'] == 17 and r171['poolishWt'] == 8 # v0.824: std/kveld fikk kick-ledd (19->17); poolish urort
     )
     results.append(('kickstart_water_heat_is_booked_and_the_rest_compensates', ok171, r171))
 
@@ -9396,7 +9402,7 @@ const svSched=window._pizzatidSchedule;
       S.kaldBulk=true;  const yKB=recipeFor().yDry; const st=stepsForAnchor(anchor);
       const titler=st.map(x=>x.title);
       const dur=t=>{const x=st.find(s=>s.title.startsWith(t)); return x?x.dur:null;};
-      const kjede=st.filter(s=>s.dispLoc!=='ovn');
+      const kjede=st.filter(s=>s.dispLoc!=='ovn'&&!s.title.includes('kickstart'));
       let mono=true;
       for(let i=0;i<kjede.length-1;i++){const e=new Date(kjede[i].at).getTime()+(kjede[i].dur||0)*60000;
         if(Math.abs(e-new Date(kjede[i+1].at).getTime())>60000) mono=false;}
@@ -9415,11 +9421,11 @@ const svSched=window._pizzatidSchedule;
                yStd, yKB, stdN };
     }""")
     ok180 = (
-      r180['rekkefoelge'] == 'Ankarsrum — bland og autolyse|Tilsett gjær og salt — elt ferdig|Bulk-heving i romtemperatur|Kjøleskapsheving i bulk|Form emner (kald deig)|Etterheving (8 t)|Sett på ovnen 🔥|Strekk og stek 🔥' and
+      r180['rekkefoelge'] == 'Ankarsrum — bland og autolyse|Vekk gjæren (kickstart)|Tilsett gjær og salt — elt ferdig|Bulk-heving i romtemperatur|Kjøleskapsheving i bulk|Form emner (kald deig)|Etterheving (8 t)|Sett på ovnen 🔥|Strekk og stek 🔥' and
       r180['bulk'] == 120 and r180['kald'] == 2880 and r180['eh'] == 480 and
       r180['eh18'] == 768 and r180['mono'] and r180['anker'] and
       r180['yKB'] < r180['yStd'] and r180['yStd'] == 0.75 and r180['yKB'] == 0.53 and
-      r180['stdN'] == 8
+      r180['stdN'] == 9 # v0.824: +kickstart
     )
     results.append(('cold_bulk_variant_chains_correctly_and_q10_adapts_yeast', ok180, r180))
 
@@ -9491,6 +9497,49 @@ const svSched=window._pizzatidSchedule;
     }""")
     ok182 = all(r182.values())
     results.append(('method_names_have_one_judge_the_methods_register', ok182, r182))
+
+    # v0.824: kickstarten (vekk gjaeren i avholdt vann + honning) utvidet til
+    # Langtidsdeig og Kveldsdeig — doed gjaer skal avsloeres FOER melet er
+    # brukt, og investeringen er stoerst for de lange metodene. Langtidsdeig:
+    # kicksteget goeres MENS autolysen hviler (starter +20 min, koster null
+    # ekstra tid); Kveldsdeig: foerst i kjeden (+5 min total). Varmeregnskapet
+    # (v0.812-moensteret) baerer begge: deigKomponenter faar kick-ledd paa
+    # 41,5° ogsaa for standard/kveld. Fordeigsmetodene fikk i stedet
+    # «kvitteringen»-setningen — fordeigen ER gjaertesten. Ett delt
+    # kickstartSteg for alle tre metodene (tre kopier ville drevet).
+    r183 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      const base=()=>{S.type='napoletana';S.mel=500;S.hydro=65;S.cold=48;S.temp=22;S.gjaer='torr';
+        S.kjokkenmaskin='ankarsrum';S.fridgeC=3;S.gjaerTilstand='fersk';S.mode='start';S.gjaertest=false;
+        S.sammaltPct=0;S.kaldBulk=false;S.poolishCold=false;S.poolishH=14;S.bigaH=18;S.kveldH=10;};
+      const anchor=new Date('2026-08-20T10:00:00');
+      base(); S.method='standard';
+      const st=stepsForAnchor(anchor);
+      ut.stdKickPos=(new Date(st[1].at)-new Date(st[0].at))/60000===20&&st[1].dur===5&&st[1].title==='Vekk gjæren (kickstart)';
+      ut.stdSteg2=st[2].desc.includes('gjærblandingen fra kickstarten');
+      const k=deigKomponenter(10);
+      ut.stdVarmeLedd=k.length===3&&k[1][2]===41.5;
+      S.method='kveld';
+      const kk=deigKomponenter(10);
+      ut.kveldVarmeLedd=kk.length===3&&kk[1][2]===41.5;
+      const kst=stepsForAnchor(anchor);
+      ut.kveldKickFoerst=kst[0].title==='Vekk gjæren (kickstart)'&&(new Date(kst[1].at)-new Date(kst[0].at))/60000===5;
+      S.mode='end'; const ke=stepsForAnchor(anchor);
+      const sk=new Date(ke[ke.length-1].at);
+      ut.kveldAnker=sk.getHours()===10&&sk.getMinutes()===0;
+      S.mode='start';
+      S.method='poolish';
+      ut.poolishKvitt=stepsForAnchor(anchor).some(s=>String(s.tip||'').includes('kvitteringen'));
+      S.method='biga';
+      ut.bigaKvitt=stepsForAnchor(anchor).some(s=>String(s.tip||'').includes('kvitteringen'));
+      // poolish/biga har fordeig-ledd (4), IKKE kick-ledd
+      ut.poolishUtenKick=deigKomponenter(10).length===4;
+      base();
+      return ut;
+    }""")
+    ok183 = all(r183.values())
+    results.append(('kickstart_extends_to_direct_doughs_with_heat_booked', ok183, r183))
 
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut

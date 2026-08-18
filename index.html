@@ -1648,9 +1648,9 @@ function poolishRestText(){
   if(S.poolishCold){
     // Fasene er egne steg nå, så tipset skal ikke gjenta timeplanen. Det som IKKE
     // står i stegene er hvordan en poolish som er i gang faktisk ser ut.
-    return L(`La den stå framme her — den skal i kjøleskapet i neste steg. Den er i gang når overflaten begynner å boble og lukte lett syrlig.`,`Leave it out here — it goes into the fridge in the next step. It's under way when the surface starts to bubble and smells slightly sour.`);
+    return L(`La den stå framme her — den skal i kjøleskapet i neste steg. Den er i gang når overflaten begynner å boble og lukte lett syrlig — boblene er samtidig kvitteringen på at gjæren lever.`,`Leave it out here — it goes into the fridge in the next step. It's under way when the surface starts to bubble and smells slightly sour — the bubbles double as your receipt that the yeast is alive.`);
   }
-  return L(`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig.`,`Let sit about ${S.poolishH} hours at room temperature. Ready when the surface bubbles actively and smells slightly sour.`)+poolishWindowText();
+  return L(`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig — boblene er samtidig kvitteringen på at gjæren lever.`,`Let sit about ${S.poolishH} hours at room temperature. Ready when the surface bubbles actively and smells slightly sour — the bubbles double as your receipt that the yeast is alive.`)+poolishWindowText();
 }
 // v0.752: vinduet. Gjærmengden i poolishen er den samme enten kjøkkenet holder
 // 18 eller 26 grader, og timeplanen setter av like mange timer uansett — men
@@ -2714,8 +2714,41 @@ function friksjonC(){ return FRIKSJON_C[S.kjokkenmaskin] ?? 5; }
 // resten av vannet beregnes til å treffe målet — for samme scenario: 15°C.
 // Én kilde: både stegteksten og modellen leser KICK_TEMP.
 const KICK_TEMP={mn:40,mx:43};
+const KICK_DUR=5;
+// v0.824: kickstarten gjelder nå alle de DIREKTE deigene — Hurtigdeig (v6.01),
+// Langtidsdeig og Kveldsdeig. Verdien: død gjær avsløres FØR melet er brukt,
+// og investeringen som beskyttes er størst for de lange metodene (dagens
+// Langtidsdeig oppdager død gjær først når romhevingen uteblir, Kveldsdeig
+// neste morgen). Fordeigsmetodene trenger den ikke — fordeigen ER gjærtesten
+// (boblene er kvitteringen; sagt eksplisitt i fordeig-stegene fra v0.824).
+// Vannmengden: hurtig bruker 60g-porsjonen sin; standard/kveld bruker samme
+// avholdte gjærvann (yw) som før — nå lunkent. Én kilde for både stegtekst
+// og varmebalanse (deigKomponenter leser samme funksjon).
 function kickVannG(){
-  return (S.method==='hurtig' && S.type!=='ingenelting') ? Math.round(60*S.mel/500) : 0;
+  if(S.type==='ingenelting') return 0;
+  if(S.method==='hurtig') return Math.round(60*S.mel/500);
+  if(S.method==='standard'||S.method==='kveld'){
+    const vannG=Math.round(S.mel*S.hydro/100);
+    return Math.max(10,Math.round(vannG*0.06));
+  }
+  return 0;
+}
+// Det ENE kickstart-steget, delt av alle tre metodene — tre kopier ville
+// drevet fra hverandre (samme grunn som F17/mNVariant).
+function kickstartStep(at, wk, wr, ya){
+  const ktxt=`${KICK_TEMP.mn}–${KICK_TEMP.mx}`;
+  return {title:'Vekk gjæren (kickstart)',loc:'benk',at,dur:KICK_DUR,
+    // v0.814: forventningen kalibrert til gjærmengden (små bobler + tynn film
+    // er nok); dødsgrensa i tipset står.
+    desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min. Med så lite gjær er små bobler og en tynn, melkete film på overflaten nok — ikke vent noe skumberg. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min. With this little yeast, small bubbles and a thin, milky film on the surface are enough — don't wait for a foam dome. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
+    needs:[`🫙 ${ya}`, L(`💧 ${wk}g lunkent vann`,`💧 ${wk}g lukewarm water`), L('🍯 1 ts honning','🍯 1 tsp honey')],
+    substeps:[
+      L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C)`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C)`),
+      L('Tilsett en teskje honning','Add a teaspoon of honey'),
+      L('La stå ca. 5 min — små bobler og en tynn film er nok','Let it sit about 5 min — small bubbles and a thin film are enough')
+    ],
+    why:L('Bekrefter at gjæren faktisk lever før du blander inn resten, og gir den et forsprang siden den får lettfordøyelig mat med det samme i stedet for å vente på melet.','Confirms the yeast is actually alive before you mix in the rest, and gives it a head start since it gets easily digestible food right away instead of waiting for the flour.'),
+    tip:L('Bobler det ikke i det hele tatt etter 5–10 min, er gjæren død — bytt den ut nå, ikke etter du har blandet inn alt melet.','If nothing bubbles at all after 5–10 min, the yeast is dead — replace it now, not after you have mixed in all the flour.')};
 }
 // Newton: en bolle nærmer seg omgivelsene eksponentielt, og tidskonstanten følger
 // massen. 2,2 timer for 500g er anslaget tempereringstiden er bygget på — samme
@@ -2752,9 +2785,10 @@ function deigKomponenter(vannC){
   if(fd) return [[fd.melG/1000,C_MEL,fd.tempC],[fd.vannG/1000,C_VANN,fd.tempC],
                  [(melG-fd.melG)/1000,C_MEL,S.temp],
                  [Math.max(0,vannG-fd.vannG)/1000,C_VANN,vannC]];
-  // v0.812: kickstartvannet (Hurtigdeig) er et fast, varmt ledd — bare resten
-  // av vannet er spaken. Siste ledd må forbli spaken: calcWaterTempRaw løser
-  // for k[k.length-1].
+  // v0.812: kickstartvannet er et fast, varmt ledd — bare resten av vannet er
+  // spaken. Siste ledd må forbli spaken: calcWaterTempRaw løser for
+  // k[k.length-1]. v0.824: gjelder nå også Langtidsdeig og Kveldsdeig via
+  // samme kickVannG (fordeigsmetodene fanges av fd-grenen over).
   const kick=kickVannG();
   if(kick>0 && vannG>kick)
     return [[melG/1000,C_MEL,S.temp],[kick/1000,C_VANN,(KICK_TEMP.mn+KICK_TEMP.mx)/2],
@@ -3064,17 +3098,17 @@ function rawSteps(a){
     // ikke vann igjen; hentet du nytt fra springen, sprakk både deigvekten og
     // hydreringen. Samme grep som Hurtigdeigens kickstart (wk/wr): en liten del
     // holdes av til gjæren, og yw + (r.water-yw) = r.water, så totalen står.
-    const yw=Math.max(10,Math.round(r.water*0.06));
+    const yw=kickVannG(); // v0.824: samme formel som før (6 % av vannet, min 10g) — nå fra én kilde, delt med varmebalansen
     const hode=[
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland og autolyse':S.kjokkenmaskin==='manuell'?'Bland for hånd og autolyse':'Kjøkkenmaskin — bland og autolyse',loc:'benk',at:t0,dur:30,
         sessionNote:S.kaldBulk
           ?L(`Sett av ca. ${fmtSessionDur(45)} sammenhengende nå — og vær hjemme om ${fmtHM(45+kbBulk)} for å sette deigen kaldt.`,`Set aside about ${fmtSessionDur(45)} of uninterrupted time now — and be home in ${fmtHM(45+kbBulk)} to put the dough in the fridge.`)
           :L(`Sett av ca. ${fmtSessionDur(60+rt)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(60+rt)} of uninterrupted time — the next three steps are done in one go.`),
         desc:(S.kjokkenmaskin==='ankarsrum'
-          ?L(`Hell ${r.water-yw}g ${waterTempPhrase()} i Ankarsrum-bollen — hold av ${yw}g vann til gjæren i neste steg. Start maskinen på trinn 1 og tilsett ${r.flour}g mel gradvis i 3–4 omganger. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,`Pour ${r.water-yw}g ${waterTempPhrase()} into the Ankarsrum bowl — hold back ${yw}g of water for the yeast in the next step. Start the machine on speed 1 and add ${r.flour}g flour gradually in 3–4 batches. Stop when all the flour is incorporated — no yeast or salt yet. Cover the bowl and let rest 20–30 min (autolyse).`)
+          ?L(`Hell ${r.water-yw}g ${waterTempPhrase()} i Ankarsrum-bollen — hold av ${yw}g vann til gjær-kickstarten. Start maskinen på trinn 1 og tilsett ${r.flour}g mel gradvis i 3–4 omganger. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,`Pour ${r.water-yw}g ${waterTempPhrase()} into the Ankarsrum bowl — hold back ${yw}g of water for the yeast kickstart. Start the machine on speed 1 and add ${r.flour}g flour gradually in 3–4 batches. Stop when all the flour is incorporated — no yeast or salt yet. Cover the bowl and let rest 20–30 min (autolyse).`)
           :S.kjokkenmaskin==='manuell'
-          ?L(`Hell ${r.water-yw}g ${waterTempPhrase()} i en bolle — hold av ${yw}g vann til gjæren i neste steg. Rør inn ${r.flour}g mel gradvis med en slikkepott eller hånden til alt melet er fuktet — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,`Pour ${r.water-yw}g ${waterTempPhrase()} into a bowl — hold back ${yw}g of water for the yeast in the next step. Stir in ${r.flour}g flour gradually with a spatula or your hand until all the flour is moistened — no yeast or salt yet. Cover the bowl and let rest 20–30 min (autolyse).`)
-          :L(`Hell ${r.water-yw}g ${waterTempPhrase()} i bollen på kjøkkenmaskinen — hold av ${yw}g vann til gjæren i neste steg. Sett i eltekroken, kjør på laveste hastighet og tilsett ${r.flour}g mel gradvis. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,`Pour ${r.water-yw}g ${waterTempPhrase()} into the stand mixer bowl — hold back ${yw}g of water for the yeast in the next step. Fit the dough hook, run on the lowest speed and add ${r.flour}g flour gradually. Stop when all the flour is incorporated — no yeast or salt yet. Cover the bowl and let rest 20–30 min (autolyse).`))+langpanneHintText(),
+          ?L(`Hell ${r.water-yw}g ${waterTempPhrase()} i en bolle — hold av ${yw}g vann til gjær-kickstarten. Rør inn ${r.flour}g mel gradvis med en slikkepott eller hånden til alt melet er fuktet — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,`Pour ${r.water-yw}g ${waterTempPhrase()} into a bowl — hold back ${yw}g of water for the yeast kickstart. Stir in ${r.flour}g flour gradually with a spatula or your hand until all the flour is moistened — no yeast or salt yet. Cover the bowl and let rest 20–30 min (autolyse).`)
+          :L(`Hell ${r.water-yw}g ${waterTempPhrase()} i bollen på kjøkkenmaskinen — hold av ${yw}g vann til gjær-kickstarten. Sett i eltekroken, kjør på laveste hastighet og tilsett ${r.flour}g mel gradvis. Stopp når alt melet er inkorporert — ingen gjær eller salt ennå. Dekk bollen og la hvile 20–30 min (autolyse).`,`Pour ${r.water-yw}g ${waterTempPhrase()} into the stand mixer bowl — hold back ${yw}g of water for the yeast kickstart. Fit the dough hook, run on the lowest speed and add ${r.flour}g flour gradually. Stop when all the flour is incorporated — no yeast or salt yet. Cover the bowl and let rest 20–30 min (autolyse).`))+langpanneHintText(),
         needs:[L(`💧 ${r.water-yw}g vann (av ${r.water}g)`,`💧 ${r.water-yw}g water (of ${r.water}g)`), L(`🌾 ${r.flour}g mel`,`🌾 ${r.flour}g flour`)],
         substeps:[
           L(`Hell ${r.water-yw}g ${waterTempPhrase()} i bollen — hold av ${yw}g til gjæren`,`Pour ${r.water-yw}g ${waterTempPhrase()} into the bowl — hold back ${yw}g for the yeast`),
@@ -3088,15 +3122,20 @@ function rawSteps(a){
           :S.kjokkenmaskin==='manuell'
           ?L('Ingen grunn til å skynde seg her — bare bland til det ikke er tørt mel igjen. Autolysen gjør mye av arbeidet for deg.',`No reason to rush here — just mix until there's no dry flour left. The autolyse does much of the work for you.`)
           :L('Kjør kun på laveste hastighet i denne fasen — høyere hastighet før autolysen varmer opp deigen unødvendig mye.',`Run only on the lowest speed in this phase — higher speed before the autolyse warms the dough up unnecessarily.`)},
+      // v0.824: kickstarten koster NULL ekstra tid her — den gjøres mens
+      // autolysen hviler (starter 10 min før hvilen er ferdig). Død gjær
+      // oppdages ellers først når romhevingen uteblir, en time senere med
+      // alt melet brukt. Delt steg med Hurtigdeig/Kveldsdeig (kickstartStep).
+      kickstartStep(aM(t0,20), yw, r.water-yw, yA(r)),
       {title:'Tilsett gjær og salt — elt ferdig',loc:'benk',at:aM(t0,30),dur:15,
         desc:S.kjokkenmaskin==='ankarsrum'
-          ?L(`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i de ${yw}g vannet du holdt av, og tilsett. Start maskinen på trinn 2–3 og elt i 3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Øk gradvis til trinn 3–4. Elt totalt 12–15 min til deigen er glatt og smidig og slipper bollen. Mål deigtemperaturen — den skal vise 22–24°C.`,`Dissolve ${yA(r)}${r.sugar?` and ${r.sugar}g sugar`:''} in the ${yw}g of water you held back, and add. Start the machine on speed 2–3 and knead for 3 min. Then add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Increase gradually to speed 3–4. Knead 12–15 min total until the dough is smooth and supple and releases from the bowl. Measure the dough temperature — it should read 22–24°C.`)
+          ?L(`Hell gjærblandingen fra kickstarten i bollen${r.sugar?` sammen med ${r.sugar}g sukker`:''}. Start maskinen på trinn 2–3 og elt i 3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Øk gradvis til trinn 3–4. Elt totalt 12–15 min til deigen er glatt og smidig og slipper bollen. Mål deigtemperaturen — den skal vise 22–24°C.`,`Pour the yeast mixture from the kickstart into the bowl${r.sugar?` together with ${r.sugar}g sugar`:''}. Start the machine on speed 2–3 and knead for 3 min. Then add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Increase gradually to speed 3–4. Knead 12–15 min total until the dough is smooth and supple and releases from the bowl. Measure the dough temperature — it should read 22–24°C.`)
           :S.kjokkenmaskin==='manuell'
-          ?L(`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i de ${yw}g vannet du holdt av, og bland inn i bollen sammen med ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. ${S.hydro>68?'Deigen er for våt for vanlig håndelting ved denne hydreringen. Bruk fransk elting (slap-and-fold): løft deigen med begge hender, dra den ut til sidene, og «slå» den ned mot benken i et fast, rytmisk tempo. Gjenta i 10–15 min — deigen strammer seg gradvis og blir mindre klissete.':'Vend ut på lett melet benk. Press deigen ut med håndbaken, brett den tilbake over seg selv, drei en kvart omgang — «press, brett, drei». Gjenta i 8–12 min til deigen er glatt, smidig og bare lett klissete. Mål gjerne deigtemperaturen — sikt mot 22–24°C.'}`,`Dissolve ${yA(r)}${r.sugar?` and ${r.sugar}g sugar`:''} in the ${yw}g of water you held back, and mix into the bowl together with ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. ${S.hydro>68?'The dough is too wet for regular hand kneading at this hydration. Use French kneading (slap-and-fold): lift the dough with both hands, stretch it out to the sides, and "slap" it down against the counter in a firm, rhythmic tempo. Repeat for 10–15 min — the dough tightens gradually and becomes less sticky.':'Turn out onto a lightly floured counter. Press the dough out with the heel of your hand, fold it back over itself, turn a quarter turn — "press, fold, turn". Repeat for 8–12 min until the dough is smooth, supple and only lightly sticky. Measure the dough temperature if you like — aim for 22–24°C.'}`)
-          :L(`Løs ${yA(r)}${r.sugar?` og ${r.sugar}g sukker`:''} i de ${yw}g vannet du holdt av, og tilsett. Kjør eltekroken på lav hastighet i 2–3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Øk til middels lav hastighet. Elt totalt 6–10 min til deigen slipper bollen og er glatt — kjøkkenmaskiner overelter lett, så sjekk windowpane-testen tidlig og ofte.`,`Dissolve ${yA(r)}${r.sugar?` and ${r.sugar}g sugar`:''} in the ${yw}g of water you held back, and add. Run the dough hook on low speed for 2–3 min. Then add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Increase to medium-low speed. Knead 6–10 min total until the dough releases from the bowl and is smooth — stand mixers over-knead easily, so check the windowpane test early and often.`),
-        needs:[L(`💧 ${yw}g vann (holdt av)`,`💧 ${yw}g water (held back)`), `🫙 ${yA(r)}`, `🧂 ${r.salt}g salt`, ...(r.oil?[L(`🫒 ${r.oil}g olje`,`🫒 ${r.oil}g oil`)]:[]), ...(r.butter?[L(`🧈 ${r.butter}g smør`,`🧈 ${r.butter}g butter`)]:[]), ...(r.sugar?[L(`🍯 ${r.sugar}g sukker`,`🍯 ${r.sugar}g sugar`)]:[])],
+          ?L(`Hell gjærblandingen fra kickstarten i bollen${r.sugar?` sammen med ${r.sugar}g sukker`:''}, og bland inn ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. ${S.hydro>68?'Deigen er for våt for vanlig håndelting ved denne hydreringen. Bruk fransk elting (slap-and-fold): løft deigen med begge hender, dra den ut til sidene, og «slå» den ned mot benken i et fast, rytmisk tempo. Gjenta i 10–15 min — deigen strammer seg gradvis og blir mindre klissete.':'Vend ut på lett melet benk. Press deigen ut med håndbaken, brett den tilbake over seg selv, drei en kvart omgang — «press, brett, drei». Gjenta i 8–12 min til deigen er glatt, smidig og bare lett klissete. Mål gjerne deigtemperaturen — sikt mot 22–24°C.'}`,`Pour the yeast mixture from the kickstart into the bowl${r.sugar?` together with ${r.sugar}g sugar`:''}, and mix in ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. ${S.hydro>68?'The dough is too wet for regular hand kneading at this hydration. Use French kneading (slap-and-fold): lift the dough with both hands, stretch it out to the sides, and "slap" it down against the counter in a firm, rhythmic tempo. Repeat for 10–15 min — the dough tightens gradually and becomes less sticky.':'Turn out onto a lightly floured counter. Press the dough out with the heel of your hand, fold it back over itself, turn a quarter turn — "press, fold, turn". Repeat for 8–12 min until the dough is smooth, supple and only lightly sticky. Measure the dough temperature if you like — aim for 22–24°C.'}`)
+          :L(`Hell gjærblandingen fra kickstarten i bollen${r.sugar?` sammen med ${r.sugar}g sukker`:''}. Kjør eltekroken på lav hastighet i 2–3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Øk til middels lav hastighet. Elt totalt 6–10 min til deigen slipper bollen og er glatt — kjøkkenmaskiner overelter lett, så sjekk windowpane-testen tidlig og ofte.`,`Pour the yeast mixture from the kickstart into the bowl${r.sugar?` together with ${r.sugar}g sugar`:''}. Run the dough hook on low speed for 2–3 min. Then add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Increase to medium-low speed. Knead 6–10 min total until the dough releases from the bowl and is smooth — stand mixers over-knead easily, so check the windowpane test early and often.`),
+        needs:[`🧂 ${r.salt}g salt`, ...(r.oil?[L(`🫒 ${r.oil}g olje`,`🫒 ${r.oil}g oil`)]:[]), ...(r.butter?[L(`🧈 ${r.butter}g smør`,`🧈 ${r.butter}g butter`)]:[]), ...(r.sugar?[L(`🍯 ${r.sugar}g sukker`,`🍯 ${r.sugar}g sugar`)]:[])],
         substeps:[
-          L(`Løs ${yA(r)} i de ${yw}g vannet du holdt av, tilsett i bollen`,`Dissolve ${yA(r)} in the ${yw}g of water you held back, add to the bowl`),
+          L(`Hell gjærblandingen fra kickstarten i bollen`,`Pour the yeast mixture from the kickstart into the bowl`),
           L(`Kjør på lav hastighet i 2–3 min`,`Run on low speed for 2–3 min`),
           L(`Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,`Add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}`),
           L(`Øk hastigheten, elt til deigen er glatt og slipper bollen`,`Increase the speed, knead until the dough is smooth and releases from the bowl`)
@@ -3266,7 +3305,7 @@ function rawSteps(a){
           L(`Bland kun til klumpete, tørr konsistens — ikke bland for mye`,`Mix only to a lumpy, dry consistency — don't mix too much`)
         ],
         why:WHY.bi,
-        tip:L(`La stå ca. ${S.bigaH} timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker.`,`Let sit about ${S.bigaH} hours at room temperature. Ready when the surface has risen and developed cracks.`)},
+        tip:L(`La stå ca. ${S.bigaH} timer ved romtemperatur. Klar når overflaten har hevet og fått sprekker — hevingen er samtidig kvitteringen på at gjæren lever.`,`Let sit about ${S.bigaH} hours at room temperature. Ready when the surface has risen and developed cracks — the rise doubles as your receipt that the yeast is alive.`)},
       {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland ferdig deig':S.kjokkenmaskin==='manuell'?'Bland og elt ferdig deig for hånd':'Kjøkkenmaskin — bland ferdig deig',loc:'benk',at:rdy,dur:20,
         sessionNote:L(`Sett av ca. ${fmtSessionDur(35+rtB)} sammenhengende — de neste tre stegene gjøres i ett strekk.`,`Set aside about ${fmtSessionDur(35+rtB)} of uninterrupted time — the next three steps are done in one go.`),
         desc:S.kjokkenmaskin==='ankarsrum'
@@ -3431,25 +3470,10 @@ function hurtigSteps(anchor){
   // stedet for at alt blandes i ett steg uten venting. Egen KICK_DUR lagt
   // til foran alle eksisterende offset-tall, resten av kjeden uendret bortsett
   // fra det.
-  const KICK_DUR=5;
   const t0=ie?sM(anchor,KICK_DUR+30+ba+afm):anchor;
   const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
-    {title:'Vekk gjæren (kickstart)',loc:'benk',at:t0,dur:KICK_DUR,
-      // v0.814: sto «til det bobler og skummer» — men med ~1g gjær i 60g vann
-      // ser et friskt resultat ut som små nålestikk-bobler og en tynn film
-      // (meldt inn med foto fra et ekte bak: så sunt ut, men lignet ikke
-      // løftet i teksten). Forventningen kalibreres til gjærmengden;
-      // dødsgrensa i tipset («ingen bobler i det hele tatt») står uendret.
-      desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min. Med så lite gjær er små bobler og en tynn, melkete film på overflaten nok — ikke vent noe skumberg. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min. With this little yeast, small bubbles and a thin, milky film on the surface are enough — don't wait for a foam dome. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
-      needs:[`🫙 ${ya}`, L(`💧 ${wk}g lunkent vann`,`💧 ${wk}g lukewarm water`), L('🍯 1 ts honning','🍯 1 tsp honey')],
-      substeps:[
-        L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C)`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C)`),
-        L('Tilsett en teskje honning','Add a teaspoon of honey'),
-        L('La stå ca. 5 min — små bobler og en tynn film er nok','Let it sit about 5 min — small bubbles and a thin film are enough')
-      ],
-      why:L('Bekrefter at gjæren faktisk lever før du blander inn resten, og gir den et forsprang siden den får lettfordøyelig mat med det samme i stedet for å vente på melet.','Confirms the yeast is actually alive before you mix in the rest, and gives it a head start since it gets easily digestible food right away instead of waiting for the flour.'),
-      tip:L('Bobler det ikke i det hele tatt etter 5–10 min, er gjæren død — bytt den ut nå, ikke etter du har blandet inn alt melet.','If nothing bubbles at all after 5–10 min, the yeast is dead — replace it now, not after you have mixed in all the flour.')},
+    kickstartStep(t0, wk, wr, ya),
     {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:mixAt,dur:15,
       desc:(()=>{const wt=calcWaterTempC();return S.kjokkenmaskin==='ankarsrum'
         ?L(`Hell gjærblandingen fra kickstarten + resten av vannet (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 24°C er et godt mål uansett hvor lang tid det tar akkurat i din maskin.`,`Pour the yeast mixture from the kickstart + the rest of the water (${wr}g, ${wt}°C)${r.sugar?` + ${r.sugar}g sugar`:''} into the bowl. Start on speed 1. Add ${S.mel}g flour gradually${r.oil?` + ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 3 min. Increase to speed 3–4. Knead 10–12 min — measure the final dough temperature if you can, about 24°C is a good target no matter how long it takes in your particular machine.`)
@@ -3501,20 +3525,24 @@ function kveldSteps(anchor){
   // for en lokal duplikat-utregning — samme kilde som oppskriftsfanen og kopien.
   const ya=yLabelFor(recipeFor());
   const MIX_DUR=15, FORM_DUR=15, KVELD_MIN=kh*60, TEMPER_MIN=kh<=15?90:120;
-  const total=MIX_DUR+FORM_DUR+KVELD_MIN+TEMPER_MIN;
+  // v0.824: kickstarten foerst — doed gjaer skal oppdages i kveld, ikke i
+  // morgen tidlig naar deigen ikke har hevet i kjoleskapet.
+  const total=KICK_DUR+MIX_DUR+FORM_DUR+KVELD_MIN+TEMPER_MIN;
   const t0=ie?sM(anchor,total):anchor;
-  const formAt=aM(t0,MIX_DUR), coldAt=aM(formAt,FORM_DUR), temperAt=aM(coldAt,KVELD_MIN), bakeAt=aM(temperAt,TEMPER_MIN);
+  const yw=kickVannG(), mixAt=aM(t0,KICK_DUR);
+  const formAt=aM(mixAt,MIX_DUR), coldAt=aM(formAt,FORM_DUR), temperAt=aM(coldAt,KVELD_MIN), bakeAt=aM(temperAt,TEMPER_MIN);
   const p=pc();
   const steps=[
-    {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd':'Kjøkkenmaskin — bland deig',loc:'benk',at:t0,dur:MIX_DUR,
+    kickstartStep(t0, yw, r.water-yw, ya),
+    {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd':'Kjøkkenmaskin — bland deig',loc:'benk',at:mixAt,dur:MIX_DUR,
       desc:(S.kjokkenmaskin==='ankarsrum'
-        ?L(`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour ${r.water}g cold water + ${ya}${r.sugar?` + ${r.sugar}g sugar`:''} dissolved into the bowl. Start on speed 1. Add ${S.mel}g flour gradually${r.oil?` + ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 3 min. Increase to speed 3–4. Knead 10–12 min — measure the final dough temperature if you can, about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`)
+        ?L(`Hell gjærblandingen fra kickstarten + ${r.water-yw}g kaldt vann${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Start trinn 1. Tilsett ${S.mel}g mel gradvis${r.oil?` + ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 3 min. Øk til trinn 3–4. Elt 10–12 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour the yeast mixture from the kickstart + ${r.water-yw}g cold water${r.sugar?` + ${r.sugar}g sugar`:''} into the bowl. Start on speed 1. Add ${S.mel}g flour gradually${r.oil?` + ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 3 min. Increase to speed 3–4. Knead 10–12 min — measure the final dough temperature if you can, about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`)
         :S.kjokkenmaskin==='manuell'
-        ?L(`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour ${r.water}g cold water + ${ya}${r.sugar?` + ${r.sugar}g sugar`:''} dissolved into a bowl. Mix in ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''} and ${r.salt}g salt. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) for 10–12 min since the dough is wet.':'press, fold, turn for 8–10 min until smooth.'} Measure the final dough temperature if you have a thermometer — about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`)
-        :L(`Hell ${r.water}g kaldt vann + ${ya}${r.sugar?` + ${r.sugar}g sukker`:''} løst i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour ${r.water}g cold water + ${ya}${r.sugar?` + ${r.sugar}g sugar`:''} dissolved into the bowl. Run the dough hook on low speed while you add ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 2 min. Increase to medium speed. Knead 6–8 min — measure the final dough temperature if you can, about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`))+langpanneHintText(),
-      needs:[L(`💧 ${r.water}g vann`,`💧 ${r.water}g water`), `🫙 ${ya}`, L(`🌾 ${S.mel}g mel`,`🌾 ${S.mel}g flour`), L(`🧂 ${r.salt}g salt`,`🧂 ${r.salt}g salt`), ...(r.oil?[L(`🫒 ${r.oil}g olje`,`🫒 ${r.oil}g oil`)]:[]), ...(r.butter?[L(`🧈 ${r.butter}g smør`,`🧈 ${r.butter}g butter`)]:[]), ...(r.sugar?[L(`🍯 ${r.sugar}g sukker`,`🍯 ${r.sugar}g sugar`)]:[])],
+        ?L(`Hell gjærblandingen fra kickstarten + ${r.water-yw}g kaldt vann${r.sugar?` + ${r.sugar}g sukker`:''} i en bolle. Bland inn ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''} og ${r.salt}g salt. Vend ut på benk og elt for hånd — ${S.hydro>68?'bruk fransk elting (slap-and-fold) i 10–12 min siden deigen er våt.':'press, brett, drei i 8–10 min til glatt.'} Mål gjerne sluttdeigtemperaturen om du har termometer — ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour the yeast mixture from the kickstart + ${r.water-yw}g cold water${r.sugar?` + ${r.sugar}g sugar`:''} into a bowl. Mix in ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''} and ${r.salt}g salt. Turn out onto the counter and knead by hand — ${S.hydro>68?'use French kneading (slap-and-fold) for 10–12 min since the dough is wet.':'press, fold, turn for 8–10 min until smooth.'} Measure the final dough temperature if you have a thermometer — about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`)
+        :L(`Hell gjærblandingen fra kickstarten + ${r.water-yw}g kaldt vann${r.sugar?` + ${r.sugar}g sukker`:''} i bollen. Kjør eltekroken på lav hastighet mens du tilsetter ${S.mel}g mel gradvis${r.oil?`, ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Tilsett ${r.salt}g salt etter 2 min. Øk til middels hastighet. Elt 6–8 min — mål gjerne sluttdeigtemperaturen, ca. 20–22°C er et godt mål her (litt kaldere enn vanlig siden kjøleskapet snart overtar).`,`Pour the yeast mixture from the kickstart + ${r.water-yw}g cold water${r.sugar?` + ${r.sugar}g sugar`:''} into the bowl. Run the dough hook on low speed while you add ${S.mel}g flour gradually${r.oil?`, ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Add ${r.salt}g salt after 2 min. Increase to medium speed. Knead 6–8 min — measure the final dough temperature if you can, about 20–22°C is a good target here (a bit colder than usual since the fridge soon takes over).`))+langpanneHintText(),
+      needs:[L(`💧 ${r.water-yw}g vann`,`💧 ${r.water-yw}g water`), L(`🌾 ${S.mel}g mel`,`🌾 ${S.mel}g flour`), L(`🧂 ${r.salt}g salt`,`🧂 ${r.salt}g salt`), ...(r.oil?[L(`🫒 ${r.oil}g olje`,`🫒 ${r.oil}g oil`)]:[]), ...(r.butter?[L(`🧈 ${r.butter}g smør`,`🧈 ${r.butter}g butter`)]:[]), ...(r.sugar?[L(`🍯 ${r.sugar}g sukker`,`🍯 ${r.sugar}g sugar`)]:[])],
       substeps:[
-        L(`Hell ${r.water}g kaldt vann + ${ya} i bollen`,`Pour ${r.water}g cold water + ${ya} into the bowl`),
+        L(`Hell gjærblandingen fra kickstarten + ${r.water-yw}g kaldt vann i bollen`,`Pour the yeast mixture from the kickstart + ${r.water-yw}g cold water into the bowl`),
         L(`Start på laveste hastighet/trinn, tilsett ${S.mel}g mel gradvis`,`Start on the lowest speed/setting, add ${S.mel}g flour gradually`),
         L(`Tilsett ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}`,`Add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}`),
         L(`Øk hastigheten, elt til deigen er glatt — sikt mot 20–22°C`,`Increase the speed, knead until the dough is smooth — aim for 20–22°C`)
