@@ -9541,6 +9541,45 @@ const svSched=window._pizzatidSchedule;
     ok183 = all(r183.values())
     results.append(('kickstart_extends_to_direct_doughs_with_heat_booked', ok183, r183))
 
+    # v0.825 (F36): ETTER oppstart (>=1 steg avhaket) slutter -/+ aa flytte
+    # planen stille — de aapner en aerlig dialog: fortiden ligger fast, siste
+    # passive fase kortes/forlenges, og vindusdommen felles mot melets
+    # gjaeringsvindu. «Flytt likevel» utfoerer; «Avbryt» roerer ingenting.
+    # FOER oppstart er alt som i v0.813 (r172 vokter den siden).
+    r184 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      setLayout('mob');
+      S.type='napoletana'; S.method='hurtig'; S.hurtigH=8; S.mel=500; S.hydro=62;
+      S.temp=22; S.gjaer='torr'; S.mode='end'; S.meltype='doppio_zero';
+      S.gjaerTilstand='fersk'; S.sammaltPct=0;
+      document.getElementById('mob-ed').value='2026-08-20';
+      document.getElementById('mob-et').value='18:00';
+      window._planChosen=true; window._checked=new Set();
+      mobShowTab('plan'); mobGen();
+      skyvAnker(-15);
+      ut.foerStart=document.getElementById('mob-et').value==='17:45';
+      utfoerSkyv(15);
+      window._checked=new Set([stepSig(window._steps[0])]);
+      const feltFoer=document.getElementById('mob-et').value;
+      skyvAnker(-15);
+      const modal=document.getElementById('skyv-modal');
+      ut.dialogAapnet=modal.style.display==='flex';
+      ut.feltUrort=document.getElementById('mob-et').value===feltFoer;
+      const h=document.getElementById('skyv-body').innerHTML;
+      ut.viserFase=/Etterheving/.test(h)&&/korter/.test(h);
+      ut.viserDom=/Innenfor vinduet/.test(h);
+      closeSkyvModal(); utfoerSkyv(-15);
+      ut.flyttet=document.getElementById('mob-et').value==='17:45';
+      openSkyvModal(-240);
+      ut.utenforDom=/Utenfor vinduet/.test(document.getElementById('skyv-body').innerHTML);
+      closeSkyvModal();
+      utfoerSkyv(15); window._checked=new Set();
+      return ut;
+    }""")
+    ok184 = all(r184.values())
+    results.append(('after_start_shift_asks_honestly_and_judges_the_window', ok184, r184))
+
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut
     # resten.») som overskrift, appnavnet som liten etikett over. Fryser begge

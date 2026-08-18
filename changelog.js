@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.825",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "±15-minuttknappene er blitt ærlige etter oppstart: har du haket av minst ett steg, flyttes ikke tiden i stillhet lenger. I stedet kommer et lite varsel som sier hva flyttingen faktisk betyr — det som er gjort ligger fast, så det er den gjenværende hevingen som strekkes eller kortes, med gammel og ny varighet på fasen det gjelder.",
+      "Varselet feller også dom mot melets gjæringsvindu: holder den nye totaltiden seg innenfor det melet ditt tåler, sier det ✓ — går den utenfor, får du ⚠️ før du velger. «Flytt likevel» og «Avbryt» — valget er ditt, men du velger med åpne øyne.",
+      "Før første avhaking oppfører knappene seg som før — da er hele planen fortsatt bare en plan, og kan flyttes fritt."
+    ],
+    "changes_en": [
+      "The ±15-minute buttons are now honest after you have started: once at least one step is checked off, the time no longer moves silently. Instead a small notice explains what the move actually means — what is done stays fixed, so it is the remaining proof that gets stretched or shortened, with the old and new duration of the phase in question.",
+      "The notice also passes judgement against your flour's fermentation window: if the new total stays within what your flour handles, it says ✓ — if it falls outside, you get a ⚠️ before you choose. \"Move anyway\" and \"Cancel\" — the choice is yours, but you make it with open eyes.",
+      "Before the first check-off the buttons behave as before — the whole plan is still just a plan, and moves freely."
+    ]
+  },
+  {
     "v": "0.824",
     "d": "august 2026",
     "d_en": "August 2026",
