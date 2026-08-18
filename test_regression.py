@@ -9580,6 +9580,96 @@ const svSched=window._pizzatidSchedule;
     ok184 = all(r184.values())
     results.append(('after_start_shift_asks_honestly_and_judges_the_window', ok184, r184))
 
+    # v0.826 (F37): planen FOELGER avhakingen. Meldt inn fra et ekte bak:
+    # brukeren begynte ~20 min foer planlagt oppstart, og planen pekte paa det
+    # gamle klokkeslettet mens virkeligheten var i gang. Et hak som settes PAA
+    # langt fra planlagt tid aapner naa «Gjorde du dette naa?» — ja flytter
+    # hele planen (ren forskyvning, varigheter uendret, derfor ingen
+    # vindusdom), nei lar den staa og demper spoersmaalet i to minutter
+    # (bokfoeringsrunder skal ikke maase). Terskel ±5 min; siste steg og
+    # flytende «starter naa»-planer (uten lagret anker) tilbys aldri.
+    # NB: testen bruker EKTE naatid (Date.now inngaar i kontrakten som
+    # testes) — ankeret settes derfor RELATIVT: grovt anker, les steg 0,
+    # juster til steg0 = naa + oensket avvik. Toleranser (25-35 min) daekker
+    # 5-minuttersavrundingen av skyvet.
+    r185 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      setLayout('mob');
+      S.type='napoletana'; S.method='hurtig'; S.hurtigH=8; S.mel=500; S.hydro=62;
+      S.temp=22; S.gjaer='torr'; S.mode='end'; S.meltype='doppio_zero';
+      S.gjaerTilstand='fersk'; S.sammaltPct=0;
+      window._planChosen=true; window._checked=new Set(); window._foelgTausTil=0;
+      mobShowTab('plan');
+      // Tidligere tester i full kjoering kaller toggleStepDone med ankre
+      // langt fra sanntid — det aapner (helt riktig) F37-dialogen der, og
+      // den staar igjen aapen. Denne testen maa starte fra lukket dialog.
+      closeFoelgModal();
+      const modal=document.getElementById('foelg-modal');
+      const settAnkerSlikAtSteg0Blir=(minFraNaa)=>{
+        document.getElementById('mob-ed').value='2026-08-25';
+        document.getElementById('mob-et').value='18:00';
+        mobGen();
+        const plan0=new Date(window._steps[0].at);
+        const maal=new Date(Date.now()+minFraNaa*60000);
+        const nyAnk=new Date(new Date('2026-08-25T18:00').getTime()+(maal-plan0));
+        document.getElementById('mob-ed').value=fd(nyAnk);
+        document.getElementById('mob-et').value=fT(nyAnk);
+        mobGen();
+      };
+      // 4 min avvik: avrundes til et 5-minutters skyv, saa det er TERSKELEN
+      // (±5 er stoey) som baerer denne — 2 min ville ogsaa vaert stanset av
+      // avrundingen alene, og fanger ikke en fjernet terskel.
+      settAnkerSlikAtSteg0Blir(4);
+      toggleStepDone(0);
+      ut.naerPlanIngenDialog = modal.style.display!=='flex' && window._checked.size===1;
+      window._checked=new Set(); mobGen();
+      settAnkerSlikAtSteg0Blir(30);
+      const feltFoer=document.getElementById('mob-et').value;
+      toggleStepDone(0);
+      const h1=document.getElementById('foelg-body').innerHTML;
+      ut.dialogVedAvvik = modal.style.display==='flex';
+      ut.retningFoer = /før planen/.test(h1) && /tidligere/.test(h1);
+      ut.feltUrort = document.getElementById('mob-et').value===feltFoer;
+      document.getElementById('foelg-body').querySelectorAll('button')[1].click();
+      ut.neiLukker = modal.style.display!=='flex';
+      window._checked=new Set(); mobGen();
+      toggleStepDone(0);
+      ut.neiDemper = modal.style.display!=='flex';
+      window._checked=new Set(); window._foelgTausTil=0; mobGen();
+      toggleStepDone(0);
+      const foerAnk=new Date(document.getElementById('mob-ed').value+'T'+document.getElementById('mob-et').value);
+      document.getElementById('foelg-body').querySelectorAll('button')[0].click();
+      const etterAnk=new Date(document.getElementById('mob-ed').value+'T'+document.getElementById('mob-et').value);
+      const flyttMin=Math.round((etterAnk-foerAnk)/60000);
+      ut.jaFlytter = modal.style.display!=='flex' && flyttMin<=-25 && flyttMin>=-35;
+      const nyRaa=Math.abs(Date.now()-new Date(window._steps[0].at).getTime())/60000;
+      ut.steg0NaaEtterFlytt = nyRaa<=6;
+      window._checked=new Set(); window._foelgTausTil=0; mobGen();
+      settAnkerSlikAtSteg0Blir(30);
+      toggleStepDone(window._steps.length-1);
+      ut.sisteStegIngenDialog = modal.style.display!=='flex';
+      window._checked=new Set(); window._foelgTausTil=0;
+      S.mode='start';
+      window._activeAnchorISO=new Date(Date.now()-30*60000).toISOString();
+      mobGen();
+      toggleStepDone(0);
+      const h2=document.getElementById('foelg-body').innerHTML;
+      ut.startDialog = modal.style.display==='flex' && /etter planen/.test(h2) && /senere/.test(h2);
+      const isoFoer=window._activeAnchorISO;
+      document.getElementById('foelg-body').querySelectorAll('button')[0].click();
+      const isoFlytt=Math.round((new Date(window._activeAnchorISO)-new Date(isoFoer))/60000);
+      ut.startAnkerFlyttet = isoFlytt>=25 && isoFlytt<=35;
+      window._checked=new Set(); window._foelgTausTil=0; window._activeAnchorISO=null;
+      S.mode='start'; mobGen();
+      toggleStepDone(1);
+      ut.flytendeIngenDialog = modal.style.display!=='flex';
+      window._checked=new Set(); S.mode='end';
+      return ut;
+    }""")
+    ok185 = all(r185.values())
+    results.append(('checked_step_offers_to_reanchor_the_plan', ok185, r185))
+
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut
     # resten.») som overskrift, appnavnet som liten etikett over. Fryser begge

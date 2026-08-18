@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.826",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Planen følger avhakingen: haker du av et steg merkbart tidligere eller senere enn planlagt (mer enn fem minutter), spør appen «Gjorde du dette nå?» — og tilbyr å flytte resten av planen tilsvarende, med ny steketid vist før du velger. Meldt inn fra et ekte bak: oppstarten skjedde tjue minutter før planen, og planen ble stående og peke på det gamle klokkeslettet.",
+      "Flyttingen er en ren forskyvning — deigen, varighetene og gjæringsvinduet er uendret, bare klokkeslettene flytter. Svarer du «Nei, la planen stå» holder appen munn en stund, så etterregistrering av flere steg på rad ikke maser med samme spørsmål.",
+      "Tilbudet kommer bare når planen har et fast tidspunkt å flytte («spis kl.» eller en gjenåpnet deig med lagret oppstart), og aldri på siste steg — da er det ingenting igjen å flytte."
+    ],
+    "changes_en": [
+      "The plan follows your check-offs: if you check off a step noticeably earlier or later than planned (more than five minutes), the app asks \"Did you do this now?\" — and offers to move the rest of the plan accordingly, showing the new baking time before you choose. Reported from a real bake: the start happened twenty minutes before plan, and the plan kept pointing at the old clock time.",
+      "The move is a pure shift — the dough, the durations and the fermentation window are unchanged, only the clock times move. If you answer \"No, keep the plan\" the app stays quiet for a while, so back-filling several steps in a row is not nagged with the same question.",
+      "The offer only appears when the plan has a fixed time to move (\"eat at\" or a reopened dough with a saved start), and never on the last step — there is nothing left to move then."
+    ]
+  },
+  {
     "v": "0.825",
     "d": "august 2026",
     "d_en": "August 2026",

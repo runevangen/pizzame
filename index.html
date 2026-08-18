@@ -849,6 +849,12 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="modal-body" id="skyv-body"></div>
   </div>
 </div>
+<div id="foelg-modal" class="modal-overlay" onclick="if(event.target===this)closeFoelgModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b id="foelg-modal-tittel">⏱ Startet du nå?</b><button class="modal-x" onclick="closeFoelgModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="foelg-body"></div>
+  </div>
+</div>
 <div id="feilsok-modal" class="modal-overlay" onclick="if(event.target===this)closeFeilsokModal()">
   <div class="modal-box">
     <div class="modal-head"><b id="feilsok-modal-tittel">🩺 Hvorfor gikk det feil?</b><button class="modal-x" onclick="closeFeilsokModal()" aria-label="Lukk">✕</button></div>
@@ -3883,6 +3889,9 @@ function toggleStepDone(i){
   const isMob=mobEl&&mobEl.classList.contains('active');
   if(isMob){ mobGen(); } else { gen(); }
   scrollToNextStep();
+  // v0.826 (F37): et hak som settes PÅ langt fra planlagt tid kan bety at
+  // virkeligheten har forlatt planen — tilby å la planen følge etter.
+  if(!on&&typeof tilbyFoelgAvhaking==='function') tilbyFoelgAvhaking(s);
 }
 function scrollToNextStep(){
   const mobEl = document.getElementById('mob-layout');
@@ -9274,6 +9283,68 @@ function openSkyvModal(min){
 }
 function closeSkyvModal(){
   const m=document.getElementById('skyv-modal'); if(m) m.style.display='none';
+}
+// v0.826 (F37): planen følger avhakingen. Meldt inn fra et ekte bak: brukeren
+// begynte ~20 min før planlagt oppstart, og planen sto og pekte på det gamle
+// klokkeslettet mens virkeligheten var i gang. Når et steg hakes PÅ på et
+// annet tidspunkt enn planlagt, tilbys «Gjorde du dette nå? Flytt resten av
+// planen tilsvarende». Ren forskyvning — varigheter og total gjæringstid er
+// uendret, så ingen vindusdom trengs (i motsetning til F36, som flytter
+// sluttankeret alene og dermed strekker/korter hevingen). Terskel: ±5 min er
+// støy. Tilbys kun når planen har et fast anker å flytte — «spis kl.»-feltene
+// eller en gjenåpnet deigs lagrede startanker; en flytende «starter nå»-plan
+// regnes fra nå ved hver rendring og har ingenting å forskyve. Siste steg
+// tilbys ikke (ingenting igjen å flytte). Et «Nei» demper spørsmålet i to
+// minutter, så en bokføringsrunde (flere haker på rad i etterkant) bare spør
+// én gang. Utføringen går RETT til utfoerSkyv/ankeret — brukeren har alt
+// svart ja i denne dialogen, F36-vakten skal ikke spørre en gang til.
+const FOELG_TERSKEL_MIN=5;
+function foelgAnkerFinnes(){
+  if(S.mode==='end'){ const dEl=document.getElementById('mob-ed'); return !!(dEl&&dEl.value); }
+  return !!window._activeAnchorISO;
+}
+function tilbyFoelgAvhaking(s){
+  if(!s||!s.at||!foelgAnkerFinnes()) return;
+  if(window._foelgTausTil&&Date.now()<window._foelgTausTil) return;
+  const st=window._steps||[];
+  if(st.length&&stepSig(st[st.length-1])===stepSig(s)) return;
+  const plan=new Date(s.at); if(isNaN(plan.getTime())) return;
+  const raa=Math.round((Date.now()-plan.getTime())/60000);
+  if(Math.abs(raa)<=FOELG_TERSKEL_MIN) return;
+  const skyv=Math.round(raa/5)*5;
+  if(!skyv) return;
+  openFoelgModal(s, skyv);
+}
+function utfoerFoelg(min){
+  if(S.mode==='end'){ utfoerSkyv(min); return; }
+  const d=new Date(window._activeAnchorISO||'');
+  if(isNaN(d.getTime())) return;
+  window._activeAnchorISO=new Date(d.getTime()+min*60000).toISOString();
+  mobGen();
+}
+function openFoelgModal(s, min){
+  const body=document.getElementById('foelg-body');
+  const m=document.getElementById('foelg-modal');
+  if(!body||!m) return;
+  const tit=document.getElementById('foelg-modal-tittel');
+  if(tit) tit.textContent=L('⏱ Gjorde du dette nå?','⏱ Did you do this now?');
+  const st=window._steps||[];
+  const bake=st.length?new Date(st[st.length-1].at):null;
+  const nyBake=bake?new Date(bake.getTime()+min*60000):null;
+  const senere=min>0;
+  const avvik=fmtDur(Math.abs(min));
+  body.innerHTML=`
+    <div style="font-size:12.5px;line-height:1.55;color:var(--forno-text-muted)">${L(
+      `Du haket av «${s.title}» ca. ${avvik} ${senere?'etter':'før'} planen (planlagt kl. ${fT(new Date(s.at))}). Gjorde du dette nå? Da kan planen følge virkeligheten: resten flyttes ${avvik} ${senere?'senere':'tidligere'}, og ny steketid blir <b style="color:var(--forno-text)">${nyBake?fDT(nyBake):'—'}</b>. Deigen er den samme — bare klokkeslettene flytter.`,
+      `You checked off "${s.title}" about ${durEn(avvik)} ${senere?'after':'before'} plan (planned for ${fT(new Date(s.at))}). Did you do this now? Then the plan can follow reality: the rest moves ${durEn(avvik)} ${senere?'later':'earlier'}, and the new baking time is <b style="color:var(--forno-text)">${nyBake?fDT(nyBake):'—'}</b>. The dough is unchanged — only the clock times move.`)}</div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="closeFoelgModal();utfoerFoelg(${min});" style="flex:1;padding:9px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:700;cursor:pointer">${L('Ja, flytt planen','Yes, move the plan')}</button>
+      <button onclick="window._foelgTausTil=Date.now()+120000;closeFoelgModal();" style="flex:1;padding:9px;border:1px solid var(--forno-border);border-radius:8px;background:transparent;color:var(--forno-text);font-size:13px;cursor:pointer">${L('Nei, la planen stå','No, keep the plan')}</button>
+    </div>`;
+  m.style.display='flex';
+}
+function closeFoelgModal(){
+  const m=document.getElementById('foelg-modal'); if(m) m.style.display='none';
 }
 
 
