@@ -331,6 +331,16 @@ function recipeWithoutGjaertest(){
 function methodShowsColdSlider(m){const d=METHODS[m];return !!(d&&d.coldSlider);}
 function methodUsesFridge(m){const d=METHODS[m];return !!(d&&d.fridgeTemp);}
 function mN(m){const d=METHODS[m];return d?(window._lang==='en'?d.en:d.no):m;}
+// v0.823 (METHODS-opprydding): variantbevisst metodenavn — ÉN dommer for alle
+// visningsflater. Fem steder i index.html hadde egne kopier av navnelistene
+// (metodekort, hvorfor-kart, statuslinje-kart ×2, gjærtest-ternær) — registeret
+// fantes, men dømte ikke alene, og hver variant (poolishCold, kaldBulk) måtte
+// dryppes inn for hånd i hver kopi. Nå leser alle herfra.
+function mNVariant(m){
+  if(m==='poolish'&&S.poolishCold) return window._lang==='en'?'Poolish (fridge)':'Poolish (kjøleskap)';
+  if(m==='standard'&&S.kaldBulk) return window._lang==='en'?'Long-ferment (cold bulk)':'Langtidsdeig (kald bulk)';
+  return mN(m);
+}
 
 // F17: gjæretiketten leses nå fra recipeFor() — samme kilde som alt annet.
 // (Tidligere dupliserte denne HOPTS/KCOLDMULT-beregningene lokalt, og manglet

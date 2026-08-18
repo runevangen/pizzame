@@ -4676,7 +4676,7 @@ function searchAllMethods(anchor){
   }
   // Langtidsdeig (tidligere "Standard")
   S.method='standard';
-  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo(L('Langtidsdeig','Long-ferment dough'), {method:'standard',cold}); }
+  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo(mN('standard'), {method:'standard',cold}); }
   // Poolish, romtemperatur
   S.method='poolish'; S.poolishCold=false;
   for(const pref of [12,13,14,15,16]) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo(L('Poolish (romtemperatur)','Poolish (room temperature)'), {method:'poolish',poolishCold:false,poolishH:pref,cold}); }
@@ -4692,13 +4692,13 @@ function searchAllMethods(anchor){
   for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
   // Hurtigdeig — bruker HOPTS sine faste alternativer
   S.method='hurtig';
-  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:L('Hurtigdeig','Quick dough'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
+  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:mN('hurtig'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
   // Kveldsdeig — bruker KOPTS sine faste alternativer
   S.method='kveld';
-  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:L('Kveldsdeig','Evening dough'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
+  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:mN('kveld'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
   // Mania-poolish — fast struktur, ingenting å søke i, bare mål den ene planen
   S.method='mania';
-  { const steps=rawSteps(anchor); candidates.push({label:L('Mania-poolish','Mania poolish'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
+  { const steps=rawSteps(anchor); candidates.push({label:mN('mania'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
 
   S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
   S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold; S.poolishPauseH=origPoolishPauseH;
@@ -6648,7 +6648,7 @@ function methodTimeWarningHTML(){
   const startTime = new Date(eatTime.getTime() - hours*3600000);
   const leadHours = (startTime.getTime() - Date.now())/3600000;
   if(leadHours < 20) return ''; // mindre enn ~et døgns slakk er ikke et reelt problem
-  const methodName = S.method==='hurtig' ? L('Hurtigdeig','Quick dough') : L('Kveldsdeig','Evening dough');
+  const methodName = mN(S.method); // v0.823: registeret dømmer
   const methodNameLow = S.method==='hurtig' ? L('hurtigdeig','quick dough') : L('kveldsdeig','evening dough');
   const leadDays = (Math.round(leadHours/24*10)/10).toString().replace('.',',');
   return warningWrapHTML(`methodtime|${S.method}|${Math.round(leadHours)}`, `<div style="background:#FAEEDA;border:1px solid #EF9F27;border-radius:10px;padding:.75rem .9rem;margin-bottom:.8rem">
@@ -8070,13 +8070,15 @@ function methodFitNote(v){
 function mobMethodCards(){
   const wrap=document.getElementById('mob-gmet');if(!wrap)return;
   wrap.innerHTML='';
-  [{v:'standard',t:L('Langtidsdeig','Long-ferment dough'),s:L('Direkte + kjøleskapsheving','Direct + cold proof')},
-   {v:'poolish',t:'Poolish',s:L('Løs fordeig, 12–16t','Loose pre-ferment, 12–16h')},
-   {v:'biga',t:'Biga',s:L('Fast fordeig, 16–24t','Stiff pre-ferment, 16–24h')},
-   {v:'mania',t:L('Mania-poolish','Mania poolish'),s:L('To-trinns, udelt kald heving','Two-stage, undivided cold proof')},
-   {v:'hurtig',t:L('Hurtigdeig','Quick dough'),s:L('2–16 timer, romtemperatur','2–16 hours, room temperature')},
-   {v:'kveld',t:L('Kveldsdeig','Evening dough'),s:L('5–24 timer i kjøleskap','5–24 hours in the fridge')}
-  ].forEach(({v,t,s})=>{
+  // v0.823: navnene leses fra METHODS-registeret (mN) — undertekstene er
+  // kort-egne og blir her.
+  [{v:'standard',s:L('Direkte + kjøleskapsheving','Direct + cold proof')},
+   {v:'poolish',s:L('Løs fordeig, 12–16t','Loose pre-ferment, 12–16h')},
+   {v:'biga',s:L('Fast fordeig, 16–24t','Stiff pre-ferment, 16–24h')},
+   {v:'mania',s:L('To-trinns, udelt kald heving','Two-stage, undivided cold proof')},
+   {v:'hurtig',s:L('2–16 timer, romtemperatur','2–16 hours, room temperature')},
+   {v:'kveld',s:L('5–24 timer i kjøleskap','5–24 hours in the fridge')}
+  ].map(o=>({...o,t:mN(o.v)})).forEach(({v,t,s})=>{
     const el=document.createElement('div');
     el.dataset.v=v;   // v0.795: gjør lista lesbar utenfra, som PC-kortene
     const isOn=S.method===v;
@@ -8120,10 +8122,7 @@ function updateMethodWhyBox(){
   const titleEl=document.getElementById('mob-method-why-title');
   const textEl=document.getElementById('mob-method-why-text');
   if(!titleEl||!textEl) return;
-  const names = window._lang==='en'
-    ? {standard:'Long-ferment dough',poolish:'Poolish',biga:'Biga',hurtig:'Quick dough',kveld:'Evening dough',mania:'Mania poolish'}
-    : {standard:'Langtidsdeig',poolish:'Poolish',biga:'Biga',hurtig:'Hurtigdeig',kveld:'Kveldsdeig',mania:'Mania-poolish'};
-  titleEl.textContent=L('Hvorfor '+(names[S.method]||S.method)+'?','Why '+(names[S.method]||S.method)+'?');
+  titleEl.textContent=L('Hvorfor '+mN(S.method)+'?','Why '+mN(S.method)+'?'); // v0.823: registeret dømmer
   textEl.textContent=METHOD_WHY[S.method]||'';
 }
 
@@ -10560,9 +10559,7 @@ function planBottomActionsHTML(){
   </div>`;
 }
 function deigStatusBarHTML(steps, showActions, showDelta){
-  const methodNames = window._lang==='en'
-    ? {standard:(S.kaldBulk?'Long-ferment (cold bulk)':'Long-ferment dough'),poolish:(S.poolishCold?'Poolish (fridge)':'Poolish'),biga:'Biga',mania:'Mania poolish',hurtig:'Quick dough',kveld:'Evening dough'}
-    : {standard:(S.kaldBulk?'Langtidsdeig (kald bulk)':'Langtidsdeig'),poolish:(S.poolishCold?'Poolish (kjøleskap)':'Poolish'),biga:'Biga',mania:'Mania-poolish',hurtig:'Hurtigdeig',kveld:'Kveldsdeig'};
+  const methodNames = new Proxy({},{get:(_,m)=>mNVariant(m)}); // v0.823: registeret dømmer, varianter inkludert
   // Kort, språkriktig typenavn («Napoletansk»/«Neapolitan») uten det overflødige
   // «pizza»-halet — statuslinja er trang, og full «… pizza · Langtidsdeig» ble
   // kuttet midt i ordet til «… · Lon…». tnShort + linjebryting under gjør at

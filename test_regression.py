@@ -9457,6 +9457,41 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('wholemeal_share_splits_the_flour_row_and_spares_mania', ok181, r181))
 
+    # v0.823 (METHODS-opprydding): metodenavnene hadde fem lokale kopier
+    # (metodekort, hvorfor-kart, statuslinje-kart x2, gjaertest-ternaer,
+    # Smart-plan-etiketter) — registeret fantes (F21), men doemte ikke alene,
+    # og hver variant maatte dryppes inn i hver kopi for haand. Naa leser alle
+    # mN()/mNVariant() fra METHODS. Fryses med selve poenget som test: ENDRES
+    # registeret, foelger alle flatene med — og variantnavnene (kald bulk,
+    # kjoeleskaps-poolish) kommer fra samme dommer.
+    r182 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no';
+      const ut={};
+      const orig=METHODS.standard.no;
+      S.method='standard'; S.kaldBulk=false; S.poolishCold=false;
+      window._planChosen=true;
+      const bar=()=>deigStatusBarHTML(stepsForAnchor(new Date('2026-08-22T17:00:00')),true);
+      ut.barNavn=bar().includes('Langtidsdeig');
+      setLayout('mob'); mobMethodCards();
+      ut.kortNavn=document.getElementById('mob-gmet').textContent.includes('Langtidsdeig');
+      S.kaldBulk=true; ut.barVariant=bar().includes('Langtidsdeig (kald bulk)'); S.kaldBulk=false;
+      S.method='poolish'; S.poolishCold=true;
+      ut.barPoolishVariant=bar().includes('Poolish (kjøleskap)');
+      S.poolishCold=false; S.method='standard';
+      METHODS.standard.no='Testnavn';
+      const fulgteBar=bar().includes('Testnavn');
+      mobMethodCards();
+      const fulgteKort=document.getElementById('mob-gmet').textContent.includes('Testnavn');
+      METHODS.standard.no=orig;
+      mobMethodCards();
+      ut.enKilde=fulgteBar&&fulgteKort;
+      window._lang='en'; ut.engelsk=mNVariant('hurtig')==='Quick dough'; window._lang='no';
+      return ut;
+    }""")
+    ok182 = all(r182.values())
+    results.append(('method_names_have_one_judge_the_methods_register', ok182, r182))
+
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut
     # resten.») som overskrift, appnavnet som liten etikett over. Fryser begge

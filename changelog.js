@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.823",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rydding under panseret: metodenavnene («Langtidsdeig», «Hurtigdeig» …) sto i fem lokale kopier rundt i appen — metodekortene, statuslinja, Smart-plan og flere. Nå leses alle fra ett register, med variantnavnene (kald bulk, kjøleskaps-poolish) fra samme kilde. Ingenting ser annerledes ut — men navnene kan aldri mer sprike mellom flatene, og et fremtidig navnebytte er én linje."
+    ],
+    "changes_en": [
+      "Under-the-hood cleanup: the method names (\"Long-ferment dough\", \"Quick dough\" …) lived in five local copies around the app — the method cards, the status bar, Smart plan and more. They are now all read from one register, with the variant names (cold bulk, fridge poolish) from the same source. Nothing looks different — but the names can never again diverge between surfaces, and a future rename is one line."
+    ]
+  },
+  {
     "v": "0.822",
     "d": "august 2026",
     "d_en": "August 2026",
