@@ -1,9 +1,9 @@
 # Backlog — UltimatePizza
 
-Sist oppdatert: 17.08.2026 · v0.820 i prod. Søndagsbaket 16.08 drev åtte versjoner (v0.813–0.820): skyveknapper på steketiden, kickstart-tekst kalibrert, startanker ved gjenåpning, «Gjærens tilstand» (åpnet boks kompenseres), hak som overlever omskrivinger, «Hvorfor gikk det feil?» under Mer, og to kort-layoutfikser for stor skrift. Ankarsrum-friksjonen er MÅLT (4,5–5 °C — dokumentert ved FRIKSJON_C). 210 tester.
+Sist oppdatert: 18.08.2026 · v0.826 i prod. Batchen 18.08 tok hele «kan startes nå»-lista: METHODS-opprydding (v0.823 — navnebytte er nå én linje), kickstart til Langtidsdeig/Kveldsdeig med varmeregnskap (v0.824), F36 (v0.825 — ærlig dialog med vindusdom når steketiden flyttes etter oppstart) og F37 (v0.826 — «Gjorde du dette nå?» når et hak settes langt fra planlagt tid). 217 tester.
 **Venter på bakst/målinger:** F33 (protokoll klar), F24, F34 (treningsdata), F38-tilleggsmåling (fingertest + faktisk romtemp neste bakst), gjær-duelltesten (gammel mot fersk boks).
-**Venter på Runes avgjørelse:** kickstart til Langtidsdeig/Kveldsdeig (anbefalt, med varmeregnskap à la v0.812) · navnebytte Hurtigdeig → Sammedagsdeig · METHODS-opprydding (fem hardkodede navnekopier — anbefalt uansett) · F26 · F12 · T-i18n2 (parkert bevisst).
-**Besluttet mønster, ikke bygget:** F36, F37, F38 (tiltak 1 — bakerekkefølge-teksten — er nesten gratis). **Store løft for senere:** F29 (`uses:{}` per steg), F32 (stegbilder, motivliste klar).
+**Venter på Runes avgjørelse:** navnebytte Hurtigdeig → Sammedagsdeig (nå én linje i METHODS) · F26 · F12 · T-i18n2 (parkert bevisst).
+**Besluttet mønster, ikke bygget:** F38 (tiltak 1 — bakerekkefølge-teksten — er nesten gratis). **Store løft for senere:** F29 (`uses:{}` per steg), F32 (stegbilder, motivliste klar).
 
 Prioritert liste over reelle feil, inkonsistenser og forbedringer, forankret i
 faktisk kode (fil:linje refererer til `index.html` med mindre annet er nevnt).
@@ -777,7 +777,14 @@ To tiltak, i stigende kostnad:
    siste perfekt». Krever at etterhevingens mål flyttes ~halvparten av
    vindusbredden frem, og at steget sier hvorfor.
 
-### F36. Flytt steketiden ETTER oppstart — med vindusvarsling (v0.813-oppfølger)
+### F36. Flytt steketiden ETTER oppstart — med vindusvarsling — ✅ GJORT (v0.825)
+
+Bygget som besluttet: «etter oppstart» = minst ett steg avhaket (eksplisitt
+brukersignal). Da åpner − / + en ærlig dialog i stedet for å flytte stille:
+fortiden ligger fast, siste passive fase kortes/forlenges (gammel → ny
+varighet), og ny totaltid dømmes mot melets gjæringsvindu (✓/⚠️).
+«Flytt likevel» / «Avbryt». Test r184, mutasjonsverifisert med tre brekk.
+Opprinnelig beskrivelse:
 
 v0.813 ga − / + på Steketid-raden, men kun som ren forskyvning før start.
 Etter at deigen står i bulk er fortiden låst: å flytte steketiden tidligere
@@ -788,7 +795,17 @@ gjæringsvindu sprenges. Krever at «etter oppstart» defineres (første steg
 avhaket? oppstartstid passert?) og at forskyvningen da holder utførte steg
 fast i stedet for å flytte alt.
 
-### F37. Planen følger avhakingen (v0.813-oppfølger)
+### F37. Planen følger avhakingen — ✅ GJORT (v0.826)
+
+Bygget som besluttet: et hak som settes PÅ mer enn 5 min fra planlagt tid
+åpner «Gjorde du dette nå?» — ja flytter hele planen (ren forskyvning,
+varigheter uendret, derfor ingen vindusdom), nei demper spørsmålet i to
+minutter (etterregistrering skal ikke mase). Kun med fast anker («spis
+kl.» eller gjenåpnet deigs startanker), aldri på siste steg. Samspillet
+med F36: utføringen går rett til utfoerSkyv — brukeren har alt svart ja,
+F36-vakten spør ikke en gang til. Test r185, mutasjonsverifisert med fem
+brekk (ett avdekket en for slapp testscenario — skjerpet). Opprinnelig
+beskrivelse:
 
 Meldt inn fra et ekte bak: brukeren begynte ~20 min før planlagt oppstart,
 og planen sto og pekte på det gamle klokkeslettet mens virkeligheten var i
