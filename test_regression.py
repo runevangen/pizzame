@@ -9747,6 +9747,46 @@ const svSched=window._pizzatidSchedule;
     ok186 = all(r186.values())
     results.append(('evening_dough_bulk_rest_default_on_with_honest_escape', ok186, r186))
 
+    # v0.830: hvert Smart-plan-kort viser SIN planlagte oppstart («🚀 Begynn …»)
+    # — foer sto oppstarten kun i vinner-sammendraget, og alternativkortene
+    # sa bare varighet («~27t»), som ikke er beslutningen. Kilden er
+    # kandidatens startIso (foerste aktive steg, timesOf) — samme kjede som
+    # «Aapne planen» lander paa. fBegynn sier naere tidspunkt menneskelig:
+    # «i dag»/«i kveld» (fra 17), «i morgen», ellers full dato (fDT).
+    # fBegynn-delene er relative til ekte naa — det ER kontrakten.
+    r187 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      const now=new Date();
+      ut.iDag=/^(i dag|i kveld) \\d\\d:\\d\\d$/.test(fBegynn(new Date(now)));
+      ut.iMorgen=fBegynn(new Date(now.getTime()+864e5)).startsWith('i morgen ');
+      ut.fjern=/kl\\. \\d\\d:\\d\\d$/.test(fBegynn(new Date(now.getTime()+7*864e5)));
+      const savedSched=window._pizzatidSchedule;
+      window._pizzatidSchedule=defaultPizzatidSchedule();
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.gjaer='torr';
+      S.kjokkenmaskin='ankarsrum'; S.oven='pizza';
+      let a=new Date(2027,7,1,18,0); while(a.getDay()!==5) a.setDate(a.getDate()+1);
+      const d=document.createElement('div'); d.id='__t187'; document.body.appendChild(d);
+      renderResultBlock('__t187','fre 18:00', a.toISOString());
+      const h=d.innerHTML; d.remove();
+      window._pizzatidSchedule=savedSched;
+      const reg=window._betaResultRegistry[window._betaResultRegistry.length-1];
+      const kort=betaKortUtvalg(reg.results);
+      const deler=h.split('class="beta-card');
+      ut.flereKort=kort.length>=2;
+      let alleViser=true, riktigPerKort=true;
+      kort.forEach((c,i)=>{
+        const kh=deler[i+1]||'';
+        if(!/🚀 Begynn/.test(kh)) alleViser=false;
+        if(!kh.includes(escH(fBegynn(new Date(c.startIso))))) riktigPerKort=false;
+      });
+      ut.alleViser=alleViser;
+      ut.riktigPerKort=riktigPerKort;
+      return ut;
+    }""")
+    ok187 = all(r187.values())
+    results.append(('smart_plan_cards_show_their_own_start_time', ok187, r187))
+
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut
     # resten.») som overskrift, appnavnet som liten etikett over. Fryser begge

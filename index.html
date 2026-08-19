@@ -2381,6 +2381,17 @@ function fDT(d){
   return`${dy[d.getDay()]} ${d.getDate()}. ${mo[d.getMonth()]} kl. ${tm}`;
 }
 function fT(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+// v0.830: «Begynn»-linja på Smart-plan-kortene. Nære tidspunkt sies
+// menneskelig — «i dag»/«i kveld» (fra kl. 17) og «i morgen» — ellers full
+// dato via fDT. Samme ånd som Fra–til-kortenes «Begynn … → stek …» (v0.779).
+function fBegynn(d){
+  const now=new Date();
+  const sammeDag=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+  const tm=fT(d);
+  if(sammeDag(d,now)) return d.getHours()>=17?L(`i kveld ${tm}`,`tonight at ${tm}`):L(`i dag ${tm}`,`today at ${tm}`);
+  if(sammeDag(d,new Date(now.getTime()+864e5))) return L(`i morgen ${tm}`,`tomorrow at ${tm}`);
+  return fDT(d);
+}
 // v0.753: samme tidspunkt, skrevet helt ut. fDT() forkorter («søn 9. aug»),
 // som er riktig i en tett tidsplan der datoen står på hvert eneste steg. I
 // kvitteringen øverst er dette derimot den ENE opplysningen som betyr noe —
@@ -5522,10 +5533,17 @@ function renderResultBlock(containerId, label, anchorIso){
     // Hvert valg er et kort med egen «Bruk denne»-knapp: fylt for anbefalt, omriss
     // for alternativene. «mer smak» på egen linje så gjæringstallet holder seg kort
     // og ikke flyter ut av kortet ved siden av et langt, wrappet metodenavn.
+    // v0.830: hvert kort viser SIN planlagte oppstart — det er den som er
+    // beslutningen («+16t mer smak» er abstrakt; «Begynn tir 15:30» er en
+    // avtale med kalenderen din). Lest fra kandidatens faktiske første aktive
+    // steg (startIso fra timesOf) — samme kilde som «Åpne planen» lander på,
+    // ingen parallell utregning.
+    let beg=''; try{ beg=fBegynn(new Date(c.startIso)); }catch(e){}
     return `${topp}<div class="beta-card${isWin?' beta-win':''}" style="margin-top:0">
       <div class="beta-row-top"><span class="beta-m">${escH(c.label)}</span><span class="beta-hrs">~${Math.round(c.totalHrs)}${L('t','h')}</span></div>
       ${flav?`<div class="beta-sub">${flav}</div>`:''}
       <div class="beta-sub" style="opacity:.85">🫙 ${escH(deig.gjaer)}</div>
+      ${beg?`<div class="beta-sub" style="border-top:1px dashed var(--forno-border-soft);margin-top:5px;padding-top:5px">🚀 ${L('Begynn','Begin')} <b style="color:var(--forno-text)">${escH(beg)}</b></div>`:''}
       <div class="beta-whenrow">${betaWhenRow(c.conflicts, isWin)}</div>
       <button type="button" class="beta-use${isWin?'':' beta-sec'}" onclick="applyBetaResult(${regId},${resIdx})">${L('Åpne planen →','Open the plan →')}</button>
     </div>`;

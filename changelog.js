@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.830",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Smart-plan-kortene viser nå planlagt oppstart: hvert forslag har fått en «🚀 Begynn»-linje — «i kveld 19:45», «i morgen 08:15», eller full dato for det som ligger lenger frem. Før sa alternativkortene bare hvor lenge deigen tar (~27 t); nå ser du med ett blikk NÅR du må stå på kjøkkenet — som er det valget faktisk står om.",
+      "Tidspunktet leses fra forslagets faktiske første steg — samme plan som «Åpne planen» lander på — så kortet og planen kan aldri si to forskjellige ting."
+    ],
+    "changes_en": [
+      "The Smart plan cards now show the planned start: every suggestion has a \"🚀 Begin\" line — \"tonight at 19:45\", \"tomorrow at 08:15\", or the full date for anything further out. Before, the alternative cards only said how long the dough takes (~27 h); now you see at a glance WHEN you need to be in the kitchen — which is what the choice is actually about.",
+      "The time is read from the suggestion's actual first step — the same plan that \"Open the plan\" lands on — so the card and the plan can never disagree."
+    ]
+  },
+  {
     "v": "0.829",
     "d": "august 2026",
     "d_en": "August 2026",
