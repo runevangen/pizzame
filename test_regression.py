@@ -8242,10 +8242,15 @@ def _atferd_7(page, results):
       ut.mobKort    = sett([...document.querySelectorAll('#mob-gmet > div')].map(e=>e.dataset.v||''));
       Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
       S.mel=500; S.type='napoletana'; S.hydro=65; S.temp=22;
-      ut.smartPlan  = sett((searchAllMethods(new Date(2026,7,20,18,0))||[])
+      // v0.830: ankeret laa 6 dager frem da testen ble skrevet (v0.795) — og
+      // raatnet: searchAllMethods filtrerer paa «kan startes NAA», saa da
+      // virkeligheten tok igjen datoen falt de lange metodene ut en etter en.
+      // Langt-frem-anker (2027) er immunt; det testen binder er LISTENE, ikke
+      // datoen.
+      ut.smartPlan  = sett((searchAllMethods(new Date(2027,7,20,18,0))||[])
                             .map(c=>(c.snapshot||{}).method).filter(Boolean));
       // Fra-til med et romslig vindu: alle seks skal faa plass.
-      const cands=windowCandidates(new Date(2026,7,20,18,0), 5*24*60);
+      const cands=windowCandidates(new Date(2027,7,20,18,0), 5*24*60);
       ut.kandidater = sett(cands.map(c=>c.method));
       const mania=cands.find(c=>c.method==='mania');
       ut.maniaPasser = !!(mania && mania.best);
