@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.832",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ingen synlig endring — forsterkning av test-sikkerhetsnettet. Motorens rene matematikk (interpolatoren, kalibreringskurvene, Q10-gjæringsmodellen, gjærens tilstand, navneregisteret) har fått et eget enhetslag på 52 tester som kjører på under ett sekund, automatisk FØR resten av porten. Svikter matematikken, stopper alt umiddelbart — med funksjonsnavn i feilmeldingen i stedet for et bakescenario."
+    ],
+    "changes_en": [
+      "No visible change — reinforcement of the test safety net. The engine's pure math (the interpolator, the calibration curves, the Q10 fermentation model, yeast condition, the name register) now has its own unit layer of 52 tests running in under a second, automatically BEFORE the rest of the gate. If the math breaks, everything stops immediately — with a function name in the error message instead of a baking scenario."
+    ]
+  },
+  {
     "v": "0.831",
     "d": "august 2026",
     "d_en": "August 2026",

@@ -10034,6 +10034,22 @@ def main():
     index_dir = os.path.dirname(os.path.abspath(index_path)) or "."
     baseline = load_full_baseline()
 
+    # Gruppe 0 (v0.832): enhetslaget. Motorens rene funksjoner (interpLin,
+    # kurvene, Q10, gjaerStyrke, navneregisteret ...) testes i node paa
+    # millisekunder FOER nettleseren bootes. Feiler matematikken, feiler
+    # porten her — med funksjonsnavn i meldingen i stedet for et scenario.
+    # Kjoeres ogsaa ved delkjoring (--test/--gruppe): den koster ingenting.
+    print("Gruppe 0 — enhetslag:")
+    _enhet = subprocess.run(["node", os.path.join(index_dir, "test_enhet.mjs")],
+                            capture_output=True, text=True)
+    print(_enhet.stdout.rstrip())
+    if _enhet.returncode != 0:
+        if _enhet.stderr.strip():
+            print(_enhet.stderr.rstrip())
+        print("Enhetslaget FEILET — stopper foer nettleserkjoringen.")
+        sys.exit(1)
+    print()
+
     handler = http.server.SimpleHTTPRequestHandler
     os.chdir(index_dir)
     httpd = socketserver.TCPServer(("", 0), handler)
