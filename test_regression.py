@@ -9792,6 +9792,56 @@ const svSched=window._pizzatidSchedule;
     ok187 = all(r187.values())
     results.append(('smart_plan_cards_show_their_own_start_time', ok187, r187))
 
+    # v0.831: «Start ny deig» fra flere steder — Mer-fanen, PC-menyen,
+    # «Fortsetter»-baren og etter «Merk ferdig» (🎉-varianten). Alle gaar
+    # gjennom EN inngang (startNyDeigForespoersel) som gjenbruker doReset().
+    # Vern KUN naar noe kan mistes (aapen navngitt deig eller avhakede steg);
+    # et blankt oppsett nullstilles uten spoersmaal. Avbryt roerer ingenting;
+    # Ja nullstiller alt. Dialogen minner om at deigen er trygt lagret under
+    # Deiger naar den har navn.
+    r188 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      setLayout('mob'); window._planChosen=true;
+      const modal=document.getElementById('startny-modal');
+      closeStartNyModal();
+      const merEl=document.getElementById('mer-startny');
+      ut.merRad = !!merEl && merEl.textContent.includes('Start ny deig')
+        && ((merEl.closest('.mob-setting-row')||{}).getAttribute('onclick')||'').includes('startNyDeigForespoersel');
+      ut.pcRad = ((document.getElementById('pc-menu-startny')||{getAttribute:()=>''}).getAttribute('onclick')||'').includes('startNyDeigForespoersel');
+      window._activeDeigId='t1'; window._activeDeigName='Testdeig';
+      const bar=activeDeigIndicatorHTML();
+      ut.barKnapp = bar.includes('startNyDeigForespoersel') && bar.includes('Start ny');
+      window._activeDeigId=null; window._activeDeigName=null;
+      window._checked=new Set(); window._checkedSubsteps=new Set(); window._checkedIngredients=new Set();
+      S.mel=800;
+      startNyDeigForespoersel();
+      ut.direkteReset = modal.style.display!=='flex' && S.mel===DEF.mel;
+      S.mel=800; window._checked=new Set(['S|x|1']);
+      startNyDeigForespoersel();
+      ut.vernVises = modal.style.display==='flex' && S.mel===800 && window._checked.size===1;
+      const knapper=()=>document.getElementById('startny-body').querySelectorAll('button');
+      knapper()[1].click();
+      ut.avbrytBevarer = modal.style.display!=='flex' && S.mel===800 && window._checked.size===1;
+      window._activeDeigId='t2'; window._activeDeigName='Søndagspizza';
+      startNyDeigForespoersel();
+      const h=document.getElementById('startny-body').innerHTML;
+      ut.vernNavn = /Søndagspizza/.test(h) && /Deiger/.test(h);
+      knapper()[0].click();
+      ut.jaNullstiller = modal.style.display!=='flex' && S.mel===DEF.mel
+        && window._checked.size===0 && window._activeDeigId===null;
+      window._activeDeigId='t3'; window._activeDeigName='X'; window._checked=new Set();
+      openStartNyModal(true);
+      ut.feirer = document.getElementById('startny-modal-tittel').textContent.includes('🎉');
+      closeStartNyModal();
+      window._activeDeigId=null; window._activeDeigName=null;
+      ut.ferdigKobling = confirmFinishBake.toString().includes('startNyDeigForespoersel(true)');
+      window._planChosen=true;
+      return ut;
+    }""")
+    ok188 = all(r188.values())
+    results.append(('start_fresh_reachable_from_many_places_with_guard', ok188, r188))
+
     # v0.821 (skisse C): innloggingen leder med LOEFTET, ikke navnet —
     # killer-funksjonen i en setning («Si naar du vil spise. Appen finner ut
     # resten.») som overskrift, appnavnet som liten etikett over. Fryser begge

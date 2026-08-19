@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.831",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "«Start ny deig» er nå tilgjengelig der behovet faktisk oppstår, ikke bare på veiviserens første steg: som egen rad under Mer (og i ☰-menyen på PC), som knapp i «Du redigerer …»-linjen øverst i Tidsplan, og som et «🎉 Ferdig! Klar for neste?»-tilbud rett etter at du merker en bakst ferdig.",
+      "Alle veiene går gjennom samme nullstilling som før (innstillingene dine for språk, gjærtest og favoritter overlever). Og et vern mot uhell: har du en åpen deig eller avhakede steg, spør appen først — og minner om at deigen ligger trygt lagret under Deiger. Et blankt oppsett nullstilles uten spørsmål."
+    ],
+    "changes_en": [
+      "\"Start a new dough\" is now available where the need actually arises, not just on the wizard's first step: as its own row under More (and in the ☰ menu on PC), as a button in the \"You are editing …\" bar at the top of the plan, and as a \"🎉 Done! Ready for the next one?\" offer right after you mark a bake as finished.",
+      "All the paths go through the same reset as before (your preferences for language, yeast test and favorites survive). And a guard against accidents: if you have an open dough or checked-off steps, the app asks first — and reminds you that the dough is safely saved under Doughs. A blank setup resets without a question."
+    ]
+  },
+  {
     "v": "0.830",
     "d": "august 2026",
     "d_en": "August 2026",

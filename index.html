@@ -849,6 +849,12 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="modal-body" id="skyv-body"></div>
   </div>
 </div>
+<div id="startny-modal" class="modal-overlay" onclick="if(event.target===this)closeStartNyModal()">
+  <div class="modal-box">
+    <div class="modal-head"><b id="startny-modal-tittel">🆕 Starte på ny?</b><button class="modal-x" onclick="closeStartNyModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="startny-body"></div>
+  </div>
+</div>
 <div id="foelg-modal" class="modal-overlay" onclick="if(event.target===this)closeFoelgModal()">
   <div class="modal-box">
     <div class="modal-head"><b id="foelg-modal-tittel">⏱ Startet du nå?</b><button class="modal-x" onclick="closeFoelgModal()" aria-label="Lukk">✕</button></div>
@@ -965,6 +971,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="menu-row" id="pc-menu-tilbud" onclick="sidenavGo(openTilbudModal)">🎛️ Hva du blir tilbudt</div>
     <div class="menu-row" id="pc-menu-pizzatid" onclick="sidenavGo(openPizzatidModal)">🗓️ Når er du ledig?</div>
     <div class="menu-row" id="pc-menu-feilsok" onclick="sidenavGo(openFeilsokModal)">🩺 Hvorfor gikk det feil?</div>
+    <div class="menu-row" id="pc-menu-startny" onclick="sidenavGo(startNyDeigForespoersel)">🆕 Start ny deig</div>
     <div class="menu-row" id="pc-menu-feedback" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
     <div class="menu-row" id="pc-menu-share" onclick="sidenavGo(shareApp)">📤 Del appen</div>
     <div style="height:1px;background:#F2F2F7"></div>
@@ -1439,10 +1446,13 @@ function syncStaticI18nUI(){
   st('pizzatid-modal-tittel','🗓️ Når er du ledig?','🗓️ When are you free?');
   st('mer-tilbud-pizzatid','🗓️ Når er du ledig?','🗓️ When are you free?');
   st('mer-feilsok','🩺 Hvorfor gikk det feil?','🩺 Why did it go wrong?');
+  st('mer-startny','🆕 Start ny deig','🆕 Start a new dough');
+  st('startny-modal-tittel','🆕 Starte på ny?','🆕 Start fresh?');
   st('auth-tag1','Si når du vil spise.','Say when you want to eat.');
   st('auth-tag2','Appen finner ut resten.','The app works out the rest.');
   st('feilsok-modal-tittel','🩺 Hvorfor gikk det feil?','🩺 Why did it go wrong?');
   st('pc-menu-feilsok','🩺 Hvorfor gikk det feil?','🩺 Why did it go wrong?');
+  st('pc-menu-startny','🆕 Start ny deig','🆕 Start a new dough');
   st('pc-menu-pizzatid','🗓️ Når er du ledig?','🗓️ When are you free?');
   // help contains HTML, so set innerHTML instead of textContent
   { const el=document.getElementById('mob-pizzatid-help'); if(el) el.innerHTML=L('Sett opp de faste tidene du er ledig til å lage pizza, per ukedag. Appen bruker dem to steder: Smart-plan <b style="color:var(--forno-text)">foreslår</b> oppskrifter som passer tiden din, og ellers i appen <b style="color:var(--forno-text)">varsler</b> den hvis et steg havner på en tid du ikke har satt av.','Set up the fixed times you are free to make pizza, per weekday. The app uses them in two places: Smart plan <b style="color:var(--forno-text)">suggests</b> recipes that fit your time, and elsewhere in the app it <b style="color:var(--forno-text)">warns</b> you if a step lands at a time you have not set aside.'); }
@@ -9409,6 +9419,48 @@ function openFoelgModal(s, min){
 function closeFoelgModal(){
   const m=document.getElementById('foelg-modal'); if(m) m.style.display='none';
 }
+// v0.831: «Start ny deig» fra flere steder (Mer-fanen, PC-menyen,
+// «Fortsetter»-baren, og etter «Merk ferdig»). Alle går gjennom DENNE ene
+// inngangen, som gjenbruker doReset() — én nullstillingskilde, ingen kopier.
+// Vernet vises KUN når noe kan mistes: en åpen (navngitt) deig eller avhakede
+// steg/understeg/ingredienser. Et blankt oppsett nullstilles uten spørsmål,
+// så knappen aldri maser unødig. feirer=true gir 🎉-tittelen etter fullført
+// bakst — samme dialog, samme valg.
+function startNyTrengerVern(){
+  const haker=(window._checked&&window._checked.size)
+    ||(window._checkedSubsteps&&window._checkedSubsteps.size)
+    ||(window._checkedIngredients&&window._checkedIngredients.size);
+  return !!(window._activeDeigId || haker);
+}
+function startNyDeigForespoersel(feirer){
+  if(!startNyTrengerVern()){ doReset(); return; }
+  openStartNyModal(feirer===true);
+}
+function openStartNyModal(feirer){
+  const body=document.getElementById('startny-body');
+  const m=document.getElementById('startny-modal');
+  if(!body||!m) return;
+  const tit=document.getElementById('startny-modal-tittel');
+  if(tit) tit.textContent=feirer?L('🎉 Ferdig! Klar for neste?','🎉 Done! Ready for the next one?'):L('🆕 Starte på ny?','🆕 Start fresh?');
+  const navn=window._activeDeigName;
+  const nHaker=(window._checked?window._checked.size:0);
+  const hakeTxt=nHaker?L(` med ${nHaker} avhaket${nHaker>1?'e':''} steg`,` with ${nHaker} checked step${nHaker>1?'s':''}`):'';
+  const hva=navn
+    ?L(`«${escH(navn)}» er åpen${hakeTxt}. Deigen din er trygt lagret under Deiger — men planen her nullstilles og valgene settes tilbake til standard.`,
+       `"${escH(navn)}" is open${hakeTxt}. Your dough is safely saved under Doughs — but the plan here is reset and the choices go back to defaults.`)
+    :L(`Planen har ${nHaker} avhaket${nHaker>1?'e':''} steg — ${nHaker>1?'de':'det'} nullstilles, og valgene settes tilbake til standard.`,
+       `The plan has ${nHaker} checked step${nHaker>1?'s':''} — ${nHaker>1?'they are':'it is'} reset, and the choices go back to defaults.`);
+  body.innerHTML=`
+    <div style="font-size:12.5px;line-height:1.55;color:var(--forno-text-muted)">${hva}</div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="closeStartNyModal();doReset();" style="flex:1;padding:9px;border:none;border-radius:8px;background:var(--forno-accent);color:#1a1512;font-size:13px;font-weight:700;cursor:pointer">${L('Ja, start ny','Yes, start fresh')}</button>
+      <button onclick="closeStartNyModal()" style="flex:1;padding:9px;border:1px solid var(--forno-border);border-radius:8px;background:transparent;color:var(--forno-text);font-size:13px;cursor:pointer">${L('Avbryt','Cancel')}</button>
+    </div>`;
+  m.style.display='flex';
+}
+function closeStartNyModal(){
+  const m=document.getElementById('startny-modal'); if(m) m.style.display='none';
+}
 
 
 function aiNoteHTML(){
@@ -10859,10 +10911,13 @@ function activeDeigIndicatorHTML(){
   // fjernet (unødvendig støy). Kun «Du redigerer <deig>» vises fortsatt — den er
   // nyttig informasjon når du faktisk har åpnet en lagret deig.
   if(!window._activeDeigId) return '';
+  // v0.831: «Start ny» rett i baren — det er her man oppdager at man står i
+  // feil deig. Går via vernet (startNyDeigForespoersel), aldri stille.
   return '<span style="width:8px;height:8px;border-radius:50%;background:#e8590c;flex-shrink:0"></span>'
     +'<span style="color:#5f5e5a">'+L('Du redigerer','You are editing')+'</span>'
     +'<span style="font-weight:600;color:#c2410c">'+escH(window._activeDeigName||'')+'</span>'
-    +'<button onclick="closeActiveDeig()" style="margin-left:auto;font-size:11px;color:#993C1D;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">'+L('Lukk','Close')+'</button>';
+    +'<button onclick="startNyDeigForespoersel()" style="margin-left:auto;flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--forno-accent-text,#993C1D);background:var(--forno-bg-raised,#faf6f0);border:1px solid var(--forno-border,#e3d9cb);border-radius:999px;padding:3px 10px;cursor:pointer;font-family:inherit;white-space:nowrap">🆕 '+L('Start ny','Start new')+'</button>'
+    +'<button onclick="closeActiveDeig()" style="font-size:11px;color:#993C1D;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">'+L('Lukk','Close')+'</button>';
 }
 // Hele baren (ramme + innhold) eller '' — så det ikke blir en tom stripe med
 // kantlinje når ingen lagret deig er åpen.
@@ -11106,6 +11161,11 @@ async function confirmFinishBake(alreadyFinished, skip){
     refreshNotesPanels();
     refreshDeigerBanner();
     syncFavoriteButton();
+    // v0.831: fullførte du deigen som står ÅPEN, er neste naturlige handling å
+    // starte en ny — tilby det (🎉-varianten). Kun ved ekte fullføring, ikke
+    // ved redigering av en alt ferdig bakst, og aldri for en annen deig enn
+    // den du faktisk står i.
+    if(!alreadyFinished && window._activeDeigId===id) startNyDeigForespoersel(true);
   }catch(e){
     if(statusEl) statusEl.textContent = L('Kunne ikke lagre — prøv igjen.','Could not save — try again.');
   }
@@ -11532,6 +11592,10 @@ document.addEventListener('change', firstInteractionCheck, true);
     </div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openFeilsokModal()">
       <span id="mer-feilsok" style="font-size:13px;color:var(--dyn-text);font-weight:500">🩺 Hvorfor gikk det feil?</span>
+      <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
+    </div>
+    <div class="mob-setting-row" style="cursor:pointer" onclick="startNyDeigForespoersel()">
+      <span id="mer-startny" style="font-size:13px;color:var(--dyn-text);font-weight:500">🆕 Start ny deig</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
     </div>
     <div style="height:1px;background:var(--forno-border);margin:1.2rem 1rem .2rem"></div>
