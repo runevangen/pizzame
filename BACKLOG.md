@@ -2,7 +2,7 @@
 
 Sist oppdatert: 18.08.2026 · v0.826 i prod. Batchen 18.08 tok hele «kan startes nå»-lista: METHODS-opprydding (v0.823 — navnebytte er nå én linje), kickstart til Langtidsdeig/Kveldsdeig med varmeregnskap (v0.824), F36 (v0.825 — ærlig dialog med vindusdom når steketiden flyttes etter oppstart) og F37 (v0.826 — «Gjorde du dette nå?» når et hak settes langt fra planlagt tid). 217 tester.
 **Venter på bakst/målinger:** F33 (protokoll klar), F24, F34 (treningsdata), F38-tilleggsmåling (fingertest + faktisk romtemp neste bakst), gjær-duelltesten (gammel mot fersk boks).
-**Venter på Runes avgjørelse:** navnebytte Hurtigdeig → Sammedagsdeig (nå én linje i METHODS) · F26 · F12 · T-i18n2 (parkert bevisst).
+**Venter på Runes avgjørelse:** navnebytte Hurtigdeig → Sammedagsdeig (målt kostnad etter v0.833: én linje i METHODS + navnefasiten i test_enhet.mjs — null andre tester) · F26 · F12 · T-i18n2 (parkert bevisst).
 **Besluttet mønster, ikke bygget:** F38 (tiltak 1 — bakerekkefølge-teksten — er nesten gratis). **Store løft for senere:** F29 (`uses:{}` per steg), F32 (stegbilder, motivliste klar).
 **Fast månedsrutine (fra v0.827):** ved månedsskiftet ryddes forrige hele måned ut av endringsloggen — `python3 rydd_changelog.py "<måned år>"` flytter detaljpostene tapsfritt til `CHANGELOG-ARKIV.md` (selv-verifiserende), deretter skrives én redaksjonell samlepost inn der blokken sto. Siste måned står alltid i full detalj i appen.
 

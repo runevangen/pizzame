@@ -102,6 +102,14 @@ S.temp = 26;
 S.temp = 22;
 
 // v0.823: navneregisteret er den ene dommeren
+// v0.833: navnene er en PRODUKTBESLUTNING, ikke en invariant — derfor bor
+// fasiten ETT sted (her). Alle andre tester leser navnet via mN(), saa et
+// navnebytte koster METHODS-linja + denne blokka, ingenting mer. Bevist ved
+// maaling: hurtig→Sammedagsdeig felte 4 tester foer v0.833, 0 etter.
+t('navn: registerets norske navn er fasit', [
+  ['standard', 'Langtidsdeig'], ['hurtig', 'Hurtigdeig'], ['kveld', 'Kveldsdeig'],
+  ['poolish', 'Poolish'], ['biga', 'Biga'], ['mania', 'Mania-poolish'],
+].every(([k, navn]) => eng.mN(k) === navn));
 t('navn: mN leser registeret', eng.mN('standard') === 'Langtidsdeig');
 window._lang = 'en'; t('navn: engelsk variant', eng.mN('kveld') === 'Evening dough'); window._lang = 'no';
 S.kaldBulk = true; t('navn: varianten kald bulk', eng.mNVariant('standard') === 'Langtidsdeig (kald bulk)');

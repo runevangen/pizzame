@@ -108,10 +108,13 @@ def _atferd_1(page, results):
       try {
         const anchor = new Date(2026, 6, 31, 19, 0, 0);
         const results = searchAllMethods(anchor);
-        return { topLabel: results[0].label, topViolations: results[0].violations };
+        // v0.833: assert paa metodeNOEKKELEN (stabil), ikke visningsnavnet —
+        // et navnebytte i METHODS skal ikke felle en test om soekerangering.
+        return { topMethod: results[0].snapshot.method, topLabel: results[0].label,
+                 topViolations: results[0].violations };
       } finally { Date.now = realNow; }
     })()""")
-    ok = (r['topLabel'] == 'Kveldsdeig' and r['topViolations'] == 0)
+    ok = (r['topMethod'] == 'kveld' and r['topViolations'] == 0)
     results.append(('search_prefers_kveld_for_tight_friday', ok, r))
 
     # Bug: søket foreslo en gang oppstart FØR dagens dato (umulig å følge).
@@ -1357,6 +1360,9 @@ def _atferd_2(page, results):
 
       return {
         bannerAtDefault, bannerAfterChange, bannerText, hadBtn,
+        // v0.833: fasit for navnedelen leses fra registeret (mN), saa et
+        // navnebytte ikke feller en test om nullstillingsknappen.
+        bannerFasit: 'Fortsetter: Chicago · '+mN('kveld'),
         wizStepAfterReset: window._wizStep,
         typeAfterReset: S.type, coldAfterReset: S.cold,
         checkedAfterReset: [...window._checked],
@@ -1366,7 +1372,7 @@ def _atferd_2(page, results):
     }""")
     ok30 = (
       r30['bannerAtDefault'] == 'none' and r30['bannerAfterChange'] == 'flex' and
-      r30['bannerText'] == 'Fortsetter: Chicago · Kveldsdeig' and r30['hadBtn'] and
+      r30['bannerText'] == r30['bannerFasit'] and r30['hadBtn'] and
       r30['wizStepAfterReset'] == 1 and r30['typeAfterReset'] == 'napoletana' and
       r30['coldAfterReset'] == 24 and r30['checkedAfterReset'] == [] and
       r30['checkedSubstepsAfterReset'] == [] and r30['bannerAfterReset'] == 'none'
@@ -1401,7 +1407,8 @@ def _atferd_2(page, results):
       window._checked = new Set([0]);
       window._checkedSubsteps = new Set(['1-1']);
       wizGoto(2);
-      const kveldCard = Array.from(document.querySelectorAll('#mob-gmet > div')).find(c => c.textContent.includes('Kveldsdeig'));
+      // v0.833: kortet finnes paa data-noekkelen, ikke paa navnet i teksten.
+      const kveldCard = Array.from(document.querySelectorAll('#mob-gmet > div')).find(c => c.dataset.v === 'kveld');
       kveldCard.click();
       const afterMethodChange = { c: [...window._checked], s: [...window._checkedSubsteps], method: S.method };
 
@@ -1984,10 +1991,15 @@ def _atferd_2(page, results):
         const anchor=new Date(2026,6,31,19,0,0);
         window._lang='no'; const noTop=searchAllMethods(anchor)[0].label;
         window._lang='en'; const enTop=searchAllMethods(anchor)[0].label;
-        return {noTop, enTop};
+        window._lang='no'; const regNo=mN('kveld');
+        window._lang='en'; const regEn=mN('kveld');
+        return {noTop, enTop, regNo, regEn};
       } finally { Date.now=realNow; window._lang=_lang; }
     }""")
-    ok45 = (r45.get('noTop')=='Kveldsdeig' and r45.get('enTop')=='Evening dough')
+    # v0.833: fasiten er registeret (mN), ikke to literaler — testen maaler
+    # fortsatt at etiketten FOELGER spraaket, men overlever et navnebytte.
+    ok45 = (r45.get('noTop')==r45.get('regNo') and r45.get('enTop')==r45.get('regEn')
+            and r45.get('noTop')!=r45.get('enTop'))
     results.append(('smartplan_method_suggestion_labels_localized', ok45, r45))
 
     # v0.655: Tidsplan er «tom» til brukeren har gjort et reelt valg. Uten et valg
@@ -2462,7 +2474,7 @@ def _atferd_3(page, results):
         // (1) Lang metode i «Jeg begynner nå» skal IKKE tvinges til steketid-modus.
         S.type='napoletana'; S.cold=48; S.temp=22; S.meltype='doppio_zero';
         mobSetMode('start');
-        const card=Array.from(document.querySelectorAll('#mob-gmet > div')).find(c=>c.textContent.includes('Langtidsdeig'));
+        const card=Array.from(document.querySelectorAll('#mob-gmet > div')).find(c=>c.dataset.v==='standard');
         if(card) card.click();
         const stayedStart = (S.mode==='start' && S.method==='standard');
 
@@ -2544,9 +2556,11 @@ def _atferd_3(page, results):
         // Første tittel-div (font-weight:700 rett etter space-between-raden).
         const titleStyle = en.split('font-weight:700')[1].split('>')[0];
         return {
-          enShort: en.includes('Neapolitan · Long-ferment dough'),
+          // v0.833: navnedelen leses fra registeret; testens poeng er formatet
+          // («Type · Metode», uten «pizza»-suffiks og uten ellipse).
+          enShort: en.includes('Neapolitan · '+(window._lang='en', mN('standard'))),
           enNoPizzaSuffix: !en.includes('Neapolitan pizza ·'),
-          noShort: no.includes('Napoletansk · Langtidsdeig'),
+          noShort: no.includes('Napoletansk · '+(window._lang='no', mN('standard'))),
           noEllipsisTruncation: !titleStyle.includes('text-overflow:ellipsis') && !titleStyle.includes('white-space:nowrap')
         };
       } finally { window._lang=_lang; S.method=_m; S.type=_t; }
@@ -2563,8 +2577,10 @@ def _atferd_3(page, results):
         window._lang='no'; window._planChosen=true; setLayout('mob'); mobShowTab('settings');
         try{ wizGoto(2); }catch(e){}
         S.type='napoletana';
-        const pick=txt=>{const c=[...document.querySelectorAll('#mob-gmet > div')].find(x=>x.textContent.includes(txt)); if(c) c.click(); return !!c;};
-        pick('Langtidsdeig');
+        // v0.833: velg paa metodeNOEKKEL — testen handler om kald-tid-chipsene,
+        // ikke om hva metodene heter.
+        const pick=v=>{const c=[...document.querySelectorAll('#mob-gmet > div')].find(x=>x.dataset.v===v); if(c) c.click(); return !!c;};
+        pick('standard');
         const rows=[...document.querySelectorAll('#mob-srows > div')].map(d=>d.textContent.trim());
         const ssubShown = document.getElementById('mob-ssub').style.display!=='none';
         // Klikk «72 timer» -> S.cold=72
@@ -2576,7 +2592,7 @@ def _atferd_3(page, results):
         const chip48=[...document.querySelectorAll('#mob-srows > div')].find(d=>d.textContent.includes('48'));
         const chip48On = !!(chip48 && chip48.getAttribute('style').includes('600'));
         // Skjules for hurtigdeig
-        pick('Hurtigdeig');
+        pick('hurtig');
         const hiddenForHurtig = document.getElementById('mob-ssub').style.display==='none';
         // Engelske etiketter (kall byggeren direkte med en=språk)
         window._lang='en'; mobBuildSrows();
@@ -3591,6 +3607,9 @@ def _atferd_4(page, results):
       S.type='napoletana'; S.method='mania'; S.mode='start'; S.mel=500; S.hydro=65; S.gjaer='torr';
       mobShowTab('plan'); mobGen();
       const rm=maniaRecipe();
+      // v0.833: hva standardmetoden ville gitt i SAMME oppsett — det er dette
+      // Mania ikke skal vise. Regnet ut, ikke fryst (1,13 eies av Q10-ankeret).
+      S.method='standard'; S.cold=24; const rYd=R().yDry; S.method='mania';
       const totWater=rm.poolishVann+rm.vann1+rm.vann2; // 320
       let captured='', orig=null;
       try{
@@ -3609,7 +3628,9 @@ def _atferd_4(page, results):
         // ingredienslista = maniaRecipe, ikke R()
         waterMatches: captured.includes('Vann: '+totWater+'g') && totWater===320 && !captured.includes('Vann: 325g'),
         saltMatches: captured.includes('Salt: '+rm.salt+'g') && rm.salt===15 && !captured.includes('Salt: 14g'),
-        yeastMatches: captured.includes('Gjær: '+rm.totalYd+'g tørrgjær') && rm.totalYd===0.85 && !captured.includes('1.13g'),
+        // v0.833: «ikke standardmetodens gjaer» regnes ut (rYd) i stedet for
+        // aa fryse 1,13 her ogsaa — kalibreringen eies av Q10-ankertesten.
+        yeastMatches: captured.includes('Gjær: '+rm.totalYd+'g tørrgjær') && rm.totalYd===0.85 && !captured.includes(rYd+'g tørrgjær'),
         hydroMatches: captured.includes('Hydrering: 64%') && !captured.includes('Hydrering: 65%'),
         // duplikatsteget slått sammen: «Poolish kjøles ned» finnes, «Nedkjøling» borte
         chillMerged: titles.includes('Poolish kjøles ned') && !titles.includes('Nedkjøling'),
@@ -3752,10 +3773,12 @@ def _atferd_5(page, results):
       try{ setLayout('pc'); }catch(e){}
       const h=(document.getElementById('p-recipe')||{innerHTML:''}).innerHTML;
       const rec=recipeFor();
+      // v0.833: standardmetodens tall i samme oppsett — regnet, ikke fryst.
+      S.method='standard'; S.cold=24; const rYd=R().yDry; S.method='mania';
       const res={
         water: h.includes(rec.water+'g ('+rec.hydro+'%)') && !h.includes('325g'),
         salt: h.includes('>'+rec.salt+'g<'),
-        yeast: h.includes(rec.yDry+'g tørrgjær') && !h.includes('1.13g'),
+        yeast: h.includes(rec.yDry+'g tørrgjær') && !h.includes(rYd+'g tørrgjær'),
         noScoldRow: !h.includes(coldTimeLabel(48)),
         fixedColdRow: h.includes('10t udelt')
       };
@@ -4140,7 +4163,7 @@ def _atferd_5(page, results):
         hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===980,
         standardNoFit: byM.standard&&!byM.standard.best&&byM.standard.minSpan===1545,
         ranked, startOk,
-        winnerRenderedFirst: h.indexOf('Kveldsdeig')>=0 && h.indexOf('Kveldsdeig')<h.indexOf('Hurtigdeig'),
+        winnerRenderedFirst: h.indexOf(mN('kveld'))>=0 && h.indexOf(mN('kveld'))<h.indexOf(mN('hurtig')),
         showsShortfall: /mangler/.test(h),
         modeStaysEnd: modeAfter==='end',
         suggestionNotAuto: methodBeforeApply!=='kveld' || true,
@@ -6455,7 +6478,7 @@ def _atferd_7(page, results):
         // (A) brukerens vindu: hurtig-kortet leder med den menneskelige
         ed.value='2026-08-10'; et.value='18:00';
         renderWindowPicker();
-        const hk=kortFor('Hurtigdeig');
+        const hk=kortFor(mN('hurtig'));
         // v0.780: plasseringen skal ligge innenfor PIZZATID (begge endene) —
         // ikke et hardkodet klokkeslett. Argumentene til applyWindowCandidateEarly
         // (span, startMs) er fasiten; teksten kan ikke sjekkes mot et tall som
@@ -6473,7 +6496,7 @@ def _atferd_7(page, results):
         // (B) brukerens andre vindu (55t): slakket prises med varselets ord
         ed.value='2026-08-11'; et.value='18:00';
         renderWindowPicker();
-        const hk2=kortFor('Hurtigdeig');
+        const hk2=kortFor(mN('hurtig'));
         const fits=windowCandidates(new Date(2026,7,11,18,0),
                      Math.round((new Date(2026,7,11,18,0)-new Date(2026,7,9,10,30))/60000))
                      .filter(x=>x.best);
@@ -6628,7 +6651,7 @@ def _atferd_7(page, results):
         // 1) hurtig-kortet (natt bakover) leder med en plassering i Pizzatid
         const dEl=document.createElement('div'); dEl.innerHTML=h;
         const hk=[...dEl.children].map(x=>x.outerHTML)
-          .find(x=>/font-weight:800[^>]*>Hurtigdeig/.test(x))||'';
+          .find(x=>new RegExp('font-weight:800[^>]*>'+mN('hurtig')).test(x))||'';
         const mE=hk.match(/applyWindowCandidateEarly\\([^)]*?,(\\d+),(\\d+)\\)/);
         let beggeIPizzatid=false, ikkeNattFasit=false;
         if(mE){
@@ -9497,10 +9520,13 @@ const svSched=window._pizzatidSchedule;
       S.method='standard'; S.kaldBulk=false; S.poolishCold=false;
       window._planChosen=true;
       const bar=()=>deigStatusBarHTML(stepsForAnchor(new Date('2026-08-22T17:00:00')),true);
-      ut.barNavn=bar().includes('Langtidsdeig');
+      // v0.833: baseline leses fra registeret (orig), ikke fra en literal —
+      // testens poeng er at flatene FOELGER registeret, og det bevises av
+      // «Testnavn»-runden under. Selve navnet eies av mnNo/mnEn (r-METHODS).
+      ut.barNavn=bar().includes(orig);
       setLayout('mob'); mobMethodCards();
-      ut.kortNavn=document.getElementById('mob-gmet').textContent.includes('Langtidsdeig');
-      S.kaldBulk=true; ut.barVariant=bar().includes('Langtidsdeig (kald bulk)'); S.kaldBulk=false;
+      ut.kortNavn=document.getElementById('mob-gmet').textContent.includes(orig);
+      S.kaldBulk=true; ut.barVariant=bar().includes(orig+' (kald bulk)'); S.kaldBulk=false;
       S.method='poolish'; S.poolishCold=true;
       ut.barPoolishVariant=bar().includes('Poolish (kjøleskap)');
       S.poolishCold=false; S.method='standard';

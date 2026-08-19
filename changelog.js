@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.833",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ingen synlig endring — opprydding i test-sikkerhetsnettet etter en gjennomgang på jakt etter dobbeltarbeid. Funnet var godt nytt: ingen tester målte det samme. Men metodenavnene («Langtidsdeig», «Hurtigdeig» …) sto skrevet ordrett i et titalls tester der navnet ikke var poenget — de leser nå navnet fra registeret, slik appen selv gjør.",
+      "Målt effekt: å døpe om en metode felte fire tester før, og null nå. Fasiten for hva metodene heter bor ett sted, så et navnebytte koster én linje pluss den ene fasiten — ikke en opprydding i hele riggen."
+    ],
+    "changes_en": [
+      "No visible change — a cleanup of the test safety net after a review hunting for duplicated work. The finding was good news: no two tests measured the same thing. But the method names (\"Long-ferment dough\", \"Quick dough\" …) were written out verbatim in a dozen tests where the name was not the point — they now read the name from the register, the way the app itself does.",
+      "Measured effect: renaming a method used to break four tests, and now breaks none. The reference for what the methods are called lives in one place, so a rename costs one line plus that one reference — not a cleanup across the whole rig."
+    ]
+  },
+  {
     "v": "0.832",
     "d": "august 2026",
     "d_en": "August 2026",
