@@ -9896,6 +9896,71 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('login_leads_with_the_promise_in_both_languages', ok179, r179))
 
+    # v0.834: to ting som henger sammen.
+    # (A) Kjoleskaps-tipset ga EN diagnose (kaldt skap) og EN utvei (mer tid) -
+    #     en lapp for denne baksten, ikke en fiks. Verre: det lot spoersmaalet
+    #     "er gjaeren doed?" staa aapent, og det er den dyreste feiltolkningen
+    #     naar emnet ligger stille - da helles det i mer gjaer, eller deigen
+    #     kastes. Etter v0.824 ER svaret gitt FOER kjoleskapet: direktedeigene
+    #     har kickstarten, fordeigsmetodene har boblene i fordeigen. Tipset sier
+    #     det naa rett ut, og navngir riktig kvittering per metode.
+    # (B) Utveien som varer er kjoleskapstemperaturen (F13) - og den fantes bare
+    #     paa mobil. Stegtekstene er ordrett like i begge layouter
+    #     (1:1-invarianten), saa et raad om en kontroll PC ikke har er en
+    #     blindvei for halve brukerne. Kontrollen er lagt til paa PC, og da
+    #     maatte pgrp laere aa lagre TALL: data-attributter er alltid strenger,
+    #     og '5' i S.fridgeC foelger med inn i bakeloggen og inn i motorens
+    #     interpolasjon. DEF er typefasiten.
+    r180 = page.evaluate("""() => {
+      const sv={lang:window._lang, method:S.method, type:S.type, fridgeC:S.fridgeC};
+      window._lang='no';
+      const ut={kilde:{}, utvei:{}, absolverer:{}};
+      for(const m of ['standard','kveld','poolish','biga']){
+        S.method=m;
+        const t=TIP.coldRise;
+        ut.kilde[m]=t.includes('viste seg i live i kickstarten')?'kickstart'
+                   :t.includes('viste seg i live i fordeigen')?'fordeig':'MANGLER';
+        ut.utvei[m]=t.includes('Kjøleskapstemperatur');
+        ut.absolverer[m]=t.includes('gjæren er ikke synderen');
+      }
+      // 1:1: nøyaktig samme stegtekst i begge layouter
+      S.method='standard';
+      setLayout('pc');  const pcTxt=TIP.coldRise;
+      setLayout('mob'); const mobTxt=TIP.coldRise;
+      setLayout('pc');
+      ut.likTekst = (pcTxt===mobTxt);
+      // PC-kontrollen finnes, og et klikk lagrer TALL - ikke '5'
+      ut.finnes = !!document.getElementById('gfridge');
+      document.querySelector('#gfridge .pill[data-v="5"]').click();
+      ut.verdi=S.fridgeC; ut.type=typeof S.fridgeC;
+      // ... og et strengfelt skal fortsatt bli streng
+      document.querySelector('#ggj .pill[data-v="fersk"]').click();
+      ut.strengFeltType=typeof S.gjaer;
+      S.gjaer=sv.gjaer||'torr'; pgrp('ggj','gjaer');
+      // Synligheten foelger METHODS.fridgeTemp, som paa mobil
+      ut.synlig={};
+      for(const m of ['standard','poolish','kveld','mania','hurtig']){
+        S.method=m; S.type='napoletana'; applyTypeUI();
+        ut.synlig[m]=(document.getElementById('gfridge-wrap').style.display!=='none');
+      }
+      S.type='ingenelting'; S.method='standard'; applyTypeUI();
+      ut.synlig['ingenelting']=(document.getElementById('gfridge-wrap').style.display!=='none');
+      window._lang=sv.lang; S.method=sv.method; S.type=sv.type; S.fridgeC=sv.fridgeC;
+      pgrp('gfridge','fridgeC'); applyTypeUI(); try{syncI18nUI();}catch(e){}
+      return ut;
+    }""")
+    ok180 = (
+      r180['kilde'] == {'standard':'kickstart','kveld':'kickstart',
+                        'poolish':'fordeig','biga':'fordeig'}
+      and all(r180['utvei'].values()) and all(r180['absolverer'].values())
+      and r180['likTekst'] and r180['finnes']
+      and r180['verdi'] == 5 and r180['type'] == 'number'
+      and r180['strengFeltType'] == 'string'
+      and r180['synlig'] == {'standard':True,'poolish':True,'kveld':True,
+                             'mania':False,'hurtig':False,'ingenelting':False}
+    )
+    results.append(('cold_rise_clears_the_yeast_and_its_fix_reaches_both_layouts', ok180, r180))
+
 
 _ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
 

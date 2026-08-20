@@ -1090,6 +1090,21 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
   </div>
   <div id="adv-section" style="display:none">
 
+  <!-- v0.834: Kjøleskapstemperatur fantes bare på mobil. Kjøleskaps-tipset ber
+       deg stille den når kaldhevingen henger etter, og stegtekstene er ordrett
+       like i begge layouter (1:1-invarianten) — så en utvei som bare finnes på
+       mobil er en blindvei for halve brukerne. Pills som brytes, ikke segctrl:
+       fire bånd med lange etiketter får ikke plass på én rad i sidepanelet. -->
+  <div id="gfridge-wrap"><div class="lbl" id="pc-fridge-lbl">Kjøleskapstemperatur</div>
+    <div class="pills" id="gfridge">
+      <span class="pill" data-v="1" title="Kaldest innstilling — gjæringen går tregest.">0–2°C (kaldest)</span>
+      <span class="pill on" data-v="3" title="Referansen appen regner med.">2–4°C (standard)</span>
+      <span class="pill" data-v="5" title="Litt varmere enn anbefalt.">4–6°C</span>
+      <span class="pill" data-v="7" title="Dørhylla er kjøleskapets varmeste punkt.">6–8°C (dørhylle)</span>
+    </div>
+    <div id="gfridge-note" style="margin-top:5px;font-size:11px;color:#6E6E73;background:#F2F2F7;border-radius:6px;padding:5px 8px;line-height:1.4">Gjærmengden kompenseres automatisk: kaldere skap → litt mer gjær for samme resultat til samme tid. Usikker? Mål med termometer — 1–5-skalaene er ikke like mellom merker. Riktig innstilt kjøleskap er 0–4°C (Mattilsynet).</div>
+  </div>
+
   <div><div class="lbl">Gjærtype</div>
     <div class="pills segctrl" id="ggj">
       <span class="pill on" data-v="torr" title="1g tørrgjær = 3g fersk.">Tørrgjær</span>
@@ -1306,6 +1321,10 @@ function syncStaticI18nUI(){
   setPCPills('#ggj .pill',{torr:['Tørrgjær','Dry yeast'],fersk:['Fersk gjær','Fresh yeast']});
   setPCPills('#gkm .pill',{ankarsrum:['Ankarsrum','Ankarsrum'],manuell:['Manuell elting','Manual kneading'],annen:['Annen maskin','Other machine']});
   setPCPills('#govn .pill',{pizza:['Pizzaovn (430–450°C)','Pizza oven (430–450°C)'],vanlig:['Vanlig ovn (maks 250°C)','Regular oven (max 250°C)']});
+  // v0.834: Kjøleskapstemperatur på PC — samme etiketter som mobilens fridgeC-pills.
+  setPCPills('#gfridge .pill',{1:['0–2°C (kaldest)','0–2°C (coldest)'],3:['2–4°C (standard)','2–4°C (default)'],5:['4–6°C','4–6°C'],7:['6–8°C (dørhylle)','6–8°C (door shelf)']});
+  st('pc-fridge-lbl','Kjøleskapstemperatur','Fridge temperature');
+  st('gfridge-note','Gjærmengden kompenseres automatisk: kaldere skap → litt mer gjær for samme resultat til samme tid. Usikker? Mål med termometer — 1–5-skalaene er ikke like mellom merker. Riktig innstilt kjøleskap er 0–4°C (Mattilsynet).','The yeast amount is compensated automatically: a colder fridge → slightly more yeast for the same result at the same time. Unsure? Measure with a thermometer — the 1–5 dials differ between brands. A correctly set fridge is 0–4°C.');
   // v0.668 (backlog T-i18n): PC-metodekort + seksjonsetiketter + meny + planlegging.
   const _mcSub={standard:['Direkte + kjøl','Direct + fridge'],poolish:['Løs fordeig, 12–16t','Loose preferment, 12–16h'],biga:['Fast fordeig, 16–24t','Stiff preferment, 16–24h'],mania:['To-trinns, udelt kald heving','Two-stage, undivided cold proof'],hurtig:['2–16 timer, romtemperatur','2–16 hours, room temperature'],kveld:['5–24t kjøleskap','5–24h fridge']};
   document.querySelectorAll('#gmet .mc').forEach(mc=>{ const v=mc.dataset.v; const tt=mc.querySelector('.mc-t'); const ss=mc.querySelector('.mc-s'); if(tt) tt.textContent=mN(v); if(ss&&_mcSub[v]) ss.textContent=L(_mcSub[v][0],_mcSub[v][1]); });
@@ -2003,8 +2022,13 @@ function pgrp(id,key,cb){
   document.getElementById(id).querySelectorAll('.pill').forEach(p=>{
     p.classList.toggle('on',p.dataset.v===String(S[key]));
     p.onclick=()=>{
-      const changed = S[key] !== p.dataset.v;
-      S[key]=p.dataset.v;
+      // v0.834: data-attributter er ALLTID strenger, mens S-feltet har typen
+      // fra DEF. Med fridgeC (tall) på PC ville dette lagret '5' i stedet for 5
+      // — og et tall lagret som streng følger med inn i bakeloggen og i
+      // motorens interpolasjon. DEF er typefasiten, samme kilde som resten.
+      const val=(typeof DEF[key]==='number')?Number(p.dataset.v):p.dataset.v;
+      const changed = S[key] !== val;
+      S[key]=val;
       if(changed && PROGRESS_RESETTING_FIELDS.has(key)) clearStepProgress();
       pgrp(id,key,cb);
       if(cb)cb();
@@ -2034,6 +2058,9 @@ function applyTypeUI(){
   const cw=document.getElementById('cwrap');if(cw)cw.style.display=(isIE||!methodShowsColdSlider(S.method))?'none':'block'; // F21: manglet mania — PC viste kald-slider for fast-struktur-metode
   const gkw=document.getElementById('gkm-wrap');if(gkw)gkw.style.display=isIE?'none':'block';
   const gow=document.getElementById('govn-wrap');if(gow)gow.style.display=isIE?'none':'block';
+  // v0.834: samme regel som applyMobTypeUI — kun metoder som kaldhever med
+  // app-beregnet gjær (METHODS.fridgeTemp). Mania er fast oppskrift, unntatt.
+  const gfw=document.getElementById('gfridge-wrap');if(gfw)gfw.style.display=(isIE||!methodUsesFridge(S.method))?'none':'block';
   const hsub=document.getElementById('hsub');if(hsub)hsub.style.display=(!isIE&&S.method==='hurtig')?'block':'none';
   const ksub=document.getElementById('ksub');if(ksub)ksub.style.display=(!isIE&&S.method==='kveld')?'block':'none';
   const psub=document.getElementById('psub');if(psub)psub.style.display=(!isIE&&S.method==='poolish')?'block':'none';
@@ -2063,6 +2090,7 @@ function applyMobTypeUI(){
 }
 pgrp('gtype','type',()=>{const r=HREC[S.type];S.hydro=r;document.getElementById('hsl').value=r;uHydroUI();applyTypeUI();});
 pgrp('ggj','gjaer');
+pgrp('gfridge','fridgeC');   // F13 på PC (v0.834)
 pgrp('gkm','kjokkenmaskin');
 syncMeltypeSelect();
 pgrp('govn','oven');
@@ -2143,7 +2171,7 @@ function doReset(){
   // så dermed ut til å virke, men S.cold endte alltid på 1, ikke DEF.cold.
   document.getElementById('csl').value=DEF.cold;uCold(DEF.cold);
   document.getElementById('tsl').value=22;S.temp=22;uTempUI();
-  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');pgrp('gfridge','fridgeC');
   syncMeltypeSelect();
   mCards();
   document.getElementById('hsub').style.display='none';
@@ -2598,7 +2626,15 @@ const WHY=new Proxy({},{get:(_,k)=>((window._lang==='en'?WHY_EN:WHY_NO)[k])});
 // ville lekket dit. Fingertrykk-test: kun på VARM deig (roomRise) — på kald deig er den
 // upålitelig fordi deigen er stiv av kulde.
 const TIP_NO={
-  coldRise:()=>'Sjekk gjennom lokket uten å åpne: '+N('emnet skal vokse','emnene skal vokse')+' til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv) er kjøleskapet kaldere enn antatt — gi den lengre tid enn planen sier. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut og bak litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.',
+  // v0.834: «henger den etter» pekte på ÉN årsak (kaldt skap) og ga én utvei
+  // (mer tid) — som er en lapp for denne baksten, ikke en fiks. Og den lot det
+  // stå åpent om gjæren var død, som er den skumleste tolkningen når emnet
+  // ligger stille: da heller folk i mer gjær eller kaster deigen. Etter v0.824
+  // ER det spørsmålet allerede besvart før kjøleskapet — direktedeigene har
+  // kickstarten, fordeigsmetodene har boblene i fordeigen — så her sier vi det
+  // rett ut i stedet for å la tvilen stå. Utveien som varer er
+  // kjøleskapstemperaturen (F13), som kompenserer gjæren neste gang.
+  coldRise:()=>'Sjekk gjennom lokket uten å åpne: '+N('emnet skal vokse','emnene skal vokse')+' til ca. 1,5–2× og få små bobler under overflaten. Henger den etter (nesten uendret, stiv): gjæren er ikke synderen — den viste seg i live '+(kickVannG()>0?'i kickstarten':'i fordeigen')+'. Da står kjøleskapet kaldere enn appen regner med — gi den lengre tid enn planen sier, og still Kjøleskapstemperatur i innstillingene, så treffer planen bedre neste gang. For langt fram (stor og blank, med bobler som kollapser lett) — ta den ut og bak litt tidligere. Ikke bruk fingertrykk-testen på kald deig; den er upålitelig når deigen er stiv av kulde.',
   roomRise:'Klar når den har vokst merkbart (regn med ca. 30–50 % på denne korte hevingen — ikke vent på at den dobler seg), myk og luftig med begynnende bobler. Fingertrykk-test: trykk lett med våt finger — gropa skal fjære sakte halvveis tilbake. Spretter den rett opp igjen, trenger den mer tid; blir gropa stående og deigen synker sammen, er den for langt fram — gå videre med en gang. Varmt kjøkken går raskere enn klokka antyder.',
   benchTemper:()=>N('Klart når det ikke lenger er kaldt og har hevet litt synlig i boksen. Fortsatt stivt og kaldt — gi det mer tid før du strekker og steker. Slapt og flyter utover i boksen — det er temperert nok; strekk og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og det kan overheve og bli slapt.','Klare når de ikke lenger er kalde og har hevet litt synlig i boksen. Fortsatt stive og kalde — gi dem mer tid før du strekker og steker. Slappe og flyter utover i boksen — de er tempererte nok; strekk og stek uten å vente lenger. For kort gir stiv, tett deig som er vanskelig å åpne; altfor lenge og de kan overheve og bli slappe.'),
   poolishFerment:'Klar når overflaten er full av bobler, hvelver seg lett oppover og lukter friskt syrlig av gjær. Flat og stille ennå — la den stå lenger; kaldt kjøkken bremser den. Falt sammen i midten og lukter skarpt/alkoholaktig — den er gått litt for langt; bruk den likevel, men regn med noe mer syrlig smak.',
@@ -2607,7 +2643,7 @@ const TIP_NO={
   intoFridge:()=>N('Bruk boks med lokk — klut tørker ut overflaten og lager skorpe. Sett den i den kaldeste sonen','Bruk bokser med lokk — kluter tørker ut overflaten og lager skorpe. Sett dem i den kaldeste sonen')+': bakerst og nederst, over grønnsakskuffen (ca. 2–4°C). Unngå kjøleskapsdøra (5–7°C) — den er varmest og svinger mest hver gang du åpner, så deigen hever ujevnt der.'+N('',' Ikke stable boksene tett i høyden; det kan blokkere luftsirkulasjonen — spre dem litt utover.')+' Og stol ikke blindt på tallet på kjøleskapshjulet: 1–5-skalaene varierer mellom merker, så har du et termometer, sjekk at den kaldeste sonen ligger under 4°C.'
 };
 const TIP_EN={
-  coldRise:()=>'Check through the lid without opening: '+N('the ball should grow','the balls should grow')+' to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff), the fridge is colder than assumed — give it more time than the plan says. Too far along (large and shiny, with bubbles that collapse easily) — take it out and bake a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.',
+  coldRise:()=>'Check through the lid without opening: '+N('the ball should grow','the balls should grow')+' to about 1.5–2× and get small bubbles under the surface. If it lags (almost unchanged, stiff): the yeast is not the culprit — it proved itself alive '+(kickVannG()>0?'in the kickstart':'in the preferment')+'. Then the fridge is colder than the app assumes — give it more time than the plan says, and set Fridge temperature in the settings, so the plan lands closer next time. Too far along (large and shiny, with bubbles that collapse easily) — take it out and bake a little earlier. Don\'t use the finger-poke test on cold dough; it is unreliable when the dough is stiff from the cold.',
   roomRise:'Ready when it has grown noticeably (expect about 30–50% on this short rise — don\'t wait for it to double), soft and airy with the first bubbles appearing. Finger-poke test: press lightly with a wet finger — the dimple should spring back slowly, halfway. If it springs right back, it needs more time; if the dimple stays and the dough sinks, it is too far along — move on right away. A warm kitchen goes faster than the clock suggests.',
   benchTemper:()=>N('Ready when it is no longer cold and has risen a little visibly in the box. Still stiff and cold — give it more time before you stretch and bake. Slack and spreading out in the box — it is tempered enough; stretch and bake without waiting longer. Too short gives stiff, dense dough that is hard to open; far too long and it can over-proof and go slack.','Ready when they are no longer cold and have risen a little visibly in the box. Still stiff and cold — give them more time before you stretch and bake. Slack and spreading out in the box — they are tempered enough; stretch and bake without waiting longer. Too short gives stiff, dense dough that is hard to open; far too long and they can over-proof and go slack.'),
   poolishFerment:'Ready when the surface is full of bubbles, domes up easily and has a fresh, slightly tangy yeast smell. Flat and still — let it stand longer; a cold kitchen slows it down. Collapsed in the middle and smelling sharp/alcoholic — it has gone a bit too far; use it anyway, but expect a somewhat more sour taste.',
@@ -11026,7 +11062,7 @@ function syncDesktopControls(){
   const cdisp=document.getElementById('cdisp');if(cdisp)cdisp.textContent=ct;
   const tsl=document.getElementById('tsl');if(tsl)tsl.value=S.temp;
   uTempUI();
-  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');
+  pgrp('gtype','type');pgrp('ggj','gjaer');pgrp('gkm','kjokkenmaskin');pgrp('govn','oven');pgrp('gfridge','fridgeC');
   syncMeltypeSelect();
   mCards();buildHrows();buildKrows();
   applyTypeUI();
