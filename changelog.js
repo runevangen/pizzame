@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.834",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Kjøleskaps-sjekken ga én diagnose og én utvei: «henger den etter, er skapet kaldere enn antatt — gi den lengre tid». Den lot samtidig det dyreste spørsmålet stå ubesvart: er gjæren død? Det er tolkningen som får folk til å helle i mer gjær eller kaste en deig som var helt fin.",
+      "Nå svarer tipset på det, fordi appen allerede vet svaret: du så gjæren boble i kickstarten — eller i fordeigen, om du lager poolish eller biga. Teksten sier hvilken kvittering som gjelder for metoden du står i.",
+      "Og utveien varer lenger enn denne baksten: står skapet ditt kaldere enn appen regner med, kan du si fra under Kjøleskapstemperatur, så kompenseres gjærmengden neste gang.",
+      "Den innstillingen fantes bare på mobil. Stegtekstene er ordrett like i begge visninger, så et råd om en kontroll PC ikke har er en blindvei for halve brukerne — Kjøleskapstemperatur ligger nå også under ⚙️ Avanserte innstillinger på PC.",
+      "Under panseret: PC-ens knapperader lagret alltid tekst. For et tall som kjøleskapstemperaturen ville det blitt «5» i stedet for 5 — og det følger med inn i bakeloggen og i utregningene. Nå bestemmer standardoppsettet typen."
+    ],
+    "changes_en": [
+      "The fridge check gave one diagnosis and one way out: \"if it lags, the fridge is colder than assumed — give it more time\". It also left the most expensive question unanswered: is the yeast dead? That is the reading that makes people add more yeast, or throw away a dough that was perfectly fine.",
+      "The tip now answers it, because the app already knows: you watched the yeast bubble in the kickstart — or in the preferment, if you are making poolish or biga. The text names whichever receipt applies to the method you are in.",
+      "And the way out lasts beyond this bake: if your fridge runs colder than the app assumes, you can say so under Fridge temperature, and the yeast amount is compensated next time.",
+      "That setting only existed on mobile. Step texts are word-for-word identical in both views, so advice about a control desktop does not have is a dead end for half the users — Fridge temperature is now under ⚙️ Advanced settings on desktop too.",
+      "Under the hood: desktop's button rows always stored text. For a number like the fridge temperature that meant \"5\" instead of 5 — and it travels into the bake log and the calculations. The default configuration now decides the type."
+    ]
+  },
+  {
     "v": "0.833",
     "d": "august 2026",
     "d_en": "August 2026",
