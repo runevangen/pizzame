@@ -33,6 +33,18 @@
   --forno-accent:#e8590c;
   --forno-accent-soft:#2a1c0f;
   --forno-accent-text:#e8a06e;
+  /* v0.842: tilstandsfarger for metodekortene (v0.840/0.841). Var hardkodet
+     som lyse verdier (#eaf6ee flate, #0F6E56 tekst) og ble uleselige i mørkt
+     tema — meldt inn med skjermbilde: ANBEFALT-kortet sto lyst med lys tekst.
+     Nå tokens, definert per tema, som resten av paletten. */
+  --fit-ok:#7ec99f;
+  --fit-varsel:#ff9b91;
+  --anb-bg:#16261e;
+  --anb-kant:#3f8f6a;
+  --anb-merke-bg:#3f8f6a;
+  --anb-merke-tekst:#0d1a14;
+  --uegnet-bg:#1c1712;
+  --uegnet-kant:#332920;
   --forno-font-display:'Archivo Black',sans-serif;
   --forno-font-body:'Archivo',sans-serif;
   --forno-font-mono:'IBM Plex Mono',monospace;
@@ -78,15 +90,15 @@ body.mob-mode .dropdown-select select{font-size:14px}
    ikke rekker varsler i stedet for å se ut som et godt valg. PC-kortene bruker
    klasser (mobil bygger stilen inline), men reglene er de samme. */
 .mc{position:relative}
-.mc-fit{font-size:10px;margin-top:3px;color:#0F6E56}
-.mc-uegnet{background:#efece7;border:1px solid #ddd7cd}
-.mc-uegnet .mc-t{color:#8d8478}
-.mc-uegnet .mc-s{color:#a89e90}
-.mc-uegnet .mc-fit{color:#8d8478}
-.mc-anbefalt{background:#eaf6ee;border:2px solid #0F6E56}
-.mc-anb-merke{position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:#0F6E56;color:#fff;border-radius:4px;padding:1px 6px;font-style:normal}
-.mc.on .mc-fit{color:rgba(255,255,255,.92)}
-.mc.on .mc-fit.advarsel{color:#ffe2df;font-weight:700}
+.mc-fit{font-size:10px;margin-top:3px;color:var(--fit-ok)}
+.mc-anb-merke{position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:var(--anb-merke-bg);color:var(--anb-merke-tekst);border-radius:4px;padding:1px 6px;font-style:normal}
+/* v0.842: PC-kortet som er VALGT har oransje flate (#e8590c). Hvit 10px-tekst
+   der maaler 2,9:1 — under AA, og det er MIN nye fit-tekst som la seg paa et
+   gammelt kort. Moerk tone i stedet: samme oransje gir 5,5–5,9:1.
+   (Kortets egen hvite tittel ligger paa 3,6:1 — eksisterende PC-stil, ikke
+   roert her; noteres som kjent gjeld.) */
+.mc.on .mc-fit{color:#2b1206}
+.mc.on .mc-fit.advarsel{color:#3d0f0a;font-weight:700}
 .mc{border-radius:12px;padding:.6rem .7rem;cursor:pointer;transition:all .15s;background:#F2F2F7}
 .mc.on{background:#e8590c}
 .mc.hc{background:#FFF4E5}
@@ -97,6 +109,16 @@ body.mob-mode .dropdown-select select{font-size:14px}
 .mc-s{font-size:11px;color:#6E6E73;margin-top:1px}
 .mc.on .mc-s{color:rgba(255,255,255,.85)}
 .mc.hc.on .mc-s{color:rgba(255,255,255,.85)}
+/* v0.842: tilstandsreglene MAA staa etter .mc/.mc.hc og baere samme eller
+   hoeyere spesifisitet — foerste forsoek sto foer dem og tapte i stillhet:
+   kortet fikk riktig klasse, men beholdt .mc.hc sin lyse flate. Malt i probe
+   (anbefalt-kort paa PC laa paa --pc-sunken i BEGGE temaer). */
+.mc.mc-uegnet{background:var(--uegnet-bg);border:1px solid var(--uegnet-kant)}
+.mc.mc-uegnet .mc-t,.mc.mc-uegnet .mc-s,.mc.mc-uegnet .mc-fit{color:var(--forno-text-faint)}
+.mc.mc-anbefalt{background:var(--anb-bg);border:2px solid var(--anb-kant)}
+.mc.mc-anbefalt .mc-t{color:var(--forno-text)}
+.mc.mc-anbefalt .mc-s{color:var(--forno-text-muted)}
+.mc.mc-anbefalt .mc-fit{color:var(--fit-ok)}
 .hsub{border:1px solid #E5E5EA;border-radius:8px;margin-top:4px;overflow:hidden}
 .hsub-body{background:#fff;padding:.5rem .65rem;display:flex;flex-direction:column;gap:2px}
 .hrow{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:#3A3A3C;transition:background .1s}
@@ -258,6 +280,14 @@ body.mob-mode.theme-light{
   --forno-accent:#e8590c;
   --forno-accent-soft:#fbe4d4;
   --forno-accent-text:#c2410c;
+  --fit-ok:#0F6E56;
+  --fit-varsel:#a94442;
+  --anb-bg:#eaf6ee;
+  --anb-kant:#0F6E56;
+  --anb-merke-bg:#0F6E56;
+  --anb-merke-tekst:#ffffff;
+  --uegnet-bg:#efece7;
+  --uegnet-kant:#ddd7cd;
 }
 /* Native kontroller (dropdown, dato/tid) skal følge lys palett i lys modus. */
 body.mob-mode.theme-light .dropdown-select select,
@@ -682,6 +712,16 @@ body.pc-mode{
   --forno-accent:#e8590c;
   --forno-accent-soft:#fbe4d4;
   --forno-accent-text:#c2410c;
+  /* v0.842: samme tilstandsfarger som mobilens lyse tema — PC-lys hadde egen
+     temablokk, og uten disse ville kortene arvet MØRK-verdiene her. */
+  --fit-ok:#0F6E56;
+  --fit-varsel:#a94442;
+  --anb-bg:#eaf6ee;
+  --anb-kant:#0F6E56;
+  --anb-merke-bg:#0F6E56;
+  --anb-merke-tekst:#ffffff;
+  --uegnet-bg:#efece7;
+  --uegnet-kant:#ddd7cd;
   background:var(--pc-bg);
   font-family:var(--forno-font-body),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
@@ -728,6 +768,12 @@ body.pc-mode .mb:hover:not(.on),
 body.pc-mode .hrow:hover{background:var(--pc-border-soft)}
 body.pc-mode .mc,
 body.pc-mode .segctrl .pill{background:var(--pc-sunken)}
+/* v0.842: PC-visningen har sine egne, mer spesifikke kortregler (linja over),
+   som slo mine .mc-uegnet/.mc-anbefalt fra v0.841 — kortene fikk riktig
+   klasse, men beholdt PC-flaten. Målt i probe: anbefalt-kortet sto med
+   PC-sunken som bakgrunn i BEGGE temaer. Samme spesifisitet her retter det. */
+body.pc-mode .mc.mc-uegnet{background:var(--uegnet-bg);border:1px solid var(--uegnet-kant)}
+body.pc-mode .mc.mc-anbefalt{background:var(--anb-bg);border:2px solid var(--anb-kant)}
 /* v0.802: valgt segment var USYNLIG — regelen under overstyrte bare bakgrunnen
    (til lys), mens «body.pc-mode .pill.on» over fortsatt satte color:#fff.
    Hvit på nesten hvit i Gjærtype/Kjøkkenmaskin/Ovntype. Farge må med. */
@@ -6941,21 +6987,21 @@ function mobMethodCards(){
     el.dataset.fit = fit ? (uegnet?'nei':'ja') : '';
     if(anbefalt) el.dataset.anbefalt='1';
     const bg = isOn ? 'var(--forno-bg-raised)'
-             : anbefalt ? '#eaf6ee'
-             : uegnet ? 'var(--forno-bg,#f0ece5)'
+             : anbefalt ? 'var(--anb-bg)'
+             : uegnet ? 'var(--uegnet-bg)'
              : 'var(--forno-accent-soft)';
     const kant = isOn ? '2px solid var(--forno-accent)'
-               : anbefalt ? '2px solid #0F6E56'
-               : uegnet ? '1px solid var(--forno-border)'
+               : anbefalt ? '2px solid var(--anb-kant)'
+               : uegnet ? '1px solid var(--uegnet-kant)'
                : '1px solid transparent';
     el.style.cssText=`position:relative;border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${bg};border:${kant}`;
     // Er den VALGTE metoden umulig, skal kortet fortsatt vise hvor du står
     // (ramme + ✓) — men da i varselfarge, ikke i grått og ikke som anbefaling.
-    const fitFarge = !uegnet ? '#0F6E56' : (isOn ? '#a94442' : 'var(--forno-text-faint)');
+    const fitFarge = !uegnet ? 'var(--fit-ok)' : (isOn ? 'var(--fit-varsel)' : 'var(--forno-text-faint)');
     const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;font-weight:${isOn&&uegnet?700:400};color:${fitFarge}">${(isOn&&uegnet?'⚠️ ':'')+escH(fit.txt)}</div>`:'';
     const navnFarge = isOn ? 'var(--forno-accent-text)' : (uegnet ? 'var(--forno-text-faint)' : 'var(--forno-text)');
     const anbHtml = anbefalt
-      ? `<i aria-hidden="true" style="position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:#0F6E56;color:#fff;border-radius:4px;padding:1px 6px;font-style:normal">${L('ANBEFALT','RECOMMENDED')}</i>`
+      ? `<i aria-hidden="true" style="position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:var(--anb-merke-bg);color:var(--anb-merke-tekst);border-radius:4px;padding:1px 6px;font-style:normal">${L('ANBEFALT','RECOMMENDED')}</i>`
       : '';
     el.innerHTML=`${anbHtml}<div style="font-size:14px;font-weight:600;color:${navnFarge}">${t}</div><div style="font-size:12px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
     el.onclick=()=>{
@@ -6994,6 +7040,22 @@ function updateMethodWhyBox(){
   const titleEl=document.getElementById('mob-method-why-title');
   const textEl=document.getElementById('mob-method-why-text');
   if(!titleEl||!textEl) return;
+  // v0.842: boksen solgte inn den valgte metoden selv når den IKKE rekker
+  // fram til steketiden — meldt inn: «Hvorfor Langtidsdeig? … Enklest å
+  // planlegge» sto under et kort som nettopp hadde sagt «rekker ikke, trenger
+  // 26 t». Da er «hvorfor» feil spørsmål. Rekker den ikke, sier boksen det i
+  // stedet, og peker på den vi anbefaler (samme dommer som kortene).
+  const fit=methodFitNote(S.method);
+  if(fit && fit.dim){
+    const anb=anbefaltMetode();
+    titleEl.textContent=L(`${mN(S.method)} rekker ikke`,`${mN(S.method)} will not make it`);
+    textEl.textContent = anb
+      ? L(`${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. Vil du holde på steketiden, velg ${mN(anb)} — den er anbefalt her. Vil du beholde ${mN(S.method)}, må steketiden flyttes.`,
+          `${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. To keep your baking time, pick ${mN(anb)} — it is the one recommended here. To keep ${mN(S.method)}, move the baking time.`)
+      : L(`${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. Ingen av metodene rekker fram til steketiden du har valgt — flytt den, eller velg en metode og godta at den starter senere enn planen forutsetter.`,
+          `${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. None of the methods make it to the baking time you have chosen — move it, or pick a method and accept starting later than the plan assumes.`);
+    return;
+  }
   titleEl.textContent=L('Hvorfor '+mN(S.method)+'?','Why '+mN(S.method)+'?'); // v0.823: registeret dømmer
   textEl.textContent=METHOD_WHY[S.method]||'';
 }

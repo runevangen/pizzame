@@ -9775,9 +9775,12 @@ const svSched=window._pizzatidSchedule;
       ut.rekkefoelge = k.map(x=>x.dataset.v).join(',')==='standard,poolish,biga,mania,hurtig,kveld';
       const uegnet=k.filter(x=>x.dataset.fit==='nei').map(x=>x.dataset.v);
       const passer=k.filter(x=>x.dataset.fit==='ja').map(x=>x.dataset.v);
+      // v0.842: bind til TOKENET, ikke til en hardkodet farge — fargene bor
+      // naa i temapaletten (--uegnet-bg/--fit-varsel), og r191 vokter at de
+      // gir lesbar kontrast i begge temaer.
       ut.uegnetErGraa = uegnet.length===4 && passer.length===2
         && k.filter(x=>x.dataset.fit==='nei' && x.dataset.v!==S.method)
-             .every(x=>/forno-bg|240, 236, 229/.test(x.style.background));
+             .every(x=>/--uegnet-bg/.test(x.style.background));
       // ANBEFALT staar paa NOEYAKTIG ett kort, og det maa vaere ett som rekker
       const anb=k.filter(x=>x.dataset.anbefalt==='1');
       ut.ettAnbefalt = anb.length===1 && anb[0].dataset.fit==='ja'
@@ -9789,7 +9792,7 @@ const svSched=window._pizzatidSchedule;
       // varselfarge — ikke i graatt, og aldri som anbefaling
       const valgt=k.find(x=>x.dataset.v==='standard');
       ut.valgtUmuligVarsler = valgt.dataset.fit==='nei' && !valgt.dataset.anbefalt
-        && /⚠️/.test(valgt.innerHTML) && /a94442/.test(valgt.innerHTML)
+        && /⚠️/.test(valgt.innerHTML) && /--fit-varsel/.test(valgt.innerHTML)
         && /✓/.test(valgt.innerHTML);
       // undertittelen teller
       ut.subTeller = /^2 metoder rekker til /.test(document.getElementById('wiz-s2-sub').textContent);
@@ -9886,6 +9889,69 @@ const svSched=window._pizzatidSchedule;
     }""")
     ok190 = all(r190.values())
     results.append(('pc_method_cards_match_mobile_verdict_one_to_one', ok190, r190))
+
+    # v0.842: kontrasten paa de nye korttilstandene, i BEGGE temaer og BEGGE
+    # layouter. Meldt inn med skjermbilde: ANBEFALT-kortet sto lyst med lys
+    # tekst i moerkt tema — jeg hadde hardkodet #eaf6ee/#0F6E56 i stedet for aa
+    # gaa gjennom temaets tokens. Naa er alle tre tilstandene tokens
+    # (--anb-*/--uegnet-*/--fit-*), definert per tema som resten av paletten.
+    #
+    # NB for fremtidige maalinger: .mc har transition .15s, saa
+    # getComputedStyle rett etter mCards() gir en MIDT-I-OVERGANGEN-farge.
+    # Det kostet meg tre feilsoekingsrunder: CSS-en var riktig hele tiden,
+    # men proben leste den gamle bakgrunnen. Derfor ventingen under.
+    #
+    # Terskelen er AA (4,5:1) for alt v0.840–0.842 innfoerer. Unntaket som
+    # IKKE er vaart: PC-kortets hvite tittel paa oransje valgt-flate ligger
+    # paa 3,6:1 — eksisterende PC-stil fra foer, notert som kjent gjeld.
+    r191 = page.evaluate("""async () => {
+      resetTestState();
+      window._lang='no'; const ut={}; const maalinger={};
+      const L2=c=>{const m=/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/.exec(c); if(!m) return null;
+        const f=x=>{x=+x/255; return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4);};
+        return 0.2126*f(m[1])+0.7152*f(m[2])+0.0722*f(m[3]);};
+      const kr=(a,b)=>{const x=L2(a),y=L2(b); if(x==null||y==null) return 0;
+        return Math.round(((Math.max(x,y)+0.05)/(Math.min(x,y)+0.05))*100)/100;};
+      const bake=new Date(Date.now()+14.3*3600000);
+      for(const tema of ['dark','light']){
+        for(const lay of ['mob','pc']){
+          try{ setTheme(tema); }catch(e){ document.body.classList.toggle('theme-light', tema==='light'); }
+          setLayout(lay);
+          S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard';
+          window._planChosen=true;
+          document.getElementById(lay==='mob'?'mob-ed':'ed').value=fd(bake);
+          document.getElementById(lay==='mob'?'mob-et':'et').value=fT(bake);
+          if(lay==='mob'){ mobShowTab('settings'); mobMethodCards(); } else { mCards(); }
+          await new Promise(r=>setTimeout(r,400));   // se kommentaren over
+          const kort=[...document.querySelectorAll(lay==='mob'?'#mob-gmet > div':'#gmet .mc')];
+          for(const [merke,k] of [['anb',kort.find(x=>x.dataset.anbefalt==='1')],
+                                  ['uegnet',kort.find(x=>x.dataset.fit==='nei'&&x.dataset.v!==S.method)],
+                                  ['valgt',kort.find(x=>x.dataset.v===S.method)]]){
+            if(!k){ maalinger[tema+'/'+lay+'/'+merke]='MANGLER'; continue; }
+            const bg=getComputedStyle(k).backgroundColor;
+            const fitEl=lay==='mob'
+              ? [...k.querySelectorAll('div')].find(x=>/passer|rekker/.test(x.textContent))
+              : k.querySelector('.mc-fit');
+            const navnEl=lay==='mob'?k.querySelector('div:not([style*=absolute])'):k.querySelector('.mc-t');
+            const cNavn=navnEl?kr(bg,getComputedStyle(navnEl).color):0;
+            const cFit=fitEl?kr(bg,getComputedStyle(fitEl).color):0;
+            maalinger[tema+'/'+lay+'/'+merke]=cNavn+' / '+cFit;
+            // valgt-kortets TITTEL paa PC er gammel stil (hvit paa oransje) —
+            // holdes utenfor; fit-teksten der er vaar og maa holde maal.
+            const hopperNavn = (merke==='valgt' && lay==='pc');
+            if(!hopperNavn && cNavn<4.5) ut['navn_'+tema+'_'+lay+'_'+merke]=false;
+            if(cFit<4.5) ut['fit_'+tema+'_'+lay+'_'+merke]=false;
+          }
+        }
+      }
+      try{ setTheme('dark'); }catch(e){}
+      setLayout('mob');
+      ut.alleOverAA = Object.keys(ut).length===0;
+      ut.maalinger = maalinger;
+      return ut;
+    }""")
+    ok191 = r191.get('alleOverAA') is True
+    results.append(('method_card_states_keep_AA_contrast_in_both_themes', ok191, r191))
 
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret

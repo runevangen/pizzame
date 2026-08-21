@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.842",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet en lesbarhetsfeil i de nye metodekortene: ANBEFALT-kortet sto med lys grønn flate og lys tekst i mørkt tema — nesten usynlig. Fargene var hardkodet for lyst tema; nå følger de temapaletten som resten av appen, og er målt til godt over kravet i begge temaer og begge visninger.",
+      "«Hvorfor denne metoden?»-boksen solgte fortsatt inn metoden du står i, selv når kortet rett over sa at den ikke rekker fram. Nå sier den det rett ut i stedet — hvor mye tid som mangler, hvilken metode som er anbefalt hvis du vil holde på steketiden, og at alternativet er å flytte steketiden."
+    ],
+    "changes_en": [
+      "Fixed a readability bug in the new method cards: the RECOMMENDED card had a light green surface with light text in dark theme — nearly invisible. The colours were hardcoded for the light theme; they now follow the theme palette like the rest of the app, and are measured well above the requirement in both themes and both views.",
+      "The \"Why this method?\" box still sold you the method you were standing in, even when the card right above said it cannot make it. Now it says so outright instead — how much time is missing, which method is recommended if you want to keep your baking time, and that the alternative is to move that time."
+    ]
+  },
+  {
     "v": "0.841",
     "d": "august 2026",
     "d_en": "August 2026",
