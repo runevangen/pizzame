@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.836",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ingen synlig endring — men den største flyttejobben siden motoren fikk egen fil: hele steglaget (stegkjedene for alle seks metodene, med tekster, tider, forvarming, kickstart og deigtemperatur-modellen — 1300 linjer) er flyttet ut av hovedfila til en egen steps.js. Linje for linje uendret; alle frosne fasiter bekrefter at hvert tall og hver tekst er identisk.",
+      "Gevinsten er testbarhet: laget var allerede fritt for skjerm-avhengigheter, det bodde bare på feil adresse. Nå regner et nytt node-lag de samme ti frosne scenariene som nettleser-testene måles mot — på millisekunder, med funksjonsnavn i feilmeldingen når noe ryker.",
+      "Servicearbeideren kjenner den nye fila, så en fersk app aldri kan lastes med et utdatert steglag fra cachen — samme felle som v0.723 tettet for motorfila."
+    ],
+    "changes_en": [
+      "No visible change — but the biggest move since the engine got its own file: the entire step layer (the step chains for all six methods, with texts, times, preheating, kickstart and the dough-temperature model — 1,300 lines) has moved out of the main file into its own steps.js. Unchanged line for line; every frozen baseline confirms each number and text is identical.",
+      "The gain is testability: the layer was already free of screen dependencies, it just lived at the wrong address. A new node layer now computes the same ten frozen scenarios the browser tests are measured against — in milliseconds, with function names in the failure message when something breaks.",
+      "The service worker knows the new file, so a fresh app can never load with a stale step layer from the cache — the same trap v0.723 closed for the engine file."
+    ]
+  },
+  {
     "v": "0.835",
     "d": "august 2026",
     "d_en": "August 2026",

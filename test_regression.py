@@ -10223,6 +10223,18 @@ def main():
             print(_fn.stderr.rstrip())
         print("Serverfunksjons-laget FEILET — stopper foer nettleserkjoringen.")
         sys.exit(1)
+    # Gruppe 0c (v0.836): steglaget i node — steps.js regner de ti frosne
+    # scenariene mot SAMME baseline_results.json som nettleserlaget, felt for
+    # felt. Feiler matten eller en stegtekst-avhengighet, stopper porten her
+    # med funksjonsnavn i meldingen, foer noen nettleser er startet.
+    _steg = subprocess.run(["node", os.path.join(index_dir, "test_steg.mjs")],
+                           capture_output=True, text=True)
+    print(_steg.stdout.rstrip())
+    if _steg.returncode != 0:
+        if _steg.stderr.strip():
+            print(_steg.stderr.rstrip())
+        print("Steglaget FEILET — stopper foer nettleserkjoringen.")
+        sys.exit(1)
     print()
 
     os.chdir(index_dir)
