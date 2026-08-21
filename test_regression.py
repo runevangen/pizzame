@@ -9752,6 +9752,71 @@ const svSched=window._pizzatidSchedule;
     ok181 = not r181['daarlige']
     results.append(('key_controls_keep_readable_contrast_in_both_layouts', ok181, r181))
 
+    # v0.840 (skisse B, valgt av Rune): naar steketiden er kjent skal kortene
+    # si hva vi ANBEFALER og se utilgjengelige ut der de ikke rekker. Meldt
+    # inn fra et ekte valg (fre 23:42, stek loer 14:00): fire av seks kort var
+    # umulige, bare svakt dempet (55 %), ingen anbefaling — og den VALGTE
+    # metoden var en av de umulige, med oransje ramme og gronn hake, som leser
+    # som en anbefaling. Dommeren for «anbefalt» er searchAllMethods, samme
+    # som Smart-plan, memoisert (~75 ms → 1 ms ved gjentatt rendring).
+    # Rekkefoelgen staar (skisse B) — det er kontrasten som gjoer jobben.
+    r189 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard';
+      const bake=new Date(Date.now()+14.3*3600000);
+      document.getElementById('mob-ed').value=fd(bake);
+      document.getElementById('mob-et').value=fT(bake);
+      mobShowTab('settings'); mobMethodCards();
+      const kort=()=>[...document.querySelectorAll('#mob-gmet > div')];
+      const k=kort();
+      // rekkefoelgen er UENDRET — det var hele poenget med skisse B
+      ut.rekkefoelge = k.map(x=>x.dataset.v).join(',')==='standard,poolish,biga,mania,hurtig,kveld';
+      const uegnet=k.filter(x=>x.dataset.fit==='nei').map(x=>x.dataset.v);
+      const passer=k.filter(x=>x.dataset.fit==='ja').map(x=>x.dataset.v);
+      ut.uegnetErGraa = uegnet.length===4 && passer.length===2
+        && k.filter(x=>x.dataset.fit==='nei' && x.dataset.v!==S.method)
+             .every(x=>/forno-bg|240, 236, 229/.test(x.style.background));
+      // ANBEFALT staar paa NOEYAKTIG ett kort, og det maa vaere ett som rekker
+      const anb=k.filter(x=>x.dataset.anbefalt==='1');
+      ut.ettAnbefalt = anb.length===1 && anb[0].dataset.fit==='ja'
+        && anb[0].textContent.startsWith('ANBEFALT');
+      // ... og det skal vaere SAMME dommer som Smart-plan ville brukt
+      const smart=searchAllMethods(bake).find(c=>c.feasible!==false);
+      ut.sammeDommer = !!smart && anb[0].dataset.v===smart.snapshot.method;
+      // valgt metode som IKKE rekker: fortsatt synlig som valgt, men i
+      // varselfarge — ikke i graatt, og aldri som anbefaling
+      const valgt=k.find(x=>x.dataset.v==='standard');
+      ut.valgtUmuligVarsler = valgt.dataset.fit==='nei' && !valgt.dataset.anbefalt
+        && /⚠️/.test(valgt.innerHTML) && /a94442/.test(valgt.innerHTML)
+        && /✓/.test(valgt.innerHTML);
+      // undertittelen teller
+      ut.subTeller = /^2 metoder rekker til /.test(document.getElementById('wiz-s2-sub').textContent);
+      // memoen: andre rendring skal vaere billig
+      const t0=performance.now(); mobMethodCards(); ut.memoBillig=(performance.now()-t0)<25;
+      // ... men den maa slippe gjennom en endring av ankeret. 3,2 t frem
+      // rekker INGEN metode (hurtig trenger ~5 t) — da skal anbefalingen
+      // forsvinne helt, ikke henge igjen fra forrige rendring, og
+      // undertittelen skal si det rett ut. Fanget en feil i testen selv:
+      // foerste utkast krevde at det fortsatt fantes én anbefaling.
+      const naer=new Date(Date.now()+3.2*3600000);
+      document.getElementById('mob-ed').value=fd(naer);
+      document.getElementById('mob-et').value=fT(naer);
+      mobMethodCards();
+      ut.memoFoelgerAnker = kort().filter(x=>x.dataset.anbefalt==='1').length===0
+        && kort().filter(x=>x.dataset.fit==='ja').length===0
+        && /^Ingen metoder rekker til /.test(document.getElementById('wiz-s2-sub').textContent);
+      // start-modus: ingen dom, ingen anbefaling, fast undertekst
+      S.mode='start'; mobMethodCards();
+      ut.startModusUroert = kort().every(x=>!x.dataset.fit && !x.dataset.anbefalt)
+        && /usikker/.test(document.getElementById('wiz-s2-sub').textContent);
+      S.mode='end';
+      return ut;
+    }""")
+    ok189 = all(r189.values())
+    results.append(('method_cards_flag_the_recommendation_and_grey_out_what_cannot_fit', ok189, r189))
+
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret
 # (--gruppe 6 kjører hele gamle gruppe 6, i samme rekkefølge) — segmentene

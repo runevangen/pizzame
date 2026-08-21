@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.840",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Metodekortene er blitt ærlige når steketiden er kjent: det som ikke rekker fram er nå tydelig grått og utilgjengelig — ikke bare svakt dempet — og ett kort bærer merket ANBEFALT. Meldt inn fra et ekte valg: fire av seks metoder var umulige, sto først i lista, og ingenting sa hva appen mente.",
+      "Anbefalingen er den samme som Smart-plan ville gitt — det er én og samme rangering, så appen kan ikke anbefale én metode her og en annen der.",
+      "Og står du i en metode som ikke rekker (den er fortsatt valgt, med ramme og hake), sier kortet det rett ut med ⚠️ i stedet for å se ut som en anbefaling. Over kortene står det nå hvor mange metoder som faktisk rekker fram til steketiden din — eller at ingen gjør det.",
+      "Rekkefølgen på kortene er uendret, så du finner metodene der du er vant til. I «Jeg begynner nå» er alt som før — da finnes ingen frist å rekke."
+    ],
+    "changes_en": [
+      "The method cards are honest now that the baking time is known: what cannot make it is clearly greyed out and unavailable — not just faintly dimmed — and one card carries a RECOMMENDED badge. Reported from a real choice: four of six methods were impossible, listed first, and nothing said what the app thought.",
+      "The recommendation is the same one Smart plan would give — it is one and the same ranking, so the app cannot recommend one method here and another there.",
+      "And if you are standing in a method that cannot make it (it stays selected, with border and check), the card says so outright with ⚠️ instead of looking like a recommendation. Above the cards it now says how many methods actually make it to your baking time — or that none do.",
+      "The order of the cards is unchanged, so you find the methods where you are used to. In \"I am starting now\" everything is as before — there is no deadline to make."
+    ]
+  },
+  {
     "v": "0.839",
     "d": "august 2026",
     "d_en": "August 2026",

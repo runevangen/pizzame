@@ -6782,9 +6782,64 @@ function methodFitNote(v){
   if(v==='hurtig' && leadH>needH+24) return {txt:'mye av tiden går til spille', dim:true};
   return {txt:'passer godt', dim:false};
 }
+// v0.840: hvilken metode ANBEFALER vi, nå som steketiden er kjent? Dommeren
+// er den samme som Smart-plan bruker (searchAllMethods) — ikke en ny regel
+// for kortene. Hadde kortene fått sin egen rangering, kunne appen anbefalt
+// én metode her og en annen i Smart-plan-fanen; det er nøyaktig to dommere-
+// feilen vi har ryddet vekk fem ganger.
+// Målt kostnad: ~75 ms per søk, derfor memoisert. Nøkkelen må inneholde ALT
+// som kan endre rangeringen (anker, deigvalg, ledig tid, metodefilter) —
+// samme lærdom som Q10-memoen i v0.822.
+let _anbMemo={k:null,v:null};
+function anbefaltMetode(){
+  if(S.mode!=='end') return null;
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  if(!dEl || !dEl.value) return null;
+  let eat;
+  try{ eat=new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')); }catch(e){ return null; }
+  if(isNaN(eat.getTime()) || eat.getTime()<=Date.now()) return null;
+  let plan='';
+  try{ plan=JSON.stringify(window._pizzatidSchedule||null); }catch(e){}
+  const key=[dEl.value,(tEl&&tEl.value)||'',S.type,S.mel,S.hydro,S.temp,S.fridgeC,
+             S.meltype,S.gjaertest,S.gjaerTilstand,S.gjaerStyrkePct,S.favMethod,plan,
+             // «nå» flytter seg: rund til kvarteret, ellers kan et memo-treff
+             // holde på en anbefaling som ikke lenger rekker.
+             Math.floor(Date.now()/900000)].join('|');
+  if(_anbMemo.k===key) return _anbMemo.v;
+  let v=null;
+  try{
+    const res=searchAllMethods(eat);
+    // Kun en kandidat som faktisk kan startes nå er en anbefaling.
+    const topp=res.find(c=>c.feasible!==false);
+    v=topp?topp.snapshot.method:null;
+  }catch(e){ v=null; }
+  _anbMemo={k:key,v:v};
+  return v;
+}
+// v0.840: undertittelen over kortene svarer paa det som faktisk gjelder naar
+// steketiden er kjent — hvor mange metoder som rekker — i stedet for et
+// generelt raad. Uten kjent steketid staar den faste teksten (satt av
+// spraakbytte i st('wiz-s2-sub')).
+function oppdaterMetodeSub(antallPasser){
+  const el=document.getElementById('wiz-s2-sub');
+  if(!el) return;
+  if(antallPasser===null){
+    el.textContent=L('Langtidsdeig fungerer fint om du er usikker','Long-ferment dough works fine if you are unsure');
+    return;
+  }
+  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  let naar='';
+  try{ naar=fDT(new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00'))); }catch(e){}
+  el.textContent = antallPasser===0
+    ? L(`Ingen metoder rekker til ${naar} — flytt steketiden, eller velg likevel`,`No method makes it to ${naar} — move the baking time, or choose anyway`)
+    : antallPasser===1
+      ? L(`Én metode rekker til ${naar}`,`One method makes it to ${naar}`)
+      : L(`${antallPasser} metoder rekker til ${naar}`,`${antallPasser} methods make it to ${naar}`);
+}
 function mobMethodCards(){
   const wrap=document.getElementById('mob-gmet');if(!wrap)return;
   wrap.innerHTML='';
+  let _passer=0, _harFit=false;
   // v0.823: navnene leses fra METHODS-registeret (mN) — undertekstene er
   // kort-egne og blir her.
   [{v:'standard',s:L('Direkte + kjøleskapsheving','Direct + cold proof')},
@@ -6797,11 +6852,36 @@ function mobMethodCards(){
     const el=document.createElement('div');
     el.dataset.v=v;   // v0.795: gjør lista lesbar utenfra, som PC-kortene
     const isOn=S.method===v;
-    el.style.cssText=`position:relative;border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${isOn?'var(--forno-bg-raised)':'var(--forno-accent-soft)'};border:${isOn?'2px solid var(--forno-accent)':'1px solid transparent'}`;
     const fit=methodFitNote(v);
-    if(fit && fit.dim && !isOn) el.style.opacity='.55';
-    const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;color:${fit.dim?'var(--forno-text-faint)':'#0F6E56'}">${escH(fit.txt)}</div>`:'';
-    el.innerHTML=`<div style="font-size:14px;font-weight:600;color:${isOn?'var(--forno-accent-text)':'var(--forno-text)'}">${t}</div><div style="font-size:12px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
+    // v0.840 (skisse B, valgt av Rune): rekkefølgen står — du finner metoden
+    // der du er vant til — men det som ikke rekker skal SE utilgjengelig ut,
+    // og det vi anbefaler skal være tydelig. Meldt inn fra et ekte valg: fire
+    // av seks kort var umulige, bare svakt dempet (55 %), og INGEN sa hva
+    // appen mente. Verre: den valgte metoden var en av de umulige, med
+    // oransje ramme og ✓ — som leser som en anbefaling.
+    const uegnet=!!(fit && fit.dim);
+    if(fit){ _harFit=true; if(!uegnet) _passer++; }
+    const anbefalt=(!uegnet && v===anbefaltMetode());
+    el.dataset.fit = fit ? (uegnet?'nei':'ja') : '';
+    if(anbefalt) el.dataset.anbefalt='1';
+    const bg = isOn ? 'var(--forno-bg-raised)'
+             : anbefalt ? '#eaf6ee'
+             : uegnet ? 'var(--forno-bg,#f0ece5)'
+             : 'var(--forno-accent-soft)';
+    const kant = isOn ? '2px solid var(--forno-accent)'
+               : anbefalt ? '2px solid #0F6E56'
+               : uegnet ? '1px solid var(--forno-border)'
+               : '1px solid transparent';
+    el.style.cssText=`position:relative;border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${bg};border:${kant}`;
+    // Er den VALGTE metoden umulig, skal kortet fortsatt vise hvor du står
+    // (ramme + ✓) — men da i varselfarge, ikke i grått og ikke som anbefaling.
+    const fitFarge = !uegnet ? '#0F6E56' : (isOn ? '#a94442' : 'var(--forno-text-faint)');
+    const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;font-weight:${isOn&&uegnet?700:400};color:${fitFarge}">${(isOn&&uegnet?'⚠️ ':'')+escH(fit.txt)}</div>`:'';
+    const navnFarge = isOn ? 'var(--forno-accent-text)' : (uegnet ? 'var(--forno-text-faint)' : 'var(--forno-text)');
+    const anbHtml = anbefalt
+      ? `<i aria-hidden="true" style="position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:#0F6E56;color:#fff;border-radius:4px;padding:1px 6px;font-style:normal">${L('ANBEFALT','RECOMMENDED')}</i>`
+      : '';
+    el.innerHTML=`${anbHtml}<div style="font-size:14px;font-weight:600;color:${navnFarge}">${t}</div><div style="font-size:12px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
     el.onclick=()=>{
       if(S.method!==v) clearStepProgress();
       S.method=v;
@@ -6828,6 +6908,7 @@ function mobMethodCards(){
     };
     wrap.appendChild(el);
   });
+  oppdaterMetodeSub(_harFit ? _passer : null);
   updateMethodWhyBox();
 }
 // Oppdaterer den dynamiske "hvorfor"-boksen under metodekortene til å vise
