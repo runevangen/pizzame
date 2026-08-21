@@ -1168,7 +1168,6 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 <script src="steps.js?v=1"></script>
 <script src="guide.js?v=1"></script>
 <script>
-const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishAndel:0.5,poolishPauseH:0,kaldBulk:false,kveldHvile:true,sammaltPct:0,sammaltType:'rug',meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,gjaerTilstand:'fersk',gjaerStyrkePct:100,showHelp:true,showSubsteps:false};
 
 // ===== PoC: SPRÅK + ENHETER (uavhengige brytere) =====
 // Prinsipp: motoren/matematikken er alltid metrisk (gram, °C). Dette er kun et
@@ -1192,21 +1191,6 @@ function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);
 function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
 function fmtW(g){ return window._units==='imperial' ? _oz(g) : g+'g'; }        // vekt-visning (slider/label)
 function fmtT(c){ return window._units==='imperial' ? Math.round(parseFloat(String(c).replace(',','.'))*9/5+32)+'°F' : c+'°C'; }
-// L(no, en): velg språkversjon av en (ferdig interpolert) streng. Begge skrives
-// inline i samme scope, så ${}-verdiene er identiske; enheter håndteres av
-// localizeUnits() uansett. Norsk-utdata er byte-identisk → baseline uendret.
-function L(no, en){ return (window._lang==='en' && en!=null) ? en : no; }
-// Oversetter en norsk varighetsstreng fra fmtDur() ("2,5 timer", "45 min", "1,5 døgn") til engelsk.
-function durEn(s){ return String(s).replace(' timer',' hours').replace(' time',' hour').replace(' døgn',' days'); }
-// Timer + minutter for varigheter i steg-tekst ("8 t 25 min" / "8 h 25 min"),
-// språk-bevisst. Brukes i beskrivelsene i stedet for rå "504 min" / desimal "1.3 time".
-function fmtHM(mins){
-  mins=Math.round(mins);
-  if(mins<60) return mins+' min';
-  const h=Math.floor(mins/60), m=mins%60, u=window._lang==='en'?'h':'t';
-  return m ? h+' '+u+' '+m+' min' : h+' '+u;
-}
-// Enhets-post-prosessor: konverterer ALLE °C og gram i en ferdig tekst-blokk til
 // °F/oz på én gang — «billig-trikset». Kjøres kun på plan-stegtekst (ikke attributter).
 function localizeUnits(html){
   if(window._units!=='imperial') return html;
@@ -1573,18 +1557,6 @@ function clearStepProgress(){
 // kun teknikk-ordlyd (i tråd med den opprinnelige v6.01-avgrensningen).
 const PROGRESS_RESETTING_FIELDS=new Set(['type','oven','gjaer']);
 const S={...DEF};let AT=null;
-const HOPTS=[{h:2,b:'Nøddeig',bEn:'Barely dough',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',bEn:'OK',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',bEn:'Recommended',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',bEn:'Good',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',bEn:'Very good',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',bEn:'Excellent',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',bEn:'Best quick',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',bEn:'Long day (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',bEn:'Evening-ready (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',bEn:'Cool kitchen (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
-// Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
-// (som er kalibrert for 1–6 DAGER). Reell usikkerhet i kilder (2–3× vs. opptil 6× tregere enn
-// romtemp) — disse tallene er et fornuftig midtpunkt, ikke en eksakt fasit. Juster ved behov.
-const KOPTS=[{h:5,b:'Kveld til morgen',bEn:'Evening to morning'},{h:8,b:'Anbefalt',bEn:'Recommended'},{h:10,b:'Over natta',bEn:'Overnight'},{h:12,b:'Lang natt',bEn:'Long night'},{h:15,b:'Kveld til sen kveld',bEn:'Evening to late evening'},{h:18,b:'Lang kveld',bEn:'Long evening'},{h:24,b:'Ekte kveld-til-kveld',bEn:'True evening-to-evening'}];
-// Langtidsdeigens kald-tid som merkede hurtigvalg, i samme ånd som HOPTS/KOPTS:
-// en ærlig smaksstige (lenger kald heving = mer smak) i stedet for et nakent
-// tall. Slideren i Finjuster (mob-cwrap) beholdes for presis justering — begge
-// setter samme S.cold, så det er ett sannhetsgrunnlag. 48/72 ligger innenfor
-// COLD_MAX (120); et for svakt mel til den valgte tiden fanges av det myke
-// meltype-hintet, akkurat som ellers i appen.
-const COLD_OPTS=[{h:24,b:'Rett fram',bEn:'Straightforward'},{h:48,b:'Mer smak',bEn:'More flavor'},{h:72,b:'Full smak',bEn:'Full flavor'}];
 // Poolish/biga sin forspill-varighet var tidligere et fast tall (14t/18t) i koden.
 // Nå justerbar innenfor spekteret appens egne tips allerede har lovet (12–16t /
 // 16–24t) — samme mønster som HOPTS/KOPTS. Gjær-multiplikatoren under er en
@@ -1608,15 +1580,6 @@ const POOLISH_KALD_STEG=3;
 function poolishColdHours(){ return range(12,48,POOLISH_KALD_STEG); }
 const POOLISH_OPTS=[{h:12,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:13,b:'Kort',bEn:'Short'},{h:14,b:'Anbefalt',bEn:'Recommended'},{h:15,b:'Lang',bEn:'Long'},{h:16,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
 const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:18,b:'Anbefalt',bEn:'Recommended'},{h:20,b:'Lang',bEn:'Long'},{h:22,b:'Lengre',bEn:'Longer'},{h:24,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
-const KCOLDMULT={5:2.3,8:1.9,10:1.65,12:1.5,15:1.35,18:1.2,24:1.0};
-let HREC={napoletana:65,newyork:63,langpanne:70,chicago:55,ingenelting:75};
-const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:48,mx:60},ingenelting:{mn:70,mx:82}};
-let BSALT={napoletana:2.8,newyork:2.0,langpanne:2.0,chicago:2.0,ingenelting:2.0};
-let BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0,ingenelting:6.0};
-// Ekte Chicago deep dish bruker smør i tillegg til olje for den kjente flakete skorpen —
-// flere anerkjente oppskrifter (King Arthur, Sally's Baking) lander på 15-22% totalt fett.
-const BBUTTER={napoletana:0,newyork:0,langpanne:0,chicago:12.0,ingenelting:0};
-let BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:0.2};
 // Kaldhevings-gjærkurven (tidl. COLDMULT dags-tabell + COLDMULT_HOURS) bor nå i
 // CALIBRATION.coldMultHours (F18) — skalert ned ~25% fra opprinnelig kurve; AVPN-
 // kilder antyder enda lavere gjærmengde ved lange kaldhevinger (0,1-0,2% fersk
@@ -1636,85 +1599,6 @@ function recomputeColdMax(){
   ['csl','mob-csl'].forEach(id=>{ const el=document.getElementById(id); if(el) el.max=String(COLD_MAX); });
   const lbl=document.getElementById('csl-max-lbl'); if(lbl) lbl.textContent=COLD_MAX+' timer';
 }
-// Leselig visningstekst for kjøleskapstid — alltid i timer, aldri "dager", for
-// konsekvens med resten av det time-baserte systemet (Poolish/Biga-valgene,
-// Hurtigdeig/Kveldsdeig) som allerede viser timer gjennomgående.
-function coldTimeLabel(h){
-  return L(h+' timer', h+' hours');
-}
-// Leselig "Xt Ym"-tekst for øktbanneret (steg 2-4-i-én-økt).
-function fmtSessionDur(mins){
-  const h=Math.floor(mins/60), m=Math.round(mins%60);
-  if(h<=0) return m+' min';
-  if(m===0) return L(h+'t', h+'h');
-  return L(h+'t '+m+'m', h+'h '+m+'m');
-}
-// v0.752: poolish-delingen ETT sted. Uttrykket `Math.round(r2.flour/2)` sto
-// spredt på 36 steder i steg-teksten — beskrivelse, needs og understeg for tre
-// kjøkkenmaskin-varianter — og hver kopi er en sjanse til å endre én og glemme
-// resten. Nøyaktig den klassen F17 ble bygget for.
-//
-// Merk at poolishen tar vann etter MELET, ikke etter oppskriftens vann: den er
-// en 100 %-hydrert forgjæring, så halvparten av melet og like mye vann. Under
-// 50 % hydrering ville `rest` blitt negativ («Tilsett −10g vann»). Det er ikke
-// nåbart i dag — hydreringsglideren har hatt min 55 i hele historikken, og
-// HREC går aldri lavere — så her legges det ikke inn en vakt som ville skjult
-// en ødelagt tilstand bak en pen null. Invariant-sveipet dekker nå
-// hydreringsaksen (v0.752), så gulvet er under overvåkning i stedet.
-// v0.787: andelen er ikke lenger låst til halvparten. `pool` er melet OG vannet
-// i poolishen (100 % hydrering), `restMel` er melet som tilsettes i blandesteget,
-// `rest` er vannet som tilsettes der. Ved 50 % er pool og restMel like store, og
-// derfor sto det `pool` begge steder tidligere — en likhet som holdt så lenge
-// andelen var fast, og som ville gitt 150g mel i stedet for 350g ved 30 %.
-function poolishSplit(r){
-  const pool=Math.round(r.flour*poolishAndel());
-  return {pool, restMel:r.flour-pool, rest:Math.round(r.water-pool)};
-}
-// v0.784: en kald poolish er ikke ett steg på benken. Den starter i romtemperatur,
-// modnes i kjøleskapet, og må TEMPERERES før den blandes. Målt før delingen:
-// Q10-modellen leste `loc:'benk'` og regnet alle 18 timene som 22°C, og deigen
-// landet på 12,7°C mot de 22–24°C oppskriften selv oppgir. Vannet kan ikke rette
-// det — bare 75 av 325 gram vann er igjen å skru på når poolishen er 66 % av
-// deigens varmekapasitet. Tempereringen er den eneste spaken som er koblet til noe.
-const POOLISH_ROMSTART_MIN=90;
-// Tempereringstiden tas AV poolishens egne timer, ikke i tillegg, så planen blir
-// ikke lengre av å bli riktig. Anslaget er masse-styrt: 500g bruker ~3t fra 3°C
-// til ~17°C i et 22°C rom, 300g ~2t. Dette er en PLANLEGGINGSverdi — bolle, form
-// og kjøkken flytter det reelle tallet mer enn en formel kan fange, så teksten i
-// steget forteller brukeren hva han skal kjenne etter.
-function poolishTemperMin(){
-  const masse=Math.round(S.mel*poolishAndel())*2;   // mel + vann; poolishen er 100 % hydrert
-  return Math.max(60, Math.min(240, Math.round((30+masse*0.3)/15)*15));
-}
-function poolishRestText(){
-  if(S.poolishCold){
-    // Fasene er egne steg nå, så tipset skal ikke gjenta timeplanen. Det som IKKE
-    // står i stegene er hvordan en poolish som er i gang faktisk ser ut.
-    return L(`La den stå framme her — den skal i kjøleskapet i neste steg. Den er i gang når overflaten begynner å boble og lukte lett syrlig — boblene er samtidig kvitteringen på at gjæren lever.`,`Leave it out here — it goes into the fridge in the next step. It's under way when the surface starts to bubble and smells slightly sour — the bubbles double as your receipt that the yeast is alive.`);
-  }
-  return L(`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig — boblene er samtidig kvitteringen på at gjæren lever.`,`Let sit about ${S.poolishH} hours at room temperature. Ready when the surface bubbles actively and smells slightly sour — the bubbles double as your receipt that the yeast is alive.`)+poolishWindowText();
-}
-// v0.752: vinduet. Gjærmengden i poolishen er den samme enten kjøkkenet holder
-// 18 eller 26 grader, og timeplanen setter av like mange timer uansett — men
-// gjæringen bryr seg ikke om planen. Uten denne setningen står en poolish på et
-// varmt kjøkken flere timer for lenge, topper og faller sammen, og du får en
-// slapp deig uten å skjønne hvorfor.
-// Ingen gram endres her. Det eneste som gjøres, er å si HVOR i tida du bør
-// begynne å se etter — og hvordan du kjenner igjen at den har gått for langt.
-// Fallende midte er den viktigste, for det er den eneste som ikke kan tolkes
-// som «litt mer tid trengs».
-function poolishWindowText(){
-  const v=poolishWindowHours();
-  if(!v) return '';
-  const t=fmtHalv(v.ekte);
-  return v.raskere
-    ? L(` Men på et ${v.temp}°C kjøkken går det fortere enn planen sier — regn med at den er klar rundt ${t} timer, og se etter fra da av. Har midten begynt å synke, er den over toppen: bland ferdig deig med en gang.`,
-        ` But in a ${v.temp}°C kitchen it goes faster than the plan says — expect it ready around ${t} hours, and start checking from then. If the middle has begun to sink, it is past its peak: mix the final dough right away.`)
-    : L(` Men på et ${v.temp}°C kjøkken går det saktere enn planen sier — regn med nærmere ${t} timer. Er den fortsatt flat og nesten uten bobler når tida er ute, gi den lengre tid framfor å blande videre.`,
-        ` But in a ${v.temp}°C kitchen it goes slower than the plan says — expect closer to ${t} hours. If it is still flat and almost without bubbles when the time is up, give it longer rather than mixing on.`);
-}
-function fmtHalv(n){ return (Math.round(n*2)/2).toString().replace('.',','); }
-const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 
 // Meltyper med anbefalt fermenteringsvindu (fra meny.no/italiensk-pizza/riktig-mel-til-pizza,
 // kryssjekket mot Maschmanns — norsk Caputo-distributør — 15. juli 2026).

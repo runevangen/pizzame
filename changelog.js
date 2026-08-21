@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.838",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Sømmen fra steglag-utflyttingen er lukket: de siste ~23 småhjelperne og tabellene steglaget leste fra hovedfila — språkvelgeren, tilstandsfasiten, kjernetallene per pizzatype, smaksstigene og poolish-tekstene — bor nå i engine.js og steps.js, linje for linje uendret.",
+      "Dermed trenger ikke node-testene lenger å plukke definisjoner ut av hovedfila ved kjøring: steglaget bygges av de to filene alene. F18-notatet om at menytabellene «bevisst ikke» lå i motorfila er omgjort med åpen begrunnelse — motoren leser dem selv, og testlagene trenger dem uten nettleser.",
+      "Ingen synlig endring; alle frosne fasiter bekrefter identiske tall og tekster."
+    ],
+    "changes_en": [
+      "The seam from the step-layer move is closed: the last ~23 small helpers and tables the step layer read from the main file — the language picker, the state defaults, the core numbers per pizza type, the flavour ladders and the poolish texts — now live in engine.js and steps.js, unchanged line for line.",
+      "So the node tests no longer need to pick definitions out of the main file at runtime: the step layer is built from the two files alone. The F18 note that the menu tables were \"deliberately not\" in the engine file is reversed with the reasoning in the open — the engine reads them itself, and the test layers need them without a browser.",
+      "No visible change; every frozen baseline confirms identical numbers and texts."
+    ]
+  },
+  {
     "v": "0.837",
     "d": "august 2026",
     "d_en": "August 2026",

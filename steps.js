@@ -24,6 +24,98 @@
 // hjelperne følge etter hit, så test_steg.mjs sin hentFraIndex()-liste krymper
 // til null. Ikke legg NY stegkode i index.html — den hører hjemme her.
 
+// ===== Tekst- og varighetshjelpere (v0.838, verbatim fra index.html) =====
+// Sømmen fra v0.836 lukket: hjelperne steglaget leser bor nå her.
+// Oversetter en norsk varighetsstreng fra fmtDur() ("2,5 timer", "45 min", "1,5 døgn") til engelsk.
+function durEn(s){ return String(s).replace(' timer',' hours').replace(' time',' hour').replace(' døgn',' days'); }
+// Timer + minutter for varigheter i steg-tekst ("8 t 25 min" / "8 h 25 min"),
+// språk-bevisst. Brukes i beskrivelsene i stedet for rå "504 min" / desimal "1.3 time".
+function fmtHM(mins){
+  mins=Math.round(mins);
+  if(mins<60) return mins+' min';
+  const h=Math.floor(mins/60), m=mins%60, u=window._lang==='en'?'h':'t';
+  return m ? h+' '+u+' '+m+' min' : h+' '+u;
+}
+// Enhets-post-prosessor: konverterer ALLE °C og gram i en ferdig tekst-blokk til
+// Leselig visningstekst for kjøleskapstid — alltid i timer, aldri "dager", for
+// konsekvens med resten av det time-baserte systemet (Poolish/Biga-valgene,
+// Hurtigdeig/Kveldsdeig) som allerede viser timer gjennomgående.
+function coldTimeLabel(h){
+  return L(h+' timer', h+' hours');
+}
+// Leselig "Xt Ym"-tekst for øktbanneret (steg 2-4-i-én-økt).
+function fmtSessionDur(mins){
+  const h=Math.floor(mins/60), m=Math.round(mins%60);
+  if(h<=0) return m+' min';
+  if(m===0) return L(h+'t', h+'h');
+  return L(h+'t '+m+'m', h+'h '+m+'m');
+}
+// v0.752: poolish-delingen ETT sted. Uttrykket `Math.round(r2.flour/2)` sto
+// spredt på 36 steder i steg-teksten — beskrivelse, needs og understeg for tre
+// kjøkkenmaskin-varianter — og hver kopi er en sjanse til å endre én og glemme
+// resten. Nøyaktig den klassen F17 ble bygget for.
+//
+// Merk at poolishen tar vann etter MELET, ikke etter oppskriftens vann: den er
+// en 100 %-hydrert forgjæring, så halvparten av melet og like mye vann. Under
+// 50 % hydrering ville `rest` blitt negativ («Tilsett −10g vann»). Det er ikke
+// nåbart i dag — hydreringsglideren har hatt min 55 i hele historikken, og
+// HREC går aldri lavere — så her legges det ikke inn en vakt som ville skjult
+// en ødelagt tilstand bak en pen null. Invariant-sveipet dekker nå
+// hydreringsaksen (v0.752), så gulvet er under overvåkning i stedet.
+// v0.787: andelen er ikke lenger låst til halvparten. `pool` er melet OG vannet
+// i poolishen (100 % hydrering), `restMel` er melet som tilsettes i blandesteget,
+// `rest` er vannet som tilsettes der. Ved 50 % er pool og restMel like store, og
+// derfor sto det `pool` begge steder tidligere — en likhet som holdt så lenge
+// andelen var fast, og som ville gitt 150g mel i stedet for 350g ved 30 %.
+function poolishSplit(r){
+  const pool=Math.round(r.flour*poolishAndel());
+  return {pool, restMel:r.flour-pool, rest:Math.round(r.water-pool)};
+}
+// v0.784: en kald poolish er ikke ett steg på benken. Den starter i romtemperatur,
+// modnes i kjøleskapet, og må TEMPERERES før den blandes. Målt før delingen:
+// Q10-modellen leste `loc:'benk'` og regnet alle 18 timene som 22°C, og deigen
+// landet på 12,7°C mot de 22–24°C oppskriften selv oppgir. Vannet kan ikke rette
+// det — bare 75 av 325 gram vann er igjen å skru på når poolishen er 66 % av
+// deigens varmekapasitet. Tempereringen er den eneste spaken som er koblet til noe.
+const POOLISH_ROMSTART_MIN=90;
+// Tempereringstiden tas AV poolishens egne timer, ikke i tillegg, så planen blir
+// ikke lengre av å bli riktig. Anslaget er masse-styrt: 500g bruker ~3t fra 3°C
+// til ~17°C i et 22°C rom, 300g ~2t. Dette er en PLANLEGGINGSverdi — bolle, form
+// og kjøkken flytter det reelle tallet mer enn en formel kan fange, så teksten i
+// steget forteller brukeren hva han skal kjenne etter.
+function poolishTemperMin(){
+  const masse=Math.round(S.mel*poolishAndel())*2;   // mel + vann; poolishen er 100 % hydrert
+  return Math.max(60, Math.min(240, Math.round((30+masse*0.3)/15)*15));
+}
+function poolishRestText(){
+  if(S.poolishCold){
+    // Fasene er egne steg nå, så tipset skal ikke gjenta timeplanen. Det som IKKE
+    // står i stegene er hvordan en poolish som er i gang faktisk ser ut.
+    return L(`La den stå framme her — den skal i kjøleskapet i neste steg. Den er i gang når overflaten begynner å boble og lukte lett syrlig — boblene er samtidig kvitteringen på at gjæren lever.`,`Leave it out here — it goes into the fridge in the next step. It's under way when the surface starts to bubble and smells slightly sour — the bubbles double as your receipt that the yeast is alive.`);
+  }
+  return L(`La stå ca. ${S.poolishH} timer ved romtemperatur. Klar når overflaten bobler aktivt og lukter lett syrlig — boblene er samtidig kvitteringen på at gjæren lever.`,`Let sit about ${S.poolishH} hours at room temperature. Ready when the surface bubbles actively and smells slightly sour — the bubbles double as your receipt that the yeast is alive.`)+poolishWindowText();
+}
+// v0.752: vinduet. Gjærmengden i poolishen er den samme enten kjøkkenet holder
+// 18 eller 26 grader, og timeplanen setter av like mange timer uansett — men
+// gjæringen bryr seg ikke om planen. Uten denne setningen står en poolish på et
+// varmt kjøkken flere timer for lenge, topper og faller sammen, og du får en
+// slapp deig uten å skjønne hvorfor.
+// Ingen gram endres her. Det eneste som gjøres, er å si HVOR i tida du bør
+// begynne å se etter — og hvordan du kjenner igjen at den har gått for langt.
+// Fallende midte er den viktigste, for det er den eneste som ikke kan tolkes
+// som «litt mer tid trengs».
+function poolishWindowText(){
+  const v=poolishWindowHours();
+  if(!v) return '';
+  const t=fmtHalv(v.ekte);
+  return v.raskere
+    ? L(` Men på et ${v.temp}°C kjøkken går det fortere enn planen sier — regn med at den er klar rundt ${t} timer, og se etter fra da av. Har midten begynt å synke, er den over toppen: bland ferdig deig med en gang.`,
+        ` But in a ${v.temp}°C kitchen it goes faster than the plan says — expect it ready around ${t} hours, and start checking from then. If the middle has begun to sink, it is past its peak: mix the final dough right away.`)
+    : L(` Men på et ${v.temp}°C kjøkken går det saktere enn planen sier — regn med nærmere ${t} timer. Er den fortsatt flat og nesten uten bobler når tida er ute, gi den lengre tid framfor å blande videre.`,
+        ` But in a ${v.temp}°C kitchen it goes slower than the plan says — expect closer to ${t} hours. If it is still flat and almost without bubbles when the time is up, give it longer rather than mixing on.`);
+}
+function fmtHalv(n){ return (Math.round(n*2)/2).toString().replace('.',','); }
+
 function aM(d,m){return new Date(d.getTime()+m*60000);}
 function sM(d,m){return new Date(d.getTime()-m*60000);}
 function fDT(d){

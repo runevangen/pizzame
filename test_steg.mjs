@@ -6,12 +6,11 @@
 // sjekkes felt for felt — oppskrift, første/siste steg med ISO-tidspunkt,
 // stegantall og titler.
 //
-// Sømmen: steglaget leser fortsatt noen hjelpere som bor i index.html
-// (L, DEF, HOPTS, poolish-tekstene ...). De hentes VERBATIM fra index.html
-// her — aldri som kopier (skyggekonstanter er forbudt, jf. F17/F19) — og
-// lista under ER migrasjons-TODO-en: neste skive av utflyttingen flytter dem
-// inn i steps.js, og da krymper denne lista til null. Forsvinner en av dem
-// fra index.html uten at lista oppdateres, feiler testen høyt med navnet.
+// Sømmen fra v0.836 (hjelpere hentet verbatim fra index.html) ble lukket i
+// v0.838: alt steglaget leser bor nå i engine.js (DEF, L, kjernetallene,
+// menytabellene) og steps.js (tekst-/varighetshjelperne). Laget bygges derfor
+// av de to filene ALENE — trenger en fremtidig endring å hente noe fra
+// index.html igjen, er det et tilbakeskritt, ikke en løsning.
 //
 // Kjøres av porten (test_regression.py) før nettleseren, og alene:
 // `node test_steg.mjs`.
@@ -21,42 +20,15 @@ import { readFileSync } from 'node:fs';
 // node må tolke anker-klokkeslettet i samme sone for at ISO-ene skal matche.
 process.env.TZ = 'Europe/Oslo';
 
-const idx = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const engineSrc = readFileSync(new URL('./engine.js', import.meta.url), 'utf8');
 const stepsSrc = readFileSync(new URL('./steps.js', import.meta.url), 'utf8');
 const baseline = JSON.parse(readFileSync(new URL('./baseline_results.json', import.meta.url), 'utf8'));
 
-// ===== Verbatim-uthenting fra index.html =====
-function hentFunksjon(navn) {
-  const m = idx.match(new RegExp('^function ' + navn + '\\(', 'm'));
-  if (!m) throw new Error(`fant ikke «function ${navn}(» i index.html — er den flyttet? Oppdater lista i test_steg.mjs`);
-  const start = m.index;
-  let i = idx.indexOf('{', start), dybde = 0;
-  for (let j = i; j < idx.length; j++) {
-    if (idx[j] === '{') dybde++;
-    else if (idx[j] === '}') { dybde--; if (dybde === 0) return idx.slice(start, j + 1); }
-  }
-  throw new Error(`ubalanserte klammer i ${navn}`);
-}
-function hentKonst(navn) {
-  const m = idx.match(new RegExp('^(?:const|let) ' + navn + '=.*$', 'm'));
-  if (!m) throw new Error(`fant ikke «const/let ${navn}=» i index.html — er den flyttet? Oppdater lista i test_steg.mjs`);
-  return m[0];
-}
-
-const KONSTER = ['DEF', 'HOPTS', 'KOPTS', 'COLD_OPTS', 'POOLISH_ROMSTART_MIN',
-                 'BSALT', 'BOIL', 'BYEAST', 'BBUTTER', 'BSUGAR', 'KCOLDMULT',
-                 'HREC', 'HRANGE'];
-const FUNKSJONER = ['L', 'durEn', 'fmtHM', 'fmtSessionDur', 'coldTimeLabel',
-                    'poolishSplit', 'poolishTemperMin', 'poolishRestText',
-                    'poolishWindowText', 'fmtHalv'];
-const hentet = KONSTER.map(hentKonst).concat(FUNKSJONER.map(hentFunksjon)).join('\n');
-
-// ===== Bygg laget: index-hjelpere + engine + steps i ETT globalt scope =====
+// ===== Bygg laget: engine + steps i ETT globalt scope =====
 globalThis.window = { _lang: 'no', _openSub: new Set(), _openTip: new Set(), _openIng: new Set() };
 const S = {};
 const lag = new Function('window', 'S',
-  hentet + '\n' + engineSrc + '\n' + stepsSrc + `
+  engineSrc + '\n' + stepsSrc + `
   ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF };
 `)(globalThis.window, S);
 
