@@ -73,6 +73,20 @@ body.mob-mode .dropdown-select select{font-size:14px}
 .menu-row{display:flex;align-items:center;justify-content:space-between;height:38px;padding:0 12px;font-size:13px;font-weight:500;color:var(--dyn-text);cursor:pointer}
 .menu-row:hover{background:#FAFAF9}
 .mcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+/* v0.841: samme tre tilstander som mobilkortene fikk i v0.840 — det som ikke
+   rekker ser utilgjengelig ut, anbefalingen er merket, og en valgt metode som
+   ikke rekker varsler i stedet for å se ut som et godt valg. PC-kortene bruker
+   klasser (mobil bygger stilen inline), men reglene er de samme. */
+.mc{position:relative}
+.mc-fit{font-size:10px;margin-top:3px;color:#0F6E56}
+.mc-uegnet{background:#efece7;border:1px solid #ddd7cd}
+.mc-uegnet .mc-t{color:#8d8478}
+.mc-uegnet .mc-s{color:#a89e90}
+.mc-uegnet .mc-fit{color:#8d8478}
+.mc-anbefalt{background:#eaf6ee;border:2px solid #0F6E56}
+.mc-anb-merke{position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:#0F6E56;color:#fff;border-radius:4px;padding:1px 6px;font-style:normal}
+.mc.on .mc-fit{color:rgba(255,255,255,.92)}
+.mc.on .mc-fit.advarsel{color:#ffe2df;font-weight:700}
 .mc{border-radius:12px;padding:.6rem .7rem;cursor:pointer;transition:all .15s;background:#F2F2F7}
 .mc.on{background:#e8590c}
 .mc.hc{background:#FFF4E5}
@@ -1922,8 +1936,36 @@ function pgrp(id,key,cb){
   });
 }
 function mCards(){
+  let _passer=0,_harFit=false;
   document.getElementById('gmet').querySelectorAll('.mc').forEach(c=>{
     c.classList.toggle('on',c.dataset.v===S.method);
+    // v0.841: PC får samme dom og anbefaling som mobil (v0.840) — samme
+    // methodFitNote og samme anbefaltMetode, så flatene ikke kan si ulikt.
+    const v=c.dataset.v, isOn=v===S.method;
+    const fit=methodFitNote(v);
+    const uegnet=!!(fit&&fit.dim);
+    if(fit){ _harFit=true; if(!uegnet) _passer++; }
+    const anbefalt=(!uegnet && v===anbefaltMetode());
+    c.dataset.fit = fit ? (uegnet?'nei':'ja') : '';
+    if(anbefalt) c.dataset.anbefalt='1'; else delete c.dataset.anbefalt;
+    c.classList.toggle('mc-uegnet', uegnet && !isOn);
+    c.classList.toggle('mc-anbefalt', anbefalt && !isOn);
+    const gml=c.querySelector('.mc-fit'); if(gml) gml.remove();
+    const gmlM=c.querySelector('.mc-anb-merke'); if(gmlM) gmlM.remove();
+    if(fit){
+      const f=document.createElement('div');
+      f.className='mc-fit'+(isOn&&uegnet?' advarsel':'');
+      if(uegnet&&!isOn) f.style.color='';
+      else if(uegnet&&isOn) f.style.color='';
+      f.textContent=(isOn&&uegnet?'⚠️ ':'')+fit.txt;
+      c.appendChild(f);
+    }
+    if(anbefalt){
+      const m=document.createElement('i');
+      m.className='mc-anb-merke'; m.setAttribute('aria-hidden','true');
+      m.textContent=L('ANBEFALT','RECOMMENDED');
+      c.appendChild(m);
+    }
     c.onclick=()=>{
       if(S.method!==c.dataset.v) clearStepProgress();
       S.method=c.dataset.v;mCards();
@@ -1936,6 +1978,26 @@ function mCards(){
       schedNow();
     };
   });
+  oppdaterMetodeSubPC(_harFit?_passer:null);
+}
+// v0.841: PC-etiketten over kortene («Metode») får samme telling som mobilens
+// undertittel — hvor mange metoder som faktisk rekker fram til steketiden.
+function oppdaterMetodeSubPC(antallPasser){
+  const wrap=document.getElementById('gmet-wrap');
+  if(!wrap) return;
+  const lbl=wrap.querySelector('.lbl');
+  if(!lbl) return;
+  let el=lbl.querySelector('.mc-teller');
+  if(antallPasser===null){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement('span'); el.className='mc-teller';
+    el.style.cssText='margin-left:8px;font-weight:400;font-size:11px;color:#8a7562'; lbl.appendChild(el); }
+  const _e=eatEls();
+  let naar=''; try{ naar=fDT(new Date(_e.d.value+'T'+((_e.t&&_e.t.value)||'18:00'))); }catch(e){}
+  el.textContent = antallPasser===0
+    ? L(`— ingen rekker til ${naar}`,`— none make it to ${naar}`)
+    : antallPasser===1
+      ? L(`— én rekker til ${naar}`,`— one makes it to ${naar}`)
+      : L(`— ${antallPasser} rekker til ${naar}`,`— ${antallPasser} make it to ${naar}`);
 }
 function applyTypeUI(){
   const isIE = S.type==='ingenelting';
@@ -6766,9 +6828,23 @@ function mobPillGroup(id,key){
 // v5.78: nå som tidspunktet er kjent før metodevalget, kan kortene si noe om
 // seg selv. Dette er samme vurdering som methodTimeWarningHTML() gjorde i
 // etterkant, flyttet fram til der valget faktisk tas.
+// v0.841: «spis kl.»-feltene finnes i to sett (PC: ed/et — mobil: mob-ed/
+// mob-et). Samme oppslagsmønster som winEls() fra v0.802, så alt som spør
+// «når skal vi spise?» er layout-blindt og kan ikke svare ulikt på PC og
+// mobil. Faller tilbake til det settet som finnes, slik at funksjonene virker
+// også når testene kaller dem uten å ha byttet layout.
+function eatEls(){
+  const mobEl=document.getElementById('mob-layout');
+  const mob=mobEl&&mobEl.classList.contains('active');
+  const g=id=>document.getElementById(id);
+  const par=mob?{d:g('mob-ed'),t:g('mob-et')}:{d:g('ed'),t:g('et')};
+  if(par.d&&par.d.value) return par;
+  const alt=mob?{d:g('ed'),t:g('et')}:{d:g('mob-ed'),t:g('mob-et')};
+  return (alt.d&&alt.d.value)?alt:par;
+}
 function methodFitNote(v){
   if(S.mode!=='end') return null;
-  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  const _e=eatEls(); const dEl=_e.d, tEl=_e.t;
   if(!dEl || !dEl.value) return null;
   let eat;
   try{ eat=new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')); }catch(e){ return null; }
@@ -6793,7 +6869,7 @@ function methodFitNote(v){
 let _anbMemo={k:null,v:null};
 function anbefaltMetode(){
   if(S.mode!=='end') return null;
-  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  const _e=eatEls(); const dEl=_e.d, tEl=_e.t;
   if(!dEl || !dEl.value) return null;
   let eat;
   try{ eat=new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')); }catch(e){ return null; }
@@ -6827,7 +6903,7 @@ function oppdaterMetodeSub(antallPasser){
     el.textContent=L('Langtidsdeig fungerer fint om du er usikker','Long-ferment dough works fine if you are unsure');
     return;
   }
-  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  const _e=eatEls(); const dEl=_e.d, tEl=_e.t;
   let naar='';
   try{ naar=fDT(new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00'))); }catch(e){}
   el.textContent = antallPasser===0

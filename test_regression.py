@@ -9817,6 +9817,76 @@ const svSched=window._pizzatidSchedule;
     ok189 = all(r189.values())
     results.append(('method_cards_flag_the_recommendation_and_grey_out_what_cannot_fit', ok189, r189))
 
+    # v0.841: PC-kortene fikk samme behandling som mobilkortene (v0.840).
+    # Foer dette hadde PC INGEN dom i det hele tatt — methodFitNote leste
+    # mob-feltene og returnerte null paa PC. Naa er ankerlesingen layout-blind
+    # (eatEls, samme moenster som winEls i v0.802), saa begge flater bruker
+    # samme methodFitNote og samme anbefaltMetode. Testen laaser 1:1: for
+    # samme oppsett skal PC og mobil gi IDENTISK dom og anbefaling — ellers er
+    # vi tilbake til to dommere, bare fordelt paa to skjermer.
+    r190 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      window._planChosen=true;
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard';
+      const bake=new Date(Date.now()+14.3*3600000);
+      // mobil foerst — fasit
+      setLayout('mob');
+      document.getElementById('mob-ed').value=fd(bake);
+      document.getElementById('mob-et').value=fT(bake);
+      mobShowTab('settings'); mobMethodCards();
+      const mob=[...document.querySelectorAll('#mob-gmet > div')]
+        .map(x=>x.dataset.v+':'+x.dataset.fit+':'+(x.dataset.anbefalt||'0'));
+      // saa PC
+      setLayout('pc');
+      document.getElementById('ed').value=fd(bake);
+      document.getElementById('et').value=fT(bake);
+      mCards();
+      const k=[...document.querySelectorAll('#gmet .mc')];
+      const pc=k.map(x=>x.dataset.v+':'+x.dataset.fit+':'+(x.dataset.anbefalt||'0'));
+      ut.pcLikMobil = pc.join(',')===mob.join(',') && pc.length===6;
+      ut.pcHarDom = k.filter(x=>x.dataset.fit==='nei').length===4
+                 && k.filter(x=>x.dataset.fit==='ja').length===2;
+      ut.pcGraaKlasse = k.filter(x=>x.dataset.fit==='nei' && x.dataset.v!==S.method)
+                         .every(x=>x.classList.contains('mc-uegnet'));
+      const anb=k.filter(x=>x.dataset.anbefalt==='1');
+      ut.pcAnbefalt = anb.length===1 && anb[0].classList.contains('mc-anbefalt')
+        && !!anb[0].querySelector('.mc-anb-merke');
+      const valgt=k.find(x=>x.dataset.v==='standard');
+      ut.pcValgtUmuligVarsler = valgt.dataset.fit==='nei' && !valgt.dataset.anbefalt
+        && /⚠️/.test(valgt.textContent)
+        && valgt.querySelector('.mc-fit').classList.contains('advarsel')
+        && !valgt.classList.contains('mc-uegnet');
+      ut.pcTeller = /^— 2 rekker til /.test((document.querySelector('#gmet-wrap .lbl .mc-teller')||{textContent:''}).textContent);
+      // KILDEBEVIS: over er BEGGE feltsett satt, saa PC kunne «bestaa» ved aa
+      // lese mobilfeltene — mutasjonsrunden avslorte nettopp det. Toem
+      // mob-feltene: en PC-bruker som aldri har roert mobilvisningen skal
+      // fortsatt faa dommen, og den maa komme fra ed/et.
+      const _md=document.getElementById('mob-ed').value, _mt=document.getElementById('mob-et').value;
+      document.getElementById('mob-ed').value=''; document.getElementById('mob-et').value='';
+      mCards();
+      const kun=[...document.querySelectorAll('#gmet .mc')];
+      ut.pcLeserEgneFelt = kun.filter(x=>x.dataset.fit==='nei').length===4
+        && kun.filter(x=>x.dataset.fit==='ja').length===2
+        && kun.filter(x=>x.dataset.anbefalt==='1').length===1;
+      document.getElementById('mob-ed').value=_md; document.getElementById('mob-et').value=_mt;
+      mCards();
+      // gjentatt rendring maa ikke stable opp elementer (mCards kalles ofte)
+      mCards(); mCards();
+      ut.ingenDubletter=[...document.querySelectorAll('#gmet .mc')]
+        .every(x=>x.querySelectorAll('.mc-fit').length<=1 && x.querySelectorAll('.mc-anb-merke').length<=1);
+      // start-modus fjerner alt igjen
+      S.mode='start'; mCards();
+      ut.pcStartRydder=[...document.querySelectorAll('#gmet .mc')]
+        .every(x=>!x.dataset.fit && !x.querySelector('.mc-fit')
+                  && !x.classList.contains('mc-uegnet') && !x.classList.contains('mc-anbefalt'))
+        && !document.querySelector('#gmet-wrap .lbl .mc-teller');
+      S.mode='end'; setLayout('mob');
+      return ut;
+    }""")
+    ok190 = all(r190.values())
+    results.append(('pc_method_cards_match_mobile_verdict_one_to_one', ok190, r190))
+
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret
 # (--gruppe 6 kjører hele gamle gruppe 6, i samme rekkefølge) — segmentene

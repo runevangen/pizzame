@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.841",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "PC-visningen har fått samme metodekort som mobilen: det som ikke rekker fram til steketiden er grått og utilgjengelig, ett kort bærer ANBEFALT, og en valgt metode som ikke rekker sier ⚠️ i stedet for å se ut som et godt valg. Over kortene står det hvor mange metoder som faktisk rekker.",
+      "PC hadde faktisk ingen slik vurdering i det hele tatt før nå — den så bare etter steketiden i mobilfeltene og fant ingenting. Nå leser begge visningene fra samme sted, så PC og mobil ikke kan gi to forskjellige svar på samme spørsmål."
+    ],
+    "changes_en": [
+      "The desktop view now has the same method cards as mobile: what cannot make it to your baking time is greyed out and unavailable, one card carries RECOMMENDED, and a selected method that cannot make it says ⚠️ instead of looking like a good choice. Above the cards it says how many methods actually make it.",
+      "Desktop in fact had no such assessment at all until now — it only looked for the baking time in the mobile fields and found nothing. Both views now read from the same place, so desktop and mobile cannot give two different answers to the same question."
+    ]
+  },
+  {
     "v": "0.840",
     "d": "august 2026",
     "d_en": "August 2026",
