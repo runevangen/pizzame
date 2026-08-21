@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.843",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Setter du en steketid som den valgte metoden ikke rekker fram til, bytter appen nå til den anbefalte i stedet for å la deg stå i et umulig valg. Meldt inn: «velger steketid i dag 15:00 — Langtidsdeig står valgt og rekker ikke, mens Hurtigdeig og Kveldsdeig passer godt. En av de to burde vært valgt.»",
+      "Byttet tar med hele forslaget, ikke bare navnet — også hevetiden, så den nye metoden faktisk rekker fram. Det sies tydelig fra over kortene, med Angre ett trykk unna.",
+      "Har du valgt metoden selv, rører appen den aldri: da står varselet og forklaringen som før, og valget er ditt. Det samme gjelder «Jeg begynner nå», der det ikke finnes noen frist å rekke."
+    ],
+    "changes_en": [
+      "If you set a baking time the selected method cannot make, the app now switches to the recommended one instead of leaving you in an impossible choice. Reported: \"choosing a baking time today at 15:00 — Long-ferment dough is selected and cannot make it, while Quick dough and Evening dough fit well. One of those two should have been selected.\"",
+      "The switch brings the whole suggestion, not just the name — the proofing time too, so the new method actually makes it. It is stated clearly above the cards, with Undo one tap away.",
+      "If you picked the method yourself, the app never touches it: the warning and the explanation stand as before, and the choice is yours. The same goes for \"I am starting now\", where there is no deadline to make."
+    ]
+  },
+  {
     "v": "0.842",
     "d": "august 2026",
     "d_en": "August 2026",

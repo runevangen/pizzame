@@ -1066,6 +1066,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
   </div>
 
   <div id="gmet-wrap"><div class="lbl">Metode</div>
+    <div id="pc-autobytt"></div>
     <div class="mcards" id="gmet">
       <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Langtidsdeig</div><div class="mc-s">Direkte + kjøl</div></div>
       <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
@@ -1948,6 +1949,11 @@ function updateEarliestHint(){
   el.textContent=earliest ? L('Tidligst mulig: ','Earliest possible: ')+fDT(earliest) : '';
 }
 ['sd','st','ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',sched);el.addEventListener('change',sched);}});
+// v0.843: PC — samme sjekk som mobilens _onWhenChange.
+['ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){const f=()=>{
+  let byttet=false; try{ byttet=autoByttMetodeHvisUmulig(); }catch(e){}
+  if(byttet){ try{ mCards(); }catch(e){} try{ schedNow(); }catch(e){} }
+}; el.addEventListener('input',f); el.addEventListener('change',f);}});
 // v0.802: steketid-feltene driver også Fra–til-lista på PC (jf. v0.726 på mobil).
 // renderWindowPicker() no-op-er selv utenfor Fra–til-modus.
 ['ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){const f=()=>{try{renderWindowPicker();}catch(e){}};el.addEventListener('input',f);el.addEventListener('change',f);}});
@@ -2014,6 +2020,8 @@ function mCards(){
     }
     c.onclick=()=>{
       if(S.method!==c.dataset.v) clearStepProgress();
+      window._metodeValgtAvBruker=true;   // v0.843
+      window._autoByttet=null;
       S.method=c.dataset.v;mCards();
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
       document.getElementById('ksub').style.display=S.method==='kveld'?'block':'none';
@@ -2025,6 +2033,7 @@ function mCards(){
     };
   });
   oppdaterMetodeSubPC(_harFit?_passer:null);
+  renderAutoByttMelding();
 }
 // v0.841: PC-etiketten over kortene («Metode») får samme telling som mobilens
 // undertittel — hvor mange metoder som faktisk rekker fram til steketiden.
@@ -2150,6 +2159,7 @@ function doReset(){
   // ikke lenger et testbakst, som gjør hele sammenligningen verdiløs.
   loadPrefs();
   window._activeDeigId=null;window._activeDeigName=null;window._activeAnchorISO=null;
+  window._metodeValgtAvBruker=false; window._autoByttet=null;   // v0.843
   try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
   window._checkedIngredients=new Set();
@@ -6795,7 +6805,14 @@ function syncMobControls(){
   // kandidatene stående mot en gammel steketid når man endret dato/klokkeslett
   // — lista viste da et vindu (og en oppstart) som ikke stemte med feltene.
   // renderWindowPicker() no-op-er selv utenfor Fra–til-modus.
-  const _onWhenChange=()=>{ mobGen(); try{ renderWindowPicker(); }catch(e){} };
+  const _onWhenChange=()=>{
+    // v0.843: sjekk om den valgte metoden fortsatt rekker den nye tiden.
+    let byttet=false;
+    try{ byttet=autoByttMetodeHvisUmulig(); }catch(e){}
+    mobGen();
+    if(byttet){ try{ mobMethodCards(); }catch(e){} }
+    try{ renderWindowPicker(); }catch(e){}
+  };
   ['mob-ed','mob-et'].forEach(id=>{
     const el=g(id);
     if(el&&!el.dataset.lst){el.addEventListener('input',_onWhenChange);el.addEventListener('change',_onWhenChange);el.dataset.lst='1';}
@@ -6928,15 +6945,26 @@ function anbefaltMetode(){
              // holde på en anbefaling som ikke lenger rekker.
              Math.floor(Date.now()/900000)].join('|');
   if(_anbMemo.k===key) return _anbMemo.v;
-  let v=null;
+  let v=null, snap=null;
   try{
     const res=searchAllMethods(eat);
     // Kun en kandidat som faktisk kan startes nå er en anbefaling.
     const topp=res.find(c=>c.feasible!==false);
     v=topp?topp.snapshot.method:null;
-  }catch(e){ v=null; }
-  _anbMemo={k:key,v:v};
+    snap=topp?topp.snapshot:null;
+  }catch(e){ v=null; snap=null; }
+  _anbMemo={k:key,v:v,snap:snap};
   return v;
+}
+// v0.843: anbefalingen er en KANDIDAT — metode PLUSS varighet. Et bytte som
+// bare setter metoden arver din gamle varighet, og da kan den anbefalte
+// metoden lande på en variant som selv ikke rekker: probe med 5 t igjen ga
+// «byttet til Hurtigdeig» mens S.hurtigH=5 fortsatt sto — kortet sa «rekker
+// ikke» rett etter byttet. Samme felle applyBetaResult unngår ved å lese hele
+// snapshotet.
+function anbefaltKandidat(){
+  anbefaltMetode();          // fyller memoen (inkl. snapshot)
+  return _anbMemo.snap||null;
 }
 // v0.840: undertittelen over kortene svarer paa det som faktisk gjelder naar
 // steketiden er kjent — hvor mange metoder som rekker — i stedet for et
@@ -6957,6 +6985,76 @@ function oppdaterMetodeSub(antallPasser){
     : antallPasser===1
       ? L(`Én metode rekker til ${naar}`,`One method makes it to ${naar}`)
       : L(`${antallPasser} metoder rekker til ${naar}`,`${antallPasser} methods make it to ${naar}`);
+}
+// v0.843: setter du en steketid som den valgte metoden ikke rekker, skal
+// appen ikke la deg stå i det umulige valget — den bytter til den anbefalte.
+// Meldt inn: «velger steketid i dag 15:00 → Langtidsdeig står valgt og rekker
+// ikke, mens Hurtigdeig og Kveldsdeig passer godt. En av de to burde vært
+// valgt.» Speilbildet av ensureFeasibleBakeTime (v5.78), som flytter TIDEN
+// når du velger en lang metode; her flyttes METODEN når du velger tid.
+//
+// Vakten: byttet skjer bare når metoden IKKE er valgt aktivt av deg. Har du
+// selv trykket på et kort, er det ditt valg — da står varselet og «Hvorfor»-
+// boksen (v0.842) i stedet. Byttet er alltid synlig og angrbart.
+function autoByttMetodeHvisUmulig(){
+  // Dobbel sikring: methodFitNote() vokter allerede modusen (returnerer null
+  // utenfor «spis kl.»), så denne linja er en EKVIVALENT vakt — mutasjonsrunden
+  // viste at å fjerne den ikke endrer atferd. Beholdt fordi den gjør regelen
+  // lesbar der den bor: autobytte finnes bare når det finnes en frist.
+  if(S.mode!=='end') return false;
+  if(window._metodeValgtAvBruker) return false;
+  const fit=methodFitNote(S.method);
+  if(!fit || !fit.dim) return false;
+  const snap=anbefaltKandidat();
+  const anb=snap?snap.method:null;
+  if(!anb || anb===S.method) return false;
+  const fra=S.method;
+  const foerVerdier={cold:S.cold,poolishH:S.poolishH,poolishCold:S.poolishCold,
+    poolishPauseH:S.poolishPauseH,bigaH:S.bigaH,hurtigH:S.hurtigH,kveldH:S.kveldH};
+  // Hele kandidaten, ikke bare metoden — ellers arves en varighet som ikke
+  // rekker (se anbefaltKandidat).
+  S.method=anb;
+  if(anb==='standard'||anb==='poolish'||anb==='biga'){ if(snap.cold!=null) S.cold=snap.cold; }
+  if(anb==='poolish'){ if(snap.poolishH!=null) S.poolishH=snap.poolishH;
+                       S.poolishCold=!!snap.poolishCold; S.poolishPauseH=snap.poolishPauseH||0; }
+  if(anb==='biga'&&snap.bigaH!=null) S.bigaH=snap.bigaH;
+  if(anb==='hurtig'&&snap.hurtigH!=null) S.hurtigH=snap.hurtigH;
+  if(anb==='kveld'&&snap.kveldH!=null) S.kveldH=snap.kveldH;
+  window._autoByttet={fra:fra, til:anb,
+    foer:{cold:foerVerdier.cold,poolishH:foerVerdier.poolishH,poolishCold:foerVerdier.poolishCold,
+          poolishPauseH:foerVerdier.poolishPauseH,bigaH:foerVerdier.bigaH,
+          hurtigH:foerVerdier.hurtigH,kveldH:foerVerdier.kveldH}};
+  try{ applyTypeUI(); }catch(e){}
+  try{ applyMobTypeUI(); }catch(e){}
+  return true;
+}
+function angreAutoBytt(){
+  const b=window._autoByttet;
+  if(!b) return;
+  S.method=b.fra;
+  if(b.foer) Object.keys(b.foer).forEach(k=>{ S[k]=b.foer[k]; });
+  window._autoByttet=null;
+  window._metodeValgtAvBruker=true;   // ditt valg nå — appen skal ikke bytte igjen
+  try{ applyTypeUI(); }catch(e){}
+  try{ applyMobTypeUI(); }catch(e){}
+  try{ mCards(); }catch(e){}
+  try{ mobMethodCards(); }catch(e){}
+  try{ mobGen(); }catch(e){}
+  try{ schedNow(); }catch(e){}
+}
+function autoByttMeldingHTML(){
+  const b=window._autoByttet;
+  if(!b) return '';
+  return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:9px;padding:7px 10px;margin-bottom:7px;font-size:11.5px;line-height:1.45;color:var(--forno-accent-text)">
+    <span style="flex:1;min-width:150px"><b>${L('Byttet til '+mN(b.til),'Switched to '+mN(b.til))}</b> — ${L(mN(b.fra)+' rakk ikke fram til steketiden du valgte.',mN(b.fra)+' could not make the baking time you chose.')}</span>
+    <button type="button" onclick="angreAutoBytt()" style="flex:0 0 auto;border:1px solid var(--forno-accent);border-radius:999px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-family:inherit;font-size:11px;font-weight:700;padding:3px 11px;cursor:pointer">${L('Angre','Undo')}</button>
+  </div>`;
+}
+function renderAutoByttMelding(){
+  ['mob-autobytt','pc-autobytt'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=autoByttMeldingHTML();
+  });
 }
 function mobMethodCards(){
   const wrap=document.getElementById('mob-gmet');if(!wrap)return;
@@ -7006,6 +7104,8 @@ function mobMethodCards(){
     el.innerHTML=`${anbHtml}<div style="font-size:14px;font-weight:600;color:${navnFarge}">${t}</div><div style="font-size:12px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
     el.onclick=()=>{
       if(S.method!==v) clearStepProgress();
+      window._metodeValgtAvBruker=true;   // v0.843: ditt valg — ingen autobytte
+      window._autoByttet=null;
       S.method=v;
       // Respekter valgt modus. Velger man en lang metode mens «Jeg begynner nå»
       // er aktivt, skal deigen planlegges FRAMOVER fra nå — ikke tvinges bakover
@@ -7031,6 +7131,7 @@ function mobMethodCards(){
     wrap.appendChild(el);
   });
   oppdaterMetodeSub(_harFit ? _passer : null);
+  renderAutoByttMelding();
   updateMethodWhyBox();
 }
 // Oppdaterer den dynamiske "hvorfor"-boksen under metodekortene til å vise
@@ -10178,6 +10279,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="wiz-s2-sub" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Langtidsdeig fungerer fint om du er usikker</div>
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-s2-q1">Metode</div></div>
       <div id="mob-gmet-wrap">
+        <div id="mob-autobytt" style="padding:0 1rem"></div>
         <div class="mob-mcard-wrap" id="mob-gmet"></div>
       </div>
       <div id="mob-method-why" style="margin:.4rem 1rem .65rem;padding:12px 14px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px">

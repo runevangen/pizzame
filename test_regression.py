@@ -9953,6 +9953,64 @@ const svSched=window._pizzatidSchedule;
     ok191 = r191.get('alleOverAA') is True
     results.append(('method_card_states_keep_AA_contrast_in_both_themes', ok191, r191))
 
+    # v0.843: setter du en steketid som den valgte metoden ikke rekker, bytter
+    # appen til den anbefalte i stedet for aa la deg staa i det umulige valget.
+    # Meldt inn: «velger steketid i dag 15:00 → Langtidsdeig staar valgt og
+    # rekker ikke, mens Hurtigdeig og Kveldsdeig passer godt. En av de to
+    # burde vaert valgt.» Speilbildet av ensureFeasibleBakeTime, som flytter
+    # TIDEN naar du velger metode.
+    #
+    # Tre ting testen laaser, alle tre fra feil funnet under bygging:
+    #  1) HELE kandidaten byttes (metode + varighet). Foerste utkast satte bare
+    #     metoden — probe med 5 t igjen ga «byttet til Hurtigdeig» mens
+    #     S.hurtigH=5 fortsatt sto, saa kortet sa «rekker ikke» rett etterpaa.
+    #  2) Har du valgt metoden SELV, roerer appen den aldri.
+    #  3) Angre tar deg tilbake til baade metode og varighet, og skrur av
+    #     autobyttet — ellers ville neste tastetrykk byttet paa nytt.
+    r192 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      setLayout('mob'); window._planChosen=true;
+      window._metodeValgtAvBruker=false; window._autoByttet=null;
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard'; S.cold=24;
+      const d=document.getElementById('mob-ed'), t=document.getElementById('mob-et');
+      const bake=new Date(Date.now()+5*3600000);
+      d.value=fd(bake); t.value=fT(bake);
+      mobShowTab('settings');
+      const foerMetode=S.method;
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.byttetVekkFraUmulig = S.method!==foerMetode;
+      // ... og den nye metoden maa faktisk rekke — MED varigheten som fulgte med
+      const fitEtter=methodFitNote(S.method);
+      ut.nyMetodeRekker = !!fitEtter && !fitEtter.dim;
+      const valgtKort=[...document.querySelectorAll('#mob-gmet > div')].find(x=>x.dataset.v===S.method);
+      ut.kortetSierPasser = !!valgtKort && valgtKort.dataset.fit==='ja';
+      ut.melding = /Byttet til/.test((document.getElementById('mob-autobytt')||{textContent:''}).textContent);
+      // Angre: tilbake til baade metode og varighet
+      const varighetFoerAngre=S.hurtigH;
+      angreAutoBytt();
+      ut.angreGirTilbake = S.method===foerMetode && S.cold===24;
+      ut.meldingBorte = (document.getElementById('mob-autobytt')||{textContent:''}).textContent.trim()==='';
+      // ... og appen skal ikke bytte paa nytt etterpaa
+      t.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.ikkeByttetIgjen = S.method===foerMetode;
+      // Bevisst valg respekteres: du trykker selv paa et umulig kort
+      window._metodeValgtAvBruker=false; window._autoByttet=null; S.method='standard';
+      [...document.querySelectorAll('#mob-gmet > div')].find(x=>x.dataset.v==='biga').onclick();
+      ut.bevisstValgSatt = S.method==='biga';
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.bevisstValgBeholdt = S.method==='biga';
+      // «Jeg begynner naa» har ingen frist — ingen bytte
+      window._metodeValgtAvBruker=false; window._autoByttet=null;
+      S.mode='start'; S.method='standard';
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.startModusUroert = S.method==='standard' && !window._autoByttet;
+      S.mode='end'; window._metodeValgtAvBruker=false; window._autoByttet=null;
+      return ut;
+    }""")
+    ok192 = all(r192.values())
+    results.append(('baking_time_that_kills_the_method_switches_to_the_recommended_one', ok192, r192))
+
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret
 # (--gruppe 6 kjører hele gamle gruppe 6, i samme rekkefølge) — segmentene
