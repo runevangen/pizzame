@@ -2766,7 +2766,7 @@ def _atferd_3(page, results):
     results.append(('smartplan_prefers_broadly_supported_ferment_over_extreme_length', ok72, r72))
 
 
-def _atferd_4(page, results):
+def _atferd_4a(page, results):
 
     # v0.683: tidskonflikt-merket på et steg som havner utenfor din LEDIGE tid sa
     # feilaktig «utenfor spisetid» (du spiser ikke da — du jobber), og var norsk-
@@ -3224,6 +3224,13 @@ def _atferd_4(page, results):
              and r155.get('0.5',{}).get('temperMin')==180
              and r155.get('0.3',{}).get('temperMin')==120)
     results.append(('poolish_share_splits_flour_and_water_without_losing_any', ok155, r155))
+
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). vinkedelen av gruppe 4 — wave_travel alene er 15 av gruppens 16 sekunder (ren venting mot ekte kamerastrøm).
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_4b(page, results):
 
     # v0.788: «litt vanskelig aa treffe» — meldt inn fra kjokkenet. Sveip over
     # terskel × reise × varighet viste at kravet var dyrere enn det var verdt:
@@ -4852,7 +4859,7 @@ def _atferd_5(page, results):
     results.append(('forming_step_labelled_counter_but_yeast_untouched', ok114, r114))
 
 
-def _atferd_6(page, results):
+def _atferd_6a(page, results):
 
     # ===== LAG 1 (v0.739): MASKINELT TESTBARE INVARIANTER OVER HELE MATRISEN =====
     # De tre foregående funnene (vann brukt to ganger i v0.736, forvarming uten
@@ -5421,6 +5428,13 @@ def _atferd_6(page, results):
                  'gammelSoekNullstilt', 'soekBevartNaarSynlig'])
     results.append(('dough_search_appears_only_when_the_list_needs_it', ok133, r133))
 
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). vinke-/klappedelen av gruppe 6, første halvdel (~16 s venting mot ekte kamera-/lydstrøm).
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_6b(page, results):
+
     # v0.766: vinkestyring i Fokus — bla uten å ta på telefonen, fordi hendene
     # er fulle av deig. Ren frame-differanse: hvert bilde ned til 32×24, energi
     # per kolonne, og tyngdepunktet av energien er hånden.
@@ -5815,6 +5829,13 @@ def _atferd_6(page, results):
         ok138 = all(r138.get(k) for k in
                     ['startet', 'ettKlappGirNeste', 'toKlappGirForrige', 'slipperMikrofonen'])
         results.append(('clap_end_to_end_through_real_audio', ok138, r138))
+
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). andre halvdel av vinkedelen + smartplan-halen (~10 s).
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_6c(page, results):
 
     # v0.769: to akser. Sideveis blar mellom steg, opp/ned ruller i stegteksten
     # — et langt steg får ikke plass på skjermen, og da hjelper det lite å
@@ -6261,7 +6282,7 @@ def _atferd_6(page, results):
                     ok144b, r144b))
 
 
-def _atferd_7(page, results):
+def _atferd_7a(page, results):
 
     # v0.776: og pausen skal IKKE tilbys når ingen pauselengde forbedrer planen.
     # autoPoolishPause() valgte beste av [6,12,18] — 0 var ikke en kandidat, så
@@ -7023,6 +7044,13 @@ def _atferd_7(page, results):
     ok144 = (r144.get('spredning') is True and r144.get('åpnetRiktig') is True
              and r144.get('maniaPåKort') is True and r144.get('ærligNote') is True)
     results.append(('smartplan_alternatives_are_other_methods_and_buttons_open_them', ok144, r144))
+
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). resten av gruppe 7 — kuttet skiller wave_accepts-delen (~11 s) fra den lette halen.
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_7b(page, results):
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
@@ -10018,7 +10046,25 @@ const svSched=window._pizzatidSchedule;
     results.append(('key_controls_keep_readable_contrast_in_both_layouts', ok181, r181))
 
 
-_ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
+# v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret
+# (--gruppe 6 kjører hele gamle gruppe 6, i samme rekkefølge) — segmentene
+# finnes fordi vinke-/klappetestene er SANNTIDSVENTING (ekte kamera-/lydstrøm,
+# målt: 38 av 59 s ren testtid) og dermed kan overlappe andre shards nesten
+# gratis i parallellkjøringen. Kuttene er rene: ingen test flyttet/omdøpt.
+_ATFERDSGRUPPER = [
+    [_atferd_1],
+    [_atferd_2],
+    [_atferd_3],
+    [_atferd_4a, _atferd_4b],
+    [_atferd_5],
+    [_atferd_6a, _atferd_6b, _atferd_6c],
+    [_atferd_7a, _atferd_7b],
+]
+# Segmentnøkkel ('4b') → funksjon + kanonisk sorteringsposisjon for rapporten.
+_SEGMENTER = {}
+for _gnr, _seg in enumerate(_ATFERDSGRUPPER, start=1):
+    for _snr, _fn in enumerate(_seg):
+        _SEGMENTER[_fn.__name__.replace('_atferd_', '')] = (_gnr, _snr, _fn)
 
 
 def _gruppe_for_navn():
@@ -10028,7 +10074,8 @@ def _gruppe_for_navn():
     kart, g = {}, 0
     with open(os.path.abspath(__file__), encoding="utf-8") as f:
         for linje in f:
-            m = re.match(r"def _atferd_(\d+)\(", linje)
+            # v0.837: segmentbokstaven ('4b') hører til samme GRUPPE (4).
+            m = re.match(r"def _atferd_(\d+)[a-z]?\(", linje)
             if m:
                 g = int(m.group(1)); continue
             m = re.search(r"results\.append\(\(\s*'([^']+)'", linje)
@@ -10047,14 +10094,11 @@ def velg_grupper(monster=None, gruppenr=None):
     return sorted({g for navn, g in kart.items() if monster.lower() in navn.lower()})
 
 
-def run_behavioral_tests(page, grupper=None):
-    """
-    Tester som ikke passer inn i frys-tallene-mønsteret over — de sjekker
-    ATFERD (hvilket valg søket gjør), ikke bare rene tall. Hver av disse
-    kom fra en reell bug funnet og fikset i samtalen.
-    """
-    results = []
-
+def _installer_testhjelpere(page):
+    """v0.837: window-hjelperne (resetTestState, setSafeFutureEatDate ...)
+    trukket ut av run_behavioral_tests, så parallell-shardene kan kjøre
+    enkeltsegmenter uten å gå via gruppeløypa. Idempotent — å definere
+    funksjonene på nytt på samme side er harmløst."""
     # v5.93: delt hjelper som nullstiller global tilstand testene deler —
     # _dismissedWarnings, _acceptedConflicts, _pizzatidSchedule, S, og
     # eat-dato-feltene. Rotårsaken til tre tester som feilet sent på kvelden:
@@ -10106,6 +10150,17 @@ def run_behavioral_tests(page, grupper=None):
       };
     }""")
 
+
+def run_behavioral_tests(page, grupper=None):
+    """
+    Tester som ikke passer inn i frys-tallene-mønsteret over — de sjekker
+    ATFERD (hvilket valg søket gjør), ikke bare rene tall. Hver av disse
+    kom fra en reell bug funnet og fikset i samtalen.
+    """
+    results = []
+    _installer_testhjelpere(page)
+
+
     valgte = grupper if grupper else list(range(1, len(_ATFERDSGRUPPER) + 1))
     for nr in valgte:
         # v0.835: hver gruppe starter fra standardtilstand — samme utgangspunkt
@@ -10114,13 +10169,21 @@ def run_behavioral_tests(page, grupper=None):
         # invariant 118c «fant» kald poolish kun i delkjøring). Innad i en
         # gruppe består rekkefølgen som før — det er grensene som nå er rene,
         # og det er grensene som gjør gruppene delbare (parallellkjøringen).
-        page.evaluate("""() => {
-          resetTestState();
-          try{ syncMobControls(); }catch(e){}
-          window._planChosen = true;
-        }""")
-        _ATFERDSGRUPPER[nr - 1](page, results)
+        # v0.837: reset per SEGMENT, ikke per gruppe — da har et segment samme
+        # utgangspunkt enten det kjøres i sin gruppe (her) eller alene i en
+        # parallell shard, og de to veiene kan ikke svare ulikt.
+        for fn in _ATFERDSGRUPPER[nr - 1]:
+            _kjor_segment(page, fn, results)
     return results
+
+
+def _kjor_segment(page, fn, results):
+    page.evaluate("""() => {
+      resetTestState();
+      try{ syncMobControls(); }catch(e){}
+      window._planChosen = true;
+    }""")
+    fn(page, results)
 def run_render_layer_tests(page, baseline):
     """
     Fryser HTML-utdataen fra oppskrift-rad-rendringen (recipeRowsHTML +
@@ -10238,7 +10301,13 @@ def main():
     print()
 
     os.chdir(index_dir)
-    workers = min(4, os.cpu_count() or 1)
+    # v0.837: taket er ANTALL SHARDS, ikke kjernetall — vinke-/klappeshardene
+    # (4b, 6b, 6c) er sanntidsventing mot kamera-/lydstrømmer og okkuperer
+    # nesten ingen CPU, så seks prosesser på fire kjerner er gevinst, ikke kø.
+    # På 1–2 kjerner slås shardene sammen i _shard_fordeling som før.
+    workers = os.cpu_count() or 1
+    if workers >= 3:
+        workers = 6  # antall shards i standardfordelingen
     parallell = (not delkjoring) and (not seriell) and workers >= 2
     if parallell:
         _kjor_parallelt(index_path, baseline, workers)
@@ -10282,6 +10351,14 @@ def _boot_side(p, index_path):
     load_errors = []
     page.on("pageerror", lambda exc: load_errors.append(str(exc)))
     page.on("console", lambda msg: load_errors.append(f"[console.{msg.type}] {msg.text}") if msg.type == "error" and "404" not in msg.text and "Failed to load resource" not in msg.text else None)
+    # v0.837: alt eksternt blokkeres (Google Fonts er eneste eksterne ressurs).
+    # Målt: goto ventet 13 av boot-fasens 14 sekunder på fonts.googleapis.com i
+    # et miljø der den hang til timeout — og i CI var fonten en ekstern
+    # avhengighet porten strengt tatt aldri skulle hatt. Testene leser tekst og
+    # beregnede farger, aldri glyfer, så fallback-fonten endrer ingenting.
+    page.route("**/*", lambda route: route.continue_()
+               if route.request.url.startswith("http://localhost")
+               else route.abort())
     page.goto(f"http://localhost:{port}/{os.path.basename(index_path)}")
     page.wait_for_timeout(1200)
     page.evaluate("document.getElementById('guide-modal') && (document.getElementById('guide-modal').style.display='none')")
@@ -10390,7 +10467,9 @@ def _kjor_serielt(index_path, baseline, grupper, delkjoring):
         scenarier = _kjor_scenarier(page, baseline)
         atferd = {}
         for nr in grupper:
-            atferd[nr] = run_behavioral_tests(page, [nr])
+            # (nr, 0): segmentene innad kjøres i rekkefølge av
+            # run_behavioral_tests, så flat liste per gruppe er kanonisk.
+            atferd[(nr, 0)] = run_behavioral_tests(page, [nr])
         render = run_render_layer_tests(page, baseline)
         browser.close()
         httpd.shutdown()
@@ -10398,9 +10477,14 @@ def _kjor_serielt(index_path, baseline, grupper, delkjoring):
 
 
 def _shard_fordeling(workers):
-    """Statisk, målt fordeling: de tre tunge gruppene alene, resten samlet.
-    Fastlaget (innlasting + scenarier + render) følger den letteste sharden."""
-    shards = [[6], [4], [7], [1, 2, 3, 5]]
+    """Statisk, MÅLT fordeling på segmentnivå (v0.837). Vinke-/klappesegmentene
+    (4b, 6b, 6c og 7a sin wave-del) er sanntidsVENTING mot ekte kamera-/lyd-
+    strømmer — de bruker nesten ikke CPU og kan derfor overlappe de regne-tunge
+    shardene selv med flere prosesser enn kjerner. Veggen er nå tyngste
+    ENKELTTEST (wave_travel, ~15 s — udelelig sanntid), ikke tyngste gruppe.
+    Målt per segment: 6b≈16s, 4b≈16s, 7a≈11s, 6c≈10s, FAST≈6s, resten ≈2-4s."""
+    shards = [['6b'], ['4b'], ['7a'], ['6c'], ['FAST', '1', '2'], ['3', '5', '4a', '6a', '7b']]
+    # Få kjerner: slå sammen bakfra til antallet passer (venting tåler deling).
     while len(shards) > max(1, workers):
         shards[-2] = shards[-2] + shards[-1]
         shards.pop()
@@ -10408,19 +10492,26 @@ def _shard_fordeling(workers):
 
 
 def _shard_worker(args):
-    """Én prosess: egen server, egen nettleser, et utvalg grupper. Kjøres via
-    fork på Linux — modulen er ferdig importert og forelderen har ikke startet
-    playwright, så det er trygt. Returnerer bare picklebare tupler/dicts."""
-    index_path, grupper, med_fastlag = args
+    """Én prosess: egen server, egen nettleser, et utvalg segmenter ('4b', 'FAST').
+    Kjøres via fork på Linux — modulen er ferdig importert og forelderen har
+    ikke startet playwright, så det er trygt. Returnerer picklebare tupler."""
+    index_path, nokler = args
     baseline = load_full_baseline()
     ut = {"innlasting": [], "scenarier": [], "atferd": {}, "render": []}
+    med_fastlag = 'FAST' in nokler
     with sync_playwright() as p:
         browser, httpd, page, load_errors = _boot_side(p, index_path)
         if med_fastlag:
             ut["innlasting"] = _innlasting_resultat(page, load_errors)
             ut["scenarier"] = _kjor_scenarier(page, baseline)
-        for nr in grupper:
-            ut["atferd"][nr] = run_behavioral_tests(page, [nr])
+        _installer_testhjelpere(page)
+        for n in nokler:
+            if n == 'FAST':
+                continue
+            gnr, snr, fn = _SEGMENTER[n]
+            res = []
+            _kjor_segment(page, fn, res)
+            ut["atferd"][(gnr, snr)] = res
         if med_fastlag:
             ut["render"] = run_render_layer_tests(page, baseline)
         browser.close()
@@ -10431,10 +10522,9 @@ def _shard_worker(args):
 def _kjor_parallelt(index_path, baseline, workers):
     import concurrent.futures
     shards = _shard_fordeling(workers)
-    # Fastlaget til den letteste sharden (den samlede) — sist i lista.
-    oppgaver = [(index_path, s, i == len(shards) - 1) for i, s in enumerate(shards)]
+    oppgaver = [(index_path, s) for s in shards]
     print(f"Parallellkjøring: {len(shards)} prosesser "
-          f"({' | '.join('g' + ','.join(map(str, s)) for s in shards)}).")
+          f"({' | '.join(','.join(s) for s in shards)}).")
     print()
     innlasting, scenarier, atferd, render = [], [], {}, []
     with concurrent.futures.ProcessPoolExecutor(max_workers=len(shards)) as ex:
@@ -10443,8 +10533,7 @@ def _kjor_parallelt(index_path, baseline, workers):
             scenarier += ut["scenarier"]
             atferd.update(ut["atferd"])
             render += ut["render"]
-    _print_rapport(innlasting, scenarier, atferd, render,
-                   sorted(atferd), delkjoring=False)
+    _print_rapport(innlasting, scenarier, atferd, render, [], delkjoring=False)
 
 
 if __name__ == "__main__":

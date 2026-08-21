@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.837",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Testporten på 20 sekunder — ned fra 86 da opprydningen startet. Ingen app-endring i denne versjonen; alt er målt og flyttet i selve testmaskineriet.",
+      "Målingen veltet en antagelse: det var ikke de store matrise-sveipene som kostet (de er under et sekund hver) — det var vinke- og klappetestene, som med vilje mater detektoren med ekte kamera- og lydstrømmer i sanntid. 38 av 59 sekunder ren testtid er venting, ikke regning. Sanntiden er fredet — den ER det som testes — men venting kan overlappe: testgruppene fikk tre nye rene kutt rundt sanntidstestene, og de delene kjører nå i egne prosesser ved siden av regnearbeidet.",
+      "Og én ren dumhet: hver testnettleser ventet 13 sekunder på Google Fonts før første test — en ekstern avhengighet porten aldri skulle hatt. Testene leser tekst og farger, ikke skrifttyper, så alt eksternt blokkeres nå ved lasting.",
+      "Målt tre kjøringer på rad: 19,4–19,8 sekunder, null vingling. Serieveien (feilsøkings-fallbacken) falt samtidig fra 77 til 67 sekunder."
+    ],
+    "changes_en": [
+      "The test gate at 20 seconds — down from 86 when the cleanup started. No app change in this version; everything is measured and moved in the test machinery itself.",
+      "Measurement toppled an assumption: it wasn't the big matrix sweeps that cost (they are under a second each) — it was the wave and clap tests, which deliberately feed the detector real camera and audio streams in real time. 38 of 59 seconds of pure test time is waiting, not computing. The real time is protected — it IS what's being tested — but waiting can overlap: the test groups got three new clean cuts around the real-time tests, and those parts now run in their own processes alongside the computational work.",
+      "And one plain blunder: every test browser waited 13 seconds for Google Fonts before the first test — an external dependency the gate never should have had. The tests read text and colours, not typefaces, so everything external is now blocked at load.",
+      "Measured three runs in a row: 19.4–19.8 seconds, zero wobble. The serial path (the debugging fallback) dropped from 77 to 67 seconds at the same time."
+    ]
+  },
+  {
     "v": "0.836",
     "d": "august 2026",
     "d_en": "August 2026",
