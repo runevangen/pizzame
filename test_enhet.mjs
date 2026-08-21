@@ -9,10 +9,11 @@
 // det å stubbe window/L/S og de få tabellene funksjonene under faktisk rører.
 import { readFileSync } from 'node:fs';
 
+// v0.838: L- og BSUGAR-stubbene er fjernet — engine.js eier nå begge selv
+// (tilstandsfasit + kjernetall flyttet inn fra index.html), så stubber ville
+// bare blitt skygget av de ekte definisjonene.
 globalThis.window = { _lang: 'no' };
-globalThis.L = (a, b) => (globalThis.window._lang === 'en' ? b : a);
 globalThis.S = {};
-globalThis.BSUGAR = { newyork: 2 };
 
 const src = readFileSync(new URL('./engine.js', import.meta.url), 'utf8');
 const eng = new Function(src + `;return { interpLin, coldMultForHours, tf, rtM,
@@ -119,8 +120,11 @@ S.kaldBulk = false; t('navn: uten variant faller til mN', eng.mNVariant('standar
 S.type = 'napoletana'; S.method = 'hurtig'; S.hurtigH = 8; t('total: hurtig er valgt timetall', eng.totalFermentHours() === 8);
 S.method = 'kveld'; S.kveldH = 18; t('total: kveld er kaldtimene', eng.totalFermentHours() === 18);
 S.method = 'standard'; S.cold = 48; S.temp = 22; t('total: standard er kaldtid + overhead', eng.totalFermentHours() === 49);
+// v0.838: måles nå mot den EKTE BSUGAR-tabellen (bor i engine.js), ikke en
+// stubb — regelen som testes er den samme: pizzaovn nuller sukkeret, vanlig
+// ovn leser tabellverdien (newyork: 1,5 %).
 S.type = 'newyork'; S.oven = 'pizza'; t('sukker: droppes i pizzaovn', eng.effSugarPct() === 0);
-S.oven = 'vanlig'; t('sukker: beholdes i vanlig ovn', eng.effSugarPct() === 2);
+S.oven = 'vanlig'; t('sukker: beholdes i vanlig ovn', eng.effSugarPct() === 1.5);
 
 if (feil.length) {
   console.log(`Enhetslag: ${ok} OK, ${feil.length} FEILET:`);

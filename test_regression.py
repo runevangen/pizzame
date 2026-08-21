@@ -4861,42 +4861,27 @@ def _atferd_5(page, results):
 
 def _atferd_6a(page, results):
 
-    # ===== LAG 1 (v0.739): MASKINELT TESTBARE INVARIANTER OVER HELE MATRISEN =====
-    # De tre foregående funnene (vann brukt to ganger i v0.736, forvarming uten
-    # tidsluke i v0.737, feil lokasjonsmerkelapp i v0.738) ble alle oppdaget ved å
-    # lese planen manuelt. Hver av dem tilhører en KLASSE som kan sjekkes med kode.
-    # Testene under sveiper metode × type × ovnstype (60 konfigurasjoner) og
-    # håndhever tre egenskaper som må holde for alle:
-    #   A  massebalanse — det stegene ber deg måle opp, summerer til oppskriften
-    #   B  vaghetslint  — ingen mengdeord uten tall for en ingrediens i oppskriften
-    #   C  forvarming   — tidsplanen setter faktisk av tiden ovnen krever
-    # De fant to reelle feil ved første kjøring; begge er fikset i samme versjon
-    # (se `MATRIX_SWEEP`-funnene i changelog for v0.739).
-    MATRIX_SWEEP = """() => {
+    # ===== LAG 1: INVARIANTENE OVER HELE MATRISEN — flyttet til node (v0.839) =====
+    # Invariantene A–H (massebalanse, vaghetslint, forvarming, fakta-kun-i-
+    # understeg, råflyt i stegtekst, overmodning på lange hevinger, vann-
+    # temperatur, deigball-navnet) bor nå i test_steg.mjs: de leser kun
+    # stegkjeder + oppskrift, og etter steglag-utflyttingen (v0.836/v0.838)
+    # stopper porten FØR nettleseren når en av dem ryker — med regelnavnet i
+    # meldingen. Historikk-kommentarene (v0.736–v0.775-funnene) fulgte med dit.
+    #
+    # Den ENE biten som krever DOM står igjen her: sjekk-panelet (v0.757) —
+    # varslene hentes FERDIG RENDRET, så et varsel som legges til senere er
+    # dekket uten at testen kjenner navnet på det. Regelen er den samme som
+    # node-sidens invariant_no_raw_floats_in_user_text: mer enn to desimaler
+    # i en brukertekst er et regnestykke som har lekket ut.
+    VARSEL_SWEEP = """() => {
       const saved={...S};
-      // v0.775: språket var IKKE pinnet — sveipet arvet _lang fra forrige test.
-      // Alle invariantene under linter norsk tekst (B leter etter norske
-      // mengdeord, G etter «vann», H etter «emne»), så en lekket 'en' fra en
-      // tidligere test ville gjort dem til støy. Nå er de rekkefølge-uavhengige.
       const _lang0=window._lang; window._lang='no';
       const out=[];
       for(const m of ['standard','poolish','biga','mania','hurtig','kveld'])
-      // v0.835: samme leksjon som v0.775, én S-generasjon senere. Sveipet
-      // pinnet 14 felt i en håndliste, mens DEF hadde vokst til 25+ — og
-      // differansen VAR både flakiness og et hull i porten: poolishCold sto
-      // ikke i lista, full kjøring arvet tilfeldigvis false fra tester foran,
-      // så kald poolish ble ALDRI sveipet — mens en gruppe-6-delkjøring arvet
-      // true og «fant» en feil porten aldri så (manglende overmodning-tegn,
-      // reell, fikset i v0.835). Nå nullstilles hvert kombinasjonspunkt fra
-      // DEF — et nytt S-felt kan ikke lenger glemmes i noen liste — og
-      // kald/romtemp poolish er en egen akse, så begge variantene ER porten.
       for(const pkald of (m==='poolish'?[false,true]:[false]))
       for(const t of ['napoletana','newyork','langpanne','chicago','ingenelting'])
       for(const o of ['vanlig','pizza'])
-      // v0.752: hydrering var IKKE med i sveipet — alt ble målt på 65 %. Da er
-      // en hel akse av matrisen utestet, og en feil som bare slår ut ved tørre
-      // eller våte deiger er usynlig for alle tre invariantene. Glideren går
-      // 55–80 for alle typer, så endene og midten dekker det nåbare rommet.
       for(const h of [55,65,80]){
         Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
         S.method=m; S.type=t; S.oven=o; S.mode='start';
@@ -4904,305 +4889,27 @@ def _atferd_6a(page, results):
         S.hurtigH=4; S.kveldH=10; S.poolishH=14; S.bigaH=18; S.poolishCold=pkald;
         const lbl=m+(pkald?'+kald':'');
         let steps=null;
-        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ out.push({m:lbl,t,o,h,err:''+e}); continue; }
-        if(!steps||!steps.length){ out.push({m:lbl,t,o,h,err:'ingen steg'}); continue; }
-        const bake=steps[steps.length-1];
-        // Siste steg før steking som handler om ovnen — enten merket dit du går
-        // (dispLoc) eller navngitt som forvarming (Hurtigdeig/Ingen elting folder
-        // forvarmingen inn i etterhevingssteget sitt).
-        let gap=null, phTitle=null;
-        for(let i=steps.length-2;i>=0;i--){
-          if(steps[i].dispLoc==='ovn' || /forvarm|ovnen/i.test(steps[i].title)){
-            gap=Math.round((bake.at-steps[i].at)/60000); phTitle=steps[i].title; break;
-          }
-        }
-        out.push({m:lbl,t,o,h, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
-                  // v0.755: stegtekstene ut, så invariant D kan se hva som bare
-                  // bor i understegene og aldri kommer med i en kopiert plan.
-                  steps:steps.map((s,i)=>({title:s.title, desc:s.desc, why:s.why,
-                                       tip:s.tip, substeps:s.substeps||[],
-                                       // v0.758: passiv/plassering/varighet ut,
-                                       // så invariant F kan finne de LANGE
-                                       // hevingene — det er bare der et manglende
-                                       // overmodning-tegn koster deg deigen.
-                                       passive:!!s.passive, loc:stepLoc(s),
-                                       minTilNeste: steps[i+1]
-                                         ? Math.round((new Date(steps[i+1].at)-new Date(s.at))/60000)
-                                         : 0})),
-                  // v0.757: og hele sjekk-panelet, som er der varslene bor.
-                  // Å hente det ferdig rendret dekker ALLE varsler på én gang,
-                  // i stedet for at testen må kjenne navnet på hver enkelt —
-                  // et varsel som legges til senere blir dekket gratis.
-                  varsler:(()=>{ try{ window._steps=steps; window._wizStep=3;
-                    wizCheckRender();
-                    const el=document.getElementById('wiz-check');
-                    return el?el.innerText:''; }catch(e){ return ''; } })(),
-                  needs:steps.map(s=>s.needs||[]).reduce((a,b)=>a.concat(b),[])});
+        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ continue; }
+        if(!steps||!steps.length) continue;
+        const varsler=(()=>{ try{ window._steps=steps; window._wizStep=3;
+          wizCheckRender();
+          const el=document.getElementById('wiz-check');
+          return el?el.innerText:''; }catch(e){ return ''; } })();
+        out.push({m:lbl,t,o,h,varsler});
       }
       Object.assign(S,saved); window._lang=_lang0;
       return out;
     }"""
-    sweep = page.evaluate(MATRIX_SWEEP)
-
-    # Ordet i teksten, ikke emojien, bestemmer ingrediensen: 🍯 brukes både til
-    # oppskriftens sukker og til honningen som vekker gjæren i Hurtigdeig, og de
-    # to skal ikke summeres i samme bøtte.
-    ING_WORDS = [("mel", "flour"), ("vann", "water"), ("salt", "salt"),
-                 ("gjær", "yDry"), ("olje", "oil"), ("smør", "butter"), ("sukker", "sugar")]
-    # v0.736-lærdommen: et vagt mengdeord er ikke bare upresist språk — det er
-    # stedet en motsigelse kan gjemme seg, fordi det ikke kan summeres og dermed
-    # er usynlig for massebalansen. Disse to er bevisste og gjelder mengder som
-    # IKKE er en del av oppskriften; alt annet vagt skal feile testen.
-    VAGUE_OK = {
-        "🫒 litt olje": "smøring av hevebokser — ikke oppskriftens olje",
-        "🍯 1 ts honning": "gjærens kickstart i Hurtigdeig — ikke oppskriftens sukker",
-    }
-    NUM = re.compile(r"^([\d]+(?:[.,]\d+)?)\s*g\b")
-
-    def ing_of(entry):
-        """Hvilken oppskrifts-ingrediens en needs-linje gjelder, eller None (utstyr o.l.)."""
-        body = entry[1:].strip() if entry and not entry[0].isalnum() else entry
-        for word, key in ING_WORDS:
-            if word in body.lower():
-                return key, body
-        return None, body
-
-    # --- A: massebalanse ---
-    balance_bad, sweep_errs = [], [d for d in sweep if d.get("err")]
-    for d in sweep:
-        if d.get("err"):
-            continue
-        got = {}
-        for entry in d["needs"]:
-            key, body = ing_of(entry)
-            if key is None:
-                continue
-            mnum = NUM.match(body)
-            if mnum:
-                got[key] = round(got.get(key, 0.0) + float(mnum.group(1).replace(",", ".")), 2)
-        for key in ("flour", "water", "salt", "yDry", "oil", "butter", "sugar"):
-            want = d["recipe"].get(key) or 0
-            have = got.get(key, 0.0)
-            if abs(have - want) > 0.011 and (have or want):
-                balance_bad.append(f"{d['m']}/{d['t']}/{d['o']} {key}: steg={have} oppskrift={want}")
-    r115 = {"konfigurasjoner": len(sweep), "sveipefeil": sweep_errs, "avvik": balance_bad[:12],
-            "avvikTotalt": len(balance_bad)}
-    ok115 = not balance_bad and not sweep_errs
-    results.append(('invariant_step_amounts_sum_to_recipe_all_configs', ok115, r115))
-
-    # --- B: vaghetslint ---
-    vague_bad = set()
-    for d in sweep:
-        for entry in d.get("needs", []):
-            key, body = ing_of(entry)
-            if key is None or NUM.match(body) or entry in VAGUE_OK:
-                continue
-            vague_bad.add(f"{d['m']}/{d['t']}/{d['o']}: {entry!r}")
-    r116 = {"nyeVageOppføringer": sorted(vague_bad)[:12], "antall": len(vague_bad),
-            "kjentOgTillatt": VAGUE_OK}
-    ok116 = not vague_bad
-    results.append(('invariant_no_vague_amounts_for_recipe_ingredients', ok116, r116))
-
-    # --- C: forvarming i prosa vs. tid i tidsplanen ---
-    # Stekesteget har alltid oppgitt hvor lenge ovnen må varmes. Invarianten er at
-    # tidsplanen faktisk setter av den tiden — kravet skal ikke dukke opp i det
-    # øyeblikket det er for sent å innfri. Fant Mania og Kveldsdeig, som v0.737
-    # antok alt hadde steget.
-    preheat_bad = []
-    for d in sweep:
-        if d.get("err"):
-            continue
-        if d["gap"] is None:
-            preheat_bad.append(f"{d['m']}/{d['t']}/{d['o']}: ingen forvarmingssteg (krever {d['preheatMin']} min)")
-        elif d["gap"] < d["preheatMin"]:
-            preheat_bad.append(f"{d['m']}/{d['t']}/{d['o']}: {d['gap']} min satt av, {d['preheatMin']} min kreves")
-    r117 = {"avvik": preheat_bad[:12], "avvikTotalt": len(preheat_bad),
-            "dekning": len([d for d in sweep if d.get("gap") is not None])}
-    ok117 = not preheat_bad
-    results.append(('invariant_schedule_allows_the_preheat_it_demands', ok117, r117))
-
-    # --- D: ingen fakta som bare bor i understegene ---
-    # v0.755: understegene er en OPPDELING av steget — «70g vann totalt» blir
-    # til «50g» og «20g». Det er greit. Det som ikke er greit, er et tall som
-    # ikke finnes NOEN steder utenfor understegene, for da viser appen noe som
-    # ikke kommer med videre: «Kopier tidsplan» og «Del» tar tittel, desc, why
-    # og tip — ikke substeps, ikke needs.
-    #
-    # Funnet som ga invarianten: Mania var den eneste metoden som ikke brukte
-    # oD() til stekesteget; den skrev `desc:oN()+'.'`, altså bare «Pizzaovn.».
-    # Steketemperatur og steketid lå kun i understegene, og en kopiert
-    # Mania-plan manglet derfor steketemperaturen helt — 450°C for napoletana,
-    # 350°C for langpanne, 280°C for chicago, i begge ovnstyper. Åtte
-    # kombinasjoner.
-    #
-    # Massebalansen kunne ikke se dette: den summerer GRAM mot oppskriften. En
-    # temperatur som forsvinner har ingen sum å bryte.
-    NUM_UNIT = re.compile(r"(\d+(?:[.,]\d+)?)\s*(g|°C|min|sek|timer|t)\b")
-
-    def tall_med_enhet(txt):
-        return {m.group(1).replace(",", ".") + m.group(2) for m in NUM_UNIT.finditer(str(txt or ""))}
-
-    substep_orphans = []
-    for d in sweep:
-        if d.get("err"):
-            continue
-        steps = d.get("steps") or []
-        i_kopi = set()
-        for st in steps:
-            for felt in ("desc", "why", "tip"):
-                i_kopi |= tall_med_enhet(st.get(felt))
-        for st in steps:
-            fra_sub = set()
-            for sub in (st.get("substeps") or []):
-                fra_sub |= tall_med_enhet(sub)
-            tapt = sorted(fra_sub - i_kopi)
-            if tapt:
-                substep_orphans.append(
-                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {st.get('title')}: {tapt}")
-    ok118 = not substep_orphans
-    results.append(('invariant_no_facts_live_only_in_substeps', ok118,
-                    {'foreldreløse': substep_orphans[:12],
-                     'antall': len(substep_orphans)}))
-
-    # --- E: ingen råe flyttall i tekst et menneske skal lese ---
-    # v0.757: varselet om mel og gjæringstid skrev «ca. 35.916666666666664
-    # timer». totalFermentHours() returnerer et flyttall, og det sto rett i
-    # teksten — med punktum og fjorten desimaler.
-    #
-    # Regelen: mer enn to desimaler i en brukertekst er alltid feil. Gjær
-    # oppgis med to (0,48g), alt annet med færre. Et tall med tre eller flere
-    # er et regnestykke som har lekket ut, ikke en mengde noen kan måle opp.
-    #
-    # Sjekken dekker stegtekstene OG hele sjekk-panelet, som er der varslene
-    # bor — panelet hentes ferdig rendret, så et varsel som kommer til senere
-    # blir dekket uten at testen må kjenne navnet på det.
+    vsweep = page.evaluate(VARSEL_SWEEP)
     RAA_FLYT = re.compile(r"\d+[.,]\d{3,}")
-
-    ugly_numbers = []
-    for d in sweep:
-        if d.get("err"):
-            continue
-        biter = [(f"{st.get('title')}.{felt}", st.get(felt))
-                 for st in (d.get("steps") or [])
-                 for felt in ("desc", "why", "tip")]
-        biter += [(f"{st.get('title')}.substep", sub)
-                  for st in (d.get("steps") or [])
-                  for sub in (st.get("substeps") or [])]
-        biter.append(("sjekk-panelet", d.get("varsler")))
-        for hvor, txt in biter:
-            for m in RAA_FLYT.findall(str(txt or "")):
-                ugly_numbers.append(
-                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {hvor}: {m}")
-    ok118b = not ugly_numbers
-    results.append(('invariant_no_raw_floats_in_user_text', ok118b,
-                    {'stygge': sorted(set(ugly_numbers))[:12],
-                     'antall': len(ugly_numbers)}))
-
-    # --- F: lange hevinger må si hva FOR LANGT ser ut som ---
-    # v0.758: Mania sitt sluttsteg er ti timer ved romtemperatur på ferdig
-    # formede emner, etter ti timer kaldt. Der sto det bare «La emnene heve i
-    # romtemperatur ved 22°C», og tipset tilbød fire timer EKSTRA som buffer —
-    # uten et eneste forbehold. Et emne som har flytt ut kommer ikke tilbake.
-    #
-    # «Ingen elting» hadde samme hull og verre: femten timer på benken, og
-    # steget hadde ikke noe tips i det hele tatt, på noen av språkene. Den
-    # deigen har bare ÉN heving, så det finnes ikke noe senere sjekkpunkt å
-    # redde seg på.
-    #
-    # Regelen: en passiv heving på fire timer eller mer må beskrive hvordan for
-    # langt fram ser ut. Beskrivelsen av hva som er KLART holder ikke — den
-    # forteller deg når du kan gå videre, ikke når toget har gått. Målt: begge
-    # hullene ovenfor var de eneste i hele matrisen, på begge språk.
-    OVERMODEN = re.compile(
-        r"\b(flyt|flat|kollaps|overhev|synker|sunket|slapp|spread|collaps|flatten|sunken|slack)\w*\b"
-        r"|for langt|sur smak|skarpt sur|sharply sour|too far", re.I)
-
-    missing_cue = []
-    for d in sweep:
-        if d.get("err"):
-            continue
-        for st in (d.get("steps") or []):
-            if not st.get("passive"):
-                continue
-            if st.get("loc") not in ("rom", "kjol"):
-                continue
-            if (st.get("minTilNeste") or 0) < 240:
-                continue
-            tekst = " ".join(str(st.get(f) or "") for f in ("desc", "why", "tip"))
-            if not OVERMODEN.search(tekst):
-                missing_cue.append(
-                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {st.get('title')} "
-                    f"({round((st.get('minTilNeste') or 0)/60)}t)")
-    ok118c = not missing_cue
-    results.append(('invariant_long_rises_say_what_too_far_looks_like', ok118c,
-                    {'utenTegn': sorted(set(missing_cue))[:12],
-                     'antall': len(missing_cue)}))
-
-    # --- G: vannet skal ha en temperatur der det først tilsettes ---
-    # v0.763: forgjæringene oppga hvor mye vann, men ikke hvor varmt. En poolish
-    # eller biga står 12–18 timer uten elting, så vannets temperatur ER
-    # forgjæringens starttemperatur — det finnes ingen eltefriksjon som retter
-    # den opp etterpå. Mania sa det allerede («18–21°C», fra kilden), Poolish og
-    # Biga ikke: samme opplysning, to ulike svar i samme app.
-    #
-    # Regelen gjelder FØRSTE steg som tilsetter vann. Senere steg kan vise
-    # tilbake — «de 20g vannet du holdt av» er samme vann, målt opp med
-    # temperatur i steget før, og å gjenta den ville vært støy.
-    VANN_MENGDE = re.compile(r"\d+(?:[.,]\d+)?\s*g\s+(?:kaldt\s+|kjølig\s+|romtemperert\s+)*vann", re.I)
-    VANN_TEMP = re.compile(r"\d+\s*(?:–|-)\s*\d+\s*°C|ca\.\s*\d+\s*°C|iskaldt|romtemperert|kjølig|lunkent", re.I)
-
-    water_no_temp = []
-    for d in sweep:
-        if d.get("err"):
-            continue
-        for st in (d.get("steps") or []):
-            biter = [st.get("desc")] + list(st.get("substeps") or [])
-            tekst = " ".join(str(x or "") for x in biter)
-            if not VANN_MENGDE.search(tekst):
-                continue
-            if not VANN_TEMP.search(tekst):
-                water_no_temp.append(
-                    f"{d['m']}/{d['t']}/{d['o']}/{d['h']}% · {st.get('title')}")
-            break   # kun første vannsteg per plan
-    ok118d = not water_no_temp
-    results.append(('invariant_water_states_its_temperature_where_added', ok118d,
-                    {'utenTemp': sorted(set(water_no_temp))[:12],
-                     'antall': len(water_no_temp)}))
-
-    # --- H: deigballen heter ÉN ting på norsk ---
-    # v0.775: spurt om appen bruker andre ord enn «emne». Målt over all norsk
-    # stegtekst: emne 75, ball 4, kule 6 — og «bolle» 30, men det er
-    # BLANDEBOLLA. Verst var Mania, som i én setning skrev «lag en stram, rund
-    # bolle. Legg i bakebolle» — samme ord om deigen og om kara den legges i,
-    # fire ord fra hverandre, i en metode som ellers sier «Hell poolish i
-    # bollen». Engelsken var konsekvent hele veien («ball»); det var bare
-    # norsken som spriket.
-    #
-    # «ball» og «kule» bannlyses rett ut — de har ingen annen betydning her.
-    # «bolle» kan IKKE bannlyses: den er redskapet 30 steder. Regelen er derfor
-    # at «bolle» aldri får stå som objekt for et formingsverb. En regel som
-    # bare forbød ordet ville tvunget fram feil fiks (å døpe om blandebolla).
-    NO_BALL = re.compile(r"\bball(?:en|er|ene)?\b|\bkule(?:n|r|ne)?\b", re.I)
-    BOLLE_SOM_DEIG = re.compile(
-        r"(?:form|lag|brett|rund|stram)\w*[^.!?|]{0,40}\bbolle\b", re.I)
-    ordbrudd = []
-    for d in sweep:
-        if d.get("err"):
-            continue
-        for st in (d.get("steps") or []):
-            biter = [st.get("title"), st.get("desc"), st.get("why"), st.get("tip")] \
-                    + list(st.get("substeps") or [])
-            for b in biter:
-                tekst = str(b or "")
-                for pat, hvorfor in ((NO_BALL, "ball/kule"),
-                                     (BOLLE_SOM_DEIG, "bolle=deig")):
-                    m = pat.search(tekst)
-                    if m:
-                        ordbrudd.append(f"{d['m']} · {hvorfor} · «{m.group(0)}» i: "
-                                        + re.sub(r"\s+", " ", tekst)[:90])
-    ok118e = not ordbrudd
-    results.append(('invariant_dough_ball_has_one_norwegian_name', ok118e,
-                    {'brudd': sorted(set(ordbrudd))[:12], 'antall': len(ordbrudd)}))
+    panel_ugly = []
+    for d in vsweep:
+        for m in RAA_FLYT.findall(str(d.get("varsler") or "")):
+            panel_ugly.append(f"{d['m']}/{d['t']}/{d['o']}/{d['h']}%: {m}")
+    ok118b = len(vsweep) > 0 and not panel_ugly
+    results.append(('invariant_no_raw_floats_in_check_panel', ok118b,
+                    {'stygge': sorted(set(panel_ugly))[:12],
+                     'antall': len(panel_ugly), 'paneler': len(vsweep)}))
 
     # v0.759: Mania er en AVSKRIFT, ikke en beregning. Kilden er «Lørdagspizza
     # med poolish tilpasset tidsklemma», René Munthe Eik, pizzamani.no,

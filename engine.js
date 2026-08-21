@@ -11,7 +11,44 @@
 // felles interpLin(). Punktene er UENDRET fra de tidligere spredte konstantene og
 // funksjons-lokale arrayene — historikken/kildene i kommentarene gjelder fortsatt.
 // Diskrete valgtabeller med UI-etiketter (HOPTS, KOPTS, KCOLDMULT, COLD_OPTS)
-// er bevisst ikke flyttet hit — de er menyer, ikke kurver.
+// var i F18 bevisst IKKE flyttet hit («menyer, ikke kurver»). v0.838 omgjør
+// det, med en annen begrunnelse enn F18 vurderte: motoren leser dem selv
+// (recipeFor bruker HOPTS/KCOLDMULT), og node-testlagene trenger dem uten
+// DOM. De ligger som egen DATA-seksjon under — fortsatt utenfor CALIBRATION,
+// som forblir kurvenes hjem.
+
+// ===== TILSTANDSFASIT + KJERNETALL (v0.838, verbatim fra index.html) =====
+// DEF er appens tilstandsfasit (typene her avgjør pgrp-coercion, feltene
+// avgjør SETUP_FIELDS/PREF_FIELDS i index). L er i18n-primitivet alt leser.
+// Tabellene er kjernetall per pizzatype; BSALT/BOIL/BYEAST/HREC er `let`
+// fordi /api/config kan overstyre dem ved oppstart (applyConfigValues).
+const DEF={type:'napoletana',method:'standard',cold:24,mode:'start',oven:'pizza',mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',hurtigH:5,kveldH:10,poolishH:14,bigaH:18,poolishCold:false,poolishAndel:0.5,poolishPauseH:0,kaldBulk:false,kveldHvile:true,sammaltPct:0,sammaltType:'rug',meltype:'doppio_zero',fridgeC:3,winStart:null,favMethod:null,gjaertest:false,gjaerTilstand:'fersk',gjaerStyrkePct:100,showHelp:true,showSubsteps:false};
+// L(no, en): velg språkversjon av en (ferdig interpolert) streng. Begge skrives
+// inline i samme scope, så ${}-verdiene er identiske; enheter håndteres av
+// localizeUnits() uansett. Norsk-utdata er byte-identisk → baseline uendret.
+function L(no, en){ return (window._lang==='en' && en!=null) ? en : no; }
+const HOPTS=[{h:2,b:'Nøddeig',bEn:'Barely dough',yp:8,tp:'320°C',tv:'240°C'},{h:3,b:'Greit',bEn:'OK',yp:5,tp:'350°C',tv:'240°C'},{h:4,b:'Anbefalt',bEn:'Recommended',yp:3,tp:'400°C',tv:'240°C'},{h:5,b:'Bra',bEn:'Good',yp:2,tp:'430°C',tv:'250°C'},{h:6,b:'Veldig bra',bEn:'Very good',yp:1.5,tp:'430°C',tv:'250°C'},{h:8,b:'Utmerket',bEn:'Excellent',yp:1,tp:'450°C',tv:'250°C'},{h:10,b:'Beste hurtig',bEn:'Best quick',yp:0.7,tp:'450°C',tv:'250°C'},{h:12,b:'Lang dag (~20°C)',bEn:'Long day (~20°C)',yp:0.5,tp:'450°C',tv:'250°C'},{h:14,b:'Kveldsklar (~19°C)',bEn:'Evening-ready (~19°C)',yp:0.4,tp:'450°C',tv:'250°C'},{h:16,b:'Kjølig kjøkken (~18°C)',bEn:'Cool kitchen (~18°C)',yp:0.32,tp:'450°C',tv:'250°C'}];
+// Kveldsdeig: gjærkurve for kort kaldheving (5–15t), forlenget fra samme mønster som COLDMULT
+// (som er kalibrert for 1–6 DAGER). Reell usikkerhet i kilder (2–3× vs. opptil 6× tregere enn
+// romtemp) — disse tallene er et fornuftig midtpunkt, ikke en eksakt fasit. Juster ved behov.
+const KOPTS=[{h:5,b:'Kveld til morgen',bEn:'Evening to morning'},{h:8,b:'Anbefalt',bEn:'Recommended'},{h:10,b:'Over natta',bEn:'Overnight'},{h:12,b:'Lang natt',bEn:'Long night'},{h:15,b:'Kveld til sen kveld',bEn:'Evening to late evening'},{h:18,b:'Lang kveld',bEn:'Long evening'},{h:24,b:'Ekte kveld-til-kveld',bEn:'True evening-to-evening'}];
+// Langtidsdeigens kald-tid som merkede hurtigvalg, i samme ånd som HOPTS/KOPTS:
+// en ærlig smaksstige (lenger kald heving = mer smak) i stedet for et nakent
+// tall. Slideren i Finjuster (mob-cwrap) beholdes for presis justering — begge
+// setter samme S.cold, så det er ett sannhetsgrunnlag. 48/72 ligger innenfor
+// COLD_MAX (120); et for svakt mel til den valgte tiden fanges av det myke
+// meltype-hintet, akkurat som ellers i appen.
+const COLD_OPTS=[{h:24,b:'Rett fram',bEn:'Straightforward'},{h:48,b:'Mer smak',bEn:'More flavor'},{h:72,b:'Full smak',bEn:'Full flavor'}];
+const KCOLDMULT={5:2.3,8:1.9,10:1.65,12:1.5,15:1.35,18:1.2,24:1.0};
+let HREC={napoletana:65,newyork:63,langpanne:70,chicago:55,ingenelting:75};
+const HRANGE={napoletana:{mn:58,mx:72},newyork:{mn:58,mx:70},langpanne:{mn:65,mx:78},chicago:{mn:48,mx:60},ingenelting:{mn:70,mx:82}};
+let BSALT={napoletana:2.8,newyork:2.0,langpanne:2.0,chicago:2.0,ingenelting:2.0};
+let BOIL={napoletana:0,newyork:2.0,langpanne:3.0,chicago:6.0,ingenelting:6.0};
+// Ekte Chicago deep dish bruker smør i tillegg til olje for den kjente flakete skorpen —
+// flere anerkjente oppskrifter (King Arthur, Sally's Baking) lander på 15-22% totalt fett.
+const BBUTTER={napoletana:0,newyork:0,langpanne:0,chicago:12.0,ingenelting:0};
+let BYEAST={napoletana:0.15,newyork:0.2,langpanne:0.2,chicago:0.2,ingenelting:0.2};
+const BSUGAR={napoletana:0,newyork:1.5,langpanne:0,chicago:0,ingenelting:0};
 const CALIBRATION={
   // tf(): romtemperatur → tidsfaktor for romhevinger (22°C = 1,0-referanse)
   tempFactor:[[18,1.6],[20,1.3],[22,1.0],[24,0.8],[26,0.65],[28,0.5]],
