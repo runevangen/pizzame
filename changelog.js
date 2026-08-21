@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.839",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Matrise-invariantene — reglene som må holde over alle 210 kombinasjonene av metode, type, ovn og hydrering (massebalanse, forvarmingstid, overmodnings-tegn, vanntemperatur, ett navn på deigballen ...) — kjører nå i node, før nettleseren i det hele tatt starter. Ryker en stegtekst-regel, stopper porten på under ett sekund med regelnavnet i meldingen.",
+      "Flyttingen er bevist med sabotasje: en gram feil vann i ett steg ga nøyaktig det avviket i massebalansen; et fjernet overmodnings-tegn ga nøyaktig de 24 kombinasjonene som mistet det. Reglene biter like hardt som før — de bor bare nærmere start.",
+      "Den ene biten som trenger en skjerm står igjen der: sjekk-panelets varsler hentes fortsatt ferdig rendret i nettleseren, så et varsel som legges til senere er dekket uten at noen test kjenner navnet på det."
+    ],
+    "changes_en": [
+      "The matrix invariants — the rules that must hold across all 210 combinations of method, type, oven and hydration (mass balance, preheat time, over-proofing cues, water temperature, one name for the dough ball ...) — now run in node, before the browser even starts. If a step-text rule breaks, the gate stops in under a second with the rule name in the message.",
+      "The move is proven by sabotage: one gram of wrong water in one step produced exactly that deviation in the mass balance; a removed over-proofing cue produced exactly the 24 combinations that lost it. The rules bite as hard as before — they just live closer to the start.",
+      "The one piece that needs a screen stays behind: the check panel's warnings are still fetched fully rendered in the browser, so a warning added later is covered without any test knowing its name."
+    ]
+  },
+  {
     "v": "0.838",
     "d": "august 2026",
     "d_en": "August 2026",
