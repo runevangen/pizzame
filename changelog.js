@@ -3,6 +3,25 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.835",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Mest under panseret denne gangen — men ett funn nådde oppskriftene: den kalde poolishen sto 10+ timer i kjøleskapet uten at steget sa hva «gått for langt» ser ut som. Nå står det: sunket i midten, skarpt sur eller alkoholaktig lukt — bruk den likevel, regn med mer syrlig smak.",
+      "Funnet kom fra testregimet selv. Sikkerhetsnettets store matrise-sveip pinnet 14 innstillinger i en håndskrevet liste, mens appen hadde vokst til 25+ — og kald poolish sto ikke på lista, så porten så aldri den varianten. Nå nullstilles hvert punkt i matrisen fra standardoppsettet, og kald/romtemperert poolish er en egen akse. En liste som vedlikeholdes for hånd blir feil; nå finnes den ikke.",
+      "Testene kjører dobbelt så fort: gruppene starter fra samme nullpunkt og kan dermed kjøres i fire parallelle nettlesere. Målt: 86 → 43 sekunder for full port, med identisk rapport.",
+      "Serverfunksjonene — deigene, innloggingen, pizzatiden, melene — hadde null testdekning, enda et reelt datatap alt har bodd der. 38 nye tester kjører på millisekunder før nettleseren i det hele tatt starter: personvernsvaktene, PIN-flyten, favoritt-regelen, «én korrupt post velter ikke lista».",
+      "Og en ny vakt for en feilklasse ingen test kunne se: lesbarhet. To bugs nådde prod med nesten usynlig tekst (v0.802, v0.834) fordi ingenting leste de beregnede fargene. Nå måles kontrasten på nøkkelkontrollene i begge visninger mot WCAG-grensen — testet ved å gjeninnføre den gamle feilen: 1,02 i kontrast, rød test."
+    ],
+    "changes_en": [
+      "Mostly under the hood this time — but one find reached the recipes: the cold poolish sat 10+ hours in the fridge without the step saying what \"gone too far\" looks like. Now it does: sunken in the middle, sharply sour or alcohol-like smell — use it anyway, expect a more sour taste.",
+      "The find came from the test regime itself. The safety net's big matrix sweep pinned 14 settings in a hand-written list while the app had grown to 25+ — and cold poolish wasn't on the list, so the gate never saw that variant. Now every point in the matrix resets from the default configuration, and cold/room-temperature poolish is its own axis. A hand-maintained list goes stale; now there is none.",
+      "The tests run twice as fast: the groups start from the same zero point and can therefore run in four parallel browsers. Measured: 86 → 43 seconds for the full gate, with an identical report.",
+      "The server functions — doughs, login, pizza time, flours — had zero test coverage, even though a real data loss has already lived there. 38 new tests run in milliseconds before the browser even starts: the privacy guards, the PIN flow, the favourite rule, \"one corrupt record doesn't topple the list\".",
+      "And a new guard for a failure class no test could see: readability. Two bugs reached prod with near-invisible text (v0.802, v0.834) because nothing read the computed colours. Now the contrast of the key controls is measured in both views against the WCAG limit — verified by reintroducing the old bug: 1.02 contrast, red test."
+    ]
+  },
+  {
     "v": "0.834",
     "d": "august 2026",
     "d_en": "August 2026",
