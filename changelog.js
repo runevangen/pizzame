@@ -3,6 +3,57 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.837",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Testporten på 20 sekunder — ned fra 86 da opprydningen startet. Ingen app-endring i denne versjonen; alt er målt og flyttet i selve testmaskineriet.",
+      "Målingen veltet en antagelse: det var ikke de store matrise-sveipene som kostet (de er under et sekund hver) — det var vinke- og klappetestene, som med vilje mater detektoren med ekte kamera- og lydstrømmer i sanntid. 38 av 59 sekunder ren testtid er venting, ikke regning. Sanntiden er fredet — den ER det som testes — men venting kan overlappe: testgruppene fikk tre nye rene kutt rundt sanntidstestene, og de delene kjører nå i egne prosesser ved siden av regnearbeidet.",
+      "Og én ren dumhet: hver testnettleser ventet 13 sekunder på Google Fonts før første test — en ekstern avhengighet porten aldri skulle hatt. Testene leser tekst og farger, ikke skrifttyper, så alt eksternt blokkeres nå ved lasting.",
+      "Målt tre kjøringer på rad: 19,4–19,8 sekunder, null vingling. Serieveien (feilsøkings-fallbacken) falt samtidig fra 77 til 67 sekunder."
+    ],
+    "changes_en": [
+      "The test gate at 20 seconds — down from 86 when the cleanup started. No app change in this version; everything is measured and moved in the test machinery itself.",
+      "Measurement toppled an assumption: it wasn't the big matrix sweeps that cost (they are under a second each) — it was the wave and clap tests, which deliberately feed the detector real camera and audio streams in real time. 38 of 59 seconds of pure test time is waiting, not computing. The real time is protected — it IS what's being tested — but waiting can overlap: the test groups got three new clean cuts around the real-time tests, and those parts now run in their own processes alongside the computational work.",
+      "And one plain blunder: every test browser waited 13 seconds for Google Fonts before the first test — an external dependency the gate never should have had. The tests read text and colours, not typefaces, so everything external is now blocked at load.",
+      "Measured three runs in a row: 19.4–19.8 seconds, zero wobble. The serial path (the debugging fallback) dropped from 77 to 67 seconds at the same time."
+    ]
+  },
+  {
+    "v": "0.836",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ingen synlig endring — men den største flyttejobben siden motoren fikk egen fil: hele steglaget (stegkjedene for alle seks metodene, med tekster, tider, forvarming, kickstart og deigtemperatur-modellen — 1300 linjer) er flyttet ut av hovedfila til en egen steps.js. Linje for linje uendret; alle frosne fasiter bekrefter at hvert tall og hver tekst er identisk.",
+      "Gevinsten er testbarhet: laget var allerede fritt for skjerm-avhengigheter, det bodde bare på feil adresse. Nå regner et nytt node-lag de samme ti frosne scenariene som nettleser-testene måles mot — på millisekunder, med funksjonsnavn i feilmeldingen når noe ryker.",
+      "Servicearbeideren kjenner den nye fila, så en fersk app aldri kan lastes med et utdatert steglag fra cachen — samme felle som v0.723 tettet for motorfila."
+    ],
+    "changes_en": [
+      "No visible change — but the biggest move since the engine got its own file: the entire step layer (the step chains for all six methods, with texts, times, preheating, kickstart and the dough-temperature model — 1,300 lines) has moved out of the main file into its own steps.js. Unchanged line for line; every frozen baseline confirms each number and text is identical.",
+      "The gain is testability: the layer was already free of screen dependencies, it just lived at the wrong address. A new node layer now computes the same ten frozen scenarios the browser tests are measured against — in milliseconds, with function names in the failure message when something breaks.",
+      "The service worker knows the new file, so a fresh app can never load with a stale step layer from the cache — the same trap v0.723 closed for the engine file."
+    ]
+  },
+  {
+    "v": "0.835",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Mest under panseret denne gangen — men ett funn nådde oppskriftene: den kalde poolishen sto 10+ timer i kjøleskapet uten at steget sa hva «gått for langt» ser ut som. Nå står det: sunket i midten, skarpt sur eller alkoholaktig lukt — bruk den likevel, regn med mer syrlig smak.",
+      "Funnet kom fra testregimet selv. Sikkerhetsnettets store matrise-sveip pinnet 14 innstillinger i en håndskrevet liste, mens appen hadde vokst til 25+ — og kald poolish sto ikke på lista, så porten så aldri den varianten. Nå nullstilles hvert punkt i matrisen fra standardoppsettet, og kald/romtemperert poolish er en egen akse. En liste som vedlikeholdes for hånd blir feil; nå finnes den ikke.",
+      "Testene kjører dobbelt så fort: gruppene starter fra samme nullpunkt og kan dermed kjøres i fire parallelle nettlesere. Målt: 86 → 43 sekunder for full port, med identisk rapport.",
+      "Serverfunksjonene — deigene, innloggingen, pizzatiden, melene — hadde null testdekning, enda et reelt datatap alt har bodd der. 38 nye tester kjører på millisekunder før nettleseren i det hele tatt starter: personvernsvaktene, PIN-flyten, favoritt-regelen, «én korrupt post velter ikke lista».",
+      "Og en ny vakt for en feilklasse ingen test kunne se: lesbarhet. To bugs nådde prod med nesten usynlig tekst (v0.802, v0.834) fordi ingenting leste de beregnede fargene. Nå måles kontrasten på nøkkelkontrollene i begge visninger mot WCAG-grensen — testet ved å gjeninnføre den gamle feilen: 1,02 i kontrast, rød test."
+    ],
+    "changes_en": [
+      "Mostly under the hood this time — but one find reached the recipes: the cold poolish sat 10+ hours in the fridge without the step saying what \"gone too far\" looks like. Now it does: sunken in the middle, sharply sour or alcohol-like smell — use it anyway, expect a more sour taste.",
+      "The find came from the test regime itself. The safety net's big matrix sweep pinned 14 settings in a hand-written list while the app had grown to 25+ — and cold poolish wasn't on the list, so the gate never saw that variant. Now every point in the matrix resets from the default configuration, and cold/room-temperature poolish is its own axis. A hand-maintained list goes stale; now there is none.",
+      "The tests run twice as fast: the groups start from the same zero point and can therefore run in four parallel browsers. Measured: 86 → 43 seconds for the full gate, with an identical report.",
+      "The server functions — doughs, login, pizza time, flours — had zero test coverage, even though a real data loss has already lived there. 38 new tests run in milliseconds before the browser even starts: the privacy guards, the PIN flow, the favourite rule, \"one corrupt record doesn't topple the list\".",
+      "And a new guard for a failure class no test could see: readability. Two bugs reached prod with near-invisible text (v0.802, v0.834) because nothing read the computed colours. Now the contrast of the key controls is measured in both views against the WCAG limit — verified by reintroducing the old bug: 1.02 contrast, red test."
+    ]
+  },
+  {
     "v": "0.834",
     "d": "august 2026",
     "d_en": "August 2026",

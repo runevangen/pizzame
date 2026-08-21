@@ -2766,7 +2766,7 @@ def _atferd_3(page, results):
     results.append(('smartplan_prefers_broadly_supported_ferment_over_extreme_length', ok72, r72))
 
 
-def _atferd_4(page, results):
+def _atferd_4a(page, results):
 
     # v0.683: tidskonflikt-merket på et steg som havner utenfor din LEDIGE tid sa
     # feilaktig «utenfor spisetid» (du spiser ikke da — du jobber), og var norsk-
@@ -3224,6 +3224,13 @@ def _atferd_4(page, results):
              and r155.get('0.5',{}).get('temperMin')==180
              and r155.get('0.3',{}).get('temperMin')==120)
     results.append(('poolish_share_splits_flour_and_water_without_losing_any', ok155, r155))
+
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). vinkedelen av gruppe 4 — wave_travel alene er 15 av gruppens 16 sekunder (ren venting mot ekte kamerastrøm).
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_4b(page, results):
 
     # v0.788: «litt vanskelig aa treffe» — meldt inn fra kjokkenet. Sveip over
     # terskel × reise × varighet viste at kravet var dyrere enn det var verdt:
@@ -4852,7 +4859,7 @@ def _atferd_5(page, results):
     results.append(('forming_step_labelled_counter_but_yeast_untouched', ok114, r114))
 
 
-def _atferd_6(page, results):
+def _atferd_6a(page, results):
 
     # ===== LAG 1 (v0.739): MASKINELT TESTBARE INVARIANTER OVER HELE MATRISEN =====
     # De tre foregående funnene (vann brukt to ganger i v0.736, forvarming uten
@@ -4866,9 +4873,7 @@ def _atferd_6(page, results):
     # De fant to reelle feil ved første kjøring; begge er fikset i samme versjon
     # (se `MATRIX_SWEEP`-funnene i changelog for v0.739).
     MATRIX_SWEEP = """() => {
-      const saved={method:S.method,type:S.type,oven:S.oven,mode:S.mode,mel:S.mel,
-                   hydro:S.hydro,cold:S.cold,temp:S.temp,fridgeC:S.fridgeC,gjaer:S.gjaer,
-                   hurtigH:S.hurtigH,kveldH:S.kveldH,poolishH:S.poolishH,bigaH:S.bigaH};
+      const saved={...S};
       // v0.775: språket var IKKE pinnet — sveipet arvet _lang fra forrige test.
       // Alle invariantene under linter norsk tekst (B leter etter norske
       // mengdeord, G etter «vann», H etter «emne»), så en lekket 'en' fra en
@@ -4876,6 +4881,16 @@ def _atferd_6(page, results):
       const _lang0=window._lang; window._lang='no';
       const out=[];
       for(const m of ['standard','poolish','biga','mania','hurtig','kveld'])
+      // v0.835: samme leksjon som v0.775, én S-generasjon senere. Sveipet
+      // pinnet 14 felt i en håndliste, mens DEF hadde vokst til 25+ — og
+      // differansen VAR både flakiness og et hull i porten: poolishCold sto
+      // ikke i lista, full kjøring arvet tilfeldigvis false fra tester foran,
+      // så kald poolish ble ALDRI sveipet — mens en gruppe-6-delkjøring arvet
+      // true og «fant» en feil porten aldri så (manglende overmodning-tegn,
+      // reell, fikset i v0.835). Nå nullstilles hvert kombinasjonspunkt fra
+      // DEF — et nytt S-felt kan ikke lenger glemmes i noen liste — og
+      // kald/romtemp poolish er en egen akse, så begge variantene ER porten.
+      for(const pkald of (m==='poolish'?[false,true]:[false]))
       for(const t of ['napoletana','newyork','langpanne','chicago','ingenelting'])
       for(const o of ['vanlig','pizza'])
       // v0.752: hydrering var IKKE med i sveipet — alt ble målt på 65 %. Da er
@@ -4883,12 +4898,14 @@ def _atferd_6(page, results):
       // eller våte deiger er usynlig for alle tre invariantene. Glideren går
       // 55–80 for alle typer, så endene og midten dekker det nåbare rommet.
       for(const h of [55,65,80]){
+        Object.keys(DEF).forEach(k=>S[k]=DEF[k]);
         S.method=m; S.type=t; S.oven=o; S.mode='start';
         S.mel=500; S.hydro=h; S.cold=48; S.temp=22; S.fridgeC=3; S.gjaer='torr';
-        S.hurtigH=4; S.kveldH=10; S.poolishH=14; S.bigaH=18;
+        S.hurtigH=4; S.kveldH=10; S.poolishH=14; S.bigaH=18; S.poolishCold=pkald;
+        const lbl=m+(pkald?'+kald':'');
         let steps=null;
-        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ out.push({m,t,o,h,err:''+e}); continue; }
-        if(!steps||!steps.length){ out.push({m,t,o,h,err:'ingen steg'}); continue; }
+        try{ steps=stepsForAnchor(new Date(2027,2,3,10,0)); }catch(e){ out.push({m:lbl,t,o,h,err:''+e}); continue; }
+        if(!steps||!steps.length){ out.push({m:lbl,t,o,h,err:'ingen steg'}); continue; }
         const bake=steps[steps.length-1];
         // Siste steg før steking som handler om ovnen — enten merket dit du går
         // (dispLoc) eller navngitt som forvarming (Hurtigdeig/Ingen elting folder
@@ -4899,7 +4916,7 @@ def _atferd_6(page, results):
             gap=Math.round((bake.at-steps[i].at)/60000); phTitle=steps[i].title; break;
           }
         }
-        out.push({m,t,o,h, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
+        out.push({m:lbl,t,o,h, recipe:recipeFor(), preheatMin:preheatMin(), gap, phTitle,
                   // v0.755: stegtekstene ut, så invariant D kan se hva som bare
                   // bor i understegene og aldri kommer med i en kopiert plan.
                   steps:steps.map((s,i)=>({title:s.title, desc:s.desc, why:s.why,
@@ -5411,6 +5428,13 @@ def _atferd_6(page, results):
                  'gammelSoekNullstilt', 'soekBevartNaarSynlig'])
     results.append(('dough_search_appears_only_when_the_list_needs_it', ok133, r133))
 
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). vinke-/klappedelen av gruppe 6, første halvdel (~16 s venting mot ekte kamera-/lydstrøm).
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_6b(page, results):
+
     # v0.766: vinkestyring i Fokus — bla uten å ta på telefonen, fordi hendene
     # er fulle av deig. Ren frame-differanse: hvert bilde ned til 32×24, energi
     # per kolonne, og tyngdepunktet av energien er hånden.
@@ -5805,6 +5829,13 @@ def _atferd_6(page, results):
         ok138 = all(r138.get(k) for k in
                     ['startet', 'ettKlappGirNeste', 'toKlappGirForrige', 'slipperMikrofonen'])
         results.append(('clap_end_to_end_through_real_audio', ok138, r138))
+
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). andre halvdel av vinkedelen + smartplan-halen (~10 s).
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_6c(page, results):
 
     # v0.769: to akser. Sideveis blar mellom steg, opp/ned ruller i stegteksten
     # — et langt steg får ikke plass på skjermen, og da hjelper det lite å
@@ -6251,7 +6282,7 @@ def _atferd_6(page, results):
                     ok144b, r144b))
 
 
-def _atferd_7(page, results):
+def _atferd_7a(page, results):
 
     # v0.776: og pausen skal IKKE tilbys når ingen pauselengde forbedrer planen.
     # autoPoolishPause() valgte beste av [6,12,18] — 0 var ikke en kandidat, så
@@ -7013,6 +7044,13 @@ def _atferd_7(page, results):
     ok144 = (r144.get('spredning') is True and r144.get('åpnetRiktig') is True
              and r144.get('maniaPåKort') is True and r144.get('ærligNote') is True)
     results.append(('smartplan_alternatives_are_other_methods_and_buttons_open_them', ok144, r144))
+
+
+# v0.837: RENT KUTT — ingen test flyttet eller omdøpt, kun et nytt kuttpunkt
+# (samme disiplin som gruppene selv, v0.789). resten av gruppe 7 — kuttet skiller wave_accepts-delen (~11 s) fra den lette halen.
+# Segmentet starter fra DEF som alle andre (reset i run_behavioral_tests),
+# og kan dermed shardes alene i parallellkjøringen.
+def _atferd_7b(page, results):
 
     # v0.741 (F24): gjærtesten. F24 kunne ikke avgjøres ved tastaturet — den
     # krever bakst — så appen har fått en utfordrer man kan slå på og bake mot.
@@ -9961,8 +9999,72 @@ const svSched=window._pizzatidSchedule;
     )
     results.append(('cold_rise_clears_the_yeast_and_its_fix_reaches_both_layouts', ok180, r180))
 
+    # v0.835: kontrast-invarianten. To reelle bugs i denne klassen naadde prod
+    # uten at noen av testene KUNNE se dem, fordi ingen test leser beregnede
+    # stiler: v0.802 (nesten hvit tekst paa lys pergament i Pizzatype/Meny/
+    # Avanserte innstillinger — 1,07:1) og v0.834 (valgt segment hvit-paa-hvit).
+    # Skjermbilde-diffing ville vaert flaky og bredt; dette maaler i stedet
+    # WCAG-kontrasten (tekstfarge mot foerste dekkende bakgrunn oppover i
+    # treet) for et fast sett noekkelementer i BEGGE layouter.
+    # Grensa er 3,0:1 — WCAG-kravet for UI-komponenter/stor tekst. Maalt i dag
+    # (v0.835): laveste reelle verdi er 3,58 (hvit paa aksent-oransje, et
+    # bevisst merkevalg); feilklassen ligger paa ~1,0–1,5. Grensa skiller altsaa
+    # bug fra tonevalg med god margin til begge sider.
+    r181 = page.evaluate("""() => {
+      const lum=(r,g,b)=>{const f=v=>{v/=255;return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)};return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b)};
+      const parse=c=>{const m=c.match(/rgba?\\(([\\d.]+),\\s*([\\d.]+),\\s*([\\d.]+)(?:,\\s*([\\d.]+))?\\)/);return m?{r:+m[1],g:+m[2],b:+m[3],a:m[4]===undefined?1:+m[4]}:null};
+      const bgFor=el=>{let e=el;while(e&&e!==document.documentElement){const c=parse(getComputedStyle(e).backgroundColor);if(c&&c.a>=0.99)return c;e=e.parentElement}const c=parse(getComputedStyle(document.body).backgroundColor);return (c&&c.a>=0.99)?c:{r:255,g:255,b:255,a:1}};
+      const ratio=el=>{const fg=parse(getComputedStyle(el).color),bg=bgFor(el);if(!fg)return null;const l1=lum(fg.r,fg.g,fg.b),l2=lum(bg.r,bg.g,bg.b);return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05)};
+      const KRAV=3.0;
+      const sjekk=(navn,selektor,daarlige)=>{
+        const el=document.querySelector(selektor);
+        if(!el){ daarlige.push(navn+': MANGLER'); return; }
+        const r=ratio(el);
+        if(r===null||r<KRAV) daarlige.push(navn+': '+(r===null?'uleselig farge':r.toFixed(2)));
+      };
+      const varMob=document.getElementById('mob-layout').classList.contains('active');
+      const daarlige=[];
+      setLayout('pc');
+      for(const [navn,sel] of [
+        ['pc pill','#gtype .pill:not(.on)'], ['pc pill valgt','#gtype .pill.on'],
+        ['pc meny','.menu-trigger'], ['pc avansert','.adv-toggle'],
+        ['pc etikett','.sb .lbl'],
+        ['pc segment valgt','#ggj .pill.on'], ['pc segment','#ggj .pill:not(.on)'],
+        ['pc metodekort','#gmet .mc:not(.on) .mc-t'], ['pc metodekort valgt','#gmet .mc.on .mc-t'],
+        ['pc nedtrekk','.dropdown-select select'], ['pc smart-cta','#pc-smart-cta-h'],
+      ]) sjekk(navn,sel,daarlige);
+      setLayout('mob');
+      for(const [navn,sel] of [
+        ['mob fane','.mob-tab:not(.on)'], ['mob fane valgt','.mob-tab.on'],
+        ['mob seksjonsetikett','.mob-section-lbl'], ['mob wizard-etikett','.wiz-qlbl'],
+        ['mob pill','#mob-gtype .pill:not(.on)'], ['mob pill valgt','#mob-gtype .pill.on'],
+      ]) sjekk(navn,sel,daarlige);
+      setLayout(varMob?'mob':'pc');
+      return {daarlige};
+    }""")
+    ok181 = not r181['daarlige']
+    results.append(('key_controls_keep_readable_contrast_in_both_layouts', ok181, r181))
 
-_ATFERDSGRUPPER = [_atferd_1, _atferd_2, _atferd_3, _atferd_4, _atferd_5, _atferd_6, _atferd_7]
+
+# v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret
+# (--gruppe 6 kjører hele gamle gruppe 6, i samme rekkefølge) — segmentene
+# finnes fordi vinke-/klappetestene er SANNTIDSVENTING (ekte kamera-/lydstrøm,
+# målt: 38 av 59 s ren testtid) og dermed kan overlappe andre shards nesten
+# gratis i parallellkjøringen. Kuttene er rene: ingen test flyttet/omdøpt.
+_ATFERDSGRUPPER = [
+    [_atferd_1],
+    [_atferd_2],
+    [_atferd_3],
+    [_atferd_4a, _atferd_4b],
+    [_atferd_5],
+    [_atferd_6a, _atferd_6b, _atferd_6c],
+    [_atferd_7a, _atferd_7b],
+]
+# Segmentnøkkel ('4b') → funksjon + kanonisk sorteringsposisjon for rapporten.
+_SEGMENTER = {}
+for _gnr, _seg in enumerate(_ATFERDSGRUPPER, start=1):
+    for _snr, _fn in enumerate(_seg):
+        _SEGMENTER[_fn.__name__.replace('_atferd_', '')] = (_gnr, _snr, _fn)
 
 
 def _gruppe_for_navn():
@@ -9972,7 +10074,8 @@ def _gruppe_for_navn():
     kart, g = {}, 0
     with open(os.path.abspath(__file__), encoding="utf-8") as f:
         for linje in f:
-            m = re.match(r"def _atferd_(\d+)\(", linje)
+            # v0.837: segmentbokstaven ('4b') hører til samme GRUPPE (4).
+            m = re.match(r"def _atferd_(\d+)[a-z]?\(", linje)
             if m:
                 g = int(m.group(1)); continue
             m = re.search(r"results\.append\(\(\s*'([^']+)'", linje)
@@ -9991,14 +10094,11 @@ def velg_grupper(monster=None, gruppenr=None):
     return sorted({g for navn, g in kart.items() if monster.lower() in navn.lower()})
 
 
-def run_behavioral_tests(page, grupper=None):
-    """
-    Tester som ikke passer inn i frys-tallene-mønsteret over — de sjekker
-    ATFERD (hvilket valg søket gjør), ikke bare rene tall. Hver av disse
-    kom fra en reell bug funnet og fikset i samtalen.
-    """
-    results = []
-
+def _installer_testhjelpere(page):
+    """v0.837: window-hjelperne (resetTestState, setSafeFutureEatDate ...)
+    trukket ut av run_behavioral_tests, så parallell-shardene kan kjøre
+    enkeltsegmenter uten å gå via gruppeløypa. Idempotent — å definere
+    funksjonene på nytt på samme side er harmløst."""
     # v5.93: delt hjelper som nullstiller global tilstand testene deler —
     # _dismissedWarnings, _acceptedConflicts, _pizzatidSchedule, S, og
     # eat-dato-feltene. Rotårsaken til tre tester som feilet sent på kvelden:
@@ -10050,10 +10150,40 @@ def run_behavioral_tests(page, grupper=None):
       };
     }""")
 
+
+def run_behavioral_tests(page, grupper=None):
+    """
+    Tester som ikke passer inn i frys-tallene-mønsteret over — de sjekker
+    ATFERD (hvilket valg søket gjør), ikke bare rene tall. Hver av disse
+    kom fra en reell bug funnet og fikset i samtalen.
+    """
+    results = []
+    _installer_testhjelpere(page)
+
+
     valgte = grupper if grupper else list(range(1, len(_ATFERDSGRUPPER) + 1))
     for nr in valgte:
-        _ATFERDSGRUPPER[nr - 1](page, results)
+        # v0.835: hver gruppe starter fra standardtilstand — samme utgangspunkt
+        # som en `--gruppe N`-delkjøring har. Før arvet gruppe N alt gruppe N-1
+        # etterlot seg, så full kjøring og delkjøring kunne svare ulikt (målt:
+        # invariant 118c «fant» kald poolish kun i delkjøring). Innad i en
+        # gruppe består rekkefølgen som før — det er grensene som nå er rene,
+        # og det er grensene som gjør gruppene delbare (parallellkjøringen).
+        # v0.837: reset per SEGMENT, ikke per gruppe — da har et segment samme
+        # utgangspunkt enten det kjøres i sin gruppe (her) eller alene i en
+        # parallell shard, og de to veiene kan ikke svare ulikt.
+        for fn in _ATFERDSGRUPPER[nr - 1]:
+            _kjor_segment(page, fn, results)
     return results
+
+
+def _kjor_segment(page, fn, results):
+    page.evaluate("""() => {
+      resetTestState();
+      try{ syncMobControls(); }catch(e){}
+      window._planChosen = true;
+    }""")
+    fn(page, results)
 def run_render_layer_tests(page, baseline):
     """
     Fryser HTML-utdataen fra oppskrift-rad-rendringen (recipeRowsHTML +
@@ -10106,7 +10236,7 @@ def main():
     # kjoring er fortsatt standard, og fortsatt porten - delkjoring er for aa
     # holde loekka kort mens man jobber.
     argv = sys.argv[1:]
-    monster, gruppenr = None, None
+    monster, gruppenr, seriell = None, None, False
     rest = []
     i = 0
     while i < len(argv):
@@ -10114,6 +10244,11 @@ def main():
             monster = argv[i + 1]; i += 2
         elif argv[i] == '--gruppe' and i + 1 < len(argv):
             gruppenr = [int(x) for x in argv[i + 1].split(',')]; i += 2
+        elif argv[i] == '--seriell':
+            # v0.835: full kjoring gaar parallelt som standard (maalt 86s -> ~35s).
+            # --seriell er fallback for feilsoking: en prosess, en nettleser,
+            # gruppene i rekkefolge — identisk rapportformat uansett vei.
+            seriell = True; i += 1
         else:
             rest.append(argv[i]); i += 1
     grupper = velg_grupper(monster, gruppenr)
@@ -10139,122 +10274,267 @@ def main():
             print(_enhet.stderr.rstrip())
         print("Enhetslaget FEILET — stopper foer nettleserkjoringen.")
         sys.exit(1)
+    # Gruppe 0b (v0.835): serverfunksjonene — netlify/functions eier de delte
+    # dataene (deiger, brukere/PIN, pizzatid ...) og hadde null dekning, til
+    # tross for at et reelt datatap alt har bodd der (BACKLOG #2). Testes i
+    # node mot en Map-basert blob-stubb; koster millisekunder.
+    _fn = subprocess.run(["node", os.path.join(index_dir, "test_funksjoner.mjs")],
+                         capture_output=True, text=True)
+    print(_fn.stdout.rstrip())
+    if _fn.returncode != 0:
+        if _fn.stderr.strip():
+            print(_fn.stderr.rstrip())
+        print("Serverfunksjons-laget FEILET — stopper foer nettleserkjoringen.")
+        sys.exit(1)
+    # Gruppe 0c (v0.836): steglaget i node — steps.js regner de ti frosne
+    # scenariene mot SAMME baseline_results.json som nettleserlaget, felt for
+    # felt. Feiler matten eller en stegtekst-avhengighet, stopper porten her
+    # med funksjonsnavn i meldingen, foer noen nettleser er startet.
+    _steg = subprocess.run(["node", os.path.join(index_dir, "test_steg.mjs")],
+                           capture_output=True, text=True)
+    print(_steg.stdout.rstrip())
+    if _steg.returncode != 0:
+        if _steg.stderr.strip():
+            print(_steg.stderr.rstrip())
+        print("Steglaget FEILET — stopper foer nettleserkjoringen.")
+        sys.exit(1)
     print()
 
-    handler = http.server.SimpleHTTPRequestHandler
     os.chdir(index_dir)
-    httpd = socketserver.TCPServer(("", 0), handler)
+    # v0.837: taket er ANTALL SHARDS, ikke kjernetall — vinke-/klappeshardene
+    # (4b, 6b, 6c) er sanntidsventing mot kamera-/lydstrømmer og okkuperer
+    # nesten ingen CPU, så seks prosesser på fire kjerner er gevinst, ikke kø.
+    # På 1–2 kjerner slås shardene sammen i _shard_fordeling som før.
+    workers = os.cpu_count() or 1
+    if workers >= 3:
+        workers = 6  # antall shards i standardfordelingen
+    parallell = (not delkjoring) and (not seriell) and workers >= 2
+    if parallell:
+        _kjor_parallelt(index_path, baseline, workers)
+    else:
+        _kjor_serielt(index_path, baseline, grupper, delkjoring)
+
+
+# ===== KJØRINGSMASKINERI (v0.835) =====
+# Full kjøring var 85,7 s målt — hvorav 5,7 s Python og resten JavaScript i ÉN
+# seriell nettleserside, der ~62 s bodde i tre av sju grupper (matrisesveipene).
+# Gruppene ble delbare i v0.835 (reset fra DEF ved hver gruppestart — målt: 6 av
+# 7 grupper var alt grønne i isolasjon, den sjuende var pin-liste-bugen), så en
+# full kjøring kan nå være N prosesser med hver sin server+nettleser. Fordelingen
+# under er MÅLT, ikke gjettet: g6≈28s, g4≈17s, g7≈17s, resten ≈2-3s hver.
+# Output-kontrakten mot CI-en (tester.yml) er uendret og håndheves av at begge
+# kjøreveiene deler samme _print_rapport(): linjer på formen «✅/❌ navn: …» og
+# en sistelinje «Alle N tester OK.» / «M av N tester feilet.»
+
+def _boot_side(p, index_path):
+    """Server + nettleser + lastet side — delt av seriell og parallell vei."""
+    class _StilleHandler(http.server.SimpleHTTPRequestHandler):
+        # Access-loggen (én linje per GET/404) har alltid gått rett i
+        # testrapporten. Serielt var den bare støy; med flere prosesser ville
+        # fire servere flettet seg inn i hverandres rapportlinjer. 404-ene den
+        # logget er dessuten VILLEDE: /api/* finnes ikke lokalt med vilje, og
+        # appen håndterer det stille.
+        def log_message(self, *a):
+            pass
+    httpd = socketserver.TCPServer(("", 0), _StilleHandler)
     port = httpd.server_address[1]
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    browser = p.chromium.launch()
+    # locale="nb-NO": den frosne baseline er norsk output, så testmiljøet må
+    # være en norsk nettleser. Uten dette ville den nye språk-deteksjonen
+    # (v6.26) gjette engelsk i headless Chromium (en-US) og velte baselinen.
+    context = browser.new_context(viewport={"width": 390, "height": 844}, timezone_id="Europe/Oslo", locale="nb-NO")
+    page = context.new_page()
+    page.add_init_script("localStorage.setItem('pizzaUser', JSON.stringify({id:'test',name:'Test'}));")
+    # v5.88: fanger opp JS-feil som oppstår ved selve sideinnlastingen — se
+    # begrunnelse ved page_loads_without_script_errors nedenfor.
+    load_errors = []
+    page.on("pageerror", lambda exc: load_errors.append(str(exc)))
+    page.on("console", lambda msg: load_errors.append(f"[console.{msg.type}] {msg.text}") if msg.type == "error" and "404" not in msg.text and "Failed to load resource" not in msg.text else None)
+    # v0.837: alt eksternt blokkeres (Google Fonts er eneste eksterne ressurs).
+    # Målt: goto ventet 13 av boot-fasens 14 sekunder på fonts.googleapis.com i
+    # et miljø der den hang til timeout — og i CI var fonten en ekstern
+    # avhengighet porten strengt tatt aldri skulle hatt. Testene leser tekst og
+    # beregnede farger, aldri glyfer, så fallback-fonten endrer ingenting.
+    page.route("**/*", lambda route: route.continue_()
+               if route.request.url.startswith("http://localhost")
+               else route.abort())
+    page.goto(f"http://localhost:{port}/{os.path.basename(index_path)}")
+    page.wait_for_timeout(1200)
+    page.evaluate("document.getElementById('guide-modal') && (document.getElementById('guide-modal').style.display='none')")
+    # v0.655: atferds- og render-testene representerer en bruker som HAR gjort
+    # et valg (plan er generert). Uten et valg viser Tidsplan nå et tomt guide-
+    # state i stedet for en default-plan. Det tomme staten testes eksplisitt i
+    # r46 (som selv veksler flagget), så her setter vi «valgt» globalt.
+    page.evaluate("window._planChosen=true")
+    return browser, httpd, page, load_errors
 
+
+def _innlasting_resultat(page, load_errors):
+    # v5.88: REELL BUG — en unterminert JS-streng i changelog.js (manglet
+    # avsluttende ') brakk parsingen av HELE filen. Siden changelog.js
+    # lastes som egen <script src> (v5.61), feilet bare referanser til
+    # CHANGELOG — men det inkluderer versjonsvisningen, som skjer tidlig
+    # i syncMobControls() og dermed stanset resten av den funksjonen.
+    # Resultatet: en app som så nesten blank ut ("kun tittel"), mens alle
+    # ANDRE tester fortsatt gikk gjennom — fordi page.evaluate() kaller
+    # funksjoner direkte og de fleste ikke rører CHANGELOG i det hele
+    # tatt. Denne sjekken laster siden ekte, slik en bruker ville gjort,
+    # og krever null JS-feil pluss et faktisk synlig versjonsnummer.
+    version_text = page.evaluate("document.getElementById('mob-name-version')?.textContent || ''")
+    ok0 = (len(load_errors) == 0) and bool(version_text.strip())
+    return [('page_loads_without_script_errors', ok0, {'load_errors': load_errors, 'version_text': version_text})]
+
+
+def _kjor_scenarier(page, baseline):
+    """(navn, diffs) per scenario — diffs=None betyr «ingen frossen baseline»."""
+    ut = []
+    for sc in SCENARIOS:
+        name = sc["name"]
+        if name not in baseline:
+            ut.append((name, None))
+            continue
+        actual = run_scenario(page, sc)
+        expected = baseline[name]
+        diffs = []
+        for key in ("recipe", "firstStep", "lastStep", "stepCount", "stepTitles"):
+            if actual.get(key) != expected.get(key):
+                diffs.append((key, expected.get(key), actual.get(key)))
+        ut.append((name, diffs))
+    return ut
+
+
+def _print_rapport(innlasting, scenarier, atferd, render, grupper, delkjoring):
+    """ÉN formatterer for begge kjøreveier — da kan de ikke drifte fra
+    hverandre, og CI-kontrakten (grep på ^❌ + sistelinja) bor ett sted."""
     failures = []
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        # locale="nb-NO": den frosne baseline er norsk output, så testmiljøet må
-        # være en norsk nettleser. Uten dette ville den nye språk-deteksjonen
-        # (v6.26) gjette engelsk i headless Chromium (en-US) og velte baselinen.
-        context = browser.new_context(viewport={"width": 390, "height": 844}, timezone_id="Europe/Oslo", locale="nb-NO")
-        page = context.new_page()
-        page.add_init_script("localStorage.setItem('pizzaUser', JSON.stringify({id:'test',name:'Test'}));")
-        # v5.88: fanger opp JS-feil som oppstår ved selve sideinnlastingen — se
-        # begrunnelse ved page_loads_without_script_errors nedenfor.
-        load_errors = []
-        page.on("pageerror", lambda exc: load_errors.append(str(exc)))
-        page.on("console", lambda msg: load_errors.append(f"[console.{msg.type}] {msg.text}") if msg.type == "error" and "404" not in msg.text and "Failed to load resource" not in msg.text else None)
-        page.goto(f"http://localhost:{port}/{os.path.basename(index_path)}")
-        page.wait_for_timeout(1200)
-        page.evaluate("document.getElementById('guide-modal') && (document.getElementById('guide-modal').style.display='none')")
-        # v0.655: atferds- og render-testene representerer en bruker som HAR gjort
-        # et valg (plan er generert). Uten et valg viser Tidsplan nå et tomt guide-
-        # state i stedet for en default-plan. Det tomme staten testes eksplisitt i
-        # r46 (som selv veksler flagget), så her setter vi «valgt» globalt.
-        page.evaluate("window._planChosen=true")
 
-        # v5.88: REELL BUG — en unterminert JS-streng i changelog.js (manglet
-        # avsluttende ') brakk parsingen av HELE filen. Siden changelog.js
-        # lastes som egen <script src> (v5.61), feilet bare referanser til
-        # CHANGELOG — men det inkluderer versjonsvisningen, som skjer tidlig
-        # i syncMobControls() og dermed stanset resten av den funksjonen.
-        # Resultatet: en app som så nesten blank ut ("kun tittel"), mens alle
-        # ANDRE tester fortsatt gikk gjennom — fordi page.evaluate() kaller
-        # funksjoner direkte og de fleste ikke rører CHANGELOG i det hele
-        # tatt. Denne sjekken laster siden ekte, slik en bruker ville gjort,
-        # og krever null JS-feil pluss et faktisk synlig versjonsnummer.
-        version_text = page.evaluate("document.getElementById('mob-name-version')?.textContent || ''")
-        ok0 = (len(load_errors) == 0) and bool(version_text.strip())
-        results0 = [('page_loads_without_script_errors', ok0, {'load_errors': load_errors, 'version_text': version_text})]
-        print("Sideinnlasting:")
-        for name, ok, detail in results0:
-            if ok:
-                print(f"✅ {name}: OK")
-            else:
-                failures.append((name, [("detail", "OK", detail)]))
-                print(f"❌ {name}: FEILET — {detail}")
-        print()
-
-        for sc in SCENARIOS:
-            name = sc["name"]
-            if name not in baseline:
-                print(f"⚠️  {name}: ingen frossen baseline å sammenligne mot — hopper over")
-                continue
-            actual = run_scenario(page, sc)
-            expected = baseline[name]
-            diffs = []
-            for key in ("recipe", "firstStep", "lastStep", "stepCount", "stepTitles"):
-                if actual.get(key) != expected.get(key):
-                    diffs.append((key, expected.get(key), actual.get(key)))
-            if diffs:
-                failures.append((name, diffs))
-                print(f"❌ {name}: FEILET")
-                for key, exp, act in diffs:
-                    print(f"    {key}: forventet {exp!r}, fikk {act!r}")
-            else:
-                print(f"✅ {name}: OK")
-
-        print()
-        print("Atferdstester (fra tidligere funnede bugs):")
-        if delkjoring:
-            # Skal ikke gaa an aa forveksle med en full kjoring. Vi har shippet
-            # roedt for mindre.
-            print(f"\n⚠  DELKJORING — bare gruppe {','.join(map(str, grupper))} av "
-                  f"{len(_ATFERDSGRUPPER)}.")
-            print("   Den kan bomme BEGGE veier: den ser ikke feil i grupper som ikke")
-            print("   kjores, OG den kan finne opp feil, fordi tester arver tilstand fra")
-            print("   tester foran seg. Maalt: smartplan_filter_change... feiler i utvalg")
-            print("   og er gronn i full kjoring. Sjekk alltid en feil mot full kjoring.\n")
-        behavioral = run_behavioral_tests(page, grupper)
-        for name, ok, detail in behavioral:
+    def _linjer(seksjon):
+        for name, ok, detail in seksjon:
             if ok:
                 print(f"✅ {name}: OK")
             else:
                 failures.append((name, [("detail", "OK", detail)]))
                 print(f"❌ {name}: FEILET — {detail}")
 
-        print()
-        print("Rendringslag (PC + mobil, fryser HTML-utdata):")
-        render_tests = run_render_layer_tests(page, baseline)
-        for name, ok, detail in render_tests:
-            if ok:
-                print(f"✅ {name}: OK")
-            else:
-                failures.append((name, [("detail", "OK", detail)]))
-                print(f"❌ {name}: FEILET — {detail}")
-
-        browser.close()
-    httpd.shutdown()
-
+    print("Sideinnlasting:")
+    _linjer(innlasting)
     print()
-    total = len(results0) + len(SCENARIOS) + len(behavioral) + len(render_tests)
+    for name, diffs in scenarier:
+        if diffs is None:
+            print(f"⚠️  {name}: ingen frossen baseline å sammenligne mot — hopper over")
+        elif diffs:
+            failures.append((name, diffs))
+            print(f"❌ {name}: FEILET")
+            for key, exp, act in diffs:
+                print(f"    {key}: forventet {exp!r}, fikk {act!r}")
+        else:
+            print(f"✅ {name}: OK")
+    print()
+    print("Atferdstester (fra tidligere funnede bugs):")
+    if delkjoring:
+        # Skal ikke gaa an aa forveksle med en full kjoring. Vi har shippet
+        # roedt for mindre. (v0.835: gruppene starter naa fra DEF, saa
+        # arv-fella er borte — men delkjoring ser fortsatt ikke feil i
+        # grupper som ikke kjores.)
+        print(f"\n⚠  DELKJORING — bare gruppe {','.join(map(str, grupper))} av "
+              f"{len(_ATFERDSGRUPPER)}.")
+        print("   Den ser ikke feil i grupper som ikke kjores. Sjekk alltid")
+        print("   en gronn delkjoring mot full kjoring for du stoler paa den.\n")
+    behavioral = []
+    for nr in sorted(atferd):
+        behavioral.extend(atferd[nr])
+    _linjer(behavioral)
+    print()
+    print("Rendringslag (PC + mobil, fryser HTML-utdata):")
+    _linjer(render)
+    print()
+    total = len(innlasting) + len(SCENARIOS) + len(behavioral) + len(render)
     if failures:
         print(f"{len(failures)} av {total} tester feilet.")
         sys.exit(1)
-    else:
-        print(f"Alle {total} tester OK.")
-        if delkjoring:
-            print(f"⚠  ...men dette var en DELKJORING (gruppe {','.join(map(str, grupper))} "
-                  f"av {len(_ATFERDSGRUPPER)}). Kjor uten filter for gronn port.")
-        sys.exit(0)
+    print(f"Alle {total} tester OK.")
+    if delkjoring:
+        print(f"⚠  ...men dette var en DELKJORING (gruppe {','.join(map(str, grupper))} "
+              f"av {len(_ATFERDSGRUPPER)}). Kjor uten filter for gronn port.")
+    sys.exit(0)
+
+
+def _kjor_serielt(index_path, baseline, grupper, delkjoring):
+    with sync_playwright() as p:
+        browser, httpd, page, load_errors = _boot_side(p, index_path)
+        innlasting = _innlasting_resultat(page, load_errors)
+        scenarier = _kjor_scenarier(page, baseline)
+        atferd = {}
+        for nr in grupper:
+            # (nr, 0): segmentene innad kjøres i rekkefølge av
+            # run_behavioral_tests, så flat liste per gruppe er kanonisk.
+            atferd[(nr, 0)] = run_behavioral_tests(page, [nr])
+        render = run_render_layer_tests(page, baseline)
+        browser.close()
+        httpd.shutdown()
+    _print_rapport(innlasting, scenarier, atferd, render, grupper, delkjoring)
+
+
+def _shard_fordeling(workers):
+    """Statisk, MÅLT fordeling på segmentnivå (v0.837). Vinke-/klappesegmentene
+    (4b, 6b, 6c og 7a sin wave-del) er sanntidsVENTING mot ekte kamera-/lyd-
+    strømmer — de bruker nesten ikke CPU og kan derfor overlappe de regne-tunge
+    shardene selv med flere prosesser enn kjerner. Veggen er nå tyngste
+    ENKELTTEST (wave_travel, ~15 s — udelelig sanntid), ikke tyngste gruppe.
+    Målt per segment: 6b≈16s, 4b≈16s, 7a≈11s, 6c≈10s, FAST≈6s, resten ≈2-4s."""
+    shards = [['6b'], ['4b'], ['7a'], ['6c'], ['FAST', '1', '2'], ['3', '5', '4a', '6a', '7b']]
+    # Få kjerner: slå sammen bakfra til antallet passer (venting tåler deling).
+    while len(shards) > max(1, workers):
+        shards[-2] = shards[-2] + shards[-1]
+        shards.pop()
+    return shards
+
+
+def _shard_worker(args):
+    """Én prosess: egen server, egen nettleser, et utvalg segmenter ('4b', 'FAST').
+    Kjøres via fork på Linux — modulen er ferdig importert og forelderen har
+    ikke startet playwright, så det er trygt. Returnerer picklebare tupler."""
+    index_path, nokler = args
+    baseline = load_full_baseline()
+    ut = {"innlasting": [], "scenarier": [], "atferd": {}, "render": []}
+    med_fastlag = 'FAST' in nokler
+    with sync_playwright() as p:
+        browser, httpd, page, load_errors = _boot_side(p, index_path)
+        if med_fastlag:
+            ut["innlasting"] = _innlasting_resultat(page, load_errors)
+            ut["scenarier"] = _kjor_scenarier(page, baseline)
+        _installer_testhjelpere(page)
+        for n in nokler:
+            if n == 'FAST':
+                continue
+            gnr, snr, fn = _SEGMENTER[n]
+            res = []
+            _kjor_segment(page, fn, res)
+            ut["atferd"][(gnr, snr)] = res
+        if med_fastlag:
+            ut["render"] = run_render_layer_tests(page, baseline)
+        browser.close()
+        httpd.shutdown()
+    return ut
+
+
+def _kjor_parallelt(index_path, baseline, workers):
+    import concurrent.futures
+    shards = _shard_fordeling(workers)
+    oppgaver = [(index_path, s) for s in shards]
+    print(f"Parallellkjøring: {len(shards)} prosesser "
+          f"({' | '.join(','.join(s) for s in shards)}).")
+    print()
+    innlasting, scenarier, atferd, render = [], [], {}, []
+    with concurrent.futures.ProcessPoolExecutor(max_workers=len(shards)) as ex:
+        for ut in ex.map(_shard_worker, oppgaver):
+            innlasting += ut["innlasting"]
+            scenarier += ut["scenarier"]
+            atferd.update(ut["atferd"])
+            render += ut["render"]
+    _print_rapport(innlasting, scenarier, atferd, render, [], delkjoring=False)
+
 
 if __name__ == "__main__":
     main()

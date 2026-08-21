@@ -14,9 +14,10 @@
 // sammen med en UTDATERT engine.js fra cachen — index kalte da funksjoner som
 // ikke fantes i den gamle motorfila → ReferenceError ved oppstart. Alle
 // script-filer index.html laster MÅ stå i både SHELL og isCode-regexen.
-const CACHE = 'ultimatepizza-shell-v2';
+// v0.836: v3 — steps.js (steglaget flyttet ut av index.html) inn samme vei.
+const CACHE = 'ultimatepizza-shell-v3';
 const SHELL = [
-  './', './index.html', './changelog.js', './engine.js', './guide.js', './manifest.json',
+  './', './index.html', './changelog.js', './engine.js', './steps.js', './guide.js', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
   './icons/apple-touch-icon.png', './icons/favicon-32.png'
 ];
@@ -46,7 +47,7 @@ self.addEventListener('fetch', e => {
 
   const isCode = req.mode === 'navigate'
     || url.pathname === '/'
-    || /\/(index\.html|changelog\.js|engine\.js|guide\.js)$/.test(url.pathname);
+    || /\/(index\.html|changelog\.js|engine\.js|steps\.js|guide\.js)$/.test(url.pathname);
 
   if (isCode) {
     e.respondWith(
