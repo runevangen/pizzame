@@ -7020,7 +7020,10 @@ function autoByttMetodeHvisUmulig(){
   if(anb==='biga'&&snap.bigaH!=null) S.bigaH=snap.bigaH;
   if(anb==='hurtig'&&snap.hurtigH!=null) S.hurtigH=snap.hurtigH;
   if(anb==='kveld'&&snap.kveldH!=null) S.kveldH=snap.kveldH;
-  window._autoByttet={fra:fra, til:anb,
+  // v0.844: var fra-metoden bare appens forhåndsvalg, har brukeren aldri
+  // «byttet» fra noe — meldingen må ikke gi dem et valg de ikke tok. Meldt
+  // inn: «Hvorfor står det byttet fra langtidsdeig? har aldri valgt den jeg.»
+  window._autoByttet={fra:fra, til:anb, fraVarForhaandsvalg: fra===DEF.method,
     foer:{cold:foerVerdier.cold,poolishH:foerVerdier.poolishH,poolishCold:foerVerdier.poolishCold,
           poolishPauseH:foerVerdier.poolishPauseH,bigaH:foerVerdier.bigaH,
           hurtigH:foerVerdier.hurtigH,kveldH:foerVerdier.kveldH}};
@@ -7046,7 +7049,9 @@ function autoByttMeldingHTML(){
   const b=window._autoByttet;
   if(!b) return '';
   return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:9px;padding:7px 10px;margin-bottom:7px;font-size:11.5px;line-height:1.45;color:var(--forno-accent-text)">
-    <span style="flex:1;min-width:150px"><b>${L('Byttet til '+mN(b.til),'Switched to '+mN(b.til))}</b> — ${L(mN(b.fra)+' rakk ikke fram til steketiden du valgte.',mN(b.fra)+' could not make the baking time you chose.')}</span>
+    <span style="flex:1;min-width:150px">${b.fraVarForhaandsvalg
+      ? `<b>${L(mN(b.til)+' er valgt',mN(b.til)+' is selected')}</b> — ${L('forhåndsvalget ('+mN(b.fra)+') rekker ikke fram til steketiden din.','the preset ('+mN(b.fra)+') cannot make your baking time.')}`
+      : `<b>${L('Byttet til '+mN(b.til),'Switched to '+mN(b.til))}</b> — ${L(mN(b.fra)+' rakk ikke fram til steketiden du valgte.',mN(b.fra)+' could not make the baking time you chose.')}`}</span>
     <button type="button" onclick="angreAutoBytt()" style="flex:0 0 auto;border:1px solid var(--forno-accent);border-radius:999px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-family:inherit;font-size:11px;font-weight:700;padding:3px 11px;cursor:pointer">${L('Angre','Undo')}</button>
   </div>`;
 }

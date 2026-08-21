@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.844",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Meldingen over metodekortene sa «Byttet fra Langtidsdeig» også når du aldri hadde valgt Langtidsdeig — den var bare appens forhåndsvalg. Meldt inn: «Hvorfor står det byttet fra langtidsdeig? har aldri valgt den jeg.» Nå skiller meldingen: står du på forhåndsvalget, sier den «Hurtigdeig er valgt — forhåndsvalget (Langtidsdeig) rekker ikke fram til steketiden din», uten å påstå at du har byttet fra noe.",
+      "Hadde du derimot faktisk valgt en metode tidligere, sier meldingen fortsatt «Byttet til … — … rakk ikke fram til steketiden du valgte». Angre-knappen står i begge tilfeller."
+    ],
+    "changes_en": [
+      "The message above the method cards said \"Switched from Long-ferment dough\" even when you had never chosen it — it was merely the app's preset. Reported: \"Why does it say switched from long-ferment dough? I never picked it.\" The message now distinguishes: if you were on the preset, it says \"Quick dough is selected — the preset (Long-ferment dough) cannot make your baking time\", without claiming you switched from anything.",
+      "If you had actually chosen a method earlier, the message still says \"Switched to … — … could not make the baking time you chose\". The Undo button stands in both cases."
+    ]
+  },
+  {
     "v": "0.843",
     "d": "august 2026",
     "d_en": "August 2026",

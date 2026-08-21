@@ -9985,7 +9985,12 @@ const svSched=window._pizzatidSchedule;
       ut.nyMetodeRekker = !!fitEtter && !fitEtter.dim;
       const valgtKort=[...document.querySelectorAll('#mob-gmet > div')].find(x=>x.dataset.v===S.method);
       ut.kortetSierPasser = !!valgtKort && valgtKort.dataset.fit==='ja';
-      ut.melding = /Byttet til/.test((document.getElementById('mob-autobytt')||{textContent:''}).textContent);
+      // v0.844: fra-metoden var appens FORHÅNDSVALG (DEF.method) — da skal
+      // meldingen ikke si «byttet fra», for brukeren valgte den aldri. Meldt
+      // inn med skjermbilde. «Byttet til»-formen er reservert for en fra-
+      // metode som faktisk var et tidligere valg (testes lenger ned).
+      const m1=(document.getElementById('mob-autobytt')||{textContent:''}).textContent;
+      ut.melding = /er valgt/.test(m1) && /forhåndsvalget/.test(m1) && !/Byttet til/.test(m1);
       // Angre: tilbake til baade metode og varighet
       const varighetFoerAngre=S.hurtigH;
       angreAutoBytt();
@@ -10000,6 +10005,17 @@ const svSched=window._pizzatidSchedule;
       ut.bevisstValgSatt = S.method==='biga';
       d.dispatchEvent(new Event('change',{bubbles:true}));
       ut.bevisstValgBeholdt = S.method==='biga';
+      // Fra-metode som IKKE er forhåndsvalget (f.eks. gjenopprettet oppsett):
+      // da ER det et bytte, og meldingen skal si det.
+      window._metodeValgtAvBruker=false; window._autoByttet=null; S.method='poolish';
+      // klikket paa biga-kortet over flyttet steketiden ~2 doegn fram
+      // (ensureFeasibleBakeTime) — sett den tilbake til +5 t, ellers rekker
+      // poolish plutselig og det finnes ingenting aa bytte fra.
+      d.value=fd(bake); t.value=fT(bake);
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      const m2=(document.getElementById('mob-autobytt')||{textContent:''}).textContent;
+      ut.ekteBytteSiesFra = /Byttet til/.test(m2) && /Poolish/.test(m2);
+      window._metodeValgtAvBruker=false; window._autoByttet=null; S.method='standard';
       // «Jeg begynner naa» har ingen frist — ingen bytte
       window._metodeValgtAvBruker=false; window._autoByttet=null;
       S.mode='start'; S.method='standard';
