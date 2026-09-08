@@ -7,10 +7,12 @@ const CHANGELOG = [
     "d": "september 2026",
     "d_en": "September 2026",
     "changes": [
-      "«Hva du blir tilbudt» heter nå «Mel og metoder». Det gamle navnet beskrev hva boksen GJØR (styrer hva Smart-plan og Fra–til foreslår) — det nye sier hva som er INNI: melet ditt og metodene du vil tilbys. At funksjonen trengte et eget førstegangs-tips for å bli funnet, var tegnet på at navnet ikke bar. Forklaringen av effekten står fortsatt inne i boksen, der den hører hjemme."
+      "«Hva du blir tilbudt» heter nå «Mel og metoder». Det gamle navnet beskrev hva boksen GJØR (styrer hva Smart-plan og Fra–til foreslår) — det nye sier hva som er INNI: melet ditt og metodene du vil tilbys. At funksjonen trengte et eget førstegangs-tips for å bli funnet, var tegnet på at navnet ikke bar. Forklaringen av effekten står fortsatt inne i boksen, der den hører hjemme.",
+      "Ny testvokter passer på at boksen bærer nøyaktig ett navn på alle fire flater (Mer-fanen, modaltittelen, PC-menyen og førstegangs-tipset) på begge språk — navnet er stavet elleve steder i koden, og vokteren er det ene stedet fasiten bor."
     ],
     "changes_en": [
-      "\"What you are offered\" is now called \"Flour and methods\". The old name described what the box DOES (governs what Smart plan and From–to suggest) — the new one says what is INSIDE: your flour and the methods you want offered. That the feature needed its own first-time tip to be found was the sign the name didn't carry. The explanation of the effect still lives inside the box, where it belongs."
+      "\"What you are offered\" is now called \"Flour and methods\". The old name described what the box DOES (governs what Smart plan and From–to suggest) — the new one says what is INSIDE: your flour and the methods you want offered. That the feature needed its own first-time tip to be found was the sign the name didn't carry. The explanation of the effect still lives inside the box, where it belongs.",
+      "A new test guard ensures the box carries exactly one name on all four surfaces (the More tab, the modal title, the PC menu and the first-time tip) in both languages — the name is spelled in eleven places in the code, and the guard is the one place the answer key lives."
     ]
   },
   {

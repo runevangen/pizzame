@@ -9773,6 +9773,46 @@ const svSched=window._pizzatidSchedule;
     ok181 = not r181['daarlige']
     results.append(('key_controls_keep_readable_contrast_in_both_layouts', ok181, r181))
 
+    # v0.848: navnevokteren for «Mel og metoder»-boksen. Navnet staves for hånd
+    # på FIRE flater (Mer-seksjonen, modal-tittelen, PC-menyraden, førstegangs-
+    # tipsets «Mer → …»-peker) × to språk — nøyaktig skyggekonstant-fella
+    # v0.833 tettet for metodenavnene med mN()-registeret. Boksnavnet har ingen
+    # register, så vokteren håndhever to ting i stedet: (1) alle flatene sier
+    # DET SAMME per språk, og (2) det de sier er fasiten — som etter v0.833-
+    # prinsippet bor ETT sted: her. Et navnebytte koster da denne blokka +
+    # flatene, og en flate som blir glemt feiler med flatenavnet i meldingen.
+    r182 = page.evaluate("""() => {
+      const svLang=window._lang;
+      let svSett=null; try{ svSett=localStorage.getItem('pizzaTilbudSett'); }catch(e){}
+      try{ localStorage.removeItem('pizzaTilbudSett'); }catch(e){}
+      const hent=()=>{
+        syncI18nUI(); renderTilbudTips();
+        const tips=(document.getElementById('tilbud-tips')||{}).innerHTML||'';
+        return {
+          mer: document.getElementById('mob-tilbud-lbl').textContent.trim(),
+          modal: document.getElementById('tilbud-modal-tittel').textContent.trim(),
+          pcMeny: document.getElementById('pc-menu-tilbud').textContent.trim(),
+          tips,
+        };
+      };
+      window._lang='no'; const no=hent();
+      window._lang='en'; const en=hent();
+      if(svSett!==null){ try{ localStorage.setItem('pizzaTilbudSett',svSett); }catch(e){} }
+      window._lang=svLang; syncI18nUI(); renderTilbudTips();
+      return {no,en};
+    }""")
+    FASIT_TILBUD = {'no': '🎛️ Mel og metoder', 'en': '🎛️ Flour and methods'}
+    feil182 = []
+    for lang in ('no', 'en'):
+        d = r182[lang]
+        for flate in ('mer', 'modal', 'pcMeny'):
+            if d[flate] != FASIT_TILBUD[lang]:
+                feil182.append(f"{lang}/{flate}: {d[flate]!r}")
+        if FASIT_TILBUD[lang] not in d['tips']:
+            feil182.append(f"{lang}/tips peker ikke på navnet")
+    results.append(('flour_and_methods_box_has_one_name_on_every_surface', not feil182,
+                    {'avvik': feil182}))
+
     # v0.840 (skisse B, valgt av Rune): naar steketiden er kjent skal kortene
     # si hva vi ANBEFALER og se utilgjengelige ut der de ikke rekker. Meldt
     # inn fra et ekte valg (fre 23:42, stek loer 14:00): fire av seks kort var
