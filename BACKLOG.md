@@ -368,7 +368,15 @@ flere steg definerer `substeps` uten `tip`/`why` (f.eks. passive Poolish/Biga-ve
 en regresjonstest à la eksisterende `pc_mobil_1to1_*` passer måten forfatteren
 allerede vokter konsistens på.
 
-### F12. Lys/mørk-tema også for PC-visningen ⏸️ UTSATT (bevisst, aug 2026)
+### F12. Lys/mørk-tema også for PC-visningen ✅ BYGGET (v0.847)
+> ✅ Løst med premisset fra utsettelsen intakt: PC er LYS som standard, og
+> forblir lys helt til brukeren AKTIVT velger tema — «dagens PC-brukere skal
+> ikke våkne til mørk app». Kvitteringen (pizzaThemeValgt) settes kun av
+> tema-kontrollene; initTheme() har alltid auto-skrevet pizzaTheme, så
+> nøkkelens eksistens kunne ikke brukes som signal. Tema-kontrollen finnes nå
+> også i PC-ens Avanserte innstillinger (System/Lys/Mørk, delt setting med
+> mobil). Mørk PC bruker Fornos mørke tokens remappet inn i pc-/dyn-navnene;
+> kontrast-invarianten kjører hele nøkkelsettet i BEGGE PC-temaer.
 > ⏸️ **Utsatt etter avklaring.** Å koble PC på det delte tema-systemet (dark =
 > ingen `.theme-light`-klasse, som er standard) ville gjort PC **mørkt som
 > standard** — en synlig endring for dagens PC-brukere. Rune valgte å beholde PC
@@ -746,7 +754,16 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
-### F38. Flere pizzaer = stekevindu, ikke stekepunkt
+### F38. Flere pizzaer = stekevindu, ikke stekepunkt ✅ BYGGET (v0.845, begge tiltak)
+> ✅ Tiltak 1: rekkefølge-rådet («mest modne emnet først, fingertest hvert
+> emne») i ALLE metodenes stekesteg, fra én delt kilde (flerEmneRåd()).
+> Tiltak 2: etterhevingen sikter mot midten av stekevinduet ((N−1)·18 min
+> pizzaovn / 25 vanlig, skyv=halve vinduet, klampet til ⅓ av hevingen) — men
+> KUN for romtemperatur-etterheving (i praksis Hurtigdeig, der problemet ble
+> målt): de kalde metodene tempererer før steking, og temperering er termikk
+> som ikke kan kortes. Baseline flyttet bevisst (hurtig: −18 min ved 3 emner).
+> Rekalibrerings-sporet (tf()/HOPTS-mistanken) står IGJEN og venter fortsatt
+> på flere bakster — det er ikke rørt her.
 
 Målt 16.08.2026 (Hurtigdeig 6t, 3 emner, pizzaovn): en time fra første til
 siste pizza, og kvaliteten steg for hver — første fikk «litt oven spring»,
@@ -1218,7 +1235,16 @@ det skrives ned og regnes inn; og 14 timers poolish (se funn 2).
   `preheatMin()` o.l.) som en «fasit»-blokk i prompten, så kan den sammenligne
   planen mot spesifikasjonen og ikke bare mot seg selv.
 
-### F29. Lag 2: `uses:{vann:305}` per steg — gjør klassen strukturelt umulig
+### F29. Lag 2: mengdene deklareres, needs genereres ✅ BYGGET (v0.846, pragmatisk omfang)
+> ✅ Ingrediens-needs skrives ikke lenger som håndtekst: hvert steg deklarerer
+> tallet via nI(nøkkel, gram, {pre/post/ord}), emoji + ingrediensord kommer fra
+> NEEDS_ING-registeret, og nI KASTER om mengden mangler (mutasjonstestet).
+> Konverteringen er verifisert byte-for-byte mot alle 3448 needs-linjer i
+> matrisen, begge språk. BEVISST utelatt fra visjonen (samme pragmatiske
+> omfang som F19/F21): prosa-generering — prosaen interpolerer allerede de
+> samme variablene, og massebalanse-invarianten i node dømmer needs mot
+> oppskriften over hele matrisen. Utstyrs-/bevisst-vage oppføringer (📦,
+> «litt olje», honning) er fortsatt håndtekst med vilje.
 - **I klartekst:** i dag er mengdene skrevet inn i prosaen, og `needs`-lista er en
   parallell håndskrevet oppsummering av den. F27 tester at de to stemmer; F29 ville
   gjort det umulig at de ikke gjør det, ved å la hvert steg deklarere `uses:{vann:305}`

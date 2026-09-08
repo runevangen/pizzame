@@ -3,6 +3,53 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.847",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Tema-valget gjelder nå også PC. Under ⚙️ Avanserte innstillinger ligger samme System/Lys/Mørk-velger som mobilen har — velg mørk, og hele PC-flaten snur til den samme varme, mørke paletten som mobilens mørke.",
+      "Standarden er urørt med vilje: PC er lys, og forblir lys helt til du selv velger noe annet. Har du aldri rørt Tema-valget, endres ingenting.",
+      "Lesbarhetsvakten fra tidligere i måneden måler nå kontrasten på alle nøkkelkontrollene i begge PC-temaene også — den fant tre hull i den mørke drakten før den ble sluppet, og de er tettet."
+    ],
+    "changes_en": [
+      "The theme choice now applies to desktop too. Under ⚙️ Advanced settings sits the same System/Light/Dark picker the mobile view has — choose dark, and the whole desktop surface turns to the same warm dark palette as mobile's dark.",
+      "The default is untouched on purpose: desktop is light, and stays light until you actively choose otherwise. If you have never touched the Theme setting, nothing changes.",
+      "The readability guard from earlier this month now measures the contrast of all key controls in both desktop themes as well — it found three gaps in the dark look before release, and they are closed."
+    ]
+  },
+  {
+    "v": "0.846",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ingen synlig endring — «trenger du»-lappene på stegene er nå generert i stedet for håndskrevet. Hver mengde deklareres som ett tall, og ingrediensordet og symbolet kommer fra ett register: en lapp som staver et annet tall enn steget bruker, er nå umulig å skrive — koden nekter å bygge planen og sier hvilken ingrediens som mangler tallet sitt.",
+      "Det var nøyaktig denne klassen feilen fra i sommer bodde i, da vannet ble brukt to ganger fordi to håndskrevne tekster sa hver sin mengde.",
+      "Byttet er verifisert tegn for tegn mot alle 3 448 lapper i hele matrisen, på begge språk — ingenting ser annerledes ut, det kan bare ikke lenger drifte."
+    ],
+    "changes_en": [
+      "No visible change — the \"you'll need\" notes on the steps are now generated instead of handwritten. Each amount is declared as one number, and the ingredient word and symbol come from one register: a note spelling a different number than the step uses is now impossible to write — the code refuses to build the plan and names the ingredient missing its number.",
+      "That is exactly the class the bug from this summer lived in, when water was used twice because two handwritten texts each stated their own amount.",
+      "The switch is verified character by character against all 3,448 notes across the whole matrix, in both languages — nothing looks different, it just can no longer drift."
+    ]
+  },
+  {
+    "v": "0.845",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Flere pizzaer er et stekevindu, ikke et stekepunkt. Målt i august: en time fra første til siste pizza av samme deig — og kvaliteten steg for hver, fordi de siste emnene fikk mer hevetid. Ovnen holdt temperaturen hele veien; det var tiden som gjorde jobben.",
+      "To grep. Alle stekesteg sier nå, ved flere pizzaer: bak det mest modne emnet først og det fasteste sist — og fingertest hvert emne, ikke bare det første.",
+      "Og Hurtigdeigens etterheving sikter nå mot midten av stekevinduet i stedet for første pizza: første emne er nesten klart når du begynner, det siste såvidt over når du er ferdig — i stedet for at det siste blir stående for lenge. Ved tre pizzaer i pizzaovn betyr det at første pizza går inn ca. 18 minutter tidligere; steget forklarer hvorfor.",
+      "Bare Hurtigdeig får tidsendringen: de kalde metodene temperer emnene før steking, og temperering er varme, ikke heving — den kan ikke kortes. Der er utveien rekkefølgen over."
+    ],
+    "changes_en": [
+      "Multiple pizzas are a baking window, not a baking moment. Measured in August: an hour from first to last pizza of the same dough — and the quality rose with each one, because the later balls got more proofing time. The oven held its temperature throughout; time did the work.",
+      "Two measures. Every bake step now says, with multiple pizzas: bake the most proofed ball first and the firmest last — and finger-test each ball, not just the first.",
+      "And the quick dough's final proof now aims at the middle of the baking window instead of the first pizza: the first ball is almost ready when you start, the last just past when you finish — instead of the last one standing too long. With three pizzas in a pizza oven that means the first pizza goes in about 18 minutes earlier; the step explains why.",
+      "Only quick dough gets the timing change: the cold methods temper the balls before baking, and tempering is warmth, not proofing — it cannot be shortened. There, the ordering above is the way out."
+    ]
+  },
+  {
     "v": "0.844",
     "d": "august 2026",
     "d_en": "August 2026",

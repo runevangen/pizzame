@@ -1571,7 +1571,8 @@ def _atferd_2(page, results):
       r32['ovnTitle'] == 'Sett på ovnen 🔥' and
       r32['ovnLeadMin'] == r32['preheatMin'] and r32['ovnDur'] == 0 and
       r32['ovnNavngirTemp'] and
-      r32['etterhevTitle'] == 'Etterheving (81 min)' and
+      # F38 (v0.845): 81 - 18 skyv (3 emner, pizzaovn: vindu 36 min, sikter midten)
+      r32['etterhevTitle'] == 'Etterheving (63 min)' and
       r32['etterhevPassiv'] and r32['etterhevUtenOvn']
     )
     results.append(('hurtig_yeast_kickstart_and_semolina_tip', ok32, r32))
@@ -4167,7 +4168,7 @@ def _atferd_5(page, results):
       try{ mobSetMode(uiMode()); }catch(e){}
       return {
         kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1275, // v0.824: +5 kickstart · v0.829: +40 bulkhvile
-        hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===980,
+        hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===962, // v0.845: -18 (F38-skyvet — etterhevingen sikter mot midten av stekevinduet)
         standardNoFit: byM.standard&&!byM.standard.best&&byM.standard.minSpan===1545,
         ranked, startOk,
         winnerRenderedFirst: h.indexOf(mN('kveld'))>=0 && h.indexOf(mN('kveld'))<h.indexOf(mN('hurtig')),
@@ -8715,6 +8716,9 @@ const svSched=window._pizzatidSchedule;
           [S.cold,S.poolishH,S.bigaH,S.hurtigH,S.kveldH].forEach(till);
           till(rtM(60)); till(Math.round(rtM(60)*1.5)); till(Math.round(totalFermentHours()));
           try{ till(poolishTemperMin()); till(Math.round(poolishTemperMin()/60)); }catch(e){}
+          // F38 (v0.845): stekevinduet ved flere pizzaer — etterhevingssteget
+          // nevner det via fmtHM, saa begge komponentene er kilder.
+          try{ const v=stekevinduMin(); till(v); till(Math.floor(v/60)); till(v%60); }catch(e){}
           // Bevisste konstanter — hver med grunn:
           // 2..7: kjoeleskapssoner · 18/21: PREF_VANN · 22-24: deigbaandet ·
           // 250/430/450: ovner · 90/120: sekunder · 40/43: kickstart · 45: vanlig
@@ -9730,16 +9734,33 @@ const svSched=window._pizzatidSchedule;
         if(r===null||r<KRAV) daarlige.push(navn+': '+(r===null?'uleselig farge':r.toFixed(2)));
       };
       const varMob=document.getElementById('mob-layout').classList.contains('active');
+      // Transitions AV under målingen: .pill m.fl. har transition på background,
+      // og getComputedStyle midt i et tema-/tilstandsbytte leser da overgangens
+      // STARTVERDI — målt: lys bakgrunn + mørk tekst i samme avlesning (1,05:1),
+      // avhengig av hva testene foran tilfeldigvis hadde malt. Fargene som
+      // testes er sluttilstandene; animasjonen dit er ikke testens tema.
+      const stopp=document.createElement('style');
+      stopp.textContent='*{transition:none!important;animation:none!important}';
+      document.head.appendChild(stopp);
       const daarlige=[];
-      setLayout('pc');
-      for(const [navn,sel] of [
+      const PC_SETT=[
         ['pc pill','#gtype .pill:not(.on)'], ['pc pill valgt','#gtype .pill.on'],
         ['pc meny','.menu-trigger'], ['pc avansert','.adv-toggle'],
         ['pc etikett','.sb .lbl'],
         ['pc segment valgt','#ggj .pill.on'], ['pc segment','#ggj .pill:not(.on)'],
         ['pc metodekort','#gmet .mc:not(.on) .mc-t'], ['pc metodekort valgt','#gmet .mc.on .mc-t'],
         ['pc nedtrekk','.dropdown-select select'], ['pc smart-cta','#pc-smart-cta-h'],
-      ]) sjekk(navn,sel,daarlige);
+      ];
+      setLayout('pc');
+      for(const [navn,sel] of PC_SETT) sjekk(navn,sel,daarlige);
+      // F12 (v0.847): samme sett i MØRK PC — temaet aktiveres bare ved
+      // eksplisitt valg, så testen setter kvitteringen og rydder etter seg.
+      const temaFoer=window._theme, kvittFoer=(()=>{try{return localStorage.getItem('pizzaThemeValgt')}catch(e){return null}})();
+      setTheme('dark', true);
+      for(const [navn,sel] of PC_SETT) sjekk('mørk '+navn,sel,daarlige);
+      try{ if(kvittFoer===null) localStorage.removeItem('pizzaThemeValgt'); }catch(e){}
+      setTheme(temaFoer||'dark');
+      stopp.remove();
       setLayout('mob');
       for(const [navn,sel] of [
         ['mob fane','.mob-tab:not(.on)'], ['mob fane valgt','.mob-tab.on'],
