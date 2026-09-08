@@ -289,13 +289,13 @@ function bakeSubsteps(type){
     : type==='langpanne'
     ? (p?L('Stek 8–12 min','Bake 8–12 min'):L('Stek 12–16 min','Bake 12–16 min'))
     : (p?L('Stek 20–25 min','Bake 20–25 min'):L('Stek 28–35 min','Bake 28–35 min'));
-  // F38 (v0.840): ved flere pizzaer er stekingen et VINDU, ikke et punkt —
+  // F38 (v0.845): ved flere pizzaer er stekingen et VINDU, ikke et punkt —
   // rekkefølge-rådet gjelder alle metodene, fra samme delte kilde.
   const råd=flerEmneRåd();
   return råd ? [warm, råd, shape, top, bakeLine] : [warm, shape, top, bakeLine];
 }
 
-// ===== F38 (v0.840): flere pizzaer = stekevindu, ikke stekepunkt =====
+// ===== F38 (v0.845): flere pizzaer = stekevindu, ikke stekepunkt =====
 // Målt 16.08.2026 (Hurtigdeig 6t, 3 emner, pizzaovn): en time fra første til
 // siste pizza, og kvaliteten STEG for hver — IR-måling viste at dekket holdt
 // temperaturen, så forklaringen var utelukkende hevetid: siste emne fikk ~en
@@ -760,7 +760,7 @@ function langpanneHintText(){
   return L(` Denne mengden gir ${p.count} langpanne${p.count>1?'r':''} (ca. ${p.melPer}g mel per langpanne).`,` This amount makes ${p.count} sheet pan${p.count>1?'s':''} (about ${p.melPer}g flour per pan).`);
 }
 
-// ===== F29 (v0.841, pragmatisk omfang): needs fra deklarerte mengder =====
+// ===== F29 (v0.846, pragmatisk omfang): needs fra deklarerte mengder =====
 // Klassen som dør: en needs-linje som staver et ANNET tall eller ord enn
 // resten av steget (v0.736-klassen — vann brukt to ganger — bodde nettopp i
 // håndskrevne parallelltekster). Hver ingrediens-oppføring deklarerer nå
@@ -1325,7 +1325,7 @@ function hurtigSteps(anchor){
   // summerte ikke bulk+etterheving lenger konsistent. Forming (0,25t) er et fast
   // manuelt steg og skal IKKE skaleres — derfor ligger den utenfor tf()-faktoren.
   const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60*tf()),p=pc();
-  // F38 (v0.840): afm er gjæringsfasens FULLE lengde (tiden til emne nr. 1 er
+  // F38 (v0.845): afm er gjæringsfasens FULLE lengde (tiden til emne nr. 1 er
   // «perfekt» — det er den r31b-testen og tf-skaleringen handler om). skyv er
   // stekelogistikk: ved flere pizzaer kortes selve etterhevings-STEGET med
   // halve stekevinduet, så hevingen sikter mot midten av vinduet i stedet for

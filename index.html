@@ -33,6 +33,18 @@
   --forno-accent:#e8590c;
   --forno-accent-soft:#2a1c0f;
   --forno-accent-text:#e8a06e;
+  /* v0.842: tilstandsfarger for metodekortene (v0.840/0.841). Var hardkodet
+     som lyse verdier (#eaf6ee flate, #0F6E56 tekst) og ble uleselige i mørkt
+     tema — meldt inn med skjermbilde: ANBEFALT-kortet sto lyst med lys tekst.
+     Nå tokens, definert per tema, som resten av paletten. */
+  --fit-ok:#7ec99f;
+  --fit-varsel:#ff9b91;
+  --anb-bg:#16261e;
+  --anb-kant:#3f8f6a;
+  --anb-merke-bg:#3f8f6a;
+  --anb-merke-tekst:#0d1a14;
+  --uegnet-bg:#1c1712;
+  --uegnet-kant:#332920;
   --forno-font-display:'Archivo Black',sans-serif;
   --forno-font-body:'Archivo',sans-serif;
   --forno-font-mono:'IBM Plex Mono',monospace;
@@ -73,6 +85,20 @@ body.mob-mode .dropdown-select select{font-size:14px}
 .menu-row{display:flex;align-items:center;justify-content:space-between;height:38px;padding:0 12px;font-size:13px;font-weight:500;color:var(--dyn-text);cursor:pointer}
 .menu-row:hover{background:#FAFAF9}
 .mcards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+/* v0.841: samme tre tilstander som mobilkortene fikk i v0.840 — det som ikke
+   rekker ser utilgjengelig ut, anbefalingen er merket, og en valgt metode som
+   ikke rekker varsler i stedet for å se ut som et godt valg. PC-kortene bruker
+   klasser (mobil bygger stilen inline), men reglene er de samme. */
+.mc{position:relative}
+.mc-fit{font-size:10px;margin-top:3px;color:var(--fit-ok)}
+.mc-anb-merke{position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:var(--anb-merke-bg);color:var(--anb-merke-tekst);border-radius:4px;padding:1px 6px;font-style:normal}
+/* v0.842: PC-kortet som er VALGT har oransje flate (#e8590c). Hvit 10px-tekst
+   der maaler 2,9:1 — under AA, og det er MIN nye fit-tekst som la seg paa et
+   gammelt kort. Moerk tone i stedet: samme oransje gir 5,5–5,9:1.
+   (Kortets egen hvite tittel ligger paa 3,6:1 — eksisterende PC-stil, ikke
+   roert her; noteres som kjent gjeld.) */
+.mc.on .mc-fit{color:#2b1206}
+.mc.on .mc-fit.advarsel{color:#3d0f0a;font-weight:700}
 .mc{border-radius:12px;padding:.6rem .7rem;cursor:pointer;transition:all .15s;background:#F2F2F7}
 .mc.on{background:#e8590c}
 .mc.hc{background:#FFF4E5}
@@ -83,6 +109,16 @@ body.mob-mode .dropdown-select select{font-size:14px}
 .mc-s{font-size:11px;color:#6E6E73;margin-top:1px}
 .mc.on .mc-s{color:rgba(255,255,255,.85)}
 .mc.hc.on .mc-s{color:rgba(255,255,255,.85)}
+/* v0.842: tilstandsreglene MAA staa etter .mc/.mc.hc og baere samme eller
+   hoeyere spesifisitet — foerste forsoek sto foer dem og tapte i stillhet:
+   kortet fikk riktig klasse, men beholdt .mc.hc sin lyse flate. Malt i probe
+   (anbefalt-kort paa PC laa paa --pc-sunken i BEGGE temaer). */
+.mc.mc-uegnet{background:var(--uegnet-bg);border:1px solid var(--uegnet-kant)}
+.mc.mc-uegnet .mc-t,.mc.mc-uegnet .mc-s,.mc.mc-uegnet .mc-fit{color:var(--forno-text-faint)}
+.mc.mc-anbefalt{background:var(--anb-bg);border:2px solid var(--anb-kant)}
+.mc.mc-anbefalt .mc-t{color:var(--forno-text)}
+.mc.mc-anbefalt .mc-s{color:var(--forno-text-muted)}
+.mc.mc-anbefalt .mc-fit{color:var(--fit-ok)}
 .hsub{border:1px solid #E5E5EA;border-radius:8px;margin-top:4px;overflow:hidden}
 .hsub-body{background:#fff;padding:.5rem .65rem;display:flex;flex-direction:column;gap:2px}
 .hrow{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;cursor:pointer;font-size:12px;color:#3A3A3C;transition:background .1s}
@@ -244,6 +280,14 @@ body.mob-mode.theme-light{
   --forno-accent:#e8590c;
   --forno-accent-soft:#fbe4d4;
   --forno-accent-text:#c2410c;
+  --fit-ok:#0F6E56;
+  --fit-varsel:#a94442;
+  --anb-bg:#eaf6ee;
+  --anb-kant:#0F6E56;
+  --anb-merke-bg:#0F6E56;
+  --anb-merke-tekst:#ffffff;
+  --uegnet-bg:#efece7;
+  --uegnet-kant:#ddd7cd;
 }
 /* Native kontroller (dropdown, dato/tid) skal følge lys palett i lys modus. */
 body.mob-mode.theme-light .dropdown-select select,
@@ -668,6 +712,16 @@ body.pc-mode{
   --forno-accent:#e8590c;
   --forno-accent-soft:#fbe4d4;
   --forno-accent-text:#c2410c;
+  /* v0.842: samme tilstandsfarger som mobilens lyse tema — PC-lys hadde egen
+     temablokk, og uten disse ville kortene arvet MØRK-verdiene her. */
+  --fit-ok:#0F6E56;
+  --fit-varsel:#a94442;
+  --anb-bg:#eaf6ee;
+  --anb-kant:#0F6E56;
+  --anb-merke-bg:#0F6E56;
+  --anb-merke-tekst:#ffffff;
+  --uegnet-bg:#efece7;
+  --uegnet-kant:#ddd7cd;
   background:var(--pc-bg);
   font-family:var(--forno-font-body),-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
@@ -714,6 +768,12 @@ body.pc-mode .mb:hover:not(.on),
 body.pc-mode .hrow:hover{background:var(--pc-border-soft)}
 body.pc-mode .mc,
 body.pc-mode .segctrl .pill{background:var(--pc-sunken)}
+/* v0.842: PC-visningen har sine egne, mer spesifikke kortregler (linja over),
+   som slo mine .mc-uegnet/.mc-anbefalt fra v0.841 — kortene fikk riktig
+   klasse, men beholdt PC-flaten. Målt i probe: anbefalt-kortet sto med
+   PC-sunken som bakgrunn i BEGGE temaer. Samme spesifisitet her retter det. */
+body.pc-mode .mc.mc-uegnet{background:var(--uegnet-bg);border:1px solid var(--uegnet-kant)}
+body.pc-mode .mc.mc-anbefalt{background:var(--anb-bg);border:2px solid var(--anb-kant)}
 /* v0.802: valgt segment var USYNLIG — regelen under overstyrte bare bakgrunnen
    (til lys), mens «body.pc-mode .pill.on» over fortsatt satte color:#fff.
    Hvit på nesten hvit i Gjærtype/Kjøkkenmaskin/Ovntype. Farge må med. */
@@ -756,7 +816,7 @@ body.pc-mode .layout-toggle{background:var(--pc-raised);border-color:var(--pc-ac
 body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 /* Meny-raden hadde hardkodet lys hover som overlevde v6.38 — token uansett tema. */
 body.pc-mode .menu-row:hover{background:var(--pc-sunken)}
-/* ===== F12 (v0.842): mørkt tema for PC-layouten ===== 
+/* ===== F12 (v0.847): mørkt tema for PC-layouten ===== 
    Aktiveres KUN når brukeren selv har valgt tema (body.theme-dark settes av
    applyThemeClass ved kvittering — se pizzaThemeValgt). Paletten er Fornos
    mørke tokens fra :root, remappet inn i pc-/forno-/dyn-navnene, så hele den
@@ -1058,6 +1118,7 @@ body.pc-mode.theme-dark .badge.bw{background:var(--pc-sunken);color:var(--pc-mut
   </div>
 
   <div id="gmet-wrap"><div class="lbl">Metode</div>
+    <div id="pc-autobytt"></div>
     <div class="mcards" id="gmet">
       <div class="mc on" data-v="standard" title="Direkteblanding + kjøleskapsheving."><div class="mc-t">Langtidsdeig</div><div class="mc-s">Direkte + kjøl</div></div>
       <div class="mc" data-v="poolish" title="Løs fordeig 12–16t."><div class="mc-t">Poolish</div><div class="mc-s">Løs fordeig, 12–16t</div></div>
@@ -1198,7 +1259,7 @@ body.pc-mode.theme-dark .badge.bw{background:var(--pc-sunken);color:var(--pc-mut
     </div>
   </div>
 
-  <!-- F12 (v0.842): Tema-valget gjelder nå også PC. Standard er fortsatt lys —
+  <!-- F12 (v0.847): Tema-valget gjelder nå også PC. Standard er fortsatt lys —
        mørk slår først inn når du velger selv (samme valg som mobilens Tema). -->
   <div><div class="lbl" id="pc-theme-lbl">Tema</div>
     <div class="pills segctrl" id="pc-theme-seg">
@@ -1952,6 +2013,11 @@ function updateEarliestHint(){
   el.textContent=earliest ? L('Tidligst mulig: ','Earliest possible: ')+fDT(earliest) : '';
 }
 ['sd','st','ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',sched);el.addEventListener('change',sched);}});
+// v0.843: PC — samme sjekk som mobilens _onWhenChange.
+['ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){const f=()=>{
+  let byttet=false; try{ byttet=autoByttMetodeHvisUmulig(); }catch(e){}
+  if(byttet){ try{ mCards(); }catch(e){} try{ schedNow(); }catch(e){} }
+}; el.addEventListener('input',f); el.addEventListener('change',f);}});
 // v0.802: steketid-feltene driver også Fra–til-lista på PC (jf. v0.726 på mobil).
 // renderWindowPicker() no-op-er selv utenfor Fra–til-modus.
 ['ed','et'].forEach(id=>{const el=document.getElementById(id);if(el){const f=()=>{try{renderWindowPicker();}catch(e){}};el.addEventListener('input',f);el.addEventListener('change',f);}});
@@ -1986,10 +2052,40 @@ function pgrp(id,key,cb){
   });
 }
 function mCards(){
+  let _passer=0,_harFit=false;
   document.getElementById('gmet').querySelectorAll('.mc').forEach(c=>{
     c.classList.toggle('on',c.dataset.v===S.method);
+    // v0.841: PC får samme dom og anbefaling som mobil (v0.840) — samme
+    // methodFitNote og samme anbefaltMetode, så flatene ikke kan si ulikt.
+    const v=c.dataset.v, isOn=v===S.method;
+    const fit=methodFitNote(v);
+    const uegnet=!!(fit&&fit.dim);
+    if(fit){ _harFit=true; if(!uegnet) _passer++; }
+    const anbefalt=(!uegnet && v===anbefaltMetode());
+    c.dataset.fit = fit ? (uegnet?'nei':'ja') : '';
+    if(anbefalt) c.dataset.anbefalt='1'; else delete c.dataset.anbefalt;
+    c.classList.toggle('mc-uegnet', uegnet && !isOn);
+    c.classList.toggle('mc-anbefalt', anbefalt && !isOn);
+    const gml=c.querySelector('.mc-fit'); if(gml) gml.remove();
+    const gmlM=c.querySelector('.mc-anb-merke'); if(gmlM) gmlM.remove();
+    if(fit){
+      const f=document.createElement('div');
+      f.className='mc-fit'+(isOn&&uegnet?' advarsel':'');
+      if(uegnet&&!isOn) f.style.color='';
+      else if(uegnet&&isOn) f.style.color='';
+      f.textContent=(isOn&&uegnet?'⚠️ ':'')+fit.txt;
+      c.appendChild(f);
+    }
+    if(anbefalt){
+      const m=document.createElement('i');
+      m.className='mc-anb-merke'; m.setAttribute('aria-hidden','true');
+      m.textContent=L('ANBEFALT','RECOMMENDED');
+      c.appendChild(m);
+    }
     c.onclick=()=>{
       if(S.method!==c.dataset.v) clearStepProgress();
+      window._metodeValgtAvBruker=true;   // v0.843
+      window._autoByttet=null;
       S.method=c.dataset.v;mCards();
       document.getElementById('hsub').style.display=S.method==='hurtig'?'block':'none';
       document.getElementById('ksub').style.display=S.method==='kveld'?'block':'none';
@@ -2000,6 +2096,27 @@ function mCards(){
       schedNow();
     };
   });
+  oppdaterMetodeSubPC(_harFit?_passer:null);
+  renderAutoByttMelding();
+}
+// v0.841: PC-etiketten over kortene («Metode») får samme telling som mobilens
+// undertittel — hvor mange metoder som faktisk rekker fram til steketiden.
+function oppdaterMetodeSubPC(antallPasser){
+  const wrap=document.getElementById('gmet-wrap');
+  if(!wrap) return;
+  const lbl=wrap.querySelector('.lbl');
+  if(!lbl) return;
+  let el=lbl.querySelector('.mc-teller');
+  if(antallPasser===null){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement('span'); el.className='mc-teller';
+    el.style.cssText='margin-left:8px;font-weight:400;font-size:11px;color:#8a7562'; lbl.appendChild(el); }
+  const _e=eatEls();
+  let naar=''; try{ naar=fDT(new Date(_e.d.value+'T'+((_e.t&&_e.t.value)||'18:00'))); }catch(e){}
+  el.textContent = antallPasser===0
+    ? L(`— ingen rekker til ${naar}`,`— none make it to ${naar}`)
+    : antallPasser===1
+      ? L(`— én rekker til ${naar}`,`— one makes it to ${naar}`)
+      : L(`— ${antallPasser} rekker til ${naar}`,`— ${antallPasser} make it to ${naar}`);
 }
 function applyTypeUI(){
   const isIE = S.type==='ingenelting';
@@ -2106,6 +2223,7 @@ function doReset(){
   // ikke lenger et testbakst, som gjør hele sammenligningen verdiløs.
   loadPrefs();
   window._activeDeigId=null;window._activeDeigName=null;window._activeAnchorISO=null;
+  window._metodeValgtAvBruker=false; window._autoByttet=null;   // v0.843
   try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
   window._checkedIngredients=new Set();
@@ -2164,7 +2282,7 @@ function effectiveTheme(mode){
 }
 function applyThemeClass(mode){
   document.body.classList.toggle('theme-light', effectiveTheme(mode)==='light');
-  // F12 (v0.842): PC følger tema-valget — men KUN når et menneske faktisk har
+  // F12 (v0.847): PC følger tema-valget — men KUN når et menneske faktisk har
   // valgt. initTheme() har alltid auto-skrevet 'pizzaTheme' ved oppstart, så
   // nøkkelens EKSISTENS kan ikke skille «valgte mørk» fra «fikk mørk som
   // standard» — derfor en egen kvittering (pizzaThemeValgt) som bare settes
@@ -6762,7 +6880,14 @@ function syncMobControls(){
   // kandidatene stående mot en gammel steketid når man endret dato/klokkeslett
   // — lista viste da et vindu (og en oppstart) som ikke stemte med feltene.
   // renderWindowPicker() no-op-er selv utenfor Fra–til-modus.
-  const _onWhenChange=()=>{ mobGen(); try{ renderWindowPicker(); }catch(e){} };
+  const _onWhenChange=()=>{
+    // v0.843: sjekk om den valgte metoden fortsatt rekker den nye tiden.
+    let byttet=false;
+    try{ byttet=autoByttMetodeHvisUmulig(); }catch(e){}
+    mobGen();
+    if(byttet){ try{ mobMethodCards(); }catch(e){} }
+    try{ renderWindowPicker(); }catch(e){}
+  };
   ['mob-ed','mob-et'].forEach(id=>{
     const el=g(id);
     if(el&&!el.dataset.lst){el.addEventListener('input',_onWhenChange);el.addEventListener('change',_onWhenChange);el.dataset.lst='1';}
@@ -6841,9 +6966,23 @@ function mobPillGroup(id,key){
 // v5.78: nå som tidspunktet er kjent før metodevalget, kan kortene si noe om
 // seg selv. Dette er samme vurdering som methodTimeWarningHTML() gjorde i
 // etterkant, flyttet fram til der valget faktisk tas.
+// v0.841: «spis kl.»-feltene finnes i to sett (PC: ed/et — mobil: mob-ed/
+// mob-et). Samme oppslagsmønster som winEls() fra v0.802, så alt som spør
+// «når skal vi spise?» er layout-blindt og kan ikke svare ulikt på PC og
+// mobil. Faller tilbake til det settet som finnes, slik at funksjonene virker
+// også når testene kaller dem uten å ha byttet layout.
+function eatEls(){
+  const mobEl=document.getElementById('mob-layout');
+  const mob=mobEl&&mobEl.classList.contains('active');
+  const g=id=>document.getElementById(id);
+  const par=mob?{d:g('mob-ed'),t:g('mob-et')}:{d:g('ed'),t:g('et')};
+  if(par.d&&par.d.value) return par;
+  const alt=mob?{d:g('ed'),t:g('et')}:{d:g('mob-ed'),t:g('mob-et')};
+  return (alt.d&&alt.d.value)?alt:par;
+}
 function methodFitNote(v){
   if(S.mode!=='end') return null;
-  const dEl=document.getElementById('mob-ed'), tEl=document.getElementById('mob-et');
+  const _e=eatEls(); const dEl=_e.d, tEl=_e.t;
   if(!dEl || !dEl.value) return null;
   let eat;
   try{ eat=new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')); }catch(e){ return null; }
@@ -6857,9 +6996,150 @@ function methodFitNote(v){
   if(v==='hurtig' && leadH>needH+24) return {txt:'mye av tiden går til spille', dim:true};
   return {txt:'passer godt', dim:false};
 }
+// v0.840: hvilken metode ANBEFALER vi, nå som steketiden er kjent? Dommeren
+// er den samme som Smart-plan bruker (searchAllMethods) — ikke en ny regel
+// for kortene. Hadde kortene fått sin egen rangering, kunne appen anbefalt
+// én metode her og en annen i Smart-plan-fanen; det er nøyaktig to dommere-
+// feilen vi har ryddet vekk fem ganger.
+// Målt kostnad: ~75 ms per søk, derfor memoisert. Nøkkelen må inneholde ALT
+// som kan endre rangeringen (anker, deigvalg, ledig tid, metodefilter) —
+// samme lærdom som Q10-memoen i v0.822.
+let _anbMemo={k:null,v:null};
+function anbefaltMetode(){
+  if(S.mode!=='end') return null;
+  const _e=eatEls(); const dEl=_e.d, tEl=_e.t;
+  if(!dEl || !dEl.value) return null;
+  let eat;
+  try{ eat=new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00')); }catch(e){ return null; }
+  if(isNaN(eat.getTime()) || eat.getTime()<=Date.now()) return null;
+  let plan='';
+  try{ plan=JSON.stringify(window._pizzatidSchedule||null); }catch(e){}
+  const key=[dEl.value,(tEl&&tEl.value)||'',S.type,S.mel,S.hydro,S.temp,S.fridgeC,
+             S.meltype,S.gjaertest,S.gjaerTilstand,S.gjaerStyrkePct,S.favMethod,plan,
+             // «nå» flytter seg: rund til kvarteret, ellers kan et memo-treff
+             // holde på en anbefaling som ikke lenger rekker.
+             Math.floor(Date.now()/900000)].join('|');
+  if(_anbMemo.k===key) return _anbMemo.v;
+  let v=null, snap=null;
+  try{
+    const res=searchAllMethods(eat);
+    // Kun en kandidat som faktisk kan startes nå er en anbefaling.
+    const topp=res.find(c=>c.feasible!==false);
+    v=topp?topp.snapshot.method:null;
+    snap=topp?topp.snapshot:null;
+  }catch(e){ v=null; snap=null; }
+  _anbMemo={k:key,v:v,snap:snap};
+  return v;
+}
+// v0.843: anbefalingen er en KANDIDAT — metode PLUSS varighet. Et bytte som
+// bare setter metoden arver din gamle varighet, og da kan den anbefalte
+// metoden lande på en variant som selv ikke rekker: probe med 5 t igjen ga
+// «byttet til Hurtigdeig» mens S.hurtigH=5 fortsatt sto — kortet sa «rekker
+// ikke» rett etter byttet. Samme felle applyBetaResult unngår ved å lese hele
+// snapshotet.
+function anbefaltKandidat(){
+  anbefaltMetode();          // fyller memoen (inkl. snapshot)
+  return _anbMemo.snap||null;
+}
+// v0.840: undertittelen over kortene svarer paa det som faktisk gjelder naar
+// steketiden er kjent — hvor mange metoder som rekker — i stedet for et
+// generelt raad. Uten kjent steketid staar den faste teksten (satt av
+// spraakbytte i st('wiz-s2-sub')).
+function oppdaterMetodeSub(antallPasser){
+  const el=document.getElementById('wiz-s2-sub');
+  if(!el) return;
+  if(antallPasser===null){
+    el.textContent=L('Langtidsdeig fungerer fint om du er usikker','Long-ferment dough works fine if you are unsure');
+    return;
+  }
+  const _e=eatEls(); const dEl=_e.d, tEl=_e.t;
+  let naar='';
+  try{ naar=fDT(new Date(dEl.value+'T'+((tEl&&tEl.value)||'18:00'))); }catch(e){}
+  el.textContent = antallPasser===0
+    ? L(`Ingen metoder rekker til ${naar} — flytt steketiden, eller velg likevel`,`No method makes it to ${naar} — move the baking time, or choose anyway`)
+    : antallPasser===1
+      ? L(`Én metode rekker til ${naar}`,`One method makes it to ${naar}`)
+      : L(`${antallPasser} metoder rekker til ${naar}`,`${antallPasser} methods make it to ${naar}`);
+}
+// v0.843: setter du en steketid som den valgte metoden ikke rekker, skal
+// appen ikke la deg stå i det umulige valget — den bytter til den anbefalte.
+// Meldt inn: «velger steketid i dag 15:00 → Langtidsdeig står valgt og rekker
+// ikke, mens Hurtigdeig og Kveldsdeig passer godt. En av de to burde vært
+// valgt.» Speilbildet av ensureFeasibleBakeTime (v5.78), som flytter TIDEN
+// når du velger en lang metode; her flyttes METODEN når du velger tid.
+//
+// Vakten: byttet skjer bare når metoden IKKE er valgt aktivt av deg. Har du
+// selv trykket på et kort, er det ditt valg — da står varselet og «Hvorfor»-
+// boksen (v0.842) i stedet. Byttet er alltid synlig og angrbart.
+function autoByttMetodeHvisUmulig(){
+  // Dobbel sikring: methodFitNote() vokter allerede modusen (returnerer null
+  // utenfor «spis kl.»), så denne linja er en EKVIVALENT vakt — mutasjonsrunden
+  // viste at å fjerne den ikke endrer atferd. Beholdt fordi den gjør regelen
+  // lesbar der den bor: autobytte finnes bare når det finnes en frist.
+  if(S.mode!=='end') return false;
+  if(window._metodeValgtAvBruker) return false;
+  const fit=methodFitNote(S.method);
+  if(!fit || !fit.dim) return false;
+  const snap=anbefaltKandidat();
+  const anb=snap?snap.method:null;
+  if(!anb || anb===S.method) return false;
+  const fra=S.method;
+  const foerVerdier={cold:S.cold,poolishH:S.poolishH,poolishCold:S.poolishCold,
+    poolishPauseH:S.poolishPauseH,bigaH:S.bigaH,hurtigH:S.hurtigH,kveldH:S.kveldH};
+  // Hele kandidaten, ikke bare metoden — ellers arves en varighet som ikke
+  // rekker (se anbefaltKandidat).
+  S.method=anb;
+  if(anb==='standard'||anb==='poolish'||anb==='biga'){ if(snap.cold!=null) S.cold=snap.cold; }
+  if(anb==='poolish'){ if(snap.poolishH!=null) S.poolishH=snap.poolishH;
+                       S.poolishCold=!!snap.poolishCold; S.poolishPauseH=snap.poolishPauseH||0; }
+  if(anb==='biga'&&snap.bigaH!=null) S.bigaH=snap.bigaH;
+  if(anb==='hurtig'&&snap.hurtigH!=null) S.hurtigH=snap.hurtigH;
+  if(anb==='kveld'&&snap.kveldH!=null) S.kveldH=snap.kveldH;
+  // v0.844: var fra-metoden bare appens forhåndsvalg, har brukeren aldri
+  // «byttet» fra noe — meldingen må ikke gi dem et valg de ikke tok. Meldt
+  // inn: «Hvorfor står det byttet fra langtidsdeig? har aldri valgt den jeg.»
+  window._autoByttet={fra:fra, til:anb, fraVarForhaandsvalg: fra===DEF.method,
+    foer:{cold:foerVerdier.cold,poolishH:foerVerdier.poolishH,poolishCold:foerVerdier.poolishCold,
+          poolishPauseH:foerVerdier.poolishPauseH,bigaH:foerVerdier.bigaH,
+          hurtigH:foerVerdier.hurtigH,kveldH:foerVerdier.kveldH}};
+  try{ applyTypeUI(); }catch(e){}
+  try{ applyMobTypeUI(); }catch(e){}
+  return true;
+}
+function angreAutoBytt(){
+  const b=window._autoByttet;
+  if(!b) return;
+  S.method=b.fra;
+  if(b.foer) Object.keys(b.foer).forEach(k=>{ S[k]=b.foer[k]; });
+  window._autoByttet=null;
+  window._metodeValgtAvBruker=true;   // ditt valg nå — appen skal ikke bytte igjen
+  try{ applyTypeUI(); }catch(e){}
+  try{ applyMobTypeUI(); }catch(e){}
+  try{ mCards(); }catch(e){}
+  try{ mobMethodCards(); }catch(e){}
+  try{ mobGen(); }catch(e){}
+  try{ schedNow(); }catch(e){}
+}
+function autoByttMeldingHTML(){
+  const b=window._autoByttet;
+  if(!b) return '';
+  return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--forno-accent-soft);border:1px solid var(--forno-accent);border-radius:9px;padding:7px 10px;margin-bottom:7px;font-size:11.5px;line-height:1.45;color:var(--forno-accent-text)">
+    <span style="flex:1;min-width:150px">${b.fraVarForhaandsvalg
+      ? `<b>${L(mN(b.til)+' er valgt',mN(b.til)+' is selected')}</b> — ${L('forhåndsvalget ('+mN(b.fra)+') rekker ikke fram til steketiden din.','the preset ('+mN(b.fra)+') cannot make your baking time.')}`
+      : `<b>${L('Byttet til '+mN(b.til),'Switched to '+mN(b.til))}</b> — ${L(mN(b.fra)+' rakk ikke fram til steketiden du valgte.',mN(b.fra)+' could not make the baking time you chose.')}`}</span>
+    <button type="button" onclick="angreAutoBytt()" style="flex:0 0 auto;border:1px solid var(--forno-accent);border-radius:999px;background:var(--forno-bg-raised);color:var(--forno-accent-text);font-family:inherit;font-size:11px;font-weight:700;padding:3px 11px;cursor:pointer">${L('Angre','Undo')}</button>
+  </div>`;
+}
+function renderAutoByttMelding(){
+  ['mob-autobytt','pc-autobytt'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=autoByttMeldingHTML();
+  });
+}
 function mobMethodCards(){
   const wrap=document.getElementById('mob-gmet');if(!wrap)return;
   wrap.innerHTML='';
+  let _passer=0, _harFit=false;
   // v0.823: navnene leses fra METHODS-registeret (mN) — undertekstene er
   // kort-egne og blir her.
   [{v:'standard',s:L('Direkte + kjøleskapsheving','Direct + cold proof')},
@@ -6872,13 +7152,40 @@ function mobMethodCards(){
     const el=document.createElement('div');
     el.dataset.v=v;   // v0.795: gjør lista lesbar utenfra, som PC-kortene
     const isOn=S.method===v;
-    el.style.cssText=`position:relative;border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${isOn?'var(--forno-bg-raised)':'var(--forno-accent-soft)'};border:${isOn?'2px solid var(--forno-accent)':'1px solid transparent'}`;
     const fit=methodFitNote(v);
-    if(fit && fit.dim && !isOn) el.style.opacity='.55';
-    const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;color:${fit.dim?'var(--forno-text-faint)':'#0F6E56'}">${escH(fit.txt)}</div>`:'';
-    el.innerHTML=`<div style="font-size:14px;font-weight:600;color:${isOn?'var(--forno-accent-text)':'var(--forno-text)'}">${t}</div><div style="font-size:12px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
+    // v0.840 (skisse B, valgt av Rune): rekkefølgen står — du finner metoden
+    // der du er vant til — men det som ikke rekker skal SE utilgjengelig ut,
+    // og det vi anbefaler skal være tydelig. Meldt inn fra et ekte valg: fire
+    // av seks kort var umulige, bare svakt dempet (55 %), og INGEN sa hva
+    // appen mente. Verre: den valgte metoden var en av de umulige, med
+    // oransje ramme og ✓ — som leser som en anbefaling.
+    const uegnet=!!(fit && fit.dim);
+    if(fit){ _harFit=true; if(!uegnet) _passer++; }
+    const anbefalt=(!uegnet && v===anbefaltMetode());
+    el.dataset.fit = fit ? (uegnet?'nei':'ja') : '';
+    if(anbefalt) el.dataset.anbefalt='1';
+    const bg = isOn ? 'var(--forno-bg-raised)'
+             : anbefalt ? 'var(--anb-bg)'
+             : uegnet ? 'var(--uegnet-bg)'
+             : 'var(--forno-accent-soft)';
+    const kant = isOn ? '2px solid var(--forno-accent)'
+               : anbefalt ? '2px solid var(--anb-kant)'
+               : uegnet ? '1px solid var(--uegnet-kant)'
+               : '1px solid transparent';
+    el.style.cssText=`position:relative;border-radius:12px;padding:.6rem .7rem;cursor:pointer;background:${bg};border:${kant}`;
+    // Er den VALGTE metoden umulig, skal kortet fortsatt vise hvor du står
+    // (ramme + ✓) — men da i varselfarge, ikke i grått og ikke som anbefaling.
+    const fitFarge = !uegnet ? 'var(--fit-ok)' : (isOn ? 'var(--fit-varsel)' : 'var(--forno-text-faint)');
+    const fitHtml=fit?`<div style="font-size:10px;margin-top:2px;font-weight:${isOn&&uegnet?700:400};color:${fitFarge}">${(isOn&&uegnet?'⚠️ ':'')+escH(fit.txt)}</div>`:'';
+    const navnFarge = isOn ? 'var(--forno-accent-text)' : (uegnet ? 'var(--forno-text-faint)' : 'var(--forno-text)');
+    const anbHtml = anbefalt
+      ? `<i aria-hidden="true" style="position:absolute;top:-7px;left:8px;font-size:8.5px;font-weight:800;letter-spacing:.05em;background:var(--anb-merke-bg);color:var(--anb-merke-tekst);border-radius:4px;padding:1px 6px;font-style:normal">${L('ANBEFALT','RECOMMENDED')}</i>`
+      : '';
+    el.innerHTML=`${anbHtml}<div style="font-size:14px;font-weight:600;color:${navnFarge}">${t}</div><div style="font-size:12px;color:var(--forno-text-faint);margin-top:1px">${s}</div>${fitHtml}${isOn?'<i aria-hidden="true" style="position:absolute;top:-6px;right:-4px;font-size:10px;background:var(--forno-accent);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-style:normal">✓</i>':''}`;
     el.onclick=()=>{
       if(S.method!==v) clearStepProgress();
+      window._metodeValgtAvBruker=true;   // v0.843: ditt valg — ingen autobytte
+      window._autoByttet=null;
       S.method=v;
       // Respekter valgt modus. Velger man en lang metode mens «Jeg begynner nå»
       // er aktivt, skal deigen planlegges FRAMOVER fra nå — ikke tvinges bakover
@@ -6903,6 +7210,8 @@ function mobMethodCards(){
     };
     wrap.appendChild(el);
   });
+  oppdaterMetodeSub(_harFit ? _passer : null);
+  renderAutoByttMelding();
   updateMethodWhyBox();
 }
 // Oppdaterer den dynamiske "hvorfor"-boksen under metodekortene til å vise
@@ -6912,6 +7221,22 @@ function updateMethodWhyBox(){
   const titleEl=document.getElementById('mob-method-why-title');
   const textEl=document.getElementById('mob-method-why-text');
   if(!titleEl||!textEl) return;
+  // v0.842: boksen solgte inn den valgte metoden selv når den IKKE rekker
+  // fram til steketiden — meldt inn: «Hvorfor Langtidsdeig? … Enklest å
+  // planlegge» sto under et kort som nettopp hadde sagt «rekker ikke, trenger
+  // 26 t». Da er «hvorfor» feil spørsmål. Rekker den ikke, sier boksen det i
+  // stedet, og peker på den vi anbefaler (samme dommer som kortene).
+  const fit=methodFitNote(S.method);
+  if(fit && fit.dim){
+    const anb=anbefaltMetode();
+    titleEl.textContent=L(`${mN(S.method)} rekker ikke`,`${mN(S.method)} will not make it`);
+    textEl.textContent = anb
+      ? L(`${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. Vil du holde på steketiden, velg ${mN(anb)} — den er anbefalt her. Vil du beholde ${mN(S.method)}, må steketiden flyttes.`,
+          `${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. To keep your baking time, pick ${mN(anb)} — it is the one recommended here. To keep ${mN(S.method)}, move the baking time.`)
+      : L(`${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. Ingen av metodene rekker fram til steketiden du har valgt — flytt den, eller velg en metode og godta at den starter senere enn planen forutsetter.`,
+          `${fit.txt[0].toUpperCase()+fit.txt.slice(1)}. None of the methods make it to the baking time you have chosen — move it, or pick a method and accept starting later than the plan assumes.`);
+    return;
+  }
   titleEl.textContent=L('Hvorfor '+mN(S.method)+'?','Why '+mN(S.method)+'?'); // v0.823: registeret dømmer
   textEl.textContent=METHOD_WHY[S.method]||'';
 }
@@ -10034,6 +10359,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="wiz-s2-sub" style="padding:0 1rem .5rem;font-size:11px;color:var(--forno-text-faint)">Langtidsdeig fungerer fint om du er usikker</div>
       <div class="wiz-qhead"><div class="wiz-qnum">1</div><div class="wiz-qlbl" id="wiz-s2-q1">Metode</div></div>
       <div id="mob-gmet-wrap">
+        <div id="mob-autobytt" style="padding:0 1rem"></div>
         <div class="mob-mcard-wrap" id="mob-gmet"></div>
       </div>
       <div id="mob-method-why" style="margin:.4rem 1rem .65rem;padding:12px 14px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px">

@@ -1571,7 +1571,7 @@ def _atferd_2(page, results):
       r32['ovnTitle'] == 'Sett på ovnen 🔥' and
       r32['ovnLeadMin'] == r32['preheatMin'] and r32['ovnDur'] == 0 and
       r32['ovnNavngirTemp'] and
-      # F38 (v0.840): 81 - 18 skyv (3 emner, pizzaovn: vindu 36 min, sikter midten)
+      # F38 (v0.845): 81 - 18 skyv (3 emner, pizzaovn: vindu 36 min, sikter midten)
       r32['etterhevTitle'] == 'Etterheving (63 min)' and
       r32['etterhevPassiv'] and r32['etterhevUtenOvn']
     )
@@ -4168,7 +4168,7 @@ def _atferd_5(page, results):
       try{ mobSetMode(uiMode()); }catch(e){}
       return {
         kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1275, // v0.824: +5 kickstart · v0.829: +40 bulkhvile
-        hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===962, // v0.840: -18 (F38-skyvet — etterhevingen sikter mot midten av stekevinduet)
+        hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===962, // v0.845: -18 (F38-skyvet — etterhevingen sikter mot midten av stekevinduet)
         standardNoFit: byM.standard&&!byM.standard.best&&byM.standard.minSpan===1545,
         ranked, startOk,
         winnerRenderedFirst: h.indexOf(mN('kveld'))>=0 && h.indexOf(mN('kveld'))<h.indexOf(mN('hurtig')),
@@ -8716,7 +8716,7 @@ const svSched=window._pizzatidSchedule;
           [S.cold,S.poolishH,S.bigaH,S.hurtigH,S.kveldH].forEach(till);
           till(rtM(60)); till(Math.round(rtM(60)*1.5)); till(Math.round(totalFermentHours()));
           try{ till(poolishTemperMin()); till(Math.round(poolishTemperMin()/60)); }catch(e){}
-          // F38 (v0.840): stekevinduet ved flere pizzaer — etterhevingssteget
+          // F38 (v0.845): stekevinduet ved flere pizzaer — etterhevingssteget
           // nevner det via fmtHM, saa begge komponentene er kilder.
           try{ const v=stekevinduMin(); till(v); till(Math.floor(v/60)); till(v%60); }catch(e){}
           // Bevisste konstanter — hver med grunn:
@@ -9753,7 +9753,7 @@ const svSched=window._pizzatidSchedule;
       ];
       setLayout('pc');
       for(const [navn,sel] of PC_SETT) sjekk(navn,sel,daarlige);
-      // F12 (v0.842): samme sett i MØRK PC — temaet aktiveres bare ved
+      // F12 (v0.847): samme sett i MØRK PC — temaet aktiveres bare ved
       // eksplisitt valg, så testen setter kvitteringen og rydder etter seg.
       const temaFoer=window._theme, kvittFoer=(()=>{try{return localStorage.getItem('pizzaThemeValgt')}catch(e){return null}})();
       setTheme('dark', true);
@@ -9772,6 +9772,281 @@ const svSched=window._pizzatidSchedule;
     }""")
     ok181 = not r181['daarlige']
     results.append(('key_controls_keep_readable_contrast_in_both_layouts', ok181, r181))
+
+    # v0.840 (skisse B, valgt av Rune): naar steketiden er kjent skal kortene
+    # si hva vi ANBEFALER og se utilgjengelige ut der de ikke rekker. Meldt
+    # inn fra et ekte valg (fre 23:42, stek loer 14:00): fire av seks kort var
+    # umulige, bare svakt dempet (55 %), ingen anbefaling — og den VALGTE
+    # metoden var en av de umulige, med oransje ramme og gronn hake, som leser
+    # som en anbefaling. Dommeren for «anbefalt» er searchAllMethods, samme
+    # som Smart-plan, memoisert (~75 ms → 1 ms ved gjentatt rendring).
+    # Rekkefoelgen staar (skisse B) — det er kontrasten som gjoer jobben.
+    r189 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      window._planChosen=true; setLayout('mob');
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard';
+      const bake=new Date(Date.now()+14.3*3600000);
+      document.getElementById('mob-ed').value=fd(bake);
+      document.getElementById('mob-et').value=fT(bake);
+      mobShowTab('settings'); mobMethodCards();
+      const kort=()=>[...document.querySelectorAll('#mob-gmet > div')];
+      const k=kort();
+      // rekkefoelgen er UENDRET — det var hele poenget med skisse B
+      ut.rekkefoelge = k.map(x=>x.dataset.v).join(',')==='standard,poolish,biga,mania,hurtig,kveld';
+      const uegnet=k.filter(x=>x.dataset.fit==='nei').map(x=>x.dataset.v);
+      const passer=k.filter(x=>x.dataset.fit==='ja').map(x=>x.dataset.v);
+      // v0.842: bind til TOKENET, ikke til en hardkodet farge — fargene bor
+      // naa i temapaletten (--uegnet-bg/--fit-varsel), og r191 vokter at de
+      // gir lesbar kontrast i begge temaer.
+      ut.uegnetErGraa = uegnet.length===4 && passer.length===2
+        && k.filter(x=>x.dataset.fit==='nei' && x.dataset.v!==S.method)
+             .every(x=>/--uegnet-bg/.test(x.style.background));
+      // ANBEFALT staar paa NOEYAKTIG ett kort, og det maa vaere ett som rekker
+      const anb=k.filter(x=>x.dataset.anbefalt==='1');
+      ut.ettAnbefalt = anb.length===1 && anb[0].dataset.fit==='ja'
+        && anb[0].textContent.startsWith('ANBEFALT');
+      // ... og det skal vaere SAMME dommer som Smart-plan ville brukt
+      const smart=searchAllMethods(bake).find(c=>c.feasible!==false);
+      ut.sammeDommer = !!smart && anb[0].dataset.v===smart.snapshot.method;
+      // valgt metode som IKKE rekker: fortsatt synlig som valgt, men i
+      // varselfarge — ikke i graatt, og aldri som anbefaling
+      const valgt=k.find(x=>x.dataset.v==='standard');
+      ut.valgtUmuligVarsler = valgt.dataset.fit==='nei' && !valgt.dataset.anbefalt
+        && /⚠️/.test(valgt.innerHTML) && /--fit-varsel/.test(valgt.innerHTML)
+        && /✓/.test(valgt.innerHTML);
+      // undertittelen teller
+      ut.subTeller = /^2 metoder rekker til /.test(document.getElementById('wiz-s2-sub').textContent);
+      // memoen: andre rendring skal vaere billig
+      const t0=performance.now(); mobMethodCards(); ut.memoBillig=(performance.now()-t0)<25;
+      // ... men den maa slippe gjennom en endring av ankeret. 3,2 t frem
+      // rekker INGEN metode (hurtig trenger ~5 t) — da skal anbefalingen
+      // forsvinne helt, ikke henge igjen fra forrige rendring, og
+      // undertittelen skal si det rett ut. Fanget en feil i testen selv:
+      // foerste utkast krevde at det fortsatt fantes én anbefaling.
+      const naer=new Date(Date.now()+3.2*3600000);
+      document.getElementById('mob-ed').value=fd(naer);
+      document.getElementById('mob-et').value=fT(naer);
+      mobMethodCards();
+      ut.memoFoelgerAnker = kort().filter(x=>x.dataset.anbefalt==='1').length===0
+        && kort().filter(x=>x.dataset.fit==='ja').length===0
+        && /^Ingen metoder rekker til /.test(document.getElementById('wiz-s2-sub').textContent);
+      // start-modus: ingen dom, ingen anbefaling, fast undertekst
+      S.mode='start'; mobMethodCards();
+      ut.startModusUroert = kort().every(x=>!x.dataset.fit && !x.dataset.anbefalt)
+        && /usikker/.test(document.getElementById('wiz-s2-sub').textContent);
+      S.mode='end';
+      return ut;
+    }""")
+    ok189 = all(r189.values())
+    results.append(('method_cards_flag_the_recommendation_and_grey_out_what_cannot_fit', ok189, r189))
+
+    # v0.841: PC-kortene fikk samme behandling som mobilkortene (v0.840).
+    # Foer dette hadde PC INGEN dom i det hele tatt — methodFitNote leste
+    # mob-feltene og returnerte null paa PC. Naa er ankerlesingen layout-blind
+    # (eatEls, samme moenster som winEls i v0.802), saa begge flater bruker
+    # samme methodFitNote og samme anbefaltMetode. Testen laaser 1:1: for
+    # samme oppsett skal PC og mobil gi IDENTISK dom og anbefaling — ellers er
+    # vi tilbake til to dommere, bare fordelt paa to skjermer.
+    r190 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      window._planChosen=true;
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard';
+      const bake=new Date(Date.now()+14.3*3600000);
+      // mobil foerst — fasit
+      setLayout('mob');
+      document.getElementById('mob-ed').value=fd(bake);
+      document.getElementById('mob-et').value=fT(bake);
+      mobShowTab('settings'); mobMethodCards();
+      const mob=[...document.querySelectorAll('#mob-gmet > div')]
+        .map(x=>x.dataset.v+':'+x.dataset.fit+':'+(x.dataset.anbefalt||'0'));
+      // saa PC
+      setLayout('pc');
+      document.getElementById('ed').value=fd(bake);
+      document.getElementById('et').value=fT(bake);
+      mCards();
+      const k=[...document.querySelectorAll('#gmet .mc')];
+      const pc=k.map(x=>x.dataset.v+':'+x.dataset.fit+':'+(x.dataset.anbefalt||'0'));
+      ut.pcLikMobil = pc.join(',')===mob.join(',') && pc.length===6;
+      ut.pcHarDom = k.filter(x=>x.dataset.fit==='nei').length===4
+                 && k.filter(x=>x.dataset.fit==='ja').length===2;
+      ut.pcGraaKlasse = k.filter(x=>x.dataset.fit==='nei' && x.dataset.v!==S.method)
+                         .every(x=>x.classList.contains('mc-uegnet'));
+      const anb=k.filter(x=>x.dataset.anbefalt==='1');
+      ut.pcAnbefalt = anb.length===1 && anb[0].classList.contains('mc-anbefalt')
+        && !!anb[0].querySelector('.mc-anb-merke');
+      const valgt=k.find(x=>x.dataset.v==='standard');
+      ut.pcValgtUmuligVarsler = valgt.dataset.fit==='nei' && !valgt.dataset.anbefalt
+        && /⚠️/.test(valgt.textContent)
+        && valgt.querySelector('.mc-fit').classList.contains('advarsel')
+        && !valgt.classList.contains('mc-uegnet');
+      ut.pcTeller = /^— 2 rekker til /.test((document.querySelector('#gmet-wrap .lbl .mc-teller')||{textContent:''}).textContent);
+      // KILDEBEVIS: over er BEGGE feltsett satt, saa PC kunne «bestaa» ved aa
+      // lese mobilfeltene — mutasjonsrunden avslorte nettopp det. Toem
+      // mob-feltene: en PC-bruker som aldri har roert mobilvisningen skal
+      // fortsatt faa dommen, og den maa komme fra ed/et.
+      const _md=document.getElementById('mob-ed').value, _mt=document.getElementById('mob-et').value;
+      document.getElementById('mob-ed').value=''; document.getElementById('mob-et').value='';
+      mCards();
+      const kun=[...document.querySelectorAll('#gmet .mc')];
+      ut.pcLeserEgneFelt = kun.filter(x=>x.dataset.fit==='nei').length===4
+        && kun.filter(x=>x.dataset.fit==='ja').length===2
+        && kun.filter(x=>x.dataset.anbefalt==='1').length===1;
+      document.getElementById('mob-ed').value=_md; document.getElementById('mob-et').value=_mt;
+      mCards();
+      // gjentatt rendring maa ikke stable opp elementer (mCards kalles ofte)
+      mCards(); mCards();
+      ut.ingenDubletter=[...document.querySelectorAll('#gmet .mc')]
+        .every(x=>x.querySelectorAll('.mc-fit').length<=1 && x.querySelectorAll('.mc-anb-merke').length<=1);
+      // start-modus fjerner alt igjen
+      S.mode='start'; mCards();
+      ut.pcStartRydder=[...document.querySelectorAll('#gmet .mc')]
+        .every(x=>!x.dataset.fit && !x.querySelector('.mc-fit')
+                  && !x.classList.contains('mc-uegnet') && !x.classList.contains('mc-anbefalt'))
+        && !document.querySelector('#gmet-wrap .lbl .mc-teller');
+      S.mode='end'; setLayout('mob');
+      return ut;
+    }""")
+    ok190 = all(r190.values())
+    results.append(('pc_method_cards_match_mobile_verdict_one_to_one', ok190, r190))
+
+    # v0.842: kontrasten paa de nye korttilstandene, i BEGGE temaer og BEGGE
+    # layouter. Meldt inn med skjermbilde: ANBEFALT-kortet sto lyst med lys
+    # tekst i moerkt tema — jeg hadde hardkodet #eaf6ee/#0F6E56 i stedet for aa
+    # gaa gjennom temaets tokens. Naa er alle tre tilstandene tokens
+    # (--anb-*/--uegnet-*/--fit-*), definert per tema som resten av paletten.
+    #
+    # NB for fremtidige maalinger: .mc har transition .15s, saa
+    # getComputedStyle rett etter mCards() gir en MIDT-I-OVERGANGEN-farge.
+    # Det kostet meg tre feilsoekingsrunder: CSS-en var riktig hele tiden,
+    # men proben leste den gamle bakgrunnen. Derfor ventingen under.
+    #
+    # Terskelen er AA (4,5:1) for alt v0.840–0.842 innfoerer. Unntaket som
+    # IKKE er vaart: PC-kortets hvite tittel paa oransje valgt-flate ligger
+    # paa 3,6:1 — eksisterende PC-stil fra foer, notert som kjent gjeld.
+    r191 = page.evaluate("""async () => {
+      resetTestState();
+      window._lang='no'; const ut={}; const maalinger={};
+      const L2=c=>{const m=/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/.exec(c); if(!m) return null;
+        const f=x=>{x=+x/255; return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4);};
+        return 0.2126*f(m[1])+0.7152*f(m[2])+0.0722*f(m[3]);};
+      const kr=(a,b)=>{const x=L2(a),y=L2(b); if(x==null||y==null) return 0;
+        return Math.round(((Math.max(x,y)+0.05)/(Math.min(x,y)+0.05))*100)/100;};
+      const bake=new Date(Date.now()+14.3*3600000);
+      for(const tema of ['dark','light']){
+        for(const lay of ['mob','pc']){
+          try{ setTheme(tema); }catch(e){ document.body.classList.toggle('theme-light', tema==='light'); }
+          setLayout(lay);
+          S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard';
+          window._planChosen=true;
+          document.getElementById(lay==='mob'?'mob-ed':'ed').value=fd(bake);
+          document.getElementById(lay==='mob'?'mob-et':'et').value=fT(bake);
+          if(lay==='mob'){ mobShowTab('settings'); mobMethodCards(); } else { mCards(); }
+          await new Promise(r=>setTimeout(r,400));   // se kommentaren over
+          const kort=[...document.querySelectorAll(lay==='mob'?'#mob-gmet > div':'#gmet .mc')];
+          for(const [merke,k] of [['anb',kort.find(x=>x.dataset.anbefalt==='1')],
+                                  ['uegnet',kort.find(x=>x.dataset.fit==='nei'&&x.dataset.v!==S.method)],
+                                  ['valgt',kort.find(x=>x.dataset.v===S.method)]]){
+            if(!k){ maalinger[tema+'/'+lay+'/'+merke]='MANGLER'; continue; }
+            const bg=getComputedStyle(k).backgroundColor;
+            const fitEl=lay==='mob'
+              ? [...k.querySelectorAll('div')].find(x=>/passer|rekker/.test(x.textContent))
+              : k.querySelector('.mc-fit');
+            const navnEl=lay==='mob'?k.querySelector('div:not([style*=absolute])'):k.querySelector('.mc-t');
+            const cNavn=navnEl?kr(bg,getComputedStyle(navnEl).color):0;
+            const cFit=fitEl?kr(bg,getComputedStyle(fitEl).color):0;
+            maalinger[tema+'/'+lay+'/'+merke]=cNavn+' / '+cFit;
+            // valgt-kortets TITTEL paa PC er gammel stil (hvit paa oransje) —
+            // holdes utenfor; fit-teksten der er vaar og maa holde maal.
+            const hopperNavn = (merke==='valgt' && lay==='pc');
+            if(!hopperNavn && cNavn<4.5) ut['navn_'+tema+'_'+lay+'_'+merke]=false;
+            if(cFit<4.5) ut['fit_'+tema+'_'+lay+'_'+merke]=false;
+          }
+        }
+      }
+      try{ setTheme('dark'); }catch(e){}
+      setLayout('mob');
+      ut.alleOverAA = Object.keys(ut).length===0;
+      ut.maalinger = maalinger;
+      return ut;
+    }""")
+    ok191 = r191.get('alleOverAA') is True
+    results.append(('method_card_states_keep_AA_contrast_in_both_themes', ok191, r191))
+
+    # v0.843: setter du en steketid som den valgte metoden ikke rekker, bytter
+    # appen til den anbefalte i stedet for aa la deg staa i det umulige valget.
+    # Meldt inn: «velger steketid i dag 15:00 → Langtidsdeig staar valgt og
+    # rekker ikke, mens Hurtigdeig og Kveldsdeig passer godt. En av de to
+    # burde vaert valgt.» Speilbildet av ensureFeasibleBakeTime, som flytter
+    # TIDEN naar du velger metode.
+    #
+    # Tre ting testen laaser, alle tre fra feil funnet under bygging:
+    #  1) HELE kandidaten byttes (metode + varighet). Foerste utkast satte bare
+    #     metoden — probe med 5 t igjen ga «byttet til Hurtigdeig» mens
+    #     S.hurtigH=5 fortsatt sto, saa kortet sa «rekker ikke» rett etterpaa.
+    #  2) Har du valgt metoden SELV, roerer appen den aldri.
+    #  3) Angre tar deg tilbake til baade metode og varighet, og skrur av
+    #     autobyttet — ellers ville neste tastetrykk byttet paa nytt.
+    r192 = page.evaluate("""() => {
+      resetTestState();
+      window._lang='no'; const ut={};
+      setLayout('mob'); window._planChosen=true;
+      window._metodeValgtAvBruker=false; window._autoByttet=null;
+      S.type='napoletana'; S.mel=500; S.hydro=65; S.temp=22; S.mode='end'; S.method='standard'; S.cold=24;
+      const d=document.getElementById('mob-ed'), t=document.getElementById('mob-et');
+      const bake=new Date(Date.now()+5*3600000);
+      d.value=fd(bake); t.value=fT(bake);
+      mobShowTab('settings');
+      const foerMetode=S.method;
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.byttetVekkFraUmulig = S.method!==foerMetode;
+      // ... og den nye metoden maa faktisk rekke — MED varigheten som fulgte med
+      const fitEtter=methodFitNote(S.method);
+      ut.nyMetodeRekker = !!fitEtter && !fitEtter.dim;
+      const valgtKort=[...document.querySelectorAll('#mob-gmet > div')].find(x=>x.dataset.v===S.method);
+      ut.kortetSierPasser = !!valgtKort && valgtKort.dataset.fit==='ja';
+      // v0.844: fra-metoden var appens FORHÅNDSVALG (DEF.method) — da skal
+      // meldingen ikke si «byttet fra», for brukeren valgte den aldri. Meldt
+      // inn med skjermbilde. «Byttet til»-formen er reservert for en fra-
+      // metode som faktisk var et tidligere valg (testes lenger ned).
+      const m1=(document.getElementById('mob-autobytt')||{textContent:''}).textContent;
+      ut.melding = /er valgt/.test(m1) && /forhåndsvalget/.test(m1) && !/Byttet til/.test(m1);
+      // Angre: tilbake til baade metode og varighet
+      const varighetFoerAngre=S.hurtigH;
+      angreAutoBytt();
+      ut.angreGirTilbake = S.method===foerMetode && S.cold===24;
+      ut.meldingBorte = (document.getElementById('mob-autobytt')||{textContent:''}).textContent.trim()==='';
+      // ... og appen skal ikke bytte paa nytt etterpaa
+      t.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.ikkeByttetIgjen = S.method===foerMetode;
+      // Bevisst valg respekteres: du trykker selv paa et umulig kort
+      window._metodeValgtAvBruker=false; window._autoByttet=null; S.method='standard';
+      [...document.querySelectorAll('#mob-gmet > div')].find(x=>x.dataset.v==='biga').onclick();
+      ut.bevisstValgSatt = S.method==='biga';
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.bevisstValgBeholdt = S.method==='biga';
+      // Fra-metode som IKKE er forhåndsvalget (f.eks. gjenopprettet oppsett):
+      // da ER det et bytte, og meldingen skal si det.
+      window._metodeValgtAvBruker=false; window._autoByttet=null; S.method='poolish';
+      // klikket paa biga-kortet over flyttet steketiden ~2 doegn fram
+      // (ensureFeasibleBakeTime) — sett den tilbake til +5 t, ellers rekker
+      // poolish plutselig og det finnes ingenting aa bytte fra.
+      d.value=fd(bake); t.value=fT(bake);
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      const m2=(document.getElementById('mob-autobytt')||{textContent:''}).textContent;
+      ut.ekteBytteSiesFra = /Byttet til/.test(m2) && /Poolish/.test(m2);
+      window._metodeValgtAvBruker=false; window._autoByttet=null; S.method='standard';
+      // «Jeg begynner naa» har ingen frist — ingen bytte
+      window._metodeValgtAvBruker=false; window._autoByttet=null;
+      S.mode='start'; S.method='standard';
+      d.dispatchEvent(new Event('change',{bubbles:true}));
+      ut.startModusUroert = S.method==='standard' && !window._autoByttet;
+      S.mode='end'; window._metodeValgtAvBruker=false; window._autoByttet=null;
+      return ut;
+    }""")
+    ok192 = all(r192.values())
+    results.append(('baking_time_that_kills_the_method_switches_to_the_recommended_one', ok192, r192))
 
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret

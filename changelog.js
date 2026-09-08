@@ -3,7 +3,7 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
-    "v": "0.842",
+    "v": "0.847",
     "d": "august 2026",
     "d_en": "August 2026",
     "changes": [
@@ -18,7 +18,7 @@ const CHANGELOG = [
     ]
   },
   {
-    "v": "0.841",
+    "v": "0.846",
     "d": "august 2026",
     "d_en": "August 2026",
     "changes": [
@@ -33,7 +33,7 @@ const CHANGELOG = [
     ]
   },
   {
-    "v": "0.840",
+    "v": "0.845",
     "d": "august 2026",
     "d_en": "August 2026",
     "changes": [
@@ -47,6 +47,77 @@ const CHANGELOG = [
       "Two measures. Every bake step now says, with multiple pizzas: bake the most proofed ball first and the firmest last — and finger-test each ball, not just the first.",
       "And the quick dough's final proof now aims at the middle of the baking window instead of the first pizza: the first ball is almost ready when you start, the last just past when you finish — instead of the last one standing too long. With three pizzas in a pizza oven that means the first pizza goes in about 18 minutes earlier; the step explains why.",
       "Only quick dough gets the timing change: the cold methods temper the balls before baking, and tempering is warmth, not proofing — it cannot be shortened. There, the ordering above is the way out."
+    ]
+  },
+  {
+    "v": "0.844",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Meldingen over metodekortene sa «Byttet fra Langtidsdeig» også når du aldri hadde valgt Langtidsdeig — den var bare appens forhåndsvalg. Meldt inn: «Hvorfor står det byttet fra langtidsdeig? har aldri valgt den jeg.» Nå skiller meldingen: står du på forhåndsvalget, sier den «Hurtigdeig er valgt — forhåndsvalget (Langtidsdeig) rekker ikke fram til steketiden din», uten å påstå at du har byttet fra noe.",
+      "Hadde du derimot faktisk valgt en metode tidligere, sier meldingen fortsatt «Byttet til … — … rakk ikke fram til steketiden du valgte». Angre-knappen står i begge tilfeller."
+    ],
+    "changes_en": [
+      "The message above the method cards said \"Switched from Long-ferment dough\" even when you had never chosen it — it was merely the app's preset. Reported: \"Why does it say switched from long-ferment dough? I never picked it.\" The message now distinguishes: if you were on the preset, it says \"Quick dough is selected — the preset (Long-ferment dough) cannot make your baking time\", without claiming you switched from anything.",
+      "If you had actually chosen a method earlier, the message still says \"Switched to … — … could not make the baking time you chose\". The Undo button stands in both cases."
+    ]
+  },
+  {
+    "v": "0.843",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Setter du en steketid som den valgte metoden ikke rekker fram til, bytter appen nå til den anbefalte i stedet for å la deg stå i et umulig valg. Meldt inn: «velger steketid i dag 15:00 — Langtidsdeig står valgt og rekker ikke, mens Hurtigdeig og Kveldsdeig passer godt. En av de to burde vært valgt.»",
+      "Byttet tar med hele forslaget, ikke bare navnet — også hevetiden, så den nye metoden faktisk rekker fram. Det sies tydelig fra over kortene, med Angre ett trykk unna.",
+      "Har du valgt metoden selv, rører appen den aldri: da står varselet og forklaringen som før, og valget er ditt. Det samme gjelder «Jeg begynner nå», der det ikke finnes noen frist å rekke."
+    ],
+    "changes_en": [
+      "If you set a baking time the selected method cannot make, the app now switches to the recommended one instead of leaving you in an impossible choice. Reported: \"choosing a baking time today at 15:00 — Long-ferment dough is selected and cannot make it, while Quick dough and Evening dough fit well. One of those two should have been selected.\"",
+      "The switch brings the whole suggestion, not just the name — the proofing time too, so the new method actually makes it. It is stated clearly above the cards, with Undo one tap away.",
+      "If you picked the method yourself, the app never touches it: the warning and the explanation stand as before, and the choice is yours. The same goes for \"I am starting now\", where there is no deadline to make."
+    ]
+  },
+  {
+    "v": "0.842",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Rettet en lesbarhetsfeil i de nye metodekortene: ANBEFALT-kortet sto med lys grønn flate og lys tekst i mørkt tema — nesten usynlig. Fargene var hardkodet for lyst tema; nå følger de temapaletten som resten av appen, og er målt til godt over kravet i begge temaer og begge visninger.",
+      "«Hvorfor denne metoden?»-boksen solgte fortsatt inn metoden du står i, selv når kortet rett over sa at den ikke rekker fram. Nå sier den det rett ut i stedet — hvor mye tid som mangler, hvilken metode som er anbefalt hvis du vil holde på steketiden, og at alternativet er å flytte steketiden."
+    ],
+    "changes_en": [
+      "Fixed a readability bug in the new method cards: the RECOMMENDED card had a light green surface with light text in dark theme — nearly invisible. The colours were hardcoded for the light theme; they now follow the theme palette like the rest of the app, and are measured well above the requirement in both themes and both views.",
+      "The \"Why this method?\" box still sold you the method you were standing in, even when the card right above said it cannot make it. Now it says so outright instead — how much time is missing, which method is recommended if you want to keep your baking time, and that the alternative is to move that time."
+    ]
+  },
+  {
+    "v": "0.841",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "PC-visningen har fått samme metodekort som mobilen: det som ikke rekker fram til steketiden er grått og utilgjengelig, ett kort bærer ANBEFALT, og en valgt metode som ikke rekker sier ⚠️ i stedet for å se ut som et godt valg. Over kortene står det hvor mange metoder som faktisk rekker.",
+      "PC hadde faktisk ingen slik vurdering i det hele tatt før nå — den så bare etter steketiden i mobilfeltene og fant ingenting. Nå leser begge visningene fra samme sted, så PC og mobil ikke kan gi to forskjellige svar på samme spørsmål."
+    ],
+    "changes_en": [
+      "The desktop view now has the same method cards as mobile: what cannot make it to your baking time is greyed out and unavailable, one card carries RECOMMENDED, and a selected method that cannot make it says ⚠️ instead of looking like a good choice. Above the cards it says how many methods actually make it.",
+      "Desktop in fact had no such assessment at all until now — it only looked for the baking time in the mobile fields and found nothing. Both views now read from the same place, so desktop and mobile cannot give two different answers to the same question."
+    ]
+  },
+  {
+    "v": "0.840",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Metodekortene er blitt ærlige når steketiden er kjent: det som ikke rekker fram er nå tydelig grått og utilgjengelig — ikke bare svakt dempet — og ett kort bærer merket ANBEFALT. Meldt inn fra et ekte valg: fire av seks metoder var umulige, sto først i lista, og ingenting sa hva appen mente.",
+      "Anbefalingen er den samme som Smart-plan ville gitt — det er én og samme rangering, så appen kan ikke anbefale én metode her og en annen der.",
+      "Og står du i en metode som ikke rekker (den er fortsatt valgt, med ramme og hake), sier kortet det rett ut med ⚠️ i stedet for å se ut som en anbefaling. Over kortene står det nå hvor mange metoder som faktisk rekker fram til steketiden din — eller at ingen gjør det.",
+      "Rekkefølgen på kortene er uendret, så du finner metodene der du er vant til. I «Jeg begynner nå» er alt som før — da finnes ingen frist å rekke."
+    ],
+    "changes_en": [
+      "The method cards are honest now that the baking time is known: what cannot make it is clearly greyed out and unavailable — not just faintly dimmed — and one card carries a RECOMMENDED badge. Reported from a real choice: four of six methods were impossible, listed first, and nothing said what the app thought.",
+      "The recommendation is the same one Smart plan would give — it is one and the same ranking, so the app cannot recommend one method here and another there.",
+      "And if you are standing in a method that cannot make it (it stays selected, with border and check), the card says so outright with ⚠️ instead of looking like a recommendation. Above the cards it now says how many methods actually make it to your baking time — or that none do.",
+      "The order of the cards is unchanged, so you find the methods where you are used to. In \"I am starting now\" everything is as before — there is no deadline to make."
     ]
   },
   {

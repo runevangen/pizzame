@@ -368,7 +368,7 @@ flere steg definerer `substeps` uten `tip`/`why` (f.eks. passive Poolish/Biga-ve
 en regresjonstest à la eksisterende `pc_mobil_1to1_*` passer måten forfatteren
 allerede vokter konsistens på.
 
-### F12. Lys/mørk-tema også for PC-visningen ✅ BYGGET (v0.842)
+### F12. Lys/mørk-tema også for PC-visningen ✅ BYGGET (v0.847)
 > ✅ Løst med premisset fra utsettelsen intakt: PC er LYS som standard, og
 > forblir lys helt til brukeren AKTIVT velger tema — «dagens PC-brukere skal
 > ikke våkne til mørk app». Kvitteringen (pizzaThemeValgt) settes kun av
@@ -754,7 +754,7 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
-### F38. Flere pizzaer = stekevindu, ikke stekepunkt ✅ BYGGET (v0.840, begge tiltak)
+### F38. Flere pizzaer = stekevindu, ikke stekepunkt ✅ BYGGET (v0.845, begge tiltak)
 > ✅ Tiltak 1: rekkefølge-rådet («mest modne emnet først, fingertest hvert
 > emne») i ALLE metodenes stekesteg, fra én delt kilde (flerEmneRåd()).
 > Tiltak 2: etterhevingen sikter mot midten av stekevinduet ((N−1)·18 min
@@ -1235,7 +1235,7 @@ det skrives ned og regnes inn; og 14 timers poolish (se funn 2).
   `preheatMin()` o.l.) som en «fasit»-blokk i prompten, så kan den sammenligne
   planen mot spesifikasjonen og ikke bare mot seg selv.
 
-### F29. Lag 2: mengdene deklareres, needs genereres ✅ BYGGET (v0.841, pragmatisk omfang)
+### F29. Lag 2: mengdene deklareres, needs genereres ✅ BYGGET (v0.846, pragmatisk omfang)
 > ✅ Ingrediens-needs skrives ikke lenger som håndtekst: hvert steg deklarerer
 > tallet via nI(nøkkel, gram, {pre/post/ord}), emoji + ingrediensord kommer fra
 > NEEDS_ING-registeret, og nI KASTER om mengden mangler (mutasjonstestet).
