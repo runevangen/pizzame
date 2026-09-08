@@ -9734,16 +9734,33 @@ const svSched=window._pizzatidSchedule;
         if(r===null||r<KRAV) daarlige.push(navn+': '+(r===null?'uleselig farge':r.toFixed(2)));
       };
       const varMob=document.getElementById('mob-layout').classList.contains('active');
+      // Transitions AV under målingen: .pill m.fl. har transition på background,
+      // og getComputedStyle midt i et tema-/tilstandsbytte leser da overgangens
+      // STARTVERDI — målt: lys bakgrunn + mørk tekst i samme avlesning (1,05:1),
+      // avhengig av hva testene foran tilfeldigvis hadde malt. Fargene som
+      // testes er sluttilstandene; animasjonen dit er ikke testens tema.
+      const stopp=document.createElement('style');
+      stopp.textContent='*{transition:none!important;animation:none!important}';
+      document.head.appendChild(stopp);
       const daarlige=[];
-      setLayout('pc');
-      for(const [navn,sel] of [
+      const PC_SETT=[
         ['pc pill','#gtype .pill:not(.on)'], ['pc pill valgt','#gtype .pill.on'],
         ['pc meny','.menu-trigger'], ['pc avansert','.adv-toggle'],
         ['pc etikett','.sb .lbl'],
         ['pc segment valgt','#ggj .pill.on'], ['pc segment','#ggj .pill:not(.on)'],
         ['pc metodekort','#gmet .mc:not(.on) .mc-t'], ['pc metodekort valgt','#gmet .mc.on .mc-t'],
         ['pc nedtrekk','.dropdown-select select'], ['pc smart-cta','#pc-smart-cta-h'],
-      ]) sjekk(navn,sel,daarlige);
+      ];
+      setLayout('pc');
+      for(const [navn,sel] of PC_SETT) sjekk(navn,sel,daarlige);
+      // F12 (v0.842): samme sett i MØRK PC — temaet aktiveres bare ved
+      // eksplisitt valg, så testen setter kvitteringen og rydder etter seg.
+      const temaFoer=window._theme, kvittFoer=(()=>{try{return localStorage.getItem('pizzaThemeValgt')}catch(e){return null}})();
+      setTheme('dark', true);
+      for(const [navn,sel] of PC_SETT) sjekk('mørk '+navn,sel,daarlige);
+      try{ if(kvittFoer===null) localStorage.removeItem('pizzaThemeValgt'); }catch(e){}
+      setTheme(temaFoer||'dark');
+      stopp.remove();
       setLayout('mob');
       for(const [navn,sel] of [
         ['mob fane','.mob-tab:not(.on)'], ['mob fane valgt','.mob-tab.on'],

@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.842",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Tema-valget gjelder nå også PC. Under ⚙️ Avanserte innstillinger ligger samme System/Lys/Mørk-velger som mobilen har — velg mørk, og hele PC-flaten snur til den samme varme, mørke paletten som mobilens mørke.",
+      "Standarden er urørt med vilje: PC er lys, og forblir lys helt til du selv velger noe annet. Har du aldri rørt Tema-valget, endres ingenting.",
+      "Lesbarhetsvakten fra tidligere i måneden måler nå kontrasten på alle nøkkelkontrollene i begge PC-temaene også — den fant tre hull i den mørke drakten før den ble sluppet, og de er tettet."
+    ],
+    "changes_en": [
+      "The theme choice now applies to desktop too. Under ⚙️ Advanced settings sits the same System/Light/Dark picker the mobile view has — choose dark, and the whole desktop surface turns to the same warm dark palette as mobile's dark.",
+      "The default is untouched on purpose: desktop is light, and stays light until you actively choose otherwise. If you have never touched the Theme setting, nothing changes.",
+      "The readability guard from earlier this month now measures the contrast of all key controls in both desktop themes as well — it found three gaps in the dark look before release, and they are closed."
+    ]
+  },
+  {
     "v": "0.841",
     "d": "august 2026",
     "d_en": "August 2026",

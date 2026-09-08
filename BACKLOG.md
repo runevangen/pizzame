@@ -368,7 +368,15 @@ flere steg definerer `substeps` uten `tip`/`why` (f.eks. passive Poolish/Biga-ve
 en regresjonstest à la eksisterende `pc_mobil_1to1_*` passer måten forfatteren
 allerede vokter konsistens på.
 
-### F12. Lys/mørk-tema også for PC-visningen ⏸️ UTSATT (bevisst, aug 2026)
+### F12. Lys/mørk-tema også for PC-visningen ✅ BYGGET (v0.842)
+> ✅ Løst med premisset fra utsettelsen intakt: PC er LYS som standard, og
+> forblir lys helt til brukeren AKTIVT velger tema — «dagens PC-brukere skal
+> ikke våkne til mørk app». Kvitteringen (pizzaThemeValgt) settes kun av
+> tema-kontrollene; initTheme() har alltid auto-skrevet pizzaTheme, så
+> nøkkelens eksistens kunne ikke brukes som signal. Tema-kontrollen finnes nå
+> også i PC-ens Avanserte innstillinger (System/Lys/Mørk, delt setting med
+> mobil). Mørk PC bruker Fornos mørke tokens remappet inn i pc-/dyn-navnene;
+> kontrast-invarianten kjører hele nøkkelsettet i BEGGE PC-temaer.
 > ⏸️ **Utsatt etter avklaring.** Å koble PC på det delte tema-systemet (dark =
 > ingen `.theme-light`-klasse, som er standard) ville gjort PC **mørkt som
 > standard** — en synlig endring for dagens PC-brukere. Rune valgte å beholde PC

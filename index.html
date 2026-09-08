@@ -754,6 +754,58 @@ body.pc-mode .needchip{background:var(--pc-accent-soft);color:var(--pc-accent-te
    gjemt oppe i hjørnet) — varm bakgrunn med oransje kant som fanger blikket. */
 body.pc-mode .layout-toggle{background:var(--pc-raised);border-color:var(--pc-accent);color:var(--pc-accent-text)}
 body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
+/* Meny-raden hadde hardkodet lys hover som overlevde v6.38 — token uansett tema. */
+body.pc-mode .menu-row:hover{background:var(--pc-sunken)}
+/* ===== F12 (v0.842): mørkt tema for PC-layouten ===== 
+   Aktiveres KUN når brukeren selv har valgt tema (body.theme-dark settes av
+   applyThemeClass ved kvittering — se pizzaThemeValgt). Paletten er Fornos
+   mørke tokens fra :root, remappet inn i pc-/forno-/dyn-navnene, så hele den
+   token-drevne PC-flaten snur i ett grep. Standard-PC er fortsatt LYS. */
+body.pc-mode.theme-dark{
+  --pc-bg:#181310; --pc-raised:#231a14; --pc-sunken:#1f1712;
+  --pc-border:#3a2a1d; --pc-border-soft:#33261c;
+  --pc-muted:#c9b8a4; --pc-faint:#ab9985;
+  --pc-accent:#e8590c; --pc-accent-text:#e8a06e; --pc-accent-soft:#2a1c0f;
+  --forno-bg:#181310; --forno-bg-raised:#231a14; --forno-bg-sunken:#1f1712;
+  --forno-border:#3a2a1d; --forno-border-soft:#33261c;
+  --forno-text:#f4ece0; --forno-text-muted:#c9b8a4; --forno-text-faint:#ab9985;
+  --forno-accent:#e8590c; --forno-accent-soft:#2a1c0f; --forno-accent-text:#e8a06e;
+  --dyn-text:#f4ece0; --dyn-surface:#231a14; --dyn-border:#3a2a1d; --dyn-faint:#ab9985; --dyn-btn-bg:#1f1712;
+}
+/* Native kontroller følger mørk palett når PC er mørk. */
+body.pc-mode.theme-dark .dropdown-select select,
+body.pc-mode.theme-dark input[type=date],
+body.pc-mode.theme-dark input[type=time]{color-scheme:dark}
+/* Flater med hardkodet lys som ikke går via tokens i basisreglene. */
+body.pc-mode.theme-dark .mc.hc{background:var(--pc-accent-soft)}
+body.pc-mode.theme-dark .hrow{color:var(--forno-text-muted)}
+body.pc-mode.theme-dark .mb{color:var(--pc-muted)}
+body.pc-mode.theme-dark .smart-cta{background:var(--pc-accent-soft)}
+body.pc-mode.theme-dark .smart-cta:hover{background:var(--pc-sunken)}
+body.pc-mode.theme-dark .smart-cta .smart-cta-h{color:var(--pc-accent-text)}
+body.pc-mode.theme-dark .smart-cta .smart-cta-sub{color:var(--pc-muted)}
+body.pc-mode.theme-dark .gcards .mc-s,body.pc-mode.theme-dark .mc-s{color:var(--pc-faint)}
+body.pc-mode.theme-dark .segctrl{background:var(--pc-sunken)}
+/* Hovedflatens stegtekster — samme remapping som body.mob-mode-reglene gjør
+   for mobilens mørke (155–189): basisklassene har hardkodede lyse-modus-
+   farger som verken --pc- eller --dyn-tokens når. */
+body.pc-mode.theme-dark .step{box-shadow:none}
+body.pc-mode.theme-dark .sdesc{color:var(--forno-text-muted)}
+body.pc-mode.theme-dark .substep-item{color:var(--forno-text-muted)}
+body.pc-mode.theme-dark .substep-num{border-color:var(--forno-border);color:var(--forno-text-faint)}
+body.pc-mode.theme-dark .substep-done .substep-txt{color:var(--forno-text-faint)}
+body.pc-mode.theme-dark .session-banner{background:var(--forno-bg-raised);border-color:var(--forno-border);color:var(--forno-text-faint)}
+body.pc-mode.theme-dark .stim{color:var(--pc-faint)}
+body.pc-mode.theme-dark .stip{color:var(--forno-text-muted);border-left-color:var(--pc-border)}
+body.pc-mode.theme-dark .swait-txt{color:var(--pc-muted)}
+body.pc-mode.theme-dark .swait{border-top-color:var(--pc-border-soft)}
+body.pc-mode.theme-dark .swait i{color:var(--pc-faint)}
+body.pc-mode.theme-dark .tab{color:var(--pc-muted)}
+body.pc-mode.theme-dark .stepchk{border-color:var(--pc-border)}
+body.pc-mode.theme-dark .stepchk.num{color:var(--pc-muted)}
+body.pc-mode.theme-dark .ing-check{border-color:var(--pc-border)}
+body.pc-mode.theme-dark .daylbl .ddot{background:var(--pc-border)}
+body.pc-mode.theme-dark .badge.bw{background:var(--pc-sunken);color:var(--pc-muted)}
 </style>
 </head>
 <body class="pre-interact">
@@ -956,7 +1008,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 </div>
 
 <div class="menu-wrap">
-  <div class="menu-trigger" onclick="toggleSidenavMenu()"><span id="pc-menu-trigger-lbl">☰ Meny</span><span style="color:#8E8E93">⌄</span></div>
+  <div class="menu-trigger" onclick="toggleSidenavMenu()"><span id="pc-menu-trigger-lbl">☰ Meny</span><span style="color:var(--pc-faint)">⌄</span></div>
   <div class="menu-dropdown" id="sidenav-dropdown" style="display:none">
     <!-- v0.802: Smart-plan flyttet fra nest nederst (bak Formler/Admin) til toppen. -->
     <div class="menu-row" id="pc-menu-smart" onclick="sidenavGo(()=>{ setLayout('mob'); mobShowTab('beta'); })">🧭 Smart-plan</div>
@@ -974,12 +1026,12 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     <div class="menu-row" id="pc-menu-startny" onclick="sidenavGo(startNyDeigForespoersel)">🆕 Start ny deig</div>
     <div class="menu-row" id="pc-menu-feedback" onclick="sidenavGo(openFeedbackModal)">💬 Feedback</div>
     <div class="menu-row" id="pc-menu-share" onclick="sidenavGo(shareApp)">📤 Del appen</div>
-    <div style="height:1px;background:#F2F2F7"></div>
+    <div style="height:1px;background:var(--pc-sunken)"></div>
     <div class="menu-row" id="pc-menu-tomob" onclick="sidenavGo(()=>setLayout('mob'))">📱 Bytt til mobilvisning</div>
-    <div style="height:1px;background:#F2F2F7"></div>
+    <div style="height:1px;background:var(--pc-sunken)"></div>
     <div class="menu-row" id="pc-menu-formler" onclick="sidenavGo(openFormlerModal)">📊 Formler</div>
     <div class="menu-row" id="pc-menu-admin" onclick="sidenavGo(openAdminLogin)">🔒 Admin</div>
-    <div style="height:1px;background:#F2F2F7"></div>
+    <div style="height:1px;background:var(--pc-sunken)"></div>
     <div class="menu-row" id="pc-menu-logout" style="color:#993C1D" onclick="authLogout()">Logg ut</div>
   </div>
 </div>
@@ -1054,33 +1106,33 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
 
   <div><div class="lbl" id="pc-mel-lbl">Melmengde</div>
     <div class="sr"><input type="range" id="msl" min="300" max="1500" step="100" value="500" title="Skalerer alle ingredienser automatisk." oninput="uMel(this.value)"><span class="sv" id="mdisp">500g</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>300g</span><span>1500g</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--pc-faint);margin-top:1px"><span>300g</span><span>1500g</span></div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-      <span style="font-size:11px;color:#888" id="pcount-lbl">eller antall pizzaer:</span>
-      <button onclick="stepPizzas(-1)" title="Én pizza mindre" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">−</button>
+      <span style="font-size:11px;color:var(--pc-muted)" id="pcount-lbl">eller antall pizzaer:</span>
+      <button onclick="stepPizzas(-1)" title="Én pizza mindre" style="width:26px;height:26px;border-radius:7px;border:1px solid var(--pc-border);background:var(--pc-raised);cursor:pointer;font-size:14px;color:var(--pc-muted)">−</button>
       <span id="pcount-disp" style="font-size:14px;font-weight:600;color:#e8590c;min-width:20px;text-align:center">4</span>
-      <button onclick="stepPizzas(1)" title="Én pizza mer" style="width:26px;height:26px;border-radius:7px;border:1px solid #d0cdc8;background:#fff;cursor:pointer;font-size:14px;color:#555">+</button>
+      <button onclick="stepPizzas(1)" title="Én pizza mer" style="width:26px;height:26px;border-radius:7px;border:1px solid var(--pc-border);background:var(--pc-raised);cursor:pointer;font-size:14px;color:var(--pc-muted)">+</button>
     </div>
     <div id="roundup-notice" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:6px 8px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px">
       <span class="roundup-txt" style="font-size:11px;color:#633806"></span>
-      <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:4px 9px;border:1px solid #EF9F27;border-radius:6px;background:#fff;color:#633806;font-size:11px;font-weight:600;cursor:pointer"></button>
+      <button class="roundup-btn" onclick="roundUpToFullLangpanne()" style="flex-shrink:0;padding:4px 9px;border:1px solid #EF9F27;border-radius:6px;background:var(--pc-raised);color:#633806;font-size:11px;font-weight:600;cursor:pointer"></button>
     </div>
   </div>
 
   <div><div class="lbl"><span id="pc-hyd-lbl">Hydrering</span> — <span id="hlbl">65%</span><span id="hcat" class="hb"></span></div>
     <div class="sr"><input type="range" id="hsl" min="55" max="80" step="1" value="65" title="Vann som % av mel." oninput="uHydro(this.value)"><span class="sv" id="hdisp">65%</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>55% fast</span><span>80% flytende</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--pc-faint);margin-top:1px"><span>55% fast</span><span>80% flytende</span></div>
     <div id="hhint" class="hint"></div>
   </div>
 
   <div id="cwrap"><div class="lbl"><span id="pc-cold-lbl">Kjøleskapsheving</span> — <span id="clbl">24 timer</span></div>
     <div class="sr"><input type="range" id="csl" min="24" max="120" step="6" value="24" title="Lengre heving = bedre smak." oninput="uCold(this.value)"><span class="sv" id="cdisp">24 timer</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>24 timer</span><span id="csl-max-lbl">120 timer</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--pc-faint);margin-top:1px"><span>24 timer</span><span id="csl-max-lbl">120 timer</span></div>
   </div>
 
   <div><div class="lbl"><span id="pc-temp-lbl">Romtemperatur</span> — <span id="tlbl">22°C</span></div>
     <div class="sr"><input type="range" id="tsl" min="18" max="28" step="2" value="22" title="Påvirker hevingstid." oninput="uTemp(this.value)"><span class="sv" id="tdisp">22°C</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:1px"><span>18°C kjølig</span><span>28°C sommer</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--pc-faint);margin-top:1px"><span>18°C kjølig</span><span>28°C sommer</span></div>
     <div id="thint" class="hint"></div>
   </div>
 
@@ -1102,7 +1154,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
       <span class="pill" data-v="5" title="Litt varmere enn anbefalt.">4–6°C</span>
       <span class="pill" data-v="7" title="Dørhylla er kjøleskapets varmeste punkt.">6–8°C (dørhylle)</span>
     </div>
-    <div id="gfridge-note" style="margin-top:5px;font-size:11px;color:#6E6E73;background:#F2F2F7;border-radius:6px;padding:5px 8px;line-height:1.4">Gjærmengden kompenseres automatisk: kaldere skap → litt mer gjær for samme resultat til samme tid. Usikker? Mål med termometer — 1–5-skalaene er ikke like mellom merker. Riktig innstilt kjøleskap er 0–4°C (Mattilsynet).</div>
+    <div id="gfridge-note" style="margin-top:5px;font-size:11px;color:var(--pc-muted);background:var(--pc-sunken);border-radius:6px;padding:5px 8px;line-height:1.4">Gjærmengden kompenseres automatisk: kaldere skap → litt mer gjær for samme resultat til samme tid. Usikker? Mål med termometer — 1–5-skalaene er ikke like mellom merker. Riktig innstilt kjøleskap er 0–4°C (Mattilsynet).</div>
   </div>
 
   <div><div class="lbl">Gjærtype</div>
@@ -1136,7 +1188,7 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
         <option value="annet" id="gmel-opt-annet">Annet mel / ikke i listen</option>
       </select>
     </div>
-    <div id="gmel-info" style="margin-top:5px;font-size:11px;color:#6E6E73;background:#F2F2F7;border-radius:6px;padding:5px 8px;line-height:1.4"></div>
+    <div id="gmel-info" style="margin-top:5px;font-size:11px;color:var(--pc-muted);background:var(--pc-sunken);border-radius:6px;padding:5px 8px;line-height:1.4"></div>
   </div>
 
   <div id="govn-wrap"><div class="lbl">Ovntype</div>
@@ -1146,9 +1198,19 @@ body.pc-mode .layout-toggle:hover{background:var(--pc-accent-soft)}
     </div>
   </div>
 
+  <!-- F12 (v0.842): Tema-valget gjelder nå også PC. Standard er fortsatt lys —
+       mørk slår først inn når du velger selv (samme valg som mobilens Tema). -->
+  <div><div class="lbl" id="pc-theme-lbl">Tema</div>
+    <div class="pills segctrl" id="pc-theme-seg">
+      <span class="pill" data-v="system" onclick="setTheme('system',true)">System</span>
+      <span class="pill" data-v="light" onclick="setTheme('light',true)">Lys</span>
+      <span class="pill" data-v="dark" onclick="setTheme('dark',true)">Mørk</span>
+    </div>
   </div>
 
-  <div id="logged-in-as" style="font-size:11px;color:#8E8E93;text-align:center;padding-top:8px;margin-top:4px;border-top:1px solid #EDEDED"></div>
+  </div>
+
+  <div id="logged-in-as" style="font-size:11px;color:var(--pc-faint);text-align:center;padding-top:8px;margin-top:4px;border-top:1px solid var(--pc-border-soft)"></div>
 </div>
 
 <div class="mn" id="main">
@@ -1309,6 +1371,8 @@ function syncStaticI18nUI(){
   // v0.834: Kjøleskapstemperatur på PC — samme etiketter som mobilens fridgeC-pills.
   setPCPills('#gfridge .pill',{1:['0–2°C (kaldest)','0–2°C (coldest)'],3:['2–4°C (standard)','2–4°C (default)'],5:['4–6°C','4–6°C'],7:['6–8°C (dørhylle)','6–8°C (door shelf)']});
   st('pc-fridge-lbl','Kjøleskapstemperatur','Fridge temperature');
+  st('pc-theme-lbl','Tema','Theme');
+  setPCPills('#pc-theme-seg .pill',{system:['System','System'],light:['Lys','Light'],dark:['Mørk','Dark']});
   st('gfridge-note','Gjærmengden kompenseres automatisk: kaldere skap → litt mer gjær for samme resultat til samme tid. Usikker? Mål med termometer — 1–5-skalaene er ikke like mellom merker. Riktig innstilt kjøleskap er 0–4°C (Mattilsynet).','The yeast amount is compensated automatically: a colder fridge → slightly more yeast for the same result at the same time. Unsure? Measure with a thermometer — the 1–5 dials differ between brands. A correctly set fridge is 0–4°C.');
   // v0.668 (backlog T-i18n): PC-metodekort + seksjonsetiketter + meny + planlegging.
   const _mcSub={standard:['Direkte + kjøl','Direct + fridge'],poolish:['Løs fordeig, 12–16t','Loose preferment, 12–16h'],biga:['Fast fordeig, 16–24t','Stiff preferment, 16–24h'],mania:['To-trinns, udelt kald heving','Two-stage, undivided cold proof'],hurtig:['2–16 timer, romtemperatur','2–16 hours, room temperature'],kveld:['5–24t kjøleskap','5–24h fridge']};
@@ -2100,13 +2164,24 @@ function effectiveTheme(mode){
 }
 function applyThemeClass(mode){
   document.body.classList.toggle('theme-light', effectiveTheme(mode)==='light');
+  // F12 (v0.842): PC følger tema-valget — men KUN når et menneske faktisk har
+  // valgt. initTheme() har alltid auto-skrevet 'pizzaTheme' ved oppstart, så
+  // nøkkelens EKSISTENS kan ikke skille «valgte mørk» fra «fikk mørk som
+  // standard» — derfor en egen kvittering (pizzaThemeValgt) som bare settes
+  // av tema-kontrollene. Uten kvittering forblir PC lys — premisset fra
+  // F12-utsettelsen (aug 2026): dagens PC-brukere skal ikke våkne til mørk
+  // app. Mobil-CSS leser aldri theme-dark-klassen; der er mørk default.
+  let valgt=false; try{ valgt=localStorage.getItem('pizzaThemeValgt')==='1'; }catch(e){}
+  document.body.classList.toggle('theme-dark', valgt && effectiveTheme(mode)==='dark');
 }
-function setTheme(mode){
+function setTheme(mode, valgt){
   window._theme=mode;
-  try{ localStorage.setItem('pizzaTheme',mode); }catch(e){}
+  try{ localStorage.setItem('pizzaTheme',mode); if(valgt) localStorage.setItem('pizzaThemeValgt','1'); }catch(e){}
   applyThemeClass(mode);
   const seg=document.getElementById('mob-theme-seg');
   if(seg) seg.querySelectorAll('.o').forEach(o=>o.classList.toggle('on', o.dataset.v===mode));
+  const pseg=document.getElementById('pc-theme-seg');
+  if(pseg) pseg.querySelectorAll('.pill').forEach(o=>o.classList.toggle('on', o.dataset.v===mode));
 }
 function initTheme(){
   let saved='dark';
@@ -9615,7 +9690,7 @@ function startHintHTML(){
 }
 
 function actionGroupHTML(){
-  return `<div style="background:#fff;border:1px solid #e0ddd8;border-radius:10px;padding:.75rem .9rem;margin-bottom:1rem">
+  return `<div style="background:var(--dyn-surface,#fff);border:1px solid var(--dyn-border,#e0ddd8);border-radius:10px;padding:.75rem .9rem;margin-bottom:1rem">
     ${activeDeigBar(false)}
     <div class="act-group-lbl">${L('Denne deigen','This dough')}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -10232,9 +10307,9 @@ document.addEventListener('change', firstInteractionCheck, true);
     <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.5rem 1rem .35rem">
       <div id="mob-theme-lbl" style="font-size:10px;color:var(--forno-text-faint,#888);margin-bottom:4px">Tema</div>
       <div class="fs-seg" id="mob-theme-seg">
-        <div class="o" id="mob-theme-system" data-v="system" onclick="setTheme('system')">System</div>
-        <div class="o" id="mob-theme-light" data-v="light" onclick="setTheme('light')">Lys</div>
-        <div class="o" id="mob-theme-dark" data-v="dark" onclick="setTheme('dark')">Mørk</div>
+        <div class="o" id="mob-theme-system" data-v="system" onclick="setTheme('system',true)">System</div>
+        <div class="o" id="mob-theme-light" data-v="light" onclick="setTheme('light',true)">Lys</div>
+        <div class="o" id="mob-theme-dark" data-v="dark" onclick="setTheme('dark',true)">Mørk</div>
       </div>
     </div>
     <div class="fs-visning-wrap mob-setting-row" style="flex-direction:column;align-items:stretch;padding:.15rem 1rem .65rem">
