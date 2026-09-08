@@ -1227,7 +1227,16 @@ det skrives ned og regnes inn; og 14 timers poolish (se funn 2).
   `preheatMin()` o.l.) som en «fasit»-blokk i prompten, så kan den sammenligne
   planen mot spesifikasjonen og ikke bare mot seg selv.
 
-### F29. Lag 2: `uses:{vann:305}` per steg — gjør klassen strukturelt umulig
+### F29. Lag 2: mengdene deklareres, needs genereres ✅ BYGGET (v0.841, pragmatisk omfang)
+> ✅ Ingrediens-needs skrives ikke lenger som håndtekst: hvert steg deklarerer
+> tallet via nI(nøkkel, gram, {pre/post/ord}), emoji + ingrediensord kommer fra
+> NEEDS_ING-registeret, og nI KASTER om mengden mangler (mutasjonstestet).
+> Konverteringen er verifisert byte-for-byte mot alle 3448 needs-linjer i
+> matrisen, begge språk. BEVISST utelatt fra visjonen (samme pragmatiske
+> omfang som F19/F21): prosa-generering — prosaen interpolerer allerede de
+> samme variablene, og massebalanse-invarianten i node dømmer needs mot
+> oppskriften over hele matrisen. Utstyrs-/bevisst-vage oppføringer (📦,
+> «litt olje», honning) er fortsatt håndtekst med vilje.
 - **I klartekst:** i dag er mengdene skrevet inn i prosaen, og `needs`-lista er en
   parallell håndskrevet oppsummering av den. F27 tester at de to stemmer; F29 ville
   gjort det umulig at de ikke gjør det, ved å la hvert steg deklarere `uses:{vann:305}`

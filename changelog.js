@@ -3,6 +3,21 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.841",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Ingen synlig endring — «trenger du»-lappene på stegene er nå generert i stedet for håndskrevet. Hver mengde deklareres som ett tall, og ingrediensordet og symbolet kommer fra ett register: en lapp som staver et annet tall enn steget bruker, er nå umulig å skrive — koden nekter å bygge planen og sier hvilken ingrediens som mangler tallet sitt.",
+      "Det var nøyaktig denne klassen feilen fra i sommer bodde i, da vannet ble brukt to ganger fordi to håndskrevne tekster sa hver sin mengde.",
+      "Byttet er verifisert tegn for tegn mot alle 3 448 lapper i hele matrisen, på begge språk — ingenting ser annerledes ut, det kan bare ikke lenger drifte."
+    ],
+    "changes_en": [
+      "No visible change — the \"you'll need\" notes on the steps are now generated instead of handwritten. Each amount is declared as one number, and the ingredient word and symbol come from one register: a note spelling a different number than the step uses is now impossible to write — the code refuses to build the plan and names the ingredient missing its number.",
+      "That is exactly the class the bug from this summer lived in, when water was used twice because two handwritten texts each stated their own amount.",
+      "The switch is verified character by character against all 3,448 notes across the whole matrix, in both languages — nothing looks different, it just can no longer drift."
+    ]
+  },
+  {
     "v": "0.840",
     "d": "august 2026",
     "d_en": "August 2026",
