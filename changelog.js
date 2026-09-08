@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.848",
+    "d": "september 2026",
+    "d_en": "September 2026",
+    "changes": [
+      "«Hva du blir tilbudt» heter nå «Mel og metoder». Det gamle navnet beskrev hva boksen GJØR (styrer hva Smart-plan og Fra–til foreslår) — det nye sier hva som er INNI: melet ditt og metodene du vil tilbys. At funksjonen trengte et eget førstegangs-tips for å bli funnet, var tegnet på at navnet ikke bar. Forklaringen av effekten står fortsatt inne i boksen, der den hører hjemme."
+    ],
+    "changes_en": [
+      "\"What you are offered\" is now called \"Flour and methods\". The old name described what the box DOES (governs what Smart plan and From–to suggest) — the new one says what is INSIDE: your flour and the methods you want offered. That the feature needed its own first-time tip to be found was the sign the name didn't carry. The explanation of the effect still lives inside the box, where it belongs."
+    ]
+  },
+  {
     "v": "0.847",
     "d": "august 2026",
     "d_en": "August 2026",
