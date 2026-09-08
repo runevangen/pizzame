@@ -289,7 +289,46 @@ function bakeSubsteps(type){
     : type==='langpanne'
     ? (p?L('Stek 8–12 min','Bake 8–12 min'):L('Stek 12–16 min','Bake 12–16 min'))
     : (p?L('Stek 20–25 min','Bake 20–25 min'):L('Stek 28–35 min','Bake 28–35 min'));
-  return [warm, shape, top, bakeLine];
+  // F38 (v0.840): ved flere pizzaer er stekingen et VINDU, ikke et punkt —
+  // rekkefølge-rådet gjelder alle metodene, fra samme delte kilde.
+  const råd=flerEmneRåd();
+  return råd ? [warm, råd, shape, top, bakeLine] : [warm, shape, top, bakeLine];
+}
+
+// ===== F38 (v0.840): flere pizzaer = stekevindu, ikke stekepunkt =====
+// Målt 16.08.2026 (Hurtigdeig 6t, 3 emner, pizzaovn): en time fra første til
+// siste pizza, og kvaliteten STEG for hver — IR-måling viste at dekket holdt
+// temperaturen, så forklaringen var utelukkende hevetid: siste emne fikk ~en
+// time mer etterheving. Gjær kan ikke fikse dette — den flytter hele vinduet,
+// ikke bredden.
+// Vindusbredden er stekelogistikk (strekke, toppe, steke, gjenta), ikke
+// gjæring — 15–20 min per pizza i pizzaovn i praksis (selve steket er 90 sek,
+// resten er hendene dine), mer i vanlig ovn der steket selv tar 6–9 min og
+// steinen skal hente seg inn mellom hver.
+function stekevinduMin(){
+  const n=pc().count;
+  if(n<=1) return 0;
+  return (n-1)*(S.oven==='pizza'?18:25);
+}
+// Sikter en JUSTERBAR romtemperatur-etterheving mot MIDTEN av vinduet: første
+// emne «nesten klart», siste «såvidt over» — i stedet for første perfekt og
+// siste overmodent. Klampes til tredjedelen av hevingen, så en kort heving
+// aldri spises opp av et stort vindu. Gjelder kun hevinger i romtemperatur
+// (i praksis Hurtigdeig): de kalde metodene TEMPERERER før steking, og
+// temperering er termikk som ikke kan kortes — der er utveien rekkefølge-
+// rådet i flerEmneRåd() (og at senere emner kan stå kaldt lenger).
+function stekevinduSkyv(proofMin){
+  const v=stekevinduMin();
+  if(!v) return 0;
+  return Math.min(Math.round(v/2), Math.round(proofMin/3));
+}
+// Rekkefølge-rådet — F38 tiltak 1, delt av alle stekestegene (bakeSubsteps +
+// Hurtigdeigs eget). Fingertesten flyttes fra «per bakst» til «per emne»:
+// emnene er ikke like modne, og det er nettopp poenget.
+function flerEmneRåd(){
+  if(pc().count<=1) return null;
+  return L('Bak det mest modne emnet først og det fasteste sist — fingertest hvert emne før du strekker, ikke bare det første',
+           'Bake the most proofed ball first and the firmest last — finger-test each ball before stretching, not just the first');
 }
 
 const LOC_NO={
@@ -1251,12 +1290,18 @@ function hurtigSteps(anchor){
   // summerte ikke bulk+etterheving lenger konsistent. Forming (0,25t) er et fast
   // manuelt steg og skal IKKE skaleres — derfor ligger den utenfor tf()-faktoren.
   const ba=Math.round(o.h*0.6*60*tf()),afm=Math.round((o.h-o.h*0.6-0.25)*60*tf()),p=pc();
+  // F38 (v0.840): afm er gjæringsfasens FULLE lengde (tiden til emne nr. 1 er
+  // «perfekt» — det er den r31b-testen og tf-skaleringen handler om). skyv er
+  // stekelogistikk: ved flere pizzaer kortes selve etterhevings-STEGET med
+  // halve stekevinduet, så hevingen sikter mot midten av vinduet i stedet for
+  // første pizza. afmE er det planen bruker.
+  const skyv=stekevinduSkyv(afm), afmE=afm-skyv;
   // v6.01: gjær-kickstart lagt til fra backloggen — rør gjæren i lunkent vann
   // med litt honning og la den boble noen minutter FØR mel tilsettes, i
   // stedet for at alt blandes i ett steg uten venting. Egen KICK_DUR lagt
   // til foran alle eksisterende offset-tall, resten av kjeden uendret bortsett
   // fra det.
-  const t0=ie?sM(anchor,KICK_DUR+30+ba+afm):anchor;
+  const t0=ie?sM(anchor,KICK_DUR+30+ba+afmE):anchor;
   const mixAt=aM(t0,KICK_DUR);
   return{o,w,ya,tmp,ba,afm,p,steps:[
     kickstartStep(t0, wk, wr, ya),
@@ -1291,16 +1336,21 @@ function hurtigSteps(anchor){
     // Rekkefølgen avgjøres av tidene: trenger ovnen lenger enn etterhevingen
     // (2t deig + vanlig ovn: 45 min ovn mot 33 min heving), skal den på FØR.
     ...(function(){
-      const bakeAtH=aM(mixAt,30+ba+afm);
-      const etterhev={title:`Etterheving (${afm} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afm,passive:true,
-        desc:L(`Etterhev ${fmtHM(afm)}, tildekket.`,`Final proof ${fmtHM(afm)}, covered.`),
-        substeps:[L(`Etterhev ${fmtHM(afm)}, tildekket`,`Final proof ${fmtHM(afm)}, covered`)],
-        why:L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')};
-      const ovn=preheatSteps(bakeAtH, 30+ba+afm, S.type, tmp);
+      const bakeAtH=aM(mixAt,30+ba+afmE);
+      const vindu=stekevinduMin();
+      const etterhev={title:`Etterheving (${afmE} min)`,loc:'rom',at:aM(mixAt,30+ba),dur:afmE,passive:true,
+        desc:L(`Etterhev ${fmtHM(afmE)}, tildekket.`,`Final proof ${fmtHM(afmE)}, covered.`)
+          +(skyv?L(` Hevingen er siktet mot midten av stekevinduet (${p.count} pizzaer ≈ ${fmtHM(vindu)} steking): første emne er nesten klart når du begynner, det siste såvidt over når du er ferdig — i stedet for at det siste blir stående for lenge.`,
+                   ` The proof is aimed at the middle of the baking window (${p.count} pizzas ≈ ${fmtHM(vindu)} of baking): the first ball is almost ready when you start, the last just past when you finish — instead of the last one standing too long.`):''),
+        substeps:[L(`Etterhev ${fmtHM(afmE)}, tildekket`,`Final proof ${fmtHM(afmE)}, covered`)],
+        why:skyv
+          ?L('Gluten slapper av etter forming — og emnene fortsetter å heve på benken mens du steker de første. Å sikte på midten av vinduet fordeler modenheten jevnere over alle pizzaene (F38, målt: siste pizza best etter en time ekstra heving).','The gluten relaxes after shaping — and the balls keep proofing on the counter while you bake the first ones. Aiming at the middle of the window spreads the ripeness more evenly across all the pizzas (F38, measured: last pizza best after an extra hour of proofing).')
+          :L('Gluten slapper av etter forming.','The gluten relaxes after shaping.')};
+      const ovn=preheatSteps(bakeAtH, 30+ba+afmE, S.type, tmp);
       return (ovn.length && new Date(ovn[0].at)<new Date(etterhev.at))
         ? [...ovn, etterhev] : [etterhev, ...ovn];
     })(),
-    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afm),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
+    {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afmE),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[...(flerEmneRåd()?[flerEmneRåd()]:[]),L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
       why:WHY.st,tip:(bakeTip(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
   ]};
 }

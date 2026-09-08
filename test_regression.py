@@ -1571,7 +1571,8 @@ def _atferd_2(page, results):
       r32['ovnTitle'] == 'Sett på ovnen 🔥' and
       r32['ovnLeadMin'] == r32['preheatMin'] and r32['ovnDur'] == 0 and
       r32['ovnNavngirTemp'] and
-      r32['etterhevTitle'] == 'Etterheving (81 min)' and
+      # F38 (v0.840): 81 - 18 skyv (3 emner, pizzaovn: vindu 36 min, sikter midten)
+      r32['etterhevTitle'] == 'Etterheving (63 min)' and
       r32['etterhevPassiv'] and r32['etterhevUtenOvn']
     )
     results.append(('hurtig_yeast_kickstart_and_semolina_tip', ok32, r32))
@@ -4167,7 +4168,7 @@ def _atferd_5(page, results):
       try{ mobSetMode(uiMode()); }catch(e){}
       return {
         kveldBest: byM.kveld&&byM.kveld.best&&byM.kveld.best.val===18&&byM.kveld.best.span===1275, // v0.824: +5 kickstart · v0.829: +40 bulkhvile
-        hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===980,
+        hurtigBest: byM.hurtig&&byM.hurtig.best&&byM.hurtig.best.val===16&&byM.hurtig.best.span===962, // v0.840: -18 (F38-skyvet — etterhevingen sikter mot midten av stekevinduet)
         standardNoFit: byM.standard&&!byM.standard.best&&byM.standard.minSpan===1545,
         ranked, startOk,
         winnerRenderedFirst: h.indexOf(mN('kveld'))>=0 && h.indexOf(mN('kveld'))<h.indexOf(mN('hurtig')),
@@ -8715,6 +8716,9 @@ const svSched=window._pizzatidSchedule;
           [S.cold,S.poolishH,S.bigaH,S.hurtigH,S.kveldH].forEach(till);
           till(rtM(60)); till(Math.round(rtM(60)*1.5)); till(Math.round(totalFermentHours()));
           try{ till(poolishTemperMin()); till(Math.round(poolishTemperMin()/60)); }catch(e){}
+          // F38 (v0.840): stekevinduet ved flere pizzaer — etterhevingssteget
+          // nevner det via fmtHM, saa begge komponentene er kilder.
+          try{ const v=stekevinduMin(); till(v); till(Math.floor(v/60)); till(v%60); }catch(e){}
           // Bevisste konstanter — hver med grunn:
           // 2..7: kjoeleskapssoner · 18/21: PREF_VANN · 22-24: deigbaandet ·
           // 250/430/450: ovner · 90/120: sekunder · 40/43: kickstart · 45: vanlig

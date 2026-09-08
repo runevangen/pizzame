@@ -746,7 +746,16 @@ rekkefølgen. F17 er det klart mest verdifulle.
 > UI-etiketter), Kveldsdeig (KCOLDMULT) og Mania (fast oppskrift) beholder sine
 > kurver.
 
-### F38. Flere pizzaer = stekevindu, ikke stekepunkt
+### F38. Flere pizzaer = stekevindu, ikke stekepunkt ✅ BYGGET (v0.840, begge tiltak)
+> ✅ Tiltak 1: rekkefølge-rådet («mest modne emnet først, fingertest hvert
+> emne») i ALLE metodenes stekesteg, fra én delt kilde (flerEmneRåd()).
+> Tiltak 2: etterhevingen sikter mot midten av stekevinduet ((N−1)·18 min
+> pizzaovn / 25 vanlig, skyv=halve vinduet, klampet til ⅓ av hevingen) — men
+> KUN for romtemperatur-etterheving (i praksis Hurtigdeig, der problemet ble
+> målt): de kalde metodene tempererer før steking, og temperering er termikk
+> som ikke kan kortes. Baseline flyttet bevisst (hurtig: −18 min ved 3 emner).
+> Rekalibrerings-sporet (tf()/HOPTS-mistanken) står IGJEN og venter fortsatt
+> på flere bakster — det er ikke rørt her.
 
 Målt 16.08.2026 (Hurtigdeig 6t, 3 emner, pizzaovn): en time fra første til
 siste pizza, og kvaliteten steg for hver — første fikk «litt oven spring»,

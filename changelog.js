@@ -3,6 +3,23 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.840",
+    "d": "august 2026",
+    "d_en": "August 2026",
+    "changes": [
+      "Flere pizzaer er et stekevindu, ikke et stekepunkt. Målt i august: en time fra første til siste pizza av samme deig — og kvaliteten steg for hver, fordi de siste emnene fikk mer hevetid. Ovnen holdt temperaturen hele veien; det var tiden som gjorde jobben.",
+      "To grep. Alle stekesteg sier nå, ved flere pizzaer: bak det mest modne emnet først og det fasteste sist — og fingertest hvert emne, ikke bare det første.",
+      "Og Hurtigdeigens etterheving sikter nå mot midten av stekevinduet i stedet for første pizza: første emne er nesten klart når du begynner, det siste såvidt over når du er ferdig — i stedet for at det siste blir stående for lenge. Ved tre pizzaer i pizzaovn betyr det at første pizza går inn ca. 18 minutter tidligere; steget forklarer hvorfor.",
+      "Bare Hurtigdeig får tidsendringen: de kalde metodene temperer emnene før steking, og temperering er varme, ikke heving — den kan ikke kortes. Der er utveien rekkefølgen over."
+    ],
+    "changes_en": [
+      "Multiple pizzas are a baking window, not a baking moment. Measured in August: an hour from first to last pizza of the same dough — and the quality rose with each one, because the later balls got more proofing time. The oven held its temperature throughout; time did the work.",
+      "Two measures. Every bake step now says, with multiple pizzas: bake the most proofed ball first and the firmest last — and finger-test each ball, not just the first.",
+      "And the quick dough's final proof now aims at the middle of the baking window instead of the first pizza: the first ball is almost ready when you start, the last just past when you finish — instead of the last one standing too long. With three pizzas in a pizza oven that means the first pizza goes in about 18 minutes earlier; the step explains why.",
+      "Only quick dough gets the timing change: the cold methods temper the balls before baking, and tempering is warmth, not proofing — it cannot be shortened. There, the ordering above is the way out."
+    ]
+  },
+  {
     "v": "0.839",
     "d": "august 2026",
     "d_en": "August 2026",

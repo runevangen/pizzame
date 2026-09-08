@@ -1,343 +1,343 @@
 {
-  "standard_napoletana": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 0.75,
-      "yFresh": 2.3
-    },
-    "firstStep": {
-      "title": "Ankarsrum — bland og autolyse",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-03T17:45:00.000Z"
-    },
-    "stepCount": 9,
-    "stepTitles": [
-      "Ankarsrum — bland og autolyse",
-      "Vekk gjæren (kickstart)",
-      "Tilsett gjær og salt — elt ferdig",
-      "Romtemperaturheving",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving",
-      "Ta ut av kjøleskap",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+ "standard_napoletana": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 0.75,
+   "yFresh": 2.3
   },
-  "poolish_roomtemp": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 1.13,
-      "yFresh": 3.4
-    },
-    "firstStep": {
-      "title": "Lag poolish i Ankarsrum-bollen",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-03T07:20:00.000Z"
-    },
-    "stepCount": 8,
-    "stepTitles": [
-      "Lag poolish i Ankarsrum-bollen",
-      "Ankarsrum — bland ferdig deig",
-      "Romtemperaturheving",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving",
-      "Ta ut av kjøleskap",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "firstStep": {
+   "title": "Ankarsrum — bland og autolyse",
+   "iso": "2026-08-01T16:00:00.000Z"
   },
-  "poolish_cold": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 0.51,
-      "yFresh": 1.5
-    },
-    "firstStep": {
-      "title": "Lag poolish i Ankarsrum-bollen",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-05T05:20:00.000Z"
-    },
-    "stepCount": 10,
-    "stepTitles": [
-      "Lag poolish i Ankarsrum-bollen",
-      "❄️ Poolish i kjøleskapet",
-      "🌡 Ta poolish ut — temperer",
-      "Ankarsrum — bland ferdig deig",
-      "Romtemperaturheving",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving",
-      "Ta ut av kjøleskap",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-03T17:45:00.000Z"
   },
-  "biga": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 0.79,
-      "yFresh": 2.4
-    },
-    "firstStep": {
-      "title": "Lag biga (for hånd)",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-04T11:50:00.000Z"
-    },
-    "stepCount": 8,
-    "stepTitles": [
-      "Lag biga (for hånd)",
-      "Ankarsrum — bland ferdig deig",
-      "Romtemperaturheving",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving",
-      "Ta ut av kjøleskap",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "stepCount": 9,
+  "stepTitles": [
+   "Ankarsrum — bland og autolyse",
+   "Vekk gjæren (kickstart)",
+   "Tilsett gjær og salt — elt ferdig",
+   "Romtemperaturheving",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving",
+   "Ta ut av kjøleskap",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "poolish_roomtemp": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 1.13,
+   "yFresh": 3.4
   },
-  "mania": {
-    "recipe": {
-      "poolishMel": 250,
-      "poolishVann": 250,
-      "poolishYd": 0.28,
-      "poolishYf": 0.62,
-      "hovedMel": 250,
-      "vann1": 50,
-      "vann2": 20,
-      "salt": 15,
-      "hovedYd": 0.57,
-      "hovedYf": 0.45,
-      "totalMel": 500,
-      "totalYd": 0.85,
-      "totalYf": 1.07
-    },
-    "firstStep": {
-      "title": "Bland poolish",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-03T04:10:00.000Z"
-    },
-    "stepCount": 11,
-    "stepTitles": [
-      "Bland poolish",
-      "Poolish gjærer",
-      "Poolish kjøles ned",
-      "Bland hoveddeig",
-      "Hvile i ro",
-      "Form til emne → romtemperatur",
-      "Kjøleskapsheving (udelt)",
-      "Del i emner",
-      "Romtemperaturheving (delt)",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "firstStep": {
+   "title": "Lag poolish i Ankarsrum-bollen",
+   "iso": "2026-08-01T16:00:00.000Z"
   },
-  "hurtig": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 0.75,
-      "yFresh": 2.3
-    },
-    "firstStep": {
-      "title": "Vekk gjæren (kickstart)",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-01T20:20:00.000Z"
-    },
-    "stepCount": 7,
-    "stepTitles": [
-      "Vekk gjæren (kickstart)",
-      "Ankarsrum — bland deig raskt",
-      "Bulk-heving (ca. 2.4t)",
-      "Form emner",
-      "Etterheving (81 min)",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-03T07:20:00.000Z"
   },
-  "kveld": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 0.75,
-      "yFresh": 2.3
-    },
-    "firstStep": {
-      "title": "Vekk gjæren (kickstart)",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-02T04:45:00.000Z"
-    },
-    "stepCount": 8,
-    "stepTitles": [
-      "Vekk gjæren (kickstart)",
-      "Ankarsrum — bland deig",
-      "Hvile i bollen",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving (10t)",
-      "Ta ut og temperer",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "stepCount": 8,
+  "stepTitles": [
+   "Lag poolish i Ankarsrum-bollen",
+   "Ankarsrum — bland ferdig deig",
+   "Romtemperaturheving",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving",
+   "Ta ut av kjøleskap",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "poolish_cold": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 0.51,
+   "yFresh": 1.5
   },
-  "chicago_biga": {
-    "recipe": {
-      "name": "Chicago deep dish",
-      "flour": 600,
-      "water": 360,
-      "salt": 12,
-      "oil": 36,
-      "butter": 72,
-      "sugar": 0,
-      "yDry": 0.9,
-      "yFresh": 2.7
-    },
-    "firstStep": {
-      "title": "Lag biga (for hånd)",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-05T11:50:00.000Z"
-    },
-    "stepCount": 8,
-    "stepTitles": [
-      "Lag biga (for hånd)",
-      "Ankarsrum — bland ferdig deig",
-      "Romtemperaturheving",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving",
-      "Ta ut av kjøleskap",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "firstStep": {
+   "title": "Lag poolish i Ankarsrum-bollen",
+   "iso": "2026-08-01T16:00:00.000Z"
   },
-  "poolish_cold_short": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 1.35,
-      "yFresh": 4.1
-    },
-    "firstStep": {
-      "title": "Lag poolish i Ankarsrum-bollen",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-03T05:20:00.000Z"
-    },
-    "stepCount": 10,
-    "stepTitles": [
-      "Lag poolish i Ankarsrum-bollen",
-      "❄️ Poolish i kjøleskapet",
-      "🌡 Ta poolish ut — temperer",
-      "Ankarsrum — bland ferdig deig",
-      "Romtemperaturheving",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving",
-      "Ta ut av kjøleskap",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-05T05:20:00.000Z"
   },
-  "poolish_cold_long": {
-    "recipe": {
-      "name": "Napoletansk pizza",
-      "flour": 500,
-      "water": 325,
-      "salt": 14,
-      "oil": 0,
-      "butter": 0,
-      "sugar": 0,
-      "yDry": 0.56,
-      "yFresh": 1.7
-    },
-    "firstStep": {
-      "title": "Lag poolish i Ankarsrum-bollen",
-      "iso": "2026-08-01T16:00:00.000Z"
-    },
-    "lastStep": {
-      "title": "Strekk og stek 🔥",
-      "iso": "2026-08-04T17:20:00.000Z"
-    },
-    "stepCount": 10,
-    "stepTitles": [
-      "Lag poolish i Ankarsrum-bollen",
-      "❄️ Poolish i kjøleskapet",
-      "🌡 Ta poolish ut — temperer",
-      "Ankarsrum — bland ferdig deig",
-      "Romtemperaturheving",
-      "Form emner → kjøleskap",
-      "Kjøleskapsheving",
-      "Ta ut av kjøleskap",
-      "Sett på ovnen 🔥",
-      "Strekk og stek 🔥"
-    ]
+  "stepCount": 10,
+  "stepTitles": [
+   "Lag poolish i Ankarsrum-bollen",
+   "❄️ Poolish i kjøleskapet",
+   "🌡 Ta poolish ut — temperer",
+   "Ankarsrum — bland ferdig deig",
+   "Romtemperaturheving",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving",
+   "Ta ut av kjøleskap",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "biga": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 0.79,
+   "yFresh": 2.4
   },
-  "_render_layer": {
-    "standard_pc": "<div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Mel</span>\n      </span>\n      <span class=\"rval\" style=\"\">500g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Vann</span>\n      </span>\n      <span class=\"rval\" style=\"\">325g (65%)</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Salt</span>\n      </span>\n      <span class=\"rval\" style=\"\">14g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','0,75')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','0,75');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Gjær</span>\n      </span>\n      <span class=\"rval\" style=\"\">0.75g tørrgjær</span>\n    </div><div class=\"rrow\"><span>Kjøleskapsheving</span><span class=\"rval\">48 timer</span></div><div class=\"rrow\"><span>Romtemperatur</span><span class=\"rval\">22°C — heving ca. 60 min</span></div><div class=\"rrow\"><span>Ovntype</span><span class=\"rval\">Pizzaovn</span></div>",
-    "standard_mobil": "<div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Mel</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">500g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Vann</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">325g (65%)</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Salt</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">14g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','0,75')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','0,75');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Gjær</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">0.75g tørrgjær</span>\n      </div><div class=\"mob-rrow\"><span>Kjøleskapsheving</span><span class=\"mob-rval\">48 timer</span></div><div class=\"mob-rrow\"><span>Romtemperatur</span><span class=\"mob-rval\">22°C — heving ca. 60 min</span></div><div class=\"mob-rrow\"><span>Ovntype</span><span class=\"mob-rval\">Pizzaovn</span></div>",
-    "hurtig_pc": "<div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Mel</span>\n      </span>\n      <span class=\"rval\" style=\"\">500g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Vann</span>\n      </span>\n      <span class=\"rval\" style=\"\">325g (65%)</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Salt</span>\n      </span>\n      <span class=\"rval\" style=\"\">14g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','3')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','3');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Gjær</span>\n      </span>\n      <span class=\"rval\" style=\"\">3g tørrgjær</span>\n    </div><div class=\"rrow\"><span>Steking</span><span class=\"rval\">400°C</span></div><div class=\"rrow\"><span>Romtemperatur</span><span class=\"rval\">22°C</span></div><div class=\"rrow\"><span>Ovntype</span><span class=\"rval\">Pizzaovn</span></div>",
-    "hurtig_mobil": "<div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Mel</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">500g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Vann</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">325g (65%)</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Salt</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">14g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','3')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','3');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Gjær</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">3g tørrgjær</span>\n      </div><div class=\"mob-rrow\"><span>Steking</span><span class=\"mob-rval\">400°C</span></div><div class=\"mob-rrow\"><span>Romtemperatur</span><span class=\"mob-rval\">22°C</span></div><div class=\"mob-rrow\"><span>Ovntype</span><span class=\"mob-rval\">Pizzaovn</span></div>",
-    "kveld_pc": "<div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Mel</span>\n      </span>\n      <span class=\"rval\" style=\"\">500g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Vann</span>\n      </span>\n      <span class=\"rval\" style=\"\">325g (65%)</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Salt</span>\n      </span>\n      <span class=\"rval\" style=\"\">14g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','1,24')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','1,24');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Gjær</span>\n      </span>\n      <span class=\"rval\" style=\"\">1.24g tørrgjær</span>\n    </div><div class=\"rrow\"><span>Kjøleskapsheving</span><span class=\"rval\">10 timer</span></div><div class=\"rrow\"><span>Ovntype</span><span class=\"rval\">Pizzaovn</span></div>",
-    "kveld_mobil": "<div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Mel</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">500g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Vann</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">325g (65%)</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Salt</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">14g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','1,24')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','1,24');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Gjær</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">1.24g tørrgjær</span>\n      </div><div class=\"mob-rrow\"><span>Kjøleskapsheving</span><span class=\"mob-rval\">10 timer</span></div><div class=\"mob-rrow\"><span>Ovntype</span><span class=\"mob-rval\">Pizzaovn</span></div>"
-  }
+  "firstStep": {
+   "title": "Lag biga (for hånd)",
+   "iso": "2026-08-01T16:00:00.000Z"
+  },
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-04T11:50:00.000Z"
+  },
+  "stepCount": 8,
+  "stepTitles": [
+   "Lag biga (for hånd)",
+   "Ankarsrum — bland ferdig deig",
+   "Romtemperaturheving",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving",
+   "Ta ut av kjøleskap",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "mania": {
+  "recipe": {
+   "poolishMel": 250,
+   "poolishVann": 250,
+   "poolishYd": 0.28,
+   "poolishYf": 0.62,
+   "hovedMel": 250,
+   "vann1": 50,
+   "vann2": 20,
+   "salt": 15,
+   "hovedYd": 0.57,
+   "hovedYf": 0.45,
+   "totalMel": 500,
+   "totalYd": 0.85,
+   "totalYf": 1.07
+  },
+  "firstStep": {
+   "title": "Bland poolish",
+   "iso": "2026-08-01T16:00:00.000Z"
+  },
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-03T04:10:00.000Z"
+  },
+  "stepCount": 11,
+  "stepTitles": [
+   "Bland poolish",
+   "Poolish gjærer",
+   "Poolish kjøles ned",
+   "Bland hoveddeig",
+   "Hvile i ro",
+   "Form til emne → romtemperatur",
+   "Kjøleskapsheving (udelt)",
+   "Del i emner",
+   "Romtemperaturheving (delt)",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "hurtig": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 0.75,
+   "yFresh": 2.3
+  },
+  "firstStep": {
+   "title": "Vekk gjæren (kickstart)",
+   "iso": "2026-08-01T16:00:00.000Z"
+  },
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-01T20:02:00.000Z"
+  },
+  "stepCount": 7,
+  "stepTitles": [
+   "Vekk gjæren (kickstart)",
+   "Ankarsrum — bland deig raskt",
+   "Bulk-heving (ca. 2.4t)",
+   "Form emner",
+   "Etterheving (63 min)",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "kveld": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 0.75,
+   "yFresh": 2.3
+  },
+  "firstStep": {
+   "title": "Vekk gjæren (kickstart)",
+   "iso": "2026-08-01T16:00:00.000Z"
+  },
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-02T04:45:00.000Z"
+  },
+  "stepCount": 8,
+  "stepTitles": [
+   "Vekk gjæren (kickstart)",
+   "Ankarsrum — bland deig",
+   "Hvile i bollen",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving (10t)",
+   "Ta ut og temperer",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "chicago_biga": {
+  "recipe": {
+   "name": "Chicago deep dish",
+   "flour": 600,
+   "water": 360,
+   "salt": 12,
+   "oil": 36,
+   "butter": 72,
+   "sugar": 0,
+   "yDry": 0.9,
+   "yFresh": 2.7
+  },
+  "firstStep": {
+   "title": "Lag biga (for hånd)",
+   "iso": "2026-08-01T16:00:00.000Z"
+  },
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-05T11:50:00.000Z"
+  },
+  "stepCount": 8,
+  "stepTitles": [
+   "Lag biga (for hånd)",
+   "Ankarsrum — bland ferdig deig",
+   "Romtemperaturheving",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving",
+   "Ta ut av kjøleskap",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "poolish_cold_short": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 1.35,
+   "yFresh": 4.1
+  },
+  "firstStep": {
+   "title": "Lag poolish i Ankarsrum-bollen",
+   "iso": "2026-08-01T16:00:00.000Z"
+  },
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-03T05:20:00.000Z"
+  },
+  "stepCount": 10,
+  "stepTitles": [
+   "Lag poolish i Ankarsrum-bollen",
+   "❄️ Poolish i kjøleskapet",
+   "🌡 Ta poolish ut — temperer",
+   "Ankarsrum — bland ferdig deig",
+   "Romtemperaturheving",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving",
+   "Ta ut av kjøleskap",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "poolish_cold_long": {
+  "recipe": {
+   "name": "Napoletansk pizza",
+   "flour": 500,
+   "water": 325,
+   "salt": 14,
+   "oil": 0,
+   "butter": 0,
+   "sugar": 0,
+   "yDry": 0.56,
+   "yFresh": 1.7
+  },
+  "firstStep": {
+   "title": "Lag poolish i Ankarsrum-bollen",
+   "iso": "2026-08-01T16:00:00.000Z"
+  },
+  "lastStep": {
+   "title": "Strekk og stek 🔥",
+   "iso": "2026-08-04T17:20:00.000Z"
+  },
+  "stepCount": 10,
+  "stepTitles": [
+   "Lag poolish i Ankarsrum-bollen",
+   "❄️ Poolish i kjøleskapet",
+   "🌡 Ta poolish ut — temperer",
+   "Ankarsrum — bland ferdig deig",
+   "Romtemperaturheving",
+   "Form emner → kjøleskap",
+   "Kjøleskapsheving",
+   "Ta ut av kjøleskap",
+   "Sett på ovnen 🔥",
+   "Strekk og stek 🔥"
+  ]
+ },
+ "_render_layer": {
+  "standard_pc": "<div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Mel</span>\n      </span>\n      <span class=\"rval\" style=\"\">500g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Vann</span>\n      </span>\n      <span class=\"rval\" style=\"\">325g (65%)</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Salt</span>\n      </span>\n      <span class=\"rval\" style=\"\">14g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','0,75')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','0,75');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Gjær</span>\n      </span>\n      <span class=\"rval\" style=\"\">0.75g tørrgjær</span>\n    </div><div class=\"rrow\"><span>Kjøleskapsheving</span><span class=\"rval\">48 timer</span></div><div class=\"rrow\"><span>Romtemperatur</span><span class=\"rval\">22°C — heving ca. 60 min</span></div><div class=\"rrow\"><span>Ovntype</span><span class=\"rval\">Pizzaovn</span></div>",
+  "standard_mobil": "<div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Mel</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">500g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Vann</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">325g (65%)</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Salt</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">14g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','0,75')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','0,75');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Gjær</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">0.75g tørrgjær</span>\n      </div><div class=\"mob-rrow\"><span>Kjøleskapsheving</span><span class=\"mob-rval\">48 timer</span></div><div class=\"mob-rrow\"><span>Romtemperatur</span><span class=\"mob-rval\">22°C — heving ca. 60 min</span></div><div class=\"mob-rrow\"><span>Ovntype</span><span class=\"mob-rval\">Pizzaovn</span></div>",
+  "hurtig_pc": "<div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Mel</span>\n      </span>\n      <span class=\"rval\" style=\"\">500g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Vann</span>\n      </span>\n      <span class=\"rval\" style=\"\">325g (65%)</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Salt</span>\n      </span>\n      <span class=\"rval\" style=\"\">14g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','3')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','3');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Gjær</span>\n      </span>\n      <span class=\"rval\" style=\"\">3g tørrgjær</span>\n    </div><div class=\"rrow\"><span>Steking</span><span class=\"rval\">400°C</span></div><div class=\"rrow\"><span>Romtemperatur</span><span class=\"rval\">22°C</span></div><div class=\"rrow\"><span>Ovntype</span><span class=\"rval\">Pizzaovn</span></div>",
+  "hurtig_mobil": "<div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Mel</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">500g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Vann</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">325g (65%)</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Salt</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">14g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','3')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','3');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Gjær</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">3g tørrgjær</span>\n      </div><div class=\"mob-rrow\"><span>Steking</span><span class=\"mob-rval\">400°C</span></div><div class=\"mob-rrow\"><span>Romtemperatur</span><span class=\"mob-rval\">22°C</span></div><div class=\"mob-rrow\"><span>Ovntype</span><span class=\"mob-rval\">Pizzaovn</span></div>",
+  "kveld_pc": "<div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Mel</span>\n      </span>\n      <span class=\"rval\" style=\"\">500g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Vann</span>\n      </span>\n      <span class=\"rval\" style=\"\">325g (65%)</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Salt</span>\n      </span>\n      <span class=\"rval\" style=\"\">14g</span>\n    </div><div class=\"rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','1,24')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','1,24');}\" style=\"cursor:pointer\">\n      <span style=\"display:flex;align-items:center;gap:8px\">\n        <span class=\"ing-check\"></span>\n        <span style=\"\">Gjær</span>\n      </span>\n      <span class=\"rval\" style=\"\">1.24g tørrgjær</span>\n    </div><div class=\"rrow\"><span>Kjøleskapsheving</span><span class=\"rval\">10 timer</span></div><div class=\"rrow\"><span>Ovntype</span><span class=\"rval\">Pizzaovn</span></div>",
+  "kveld_mobil": "<div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Mel\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Mel','500')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Mel','500');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Mel</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">500g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Vann\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Vann','325,65')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Vann','325,65');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Vann</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">325g (65%)</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Salt\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Salt','14')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Salt','14');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Salt</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">14g</span>\n      </div><div class=\"mob-rrow\" role=\"checkbox\" aria-checked=\"false\" aria-label=\"Gjær\" tabindex=\"0\" onclick=\"toggleIngredientCheck('Gjær','1,24')\" onkeydown=\"if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleIngredientCheck('Gjær','1,24');}\" style=\"cursor:pointer\">\n        <span style=\"display:flex;align-items:center;gap:8px\">\n          <span class=\"ing-check\"></span>\n          <span style=\"\" class=\"\">Gjær</span>\n        </span>\n        <span class=\"mob-rval\" style=\"\">1.24g tørrgjær</span>\n      </div><div class=\"mob-rrow\"><span>Kjøleskapsheving</span><span class=\"mob-rval\">10 timer</span></div><div class=\"mob-rrow\"><span>Ovntype</span><span class=\"mob-rval\">Pizzaovn</span></div>"
+ }
 }
