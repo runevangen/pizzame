@@ -933,7 +933,7 @@ body.pc-mode.theme-dark .badge.bw{background:var(--pc-sunken);color:var(--pc-mut
      og kontrollene finnes bare i ÉN kopi. -->
 <div id="tilbud-modal" class="modal-overlay" onclick="if(event.target===this)closeTilbudModal()">
   <div class="modal-box">
-    <div class="modal-head"><b id="tilbud-modal-tittel">🎛️ Hva du blir tilbudt</b><button class="modal-x" onclick="closeTilbudModal()" aria-label="Lukk">✕</button></div>
+    <div class="modal-head"><b id="tilbud-modal-tittel">🎛️ Mel og metoder</b><button class="modal-x" onclick="closeTilbudModal()" aria-label="Lukk">✕</button></div>
     <div class="modal-body">
       <div style="border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised);padding:10px 11px;margin-bottom:12px">
         <div id="melkurv-lbl" style="font-size:12.5px;font-weight:700;color:var(--forno-text-muted);margin-bottom:4px">🌾 Melet mitt</div>
@@ -1080,7 +1080,7 @@ body.pc-mode.theme-dark .badge.bw{background:var(--pc-sunken);color:var(--pc-mut
     </div>
     <div class="menu-row" id="fav-menu-row" onclick="sidenavGo(openFavorite)" style="display:none"><span id="pc-menu-fav">★ Min favoritt</span></div>
     <!-- v0.797: PC har ingen Mer-fane, så samme boks nås herfra. -->
-    <div class="menu-row" id="pc-menu-tilbud" onclick="sidenavGo(openTilbudModal)">🎛️ Hva du blir tilbudt</div>
+    <div class="menu-row" id="pc-menu-tilbud" onclick="sidenavGo(openTilbudModal)">🎛️ Mel og metoder</div>
     <div class="menu-row" id="pc-menu-pizzatid" onclick="sidenavGo(openPizzatidModal)">🗓️ Når er du ledig?</div>
     <div class="menu-row" id="pc-menu-feilsok" onclick="sidenavGo(openFeilsokModal)">🩺 Hvorfor gikk det feil?</div>
     <div class="menu-row" id="pc-menu-startny" onclick="sidenavGo(startNyDeigForespoersel)">🆕 Start ny deig</div>
@@ -1591,9 +1591,9 @@ function syncStaticI18nUI(){
   st('mob-beta-search-btn','🔍 Finn oppskriften','🔍 Find the recipe');
   // v0.797: Fra–til bruker samme filter som Smart-plan, og det sto ikke i teksten.
   st('mob-beta-methods-help','Bare metodene du huker av foreslås i Smart-plan og Fra–til. Du kan alltid velge enhver metode manuelt.','Only the methods you tick are suggested in Smart plan and From–to. You can always pick any method manually.');
-  st('mob-tilbud-lbl','🎛️ Hva du blir tilbudt','🎛️ What you are offered');
-  st('tilbud-modal-tittel','🎛️ Hva du blir tilbudt','🎛️ What you are offered');
-  st('pc-menu-tilbud','🎛️ Hva du blir tilbudt','🎛️ What you are offered');
+  st('mob-tilbud-lbl','🎛️ Mel og metoder','🎛️ Flour and methods');
+  st('tilbud-modal-tittel','🎛️ Mel og metoder','🎛️ Flour and methods');
+  st('pc-menu-tilbud','🎛️ Mel og metoder','🎛️ Flour and methods');
   st('mob-beta-popular-lbl','Eller velg et populært tidspunkt','Or pick a popular time');
   st('mob-beta-popular-help','Trykk et ferdig tidspunkt, så fyller vi inn dato og klokkeslett over og kjører søket med det samme.','Tap a preset time, and we fill in the date and time above and run the search right away.');
   syncPizzatidToggleLabel();  // v0.656: «Vis/Skjul»-etiketten var statisk norsk til første trykk
@@ -3741,8 +3741,8 @@ function renderTilbudTips(){
   const html = tilbudTipsVises()
     ? `<div style="margin:0 0 10px;padding:9px 11px;background:var(--forno-accent-soft);border:1px solid var(--forno-border);border-radius:10px;display:flex;gap:9px;align-items:flex-start">
          <span onclick="openTilbudModal()" style="flex:1;font-size:11.5px;line-height:1.45;color:var(--forno-text-muted);cursor:pointer">${L(
-           'Første gang? Si hvilket <b style="color:var(--forno-text)">mel du har</b> og hvilke <b style="color:var(--forno-text)">metoder</b> du vil bli tilbudt, så regner appen med ditt kjøkken. Du finner det under <b style="color:var(--forno-text)">Mer → 🎛️ Hva du blir tilbudt</b>.',
-           'First time? Tell it which <b style="color:var(--forno-text)">flour you have</b> and which <b style="color:var(--forno-text)">methods</b> you want offered, and the app will plan around your kitchen. You will find it under <b style="color:var(--forno-text)">More → 🎛️ What you are offered</b>.')}</span>
+           'Første gang? Si hvilket <b style="color:var(--forno-text)">mel du har</b> og hvilke <b style="color:var(--forno-text)">metoder</b> du vil bli tilbudt, så regner appen med ditt kjøkken. Du finner det under <b style="color:var(--forno-text)">Mer → 🎛️ Mel og metoder</b>.',
+           'First time? Tell it which <b style="color:var(--forno-text)">flour you have</b> and which <b style="color:var(--forno-text)">methods</b> you want offered, and the app will plan around your kitchen. You will find it under <b style="color:var(--forno-text)">More → 🎛️ Flour and methods</b>.')}</span>
          <span onclick="tilbudTipsSett()" role="button" tabindex="0" aria-label="${escH(L('Lukk','Close'))}" style="font-size:13px;color:var(--forno-text-faint);cursor:pointer;line-height:1;padding:2px 2px 2px 0">✕</span>
        </div>`
     : '';
@@ -10503,7 +10503,7 @@ document.addEventListener('change', firstInteractionCheck, true);
       <div id="mob-sammalt-hint" style="padding:0 1rem .5rem;font-size:10.5px;color:var(--forno-text-faint);line-height:1.5"></div>
     </div>
     <div id="mob-gmel-fj-info" style="font-size:10.5px;color:var(--forno-text-faint);padding:0 1rem .5rem;line-height:1.4"></div>
-    <!-- v0.797: melkurven bor nå i «Hva du blir tilbudt» (Mer / ☰ Meny). Her
+    <!-- v0.797: melkurven bor nå i «Mel og metoder» (Mer / ☰ Meny — het «Hva du blir tilbudt» t.o.m. v0.847). Her
          står bare veien dit, ved siden av valget den påvirker. -->
     <div id="melkurv-lenke" onclick="openTilbudModal()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTilbudModal()}" style="margin:0 1rem .7rem;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid var(--forno-border-soft,#e8e5e0);border-radius:10px;background:var(--forno-bg-raised);cursor:pointer">
       <span id="melkurv-lenke-lbl" style="font-size:12px;font-weight:600;color:var(--forno-text-muted)">🌾 Melet mitt</span>
@@ -10593,7 +10593,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
     <!-- v0.797: «hva eier jeg» og «hva vil jeg bli tilbudt» hører sammen, og
          hører hjemme her — ikke inne i en fane du er midt i noe annet i. -->
-    <div class="mob-section-lbl" id="mob-tilbud-lbl">🎛️ Hva du blir tilbudt</div>
+    <div class="mob-section-lbl" id="mob-tilbud-lbl">🎛️ Mel og metoder</div>
     <div class="mob-setting-row" style="cursor:pointer" onclick="openTilbudModal()">
       <span id="mer-tilbud-mel" style="font-size:13px;color:var(--dyn-text);font-weight:600">🌾 Melet mitt</span>
       <span style="color:var(--forno-text-faint,#c4c1ba);font-size:14px">›</span>
