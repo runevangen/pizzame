@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/testport.sh",
+            "timeout": 60,
+            "statusMessage": "Kjører testporten (node-lagene)…"
+          }
+        ]
+      }
+    ]
+  }
+}
