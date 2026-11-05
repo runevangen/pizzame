@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.849",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Nye brukere får nå beskjed om at språket kan endres. Appen har lenge gjettet språk ut fra nettleseren uten å si fra — og bryteren lå gjemt under Mer → Språk, som ikke engang finnes i PC-visningen. Første gang vises en liten stripe øverst med valget rett i stripa: ett trykk på Norsk eller English, eller ✕ for å lukke.",
+      "Stripa sier fra på begge språk — setningen om alternativet står med vilje på det andre språket, for den som trenger den er den som ikke leser språket appen valgte. Når du har valgt språk eller lukket stripa, kommer den aldri igjen."
+    ],
+    "changes_en": [
+      "New users are now told the language can be changed. The app has long guessed the language from the browser without saying so — and the switch was hidden under More → Language, which does not even exist in the desktop view. On first visit a small strip appears at the top with the choice right there: one tap on Norsk or English, or ✕ to close.",
+      "The strip speaks both languages — the sentence about the alternative is deliberately in the other language, because the person who needs it is the one who cannot read the language the app picked. Once you have chosen a language or closed the strip, it never returns."
+    ]
+  },
+  {
     "v": "0.848",
     "d": "september 2026",
     "d_en": "September 2026",

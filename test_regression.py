@@ -10088,6 +10088,75 @@ const svSched=window._pizzatidSchedule;
     ok192 = all(r192.values())
     results.append(('baking_time_that_kills_the_method_switches_to_the_recommended_one', ok192, r192))
 
+    # ------- r193 (v0.849): engangs språkstripe for nye brukere -------
+    # Meldt inn: «Når ny bruker starter. Gi han beskjed om at språk kan
+    # endres.» Appen har gjettet språk siden v6.26 uten å si fra, og bryteren
+    # bor under Mer → Språk — som ikke finnes i PC-visningen i det hele tatt.
+    # Stripa vises KUN når brukeren verken har valgt språk (pizzaLang) eller
+    # lukket den før (pizzaSpraakHilstSett); begge handlinger setter spor, så
+    # den kommer aldri igjen. Setningen om alternativet står på DET ANDRE
+    # språket — den som trenger utveien er den som ikke leser appens valg.
+    r193 = page.evaluate("""(() => {
+      const foer = { lang: localStorage.getItem('pizzaLang'),
+                     flagg: localStorage.getItem('pizzaSpraakHilstSett'),
+                     uiLang: window._lang };
+      const mobEl = () => document.getElementById('mob-spraak-hilsen');
+      const pcEl  = () => document.getElementById('pc-spraak-hilsen');
+      try {
+        // 1) Ny bruker (ingen spor) → stripa vises i BEGGE visninger, på
+        //    norsk (testmiljøet er nb-NO), med engelsk veiledning i teksten.
+        localStorage.removeItem('pizzaLang');
+        localStorage.removeItem('pizzaSpraakHilstSett');
+        window._lang='no';
+        renderSpraakHilsen();
+        const nyBrukerSerStripa = !!mobEl().innerHTML && !!pcEl().innerHTML;
+        const norskVariant = mobEl().innerHTML.includes('Appen er på norsk')
+          && mobEl().innerHTML.includes('You can use it in English')
+          && mobEl().innerHTML.includes('English');
+
+        // 2) Trykk på English-knappen: språket byttes, valget lagres, og
+        //    stripa forsvinner fra begge visninger.
+        velgSpraakHilsen('en');
+        const valgByttetSpraak = window._lang==='en'
+          && localStorage.getItem('pizzaLang')==='en'
+          && mobEl().innerHTML==='' && pcEl().innerHTML==='';
+
+        // 3) Med lagret språkvalg vises stripa aldri — selv uten flagget.
+        localStorage.removeItem('pizzaSpraakHilstSett');
+        renderSpraakHilsen();
+        const valgtSpraakStopperStripa = mobEl().innerHTML==='' && !skalViseSpraakHilsen();
+
+        // 4) Engelsk-varianten: gjettet engelsk → teksten er engelsk, men
+        //    veien til norsk står PÅ norsk.
+        localStorage.removeItem('pizzaLang');
+        window._lang='en';
+        renderSpraakHilsen();
+        const enVariant = mobEl().innerHTML.includes('This app is in English')
+          && mobEl().innerHTML.includes('Den finnes også på norsk');
+
+        // 5) ✕ (lukk uten å velge): ingenting lagres som språk, men flagget
+        //    settes og stripa er borte for godt.
+        velgSpraakHilsen(null);
+        const lukkUtenValg = localStorage.getItem('pizzaLang')===null
+          && localStorage.getItem('pizzaSpraakHilstSett')==='1'
+          && mobEl().innerHTML==='' && !skalViseSpraakHilsen();
+
+        return { nyBrukerSerStripa, norskVariant, valgByttetSpraak,
+                 valgtSpraakStopperStripa, enVariant, lukkUtenValg };
+      } finally {
+        // Gjenopprett miljøet nøyaktig: suiten er norsk (nb-NO, _lang='no').
+        if (foer.lang===null) localStorage.removeItem('pizzaLang');
+        else localStorage.setItem('pizzaLang', foer.lang);
+        if (foer.flagg===null) localStorage.removeItem('pizzaSpraakHilstSett');
+        else localStorage.setItem('pizzaSpraakHilstSett', foer.flagg);
+        window._lang = foer.uiLang;
+        try { syncI18nUI(); } catch(e) {}
+        try { renderSpraakHilsen(); } catch(e) {}
+      }
+    })()""")
+    ok193 = all(r193.values())
+    results.append(('new_user_is_told_the_language_can_be_changed', ok193, r193))
+
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret
 # (--gruppe 6 kjører hele gamle gruppe 6, i samme rekkefølge) — segmentene

@@ -1067,6 +1067,7 @@ body.pc-mode.theme-dark .badge.bw{background:var(--pc-sunken);color:var(--pc-mut
   <div style="display:flex;align-items:center;gap:5px"><button class="layout-toggle" id="pc-to-mob" onclick="setLayout('mob')" title="Bytt til mobilvisning" style="font-size:12px;padding:7px 12px;font-weight:600">📱 Til mobil</button></div>
 </div>
 
+<div id="pc-spraak-hilsen"></div>
 <div class="menu-wrap">
   <div class="menu-trigger" onclick="toggleSidenavMenu()"><span id="pc-menu-trigger-lbl">☰ Meny</span><span style="color:var(--pc-faint)">⌄</span></div>
   <div class="menu-dropdown" id="sidenav-dropdown" style="display:none">
@@ -1309,8 +1310,47 @@ function detectDefaultLang(langs){
 }
 window._lang  = detectDefaultLang();
 window._units = (()=>{ try{ return localStorage.getItem('pizzaUnits')||'metric'; }catch(e){ return 'metric'; } })();
-function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{syncI18nUI(); const mobEl=document.getElementById('mob-layout'); const isMob=mobEl&&mobEl.classList.contains('active'); if(isMob){ mobGen(); } else { try{ gen(); }catch(e){} } }catch(e){} }
+function setLang(l){ window._lang=l; try{localStorage.setItem('pizzaLang',l);}catch(e){} try{renderSpraakHilsen();}catch(e){} try{syncI18nUI(); const mobEl=document.getElementById('mob-layout'); const isMob=mobEl&&mobEl.classList.contains('active'); if(isMob){ mobGen(); } else { try{ gen(); }catch(e){} } }catch(e){} }
 function setUnits(u){ window._units=u; try{localStorage.setItem('pizzaUnits',u);}catch(e){} try{syncI18nUI();mobGen();}catch(e){} }
+// v0.849: engangs språkstripe for NYE brukere. Appen har gjettet språk siden
+// v6.26 (detectDefaultLang), men sa aldri fra at den gjettet — og bryteren
+// ligger under Mer → Språk, som bare finnes i mobilvisningen. En som fikk
+// feil gjetning (f.eks. engelskspråklig med norsk nettleser) hadde ingen
+// synlig vei ut, på PC fantes den ikke i det hele tatt. Stripa vises til
+// brukeren enten velger språk (ett trykk, kaller setLang som før) eller
+// lukker den — begge setter flagget, så den aldri kommer igjen. Setningen om
+// alternativet står med vilje på DET ANDRE språket: den som trenger den, er
+// den som ikke leser språket appen valgte.
+function skalViseSpraakHilsen(){
+  try{
+    if(localStorage.getItem('pizzaLang')) return false;          // har valgt aktivt
+    if(localStorage.getItem('pizzaSpraakHilstSett')) return false; // har sett og lukket
+  }catch(e){ return false; } // utilgjengelig lagring: aldri mas ved hver oppstart
+  return true;
+}
+function spraakHilsenHTML(){
+  const no=window._lang==='no';
+  const txt=no
+    ? `🌍 <b>Appen er på norsk.</b> You can use it in English — choose below. Du kan endre dette når som helst under <b>⋯ Mer → Språk</b>.`
+    : `🌍 <b>This app is in English.</b> Den finnes også på norsk — velg under. You can change this anytime under <b>⋯ More → Language</b>.`;
+  const knapp=(l,navn,valgt)=>`<div onclick="velgSpraakHilsen('${l}')" style="flex:1;padding:8px;border-radius:8px;text-align:center;cursor:pointer;font-size:12.5px;${valgt?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:700':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-muted);font-weight:600'}">${navn}${valgt?' ✓':''}</div>`;
+  return `<div style="position:relative;margin:.7rem 1rem .2rem;padding:10px 12px 9px;border:1px solid var(--anb-kant,#5a7d4a);background:var(--anb-bg,#223020);border-radius:12px">
+    <span onclick="velgSpraakHilsen(null)" style="position:absolute;top:6px;right:10px;color:var(--forno-text-faint);font-size:13px;cursor:pointer;padding:2px 4px">✕</span>
+    <div style="font-size:12.5px;line-height:1.45;color:var(--forno-text);padding-right:18px;margin-bottom:8px">${txt}</div>
+    <div style="display:flex;gap:8px">${knapp('no','Norsk',no)}${knapp('en','English',!no)}</div>
+  </div>`;
+}
+function renderSpraakHilsen(){
+  const vis=skalViseSpraakHilsen();
+  ['mob-spraak-hilsen','pc-spraak-hilsen'].forEach(id=>{ // ÉN renderer for begge visninger (eatEls-lærdommen fra v0.841)
+    const el=document.getElementById(id); if(el) el.innerHTML=vis?spraakHilsenHTML():'';
+  });
+}
+function velgSpraakHilsen(l){
+  try{ localStorage.setItem('pizzaSpraakHilstSett','1'); }catch(e){}
+  if(l) setLang(l); // setLang lagrer pizzaLang og rerendrer selv stripa
+  else renderSpraakHilsen();
+}
 function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
 function fmtW(g){ return window._units==='imperial' ? _oz(g) : g+'g'; }        // vekt-visning (slider/label)
 function fmtT(c){ return window._units==='imperial' ? Math.round(parseFloat(String(c).replace(',','.'))*9/5+32)+'°F' : c+'°C'; }
@@ -10216,6 +10256,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // svaret er inne, og rendres på nytt her når det er.
   loadPizzatidSchedule().then(()=>{ try{ mobGen(); }catch(e){} });
   try{ wizAttachSwipe(); }catch(e){}
+  try{ renderSpraakHilsen(); }catch(e){}
 });
 if(document.readyState==='complete'||document.readyState==='interactive'){
   initLayout();
@@ -10265,6 +10306,7 @@ document.addEventListener('change', firstInteractionCheck, true);
 
   <!-- TAB: INNSTILLINGER -->
   <div class="mob-screen active" id="mob-settings">
+    <div id="mob-spraak-hilsen"></div>
     <div class="js-gjaertest-banner" style="padding:.55rem 1rem 0"></div>
     <!-- Inngangs-gaffel (v6.21): to likestilte dører. Dør A = Smart-plan (finn
          oppskrift ut fra ledig tid), Dør B = den vanlige wizarden. Begge bevarer
