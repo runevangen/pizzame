@@ -554,13 +554,22 @@ function kickVannG(){
   return 0;
 }
 // Det ENE kickstart-steget, delt av alle tre metodene — tre kopier ville
-// drevet fra hverandre (samme grunn som F17/mNVariant).
-function kickstartStep(at, wk, wr, ya){
+// drevet fra hverandre (samme grunn som F17/mNVariant). v0.851: siste setning
+// er kjedebevisst. Malen var skrevet for Hurtigdeig/Kveldsdeig, der kickstarten
+// kommer FØRST og «resten av vannet tilsettes i neste steg» er sant. I
+// Langtidsdeig-kjeden gjenbrukes steget ETTER autolysen — da er restvannet
+// allerede i bollen, og samme setning ble en intern motsigelse (meldt inn via
+// ekstern gjennomgang av en ekte plan: «Steg 1 sier hold av 20g, Steg 2 sier
+// resten (305g) tilsettes i neste steg»).
+function kickstartStep(at, wk, wr, ya, vannetAltIBollen){
   const ktxt=`${KICK_TEMP.mn}–${KICK_TEMP.mx}`;
+  const slutt=vannetAltIBollen
+    ?L(`Gjærblandingen helles i bollen i neste steg — resten av vannet (${wr}g) er allerede i deigen fra autolysen.`,`The yeast mixture goes into the bowl in the next step — the rest of the water (${wr}g) is already in the dough from the autolyse.`)
+    :L(`Resten av vannet (${wr}g) tilsettes i neste steg.`,`The rest of the water (${wr}g) is added in the next step.`);
   return {title:'Vekk gjæren (kickstart)',loc:'benk',at,dur:KICK_DUR,
     // v0.814: forventningen kalibrert til gjærmengden (små bobler + tynn film
     // er nok); dødsgrensa i tipset står.
-    desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min. Med så lite gjær er små bobler og en tynn, melkete film på overflaten nok — ikke vent noe skumberg. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. Resten av vannet (${wr}g) tilsettes i neste steg.`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min. With this little yeast, small bubbles and a thin, milky film on the surface are enough — don't wait for a foam dome. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. The rest of the water (${wr}g) is added in the next step.`),
+    desc:L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C) — en liten del av den totale vannmengden — med en teskje honning. La stå ca. 5 min. Med så lite gjær er små bobler og en tynn, melkete film på overflaten nok — ikke vent noe skumberg. Da vet du gjæren lever, og den får et forsprang før den skal konkurrere med melet om maten. ${slutt}`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C) — a small part of the total water — with a teaspoon of honey. Let it sit about 5 min. With this little yeast, small bubbles and a thin, milky film on the surface are enough — don't wait for a foam dome. Then you know the yeast is alive, and it gets a head start before it has to compete with the flour for food. ${slutt}`),
     needs:[nGjaerTxt(ya), nI('vann', wk, {pre:['lunkent','lukewarm']}), L('🍯 1 ts honning','🍯 1 tsp honey')],
     substeps:[
       L(`Rør ${ya} ut i ${wk}g lunkent vann (${ktxt}°C)`,`Stir ${ya} into ${wk}g lukewarm water (${ktxt}°C)`),
@@ -750,8 +759,8 @@ function whyAu(){
 }
 function whySg(){
   if(S.kjokkenmaskin==='manuell') return L('Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. Ved håndelting: bland saltet inn sammen med gjæren fra start — du styrer selv tempoet, så det er ikke samme fare for at saltet møter uutviklet gluten som i en maskin.',`Salt strengthens the gluten structure and controls the yeast's activity. For hand kneading: mix the salt in together with the yeast from the start — you control the pace yourself, so there isn't the same risk of the salt meeting undeveloped gluten as in a machine.`);
-  if(S.kjokkenmaskin==='annen') return L('Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I kjøkkenmaskinen: tilsett salt etter 2–3 min elting — gluten er da så vidt i gang og tåler saltet bedre. Gjæren løses i vannet du holdt av fra autolysen.',`Salt strengthens the gluten structure and controls the yeast's activity. In the stand mixer: add salt after 2–3 min of kneading — the gluten is just getting going and tolerates the salt better. The yeast is dissolved in the water you held back from the autolyse.`);
-  return L('Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I Ankarsrum: tilsett salt etter ca. 3 min elting — da er gluten allerede i gang og tåler saltet bedre. Gjæren løses i vannet du holdt av fra autolysen.',`Salt strengthens the gluten structure and controls the yeast's activity. In the Ankarsrum: add salt after about 3 min of kneading — the gluten is already going and tolerates the salt better. The yeast is dissolved in the water you held back from the autolyse.`);
+  if(S.kjokkenmaskin==='annen') return L('Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I kjøkkenmaskinen: tilsett salt etter 2–3 min elting — gluten er da så vidt i gang og tåler saltet bedre.',`Salt strengthens the gluten structure and controls the yeast's activity. In the stand mixer: add salt after 2–3 min of kneading — the gluten is just getting going and tolerates the salt better.`);
+  return L('Salt styrker glutenstrukturen og kontrollerer gjærens aktivitet. I Ankarsrum: tilsett salt etter ca. 3 min elting — da er gluten allerede i gang og tåler saltet bedre.',`Salt strengthens the gluten structure and controls the yeast's activity. In the Ankarsrum: add salt after about 3 min of kneading — the gluten is already going and tolerates the salt better.`);
 }
 
 function langpanneHintText(){
@@ -981,7 +990,7 @@ function rawSteps(a){
       // autolysen hviler (starter 10 min før hvilen er ferdig). Død gjær
       // oppdages ellers først når romhevingen uteblir, en time senere med
       // alt melet brukt. Delt steg med Hurtigdeig/Kveldsdeig (kickstartStep).
-      kickstartStep(aM(t0,20), yw, r.water-yw, yA(r)),
+      kickstartStep(aM(t0,20), yw, r.water-yw, yA(r), true),
       {title:'Tilsett gjær og salt — elt ferdig',loc:'benk',at:aM(t0,30),dur:15,
         desc:S.kjokkenmaskin==='ankarsrum'
           ?L(`Hell gjærblandingen fra kickstarten i bollen${r.sugar?` sammen med ${r.sugar}g sukker`:''}. Start maskinen på trinn 2–3 og elt i 3 min. Tilsett deretter ${r.salt}g salt${r.oil?` og ${r.oil}g olje`:''}${r.butter?` + ${r.butter}g smeltet smør`:''}. Øk gradvis til trinn 3–4. Elt totalt 12–15 min til deigen er glatt og smidig og slipper bollen. Mål deigtemperaturen — den skal vise 22–24°C.`,`Pour the yeast mixture from the kickstart into the bowl${r.sugar?` together with ${r.sugar}g sugar`:''}. Start the machine on speed 2–3 and knead for 3 min. Then add ${r.salt}g salt${r.oil?` and ${r.oil}g oil`:''}${r.butter?` + ${r.butter}g melted butter`:''}. Increase gradually to speed 3–4. Knead 12–15 min total until the dough is smooth and supple and releases from the bowl. Measure the dough temperature — it should read 22–24°C.`)

@@ -8807,6 +8807,9 @@ const svSched=window._pizzatidSchedule;
                .replace(/\\(hvorav [^)]*\\)/g,'')
                .replace(/à (?:ca\\. )?\\d+(?:[.,]\\d+)?g/g,'')
                .replace(/Resten av vannet \\(\\d+g\\) tilsettes i neste steg\\./g,'')
+               // v0.851: den kjedebevisste varianten er like lite en tilsetning —
+               // den PEKER på vann som alt er talt i autolysesteget.
+               .replace(/Gjærblandingen helles i bollen i neste steg — resten av vannet \\(\\d+g\\) er allerede i deigen fra autolysen\\./g,'')
                .replace(/\\(ca\\. \\d+(?:[.,]\\d+)?g mel per [^)]*\\)/g,'');
             const tell=(rx,felt)=>{ let m; while((m=rx.exec(d))) sum[felt]+=num(m[1]); };
             tell(/(\\d+(?:[.,]\\d+)?)g\\s+(?:kjølig |kaldt |lunkent |iskaldt |romtemperert |eller )*vann(?![a-zæøå])/g,'vann');
@@ -10225,6 +10228,40 @@ const svSched=window._pizzatidSchedule;
     })()""")
     ok195 = all(r195.values())
     results.append(('hurtig_step_chain_is_in_clock_order', ok195, r195))
+
+    # ------- r196 (v0.851): kickstart-teksten er kjedebevisst + honning i kopien -------
+    # Ekstern gjennomgang av en ekte v0.850-plan fant to ting: (1) kickstart-
+    # malen var skrevet for hurtig/kveld der steget kommer FØRST («resten av
+    # vannet tilsettes i neste steg»), men Langtidsdeig gjenbruker steget ETTER
+    # autolysen — da var restvannet alt i bollen og setningen en intern
+    # motsigelse. (2) Honningen fra kickstarten sto bare i stegets trenger-
+    # liste, ikke i kopiens INGREDIENSER. Why-teksten på gjær+salt-steget
+    # gjentok dessuten «gjæren løses i vannet du holdt av» om noe som alt var
+    # gjort i steget før.
+    page.evaluate("resetTestState()")
+    r196 = page.evaluate("""(() => {
+      const anchor=new Date(2027,2,20,18,0);
+      S.mode='end'; S.type='napoletana'; S.mel=500; S.hydro=65;
+      S.method='standard';
+      const st=rawSteps(anchor);
+      const kickS=st.find(x=>x.title.includes('kickstart'));
+      const standardSierAllerede = kickS.desc.includes('allerede i deigen fra autolysen')
+        && !kickS.desc.includes('tilsettes i neste steg');
+      const whyUtenEkko = !st.find(x=>x.title.includes('Tilsett gjær')).why.includes('holdt av fra autolysen');
+      S.method='hurtig';
+      const hurtigSierNeste = hurtigSteps(anchor).steps[0].desc.includes('tilsettes i neste steg');
+      S.method='kveld';
+      const kveldSierNeste = kveldSteps(anchor).steps[0].desc.includes('tilsettes i neste steg');
+      S.method='standard';
+      const eksportHarHonning = planTekst(rawSteps(anchor)).includes('Honning: 1 ts');
+      S.method='poolish';
+      const poolishUtenHonning = !planTekst(rawSteps(anchor)).includes('Honning');
+      resetTestState();
+      return { standardSierAllerede, whyUtenEkko, hurtigSierNeste, kveldSierNeste,
+               eksportHarHonning, poolishUtenHonning };
+    })()""")
+    ok196 = all(r196.values())
+    results.append(('kickstart_text_matches_its_chain_and_honey_is_in_the_copy', ok196, r196))
 
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret

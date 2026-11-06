@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.851",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Rettet en selvmotsigelse i Langtidsdeig-planen, meldt inn via ekstern gjennomgang: kickstartsteget sa «Resten av vannet (305g) tilsettes i neste steg» — men i denne kjeden gikk det vannet i bollen allerede under autolysen. Setningen var skrevet for Hurtigdeig/Kveldsdeig, der kickstarten kommer først og den er sann. Nå sier steget det som faktisk skjer: gjærblandingen helles i bollen i neste steg, resten av vannet er allerede i deigen.",
+      "Honningen fra gjær-kickstarten står nå også i planens ingrediensliste («Honning: 1 ts»), ikke bare i stegets huskeliste — den manglet i kopien du deler eller handler etter. Og gjær+salt-steget gjentar ikke lenger at gjæren «løses i vannet du holdt av» — det ble gjort i steget før."
+    ],
+    "changes_en": [
+      "Fixed a self-contradiction in the Long-ferment plan, reported via external review: the kickstart step said \"The rest of the water (305g) is added in the next step\" — but in this chain that water went into the bowl during the autolyse. The sentence was written for Quick/Evening dough, where the kickstart comes first and it is true. The step now says what actually happens: the yeast mixture goes into the bowl in the next step, the rest of the water is already in the dough.",
+      "The honey from the yeast kickstart is now also in the plan's ingredient list (\"Honey: 1 tsp\"), not just the step's checklist — it was missing from the copy you share or shop from. And the yeast+salt step no longer repeats that the yeast \"is dissolved in the water you held back\" — that happened in the previous step."
+    ]
+  },
+  {
     "v": "0.850",
     "d": "november 2026",
     "d_en": "November 2026",
