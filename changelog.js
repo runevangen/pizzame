@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.855",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-serveren har fått sin guide: MCP.md i repoet (og en publisert, lesevennlig utgave) forklarer tilkobling fra Claude Code/Claude Desktop, de fire verktøyene med eksempler, det levende melregisteret og feilsøking. Ingen kodeendring."
+    ],
+    "changes_en": [
+      "The MCP server got its guide: MCP.md in the repo (plus a published, readable edition) explains connecting from Claude Code/Claude Desktop, the four tools with examples, the live flour registry and troubleshooting. No code change."
+    ]
+  },
+  {
     "v": "0.854",
     "d": "november 2026",
     "d_en": "November 2026",
