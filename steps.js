@@ -13,16 +13,12 @@
 //
 // Lastes som klassisk <script> ETTER engine.js og FØR hovedscriptet — alt er
 // globalt, akkurat som før flyttingen. Laget LESER (ved kall, aldri ved
-// lasting) disse globalene som fortsatt bor i index.html/engine.js:
-//   engine.js:  recipeFor, R, maniaRecipe, MANIA_T, pc, yA, yLabelFor, tf,
-//               rtM, poolishAndel, poolishWindowHours, mN ...
-//   index.html: L, S, DEF, HOPTS, KOPTS, fmtSessionDur, fmtHM, durEn,
-//               coldTimeLabel, poolishSplit, poolishTemperMin,
-//               poolishRestText, poolishWindowText, POOLISH_ROMSTART_MIN,
-//               MELTYPER (via meltype-tekster), window._lang
-// Index-lista er sømmen som gjenstår: neste skive av utflyttingen er å la de
-// hjelperne følge etter hit, så test_steg.mjs sin hentFraIndex()-liste krymper
-// til null. Ikke legg NY stegkode i index.html — den hører hjemme her.
+// lasting) globaler fra engine.js: recipeFor, R, maniaRecipe, MANIA_T, pc,
+// yA, yLabelFor, tf, rtM, poolishAndel, poolishWindowHours, mN, L, DEF,
+// HOPTS, KOPTS, MELTYPER, range, poolishColdHours ... — og window._lang.
+// Sømmen mot index.html ble lukket i v0.838 (tekst-/varighetshjelperne hit,
+// tilstandsfasiten til engine.js) og v0.853 (melregisteret til engine.js).
+// Ikke legg NY stegkode i index.html — den hører hjemme her.
 
 // ===== Tekst- og varighetshjelpere (v0.838, verbatim fra index.html) =====
 // Sømmen fra v0.836 lukket: hjelperne steglaget leser bor nå her.
@@ -1536,4 +1532,71 @@ function stepsForAnchor(anchor){
   if(S.type!=='ingenelting' && S.method==='hurtig') return hurtigSteps(anchor).steps;
   if(S.type!=='ingenelting' && S.method==='kveld') return kveldSteps(anchor).steps;
   return rawSteps(anchor);
+}
+
+// ===== SMART-PLAN-SVEIPET (v0.853, verbatim fra searchAllMethods i index.html) =====
+// Kandidatgenereringen — metode × parameterrom, hver kombinasjon regnet som
+// full stegkjede bakover fra ankeret (S.mode='end') — er ren beregning og bor
+// derfor her, i samme ånd som steglag-utflyttingen (v0.836/v0.838). Det som
+// IKKE fulgte med er personaliseringen: pizzatid-scoringen (violations/
+// conflicts) kommer inn via `vurder`-callbacken (nettleseren sender sine
+// scorere; headless får nuller), og metodefilter/melkurv/sortering blir igjen
+// i searchAllMethods. Dermed kan node-laget og MCP-serveren svare på «hvilke
+// metoder rekker jeg» med nøyaktig samme kandidater som Smart-plan-fanen.
+function smartKandidater(anchor, vurder){
+  const score=vurder||(()=>({violations:0, conflicts:[]}));
+  const origMethod=S.method, origMode=S.mode, origCold=S.cold, origPoolishH=S.poolishH,
+        origBigaH=S.bigaH, origHurtigH=S.hurtigH, origKveldH=S.kveldH, origPoolishCold=S.poolishCold, origPoolishPauseH=S.poolishPauseH;
+  S.mode='end';
+  S.poolishPauseH=0;
+  const candidates=[];
+  // Sterkeste melets tak (Manitoba Oro = 120t). Over dette finnes ingen deig noe
+  // mel tåler — det var kilden til «~145t / No registered flour covers this».
+  const flourMax=Math.max(...MELTYPER.map(m=>m.ferm.mx));
+  function timesOf(steps){
+    const firstActive=steps.find(s=>!s.passive)||steps[0];
+    const last=steps[steps.length-1];
+    let startAt=firstActive.at; if(!(startAt instanceof Date)) startAt=new Date(startAt);
+    let bakeAt=last.at; if(!(bakeAt instanceof Date)) bakeAt=new Date(bakeAt);
+    return {startIso:startAt.toISOString(), bakeIso:bakeAt.toISOString()};
+  }
+  function evalCombo(label, snapshot){
+    // v0.661: kapp bare den LANGE enden — over det sterkeste melets tak (120t)
+    // finnes ingen deig noe mel tåler (kilden til ~145t-forslaget). Korte deiger
+    // (under melenes anbefalte minimum) er greie: der er «mel som passer» en
+    // smaks-anbefaling, ikke en fysisk grense, så dem beholder vi.
+    const total=totalFermentHours();
+    if(total>flourMax) return;
+    const steps=rawSteps(anchor);
+    candidates.push({label, ...score(steps), totalHrs:total, snapshot:{...snapshot}, ...timesOf(steps)});
+  }
+  // Langtidsdeig (tidligere "Standard")
+  S.method='standard';
+  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo(mN('standard'), {method:'standard',cold}); }
+  // Poolish, romtemperatur
+  S.method='poolish'; S.poolishCold=false;
+  for(const pref of [12,13,14,15,16]) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo(L('Poolish (romtemperatur)','Poolish (room temperature)'), {method:'poolish',poolishCold:false,poolishH:pref,cold}); }
+  // Poolish, kjøleskap
+  S.poolishCold=true;
+  for(const pref of poolishColdHours()) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo(L('Poolish (kjøleskap)','Poolish (fridge)'), {method:'poolish',poolishCold:true,poolishH:pref,cold}); }
+  // Poolish med kjøleskapspause — skyver planen inn i ledig tid uten å endre middagen
+  S.poolishCold=false;
+  for(const pause of [6,12,18]) for(const pref of [13,14,15]) for(const cold of range(24,72,12)){ S.poolishH=pref; S.cold=cold; S.poolishPauseH=pause; evalCombo(L(`Poolish (romtemp + ${pause}t kjøleskapspause)`,`Poolish (room temp + ${pause}h fridge pause)`), {method:'poolish',poolishCold:false,poolishH:pref,cold,poolishPauseH:pause}); }
+  S.poolishPauseH=0;
+  // Biga
+  S.method='biga';
+  for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
+  // Hurtigdeig — bruker HOPTS sine faste alternativer
+  S.method='hurtig';
+  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:mN('hurtig'), ...score(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
+  // Kveldsdeig — bruker KOPTS sine faste alternativer
+  S.method='kveld';
+  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:mN('kveld'), ...score(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
+  // Mania-poolish — fast struktur, ingenting å søke i, bare mål den ene planen
+  S.method='mania';
+  { const steps=rawSteps(anchor); candidates.push({label:mN('mania'), ...score(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
+
+  S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
+  S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold; S.poolishPauseH=origPoolishPauseH;
+  return candidates;
 }

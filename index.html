@@ -1737,12 +1737,8 @@ const S={...DEF};let AT=null;
 // målt på steketid fredag 19:00 var bare 11:40 og 17:40 brukbare, mens de to
 // andre var 05:40 og 23:40. Det var ikke planleggeren som var dum — den hadde
 // bare fire ruter å velge mellom.
-// Med 3-timerssteg dobles rasteret til åtte posisjoner i døgnet. Kalibrerings-
-// kurven for kald poolish interpolerer lineært, så mellomtimene trenger ingen
-// egne tall — 15t og 21t er allerede definert av kurven gjennom 12/16/24.
-// Ett sted, slik at søket, stepperen og sveipene ikke kan drifte fra hverandre.
-const POOLISH_KALD_STEG=3;
-function poolishColdHours(){ return range(12,48,POOLISH_KALD_STEG); }
+// POOLISH_KALD_STEG/poolishColdHours bor i engine.js (v0.853) — Smart-plan-
+// sveipet trenger dem i node.
 const POOLISH_OPTS=[{h:12,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:13,b:'Kort',bEn:'Short'},{h:14,b:'Anbefalt',bEn:'Recommended'},{h:15,b:'Lang',bEn:'Long'},{h:16,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
 const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{h:18,b:'Anbefalt',bEn:'Recommended'},{h:20,b:'Lang',bEn:'Long'},{h:22,b:'Lengre',bEn:'Longer'},{h:24,b:'Lengst, mest smak',bEn:'Longest, most flavor'}];
 // Kaldhevings-gjærkurven (tidl. COLDMULT dags-tabell + COLDMULT_HOURS) bor nå i
@@ -1750,12 +1746,10 @@ const BIGA_OPTS=[{h:16,b:'Kortere, mildere smak',bEn:'Shorter, milder flavor'},{
 // kilder antyder enda lavere gjærmengde ved lange kaldhevinger (0,1-0,2% fersk
 // gjær for 48-72t), men vi holder en praktisk mellomting som ikke krever
 // presisjonsvekt. Samme prinsipp som Kveldsdeig.
-// v0.659/v0.680: øvre tak for kjøleskapsheving. v0.685: UTLEDES nå fra sterkeste
-// mels ferm.mx (var hardkodet 120t) — legger admin inn et sterkere mel, strekker
-// slideren seg. Invariant: COLD_MAX === Math.max(ferm.mx) blant ekte mel. Over
-// dette tåler intet mel mer. Overmodnings-varselet (96t total) er den ærlige
-// bremsen i den lange enden; meltype-varselet dømmer per mel under det.
-let COLD_MAX=120;
+// COLD_MAX (øvre tak for kjøleskapsheving, utledet av sterkeste mels ferm.mx)
+// bor i engine.js (v0.853) sammen med melregisteret. Overmodnings-varselet
+// (96t total) er den ærlige bremsen i den lange enden; meltype-varselet dømmer
+// per mel under det.
 // Regn COLD_MAX på nytt fra MELTYPER (uten «annet»-sentinelen, ferm.mx=0) og
 // oppdater begge slider-maks + PC-endelappen. Kalt ved oppstart og etter applyFlours.
 function recomputeColdMax(){
@@ -1765,38 +1759,9 @@ function recomputeColdMax(){
   const lbl=document.getElementById('csl-max-lbl'); if(lbl) lbl.textContent=COLD_MAX+' timer';
 }
 
-// Meltyper med anbefalt fermenteringsvindu (fra meny.no/italiensk-pizza/riktig-mel-til-pizza,
-// kryssjekket mot Maschmanns — norsk Caputo-distributør — 15. juli 2026).
-// Brukes til å varsle hvis planlagt total gjæringstid ligger utenfor melets styrke-område.
-// «Annet mel / ikke i listen»: for et mel appen ikke kjenner. generic:true slår
-// av det mel-spesifikke gjærings-/hydreringsvarselet (appen kan ikke dømme et
-// spenn den ikke vet). Den tomme ferm-range-en {mn:999,mx:0} matcher aldri, så
-// melet påvirker verken kald-taket, Smart-plan-lista eller «bytt til»-forslag.
-// Dette er en frontend-SENTINEL — den lagres aldri på server og legges alltid
-// sist i MELTYPER, så admin verken kan redigere eller slette den bort.
-const ANNET_FLOUR={v:'annet',t:'Annet mel',tEn:'Other flour',generic:true,protein:'–',w:'–',hydro:'–',ferm:{mn:999,mx:0}};
-// v0.684: meltypene ligger nå på server (/api/flours) så nye mel kan legges til /
-// egenskaper endres uten deploy. Denne lista er den INNEBYGDE seed-en (fallback
-// hvis backend ikke svarer — bl.a. i regresjonstestene, der /api/flours 404-er);
-// applyFlours() overstyrer den ved oppstart om serveren har data. «annet» legges
-// alltid til på slutten.
-const MELTYPER_SEED=[
-  {v:'dallari',t:'Dallari pizzamel',protein:'10,7%',w:'–',hydro:'55–60%',hydroRange:{mn:55,mx:60},ferm:{mn:4,mx:8}},
-  {v:'doppio_zero',t:'Caputo Doppio Zero',protein:'11%',w:'220–230',hydro:'60–70%',hydroRange:{mn:60,mx:70},ferm:{mn:6,mx:24}},
-  {v:'regal_pizzamel',t:'Regal Pizzamel',protein:'11%',w:'–',hydro:'60–68%',hydroRange:{mn:60,mx:68},ferm:{mn:6,mx:24},estimated:true},
-  {v:'vanlig_hvetemel',t:'Vanlig hvetemel',protein:'11,2%',w:'–',hydro:'55–63%',hydroRange:{mn:55,mx:63},ferm:{mn:4,mx:10},estimated:true},
-  // v0.802: Ramlösa Kvarn (Finax) Tipo 00 — siktet svensk vårvete, selges bl.a.
-  // hos Coop. Produsenten oppgir 12,5 % protein men ingen W-verdi, så spennene
-  // er anslått: samme protein som Caputo Pizzeria, men uten dokumentert styrke
-  // settes taket forsiktig til 36 t — ikke Pizzerias 48.
-  {v:'ramlosa_tipo00',t:'Ramlösa Kvarn Tipo 00',protein:'12,5%',w:'–',hydro:'58–70%',hydroRange:{mn:58,mx:70},ferm:{mn:10,mx:36},estimated:true},
-  {v:'pizzeria',t:'Caputo Pizzeria',protein:'12,5%',w:'260–270',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:12,mx:48}},
-  {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48}},
-  {v:'regal_tipo00',t:'Regal Tipo 00',protein:'13%',w:'–',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48},estimated:true},
-  {v:'couco',t:'Caputo Cuoco',protein:'13%',w:'300–320',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:16,mx:54}},
-  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:120}}
-];
-let MELTYPER=[...MELTYPER_SEED.map(f=>({...f})), ANNET_FLOUR];
+// Melregisteret (MELTYPER_SEED, ANNET_FLOUR, MELTYPER) bor i engine.js
+// (v0.853) — melfakta er motorfakta, og Smart-plan-sveipet trenger dem i node.
+// Serverlaget under (applyFlours) og melkurven er miljø og blir her.
 // Overstyr MELTYPER med server-data (validert). Beholder seed hvis alt er ugyldig,
 // og legger alltid «annet»-sentinelen sist. Kalt ved oppstart etter /api/flours.
 function applyFlours(serverFlours){
@@ -3585,59 +3550,12 @@ function conflictIsQuick(c){ return !!c.passive || !c.dur || c.dur<=1; }
 // tiebreak. Varierer ikke meltype — den delen håndteres separat (se
 // flourMatchesForHours()) siden mel er en fysisk begrensning, ikke noe å søke i.
 function searchAllMethods(anchor){
-  const origMethod=S.method, origMode=S.mode, origCold=S.cold, origPoolishH=S.poolishH,
-        origBigaH=S.bigaH, origHurtigH=S.hurtigH, origKveldH=S.kveldH, origPoolishCold=S.poolishCold, origPoolishPauseH=S.poolishPauseH;
-  S.mode='end';
-  S.poolishPauseH=0;
-  const candidates=[];
-  // Sterkeste melets tak (Manitoba Oro = 120t). Over dette finnes ingen deig noe
-  // mel tåler — det var kilden til «~145t / No registered flour covers this».
-  const flourMax=Math.max(...MELTYPER.map(m=>m.ferm.mx));
-  function timesOf(steps){
-    const firstActive=steps.find(s=>!s.passive)||steps[0];
-    const last=steps[steps.length-1];
-    let startAt=firstActive.at; if(!(startAt instanceof Date)) startAt=new Date(startAt);
-    let bakeAt=last.at; if(!(bakeAt instanceof Date)) bakeAt=new Date(bakeAt);
-    return {startIso:startAt.toISOString(), bakeIso:bakeAt.toISOString()};
-  }
-  function evalCombo(label, snapshot){
-    // v0.661: kapp bare den LANGE enden — over det sterkeste melets tak (120t)
-    // finnes ingen deig noe mel tåler (kilden til ~145t-forslaget). Korte deiger
-    // (under melenes anbefalte minimum) er greie: der er «mel som passer» en
-    // smaks-anbefaling, ikke en fysisk grense, så dem beholder vi.
-    const total=totalFermentHours();
-    if(total>flourMax) return;
-    const steps=rawSteps(anchor);
-    candidates.push({label, violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:total, snapshot:{...snapshot}, ...timesOf(steps)});
-  }
-  // Langtidsdeig (tidligere "Standard")
-  S.method='standard';
-  for(const cold of range(24,96,6)){ S.cold=cold; evalCombo(mN('standard'), {method:'standard',cold}); }
-  // Poolish, romtemperatur
-  S.method='poolish'; S.poolishCold=false;
-  for(const pref of [12,13,14,15,16]) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo(L('Poolish (romtemperatur)','Poolish (room temperature)'), {method:'poolish',poolishCold:false,poolishH:pref,cold}); }
-  // Poolish, kjøleskap
-  S.poolishCold=true;
-  for(const pref of poolishColdHours()) for(const cold of range(24,96,6)){ S.poolishH=pref; S.cold=cold; evalCombo(L('Poolish (kjøleskap)','Poolish (fridge)'), {method:'poolish',poolishCold:true,poolishH:pref,cold}); }
-  // Poolish med kjøleskapspause — skyver planen inn i ledig tid uten å endre middagen
-  S.poolishCold=false;
-  for(const pause of [6,12,18]) for(const pref of [13,14,15]) for(const cold of range(24,72,12)){ S.poolishH=pref; S.cold=cold; S.poolishPauseH=pause; evalCombo(L(`Poolish (romtemp + ${pause}t kjøleskapspause)`,`Poolish (room temp + ${pause}h fridge pause)`), {method:'poolish',poolishCold:false,poolishH:pref,cold,poolishPauseH:pause}); }
-  S.poolishPauseH=0;
-  // Biga
-  S.method='biga';
-  for(const pref of [16,18,20,22,24]) for(const cold of range(24,96,6)){ S.bigaH=pref; S.cold=cold; evalCombo('Biga', {method:'biga',bigaH:pref,cold}); }
-  // Hurtigdeig — bruker HOPTS sine faste alternativer
-  S.method='hurtig';
-  for(const o of HOPTS){ S.hurtigH=o.h; const steps=hurtigSteps(anchor).steps; candidates.push({label:mN('hurtig'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'hurtig',hurtigH:o.h}, ...timesOf(steps)}); }
-  // Kveldsdeig — bruker KOPTS sine faste alternativer
-  S.method='kveld';
-  for(const o of KOPTS){ S.kveldH=o.h; const steps=kveldSteps(anchor).steps; candidates.push({label:mN('kveld'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'kveld',kveldH:o.h}, ...timesOf(steps)}); }
-  // Mania-poolish — fast struktur, ingenting å søke i, bare mål den ene planen
-  S.method='mania';
-  { const steps=rawSteps(anchor); candidates.push({label:mN('mania'), violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps), totalHrs:totalFermentHours(), snapshot:{method:'mania'}, ...timesOf(steps)}); }
-
-  S.method=origMethod; S.mode=origMode; S.cold=origCold; S.poolishH=origPoolishH;
-  S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold; S.poolishPauseH=origPoolishPauseH;
+  // v0.853: kandidatgenereringen (metode × parameterrom, hver kombinasjon som
+  // full stegkjede) bor nå i steps.js (smartKandidater) så den kan regnes uten
+  // nettleser. Her er bare det som er DITT: pizzatid-scoringen sendes inn som
+  // callback, og filter/rangering under leser metodevalg og melkurv.
+  const candidates=smartKandidater(anchor,
+    steps=>({violations:scorePizzatidWindows(steps), conflicts:conflictsOf(steps)}));
 
   // En kombinasjon som ber deg starte FØR akkurat nå er ikke en reell løsning —
   // uansett hvor bra den ellers scorer. Prioriter alltid gjennomførbare
@@ -5305,7 +5223,7 @@ function activeStepTimeWarningHTML(){
   }
   return '';
 }
-function range(a,b,step){ const r=[]; for(let x=a;x<=b;x+=step) r.push(x); return r; }
+// range() bor i engine.js (v0.853, fulgte melregisteret og Smart-plan-sveipet).
 // Proaktiv påminnelse: hvis man velger Poolish/Biga midt i uka (ons-fre), er
 // sjansen stor for at man planlegger helgepizza — foreslå å starte tidlig for
 // mest fleksibilitet, i stedet for å bare håndtere problemet når det oppstår.

@@ -2211,7 +2211,9 @@ def _atferd_3(page, results):
         const sameViol=pool.filter(c=>c.violations===minViol);
         const topStart=new Date(top.startIso).getTime();
         const topStartsClosest=sameViol.every(c=>new Date(c.startIso).getTime()<=topStart);
-        const guardWired=searchAllMethods.toString().includes('flourMax') && searchAllMethods.toString().includes('usingFallback');
+        // v0.853: flourMax-vakten fulgte kandidatgenereringen til steps.js
+        // (smartKandidater); fallback-rangeringen er fortsatt searchAllMethods' jobb.
+        const guardWired=smartKandidater.toString().includes('flourMax') && searchAllMethods.toString().includes('usingFallback');
         // kort deig får «alle mel passer», ikke skremmende «ingen mel dekker»
         const shortMsgFixed=renderResultBlock.toString().includes('Any flour works');
         return {count:pool.length, noneExceedFlourMax, topStartsClosest, guardWired, shortMsgFixed, topHrs:Math.round(top.totalHrs)};

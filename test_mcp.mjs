@@ -52,7 +52,8 @@ try {
 
   const liste = await kall('tools/list', {});
   const navn = (liste.result ? liste.result.tools : []).map(v => v.name).sort();
-  t('tools/list gir begge verktøyene', JSON.stringify(navn) === JSON.stringify(['lag_plan', 'mengder']), navn);
+  t('tools/list gir alle tre verktøyene',
+    JSON.stringify(navn) === JSON.stringify(['lag_plan', 'mengder', 'metoder_som_rekker']), navn);
 
   // --- Frosne scenarier gjennom protokollen — samme fasit som steglaget ---
   // Scenariofeltene speiler test_steg.mjs; anker='start' fordi baseline er
@@ -94,6 +95,39 @@ try {
   const m = await verktoy('mengder', { metode: 'standard', type: 'napoletana', mel: 500, hydro: 65, meltype: 'doppio_zero' });
   t('mengder gir motorens kjernetall', !!m.data && m.data.flour === 500 && m.data.water === 325
     && m.data.salt === baseline.standard_napoletana.recipe.salt, m.data);
+
+  // --- metoder_som_rekker (v0.853): Smart-plan-sveipet gjennom protokollen ---
+  // `naa` er med i kallet så fasiten er deterministisk: 8 timer til ferdig
+  // betyr at bare hurtigdeig rekker; med 12 dagers forsprang rekker alt.
+  const trangt = await verktoy('metoder_som_rekker', { tidspunkt: '2026-08-01T18:00', naa: '2026-08-01T10:00' });
+  if (!trangt.data) { t('metoder_som_rekker svarer', false, trangt.err || trangt.text); }
+  else {
+    const per = Object.fromEntries(trangt.data.metoder.map(m => [m.metode, m]));
+    t('8t-vindu: hurtigdeig rekker', per.hurtig && per.hurtig.rekker === true, per.hurtig);
+    t('8t-vindu: langtidsdeig rekker ikke', per.standard && per.standard.rekker === false, per.standard);
+    t('8t-vindu: biga rekker ikke', per.biga && per.biga.rekker === false, per.biga);
+    t('8t-vindu: ærlig om når du måtte startet', !!(per.standard && per.standard.maatteStartet_iso
+      && per.standard.maatteStartet_iso < '2026-08-01T08:00:00.000Z'), per.standard);
+    t('8t-vindu: beste hurtig starter etter «nå»', !!(per.hurtig.beste
+      && per.hurtig.beste.start_iso >= '2026-08-01T08:00:00.000Z'), per.hurtig.beste);
+  }
+  const romslig = await verktoy('metoder_som_rekker', { tidspunkt: '2026-08-01T18:00', naa: '2026-07-20T10:00' });
+  if (!romslig.data) { t('metoder_som_rekker (romslig) svarer', false, romslig.err || romslig.text); }
+  else {
+    t('12 dagers forsprang: alle seks metoder rekker', romslig.data.metoder.every(m => m.rekker),
+      romslig.data.metoder.filter(m => !m.rekker).map(m => m.metode));
+    // Rundtur-kontrakten: oppsettet svaret peker på skal gi en lag_plan som
+    // faktisk steker på ferdigtidspunktet. Dette er HELE poenget med verktøyet
+    // — et forslag du ikke kan bake etter er verre enn ingenting.
+    const beste = romslig.data.metoder.find(m => m.metode === 'standard').beste;
+    const plan = await verktoy('lag_plan', { ...beste.oppsett, metode: beste.oppsett.method,
+      tidspunkt: '2026-08-01T18:00', anker: 'ferdig' });
+    const siste = plan.data && plan.data.steg[plan.data.steg.length - 1];
+    t('rundtur: beste oppsett gir plan som steker på ferdigtidspunktet',
+      !!siste && siste.tid_iso === '2026-08-01T16:00:00.000Z', siste);
+    t('rundtur: planens første steg matcher senesteStart-logikken',
+      !!plan.data && plan.data.steg[0].tid_iso <= beste.start_iso, plan.data && plan.data.steg[0]);
+  }
 
   // --- Feilveiene skal være høflige, presise og aldri gjette ---
   const f1 = await verktoy('lag_plan', { metode: 'surdeig', tidspunkt: '2026-08-01T18:00' });

@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.853",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Smart-plan-søket kan nå regnes uten nettleser: kandidatgenereringen (metode × parameterrom, hver kombinasjon som full stegkjede bakover fra steketidspunktet) er flyttet til steglaget, og melregisteret fulgte med til motoren — melfakta er motorfakta. Det som er DITT blir igjen i appen: pizzatid-scoringen, metodefilteret og melkurven. Appens Smart-plan-fane oppfører seg nøyaktig som før.",
+      "MCP-serveren fikk sitt tredje verktøy: metoder_som_rekker svarer på «hva rekker jeg til lørdag 18?» med samme kandidater som Smart-plan — per metode: rekker den, seneste mulige start, og beste gjennomførbare variant. Rekker den ikke, sier svaret ærlig når du måtte ha startet. Ny rundtur-vokter beviser at oppsettet svaret peker på gir en plan som faktisk steker på ferdigtidspunktet."
+    ],
+    "changes_en": [
+      "The Smart plan search can now run without a browser: candidate generation (method × parameter space, each combination as a full step chain computed backwards from the bake time) moved to the step layer, and the flour registry followed into the engine — flour facts are engine facts. What is YOURS stays in the app: the pizza-time scoring, the method filter and the flour basket. The app's Smart plan tab behaves exactly as before.",
+      "The MCP server got its third tool: metoder_som_rekker answers \"what can I make by Saturday 6pm?\" with the same candidates as Smart plan — per method: whether it fits, the latest possible start, and the best feasible variant. If it doesn't fit, the answer honestly says when you would have had to start. A new round-trip guard proves the setup the answer points to yields a plan that actually bakes at the finish time."
+    ]
+  },
+  {
     "v": "0.852",
     "d": "november 2026",
     "d_en": "November 2026",

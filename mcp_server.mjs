@@ -1,4 +1,4 @@
-// MCP-server for pizzamotoren (v0.852) — motoren som samtaleflate.
+// MCP-server for pizzamotoren (v0.852, +metoder_som_rekker v0.853) — motoren som samtaleflate.
 //
 // Dette er et nytt «hode» på NØYAKTIG samme søm som test_steg.mjs har brukt
 // siden v0.836: engine.js + steps.js lastes i ett globalt scope med et lite
@@ -15,6 +15,7 @@
 // via .mcp.json i repo-rota). Verktøyene:
 //   lag_plan — komplett tidsplan + oppskrift for et gitt tidspunkt
 //   mengder  — bare kjernetallene (mel/vann/salt/gjær ...)
+//   metoder_som_rekker — hvilke metoder er gjennomførbare til et ferdigtidspunkt
 //
 // Testes av test_mcp.mjs (Gruppe 0d i porten): samme frosne scenarier som
 // steglaget, gjennom selve stdio-protokollen.
@@ -33,7 +34,7 @@ const S = {};
 const lag = new Function('window', 'S',
   engineSrc + '\n' + stepsSrc + `
   ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-            recipeFor, preheatMin, stepLoc };
+            recipeFor, preheatMin, stepLoc, smartKandidater, mN };
 `)(globalThis.window, S);
 
 const METODER = ['standard', 'poolish', 'biga', 'mania', 'hurtig', 'kveld'];
@@ -72,6 +73,17 @@ function oppskrift(metode) {
   return metode === 'mania' ? lag.maniaRecipe() : lag.recipeFor();
 }
 
+function fmtTid(ms) {
+  return new Date(ms).toLocaleString(window._lang === 'en' ? 'en-GB' : 'no-NO',
+    { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+function lesTid(verdi, felt) {
+  const d = new Date(String(verdi));
+  if (isNaN(d)) throw new Error(`ugyldig ${felt} ${JSON.stringify(verdi)} — bruk ISO-format, f.eks. "2026-11-07T18:00"`);
+  return d;
+}
+
 // ===== Verktøyene =====
 const VERKTOY = [
   {
@@ -105,16 +117,13 @@ const VERKTOY = [
     kjor(args) {
       const { metode } = settScenario(args);
       S.mode = args.anker === 'start' ? 'start' : 'end';
-      const nar = new Date(String(args.tidspunkt));
-      if (isNaN(nar)) throw new Error(`ugyldig tidspunkt ${JSON.stringify(args.tidspunkt)} — bruk ISO-format, f.eks. "2026-11-07T18:00"`);
+      const nar = lesTid(args.tidspunkt, 'tidspunkt');
       const steg = lag.stepsForAnchor(nar);
-      const fmt = (ms) => new Date(ms).toLocaleString(window._lang === 'en' ? 'en-GB' : 'no-NO',
-        { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       return {
         oppskrift: oppskrift(metode),
         forvarmingMin: lag.preheatMin(),
         steg: steg.map((s, i) => ({
-          tid: fmt(s.at),
+          tid: fmtTid(s.at),
           tid_iso: new Date(s.at).toISOString(),
           tittel: s.title,
           beskrivelse: s.desc,
@@ -148,6 +157,57 @@ const VERKTOY = [
       return oppskrift(metode);
     },
   },
+  {
+    name: 'metoder_som_rekker',
+    description:
+      'Hvilke deigmetoder rekker du til et gitt ferdigtidspunkt? Kjører Smart-plan-sveipet fra ' +
+      'pizzame-motoren (samme kandidater som appens Smart-plan-fane): for hver metode får du om den ' +
+      'rekker, seneste mulige start, og den beste gjennomførbare varianten (lengst gjæring = mest smak). ' +
+      'Bruk lag_plan etterpå med oppsett-feltene fra svaret for full tidsplan.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tidspunkt: { type: 'string', description: 'Når pizzaen skal være ferdig. Lokalt tidspunkt (Europe/Oslo), ISO-format, f.eks. "2026-11-07T18:00".' },
+        type: { type: 'string', enum: TYPER, description: 'Pizzatype. Standard: napoletana.' },
+        mel: { type: 'number', description: 'Gram mel totalt. Standard 500.' },
+        hydro: { type: 'number', description: 'Hydrering i %. Standard 65.' },
+        temp: { type: 'number', description: 'Romtemperatur i °C. Standard 22.' },
+        oven: { type: 'string', enum: ['vanlig', 'pizza'], description: 'Ovn. Standard pizza.' },
+        naa: { type: 'string', description: 'Hva som regnes som «nå» (ISO). Standard: faktisk klokkeslett. Sett den for å planlegge fram i tid.' },
+        lang: { type: 'string', enum: ['no', 'en'] },
+      },
+      required: ['tidspunkt'],
+    },
+    kjor(args) {
+      settScenario({ ...args, metode: 'standard' }); // sveipet varierer metoden selv
+      const anker = lesTid(args.tidspunkt, 'tidspunkt');
+      const naa = args.naa !== undefined ? lesTid(args.naa, 'naa').getTime() : Date.now();
+      const kand = lag.smartKandidater(anker);
+      const metoder = METODER.map((m) => {
+        const mine = kand.filter(c => c.snapshot.method === m);
+        const mulige = mine.filter(c => new Date(c.startIso).getTime() >= naa);
+        const ut = { metode: m, navn: lag.mN(m), rekker: mulige.length > 0 };
+        if (mulige.length) {
+          // Seneste start = mest slakk; beste = lengst gjæring (mest smak),
+          // samme smaks-tiebreak som Smart-plan bruker blant like kandidater.
+          const senest = mulige.reduce((a, b) => (a.startIso > b.startIso ? a : b));
+          const beste = mulige.reduce((a, b) => (b.totalHrs > a.totalHrs ? b : a));
+          ut.senesteStart = fmtTid(new Date(senest.startIso));
+          ut.senesteStart_iso = senest.startIso;
+          ut.beste = { variant: beste.label, start: fmtTid(new Date(beste.startIso)),
+                       start_iso: beste.startIso, totalGjaeringTimer: beste.totalHrs, oppsett: beste.snapshot };
+        } else if (mine.length) {
+          // Ærlig når det ikke rekker: vis hva som var nærmest, så svaret kan
+          // si «du skulle startet i går 14:00», ikke bare nei.
+          const naermest = mine.reduce((a, b) => (a.startIso > b.startIso ? a : b));
+          ut.maatteStartet = fmtTid(new Date(naermest.startIso));
+          ut.maatteStartet_iso = naermest.startIso;
+        }
+        return ut;
+      });
+      return { ferdig: fmtTid(anker), ferdig_iso: anker.toISOString(), metoder };
+    },
+  },
 ];
 
 // ===== JSON-RPC over stdio (linjedelte meldinger) =====
@@ -159,7 +219,7 @@ function handle(req) {
     return send({ jsonrpc: '2.0', id, result: {
       protocolVersion: (params && params.protocolVersion) || '2025-06-18',
       capabilities: { tools: {} },
-      serverInfo: { name: 'pizzame-motor', version: '0.852' },
+      serverInfo: { name: 'pizzame-motor', version: '0.853' },
     } });
   }
   if (method === 'ping') return send({ jsonrpc: '2.0', id, result: {} });
