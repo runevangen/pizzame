@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.850",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "To rettinger i stegkjedene, begge funnet av en ny testteknikk som prøvde 400 tilfeldige oppsett mot regelen «stegene skal stå i klokkerekkefølge». Poolish med kjøleskapspause: «Ta poolish ut — temperer» kunne havne før selve pausen når pausen var kortere enn tempereringsbehovet — nå klampes tempereringen mot pausens lengde. Tilfellet nås i dag bare via lagrede oppsett (appen tilbyr selv 6/12/18 t pause), men kjeden skal være riktig uansett.",
+      "Kort hurtigdeig i vanlig ovn: «Sett på ovnen» (45 min forvarming) hører hjemme FØR «Form emner» når etterhevingen er kortere enn forvarmingen — rådet var riktig, men steget sto midt i lista med tidligere klokkeslett enn naboen over. Hele hurtig-kjeden sorteres nå etter tid."
+    ],
+    "changes_en": [
+      "Two fixes in the step chains, both found by a new test technique that tried 400 random setups against the rule \"steps must be in clock order\". Poolish with a fridge pause: \"Take the poolish out — warm up\" could land before the pause itself when the pause was shorter than the warm-up need — the warm-up is now clamped to the pause length. The case is only reachable via saved setups today (the app itself offers 6/12/18 h pauses), but the chain should be right regardless.",
+      "Short quick dough in a regular oven: \"Turn on the oven\" (45 min preheat) belongs BEFORE \"Shape balls\" when the final proof is shorter than the preheat — the advice was right, but the step sat mid-list with an earlier clock time than its neighbour above. The whole quick chain is now sorted by time."
+    ]
+  },
+  {
     "v": "0.849",
     "d": "november 2026",
     "d_en": "November 2026",

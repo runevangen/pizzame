@@ -10157,6 +10157,75 @@ const svSched=window._pizzatidSchedule;
     ok193 = all(r193.values())
     results.append(('new_user_is_told_the_language_can_be_changed', ok193, r193))
 
+    # ------- r194 (v0.850): poolish-pausens temperering kan ikke ligge før pausen -------
+    # Funnet av egenskapsfuzzen (400 tilfeldige oppsett mot kronologi-invarianten):
+    # med poolishPauseH=2 lå «🌡 Ta poolish ut — temperer» én time FØR pausestart,
+    # fordi temperAt=mixAt−poolishTemperMin() aldri ble klampet mot pausens lengde
+    # (pauseKaldMin klampes til 0, men tidspunktet fikk stå). UI-et tilbyr bare
+    # 6/12/18t, så tilfellet nås via lagrede oppsett — kjeden skal likevel være
+    # fysisk konsistent uansett hvor verdien kommer fra.
+    page.evaluate("resetTestState()")
+    r194 = page.evaluate("""(() => {
+      S.method='poolish'; S.type='napoletana'; S.poolishCold=false; S.mode='end';
+      S.poolishH=14; S.temp=22; S.mel=500; S.hydro=65;
+      const anchor=new Date(2027,2,20,18,0);
+      const kron=steg=>steg.every((s,i)=>i===0||new Date(s.at)>=new Date(steg[i-1].at));
+
+      // Lovlig pause (6t): kald fase + temperering deler pausen nøyaktig.
+      S.poolishPauseH=6;
+      const s6=rawSteps(anchor);
+      const pause=s6.find(s=>s.title.includes('Kjøleskapspause'));
+      const temper6=s6.find(s=>s.title.includes('temperer'));
+      const tMin=poolishTemperMin();
+      const lovligPauseDeles = !!pause && !!temper6
+        && pause.dur===6*60-tMin
+        && (new Date(temper6.at)-new Date(pause.at))===pause.dur*60000;
+      const kron6=kron(s6);
+
+      // Kort pause (2t < temperbehovet 3t): tempereringen klampes til pausen,
+      // ingen tom «kald fase» vises, og ta-ut ligger aldri før poolishen er klar.
+      S.poolishPauseH=2;
+      const s2=rawSteps(anchor);
+      const rdy=new Date(new Date(s2[0].at).getTime()+S.poolishH*3600000);
+      const temper2=s2.find(s=>s.title.includes('temperer'));
+      const ingenTomPause=!s2.some(s=>s.title.includes('Kjøleskapspause'));
+      const temperIkkeFoerKlar=!!temper2 && new Date(temper2.at)>=rdy;
+      const kron2=kron(s2);
+
+      // Rendringslaget etter atferdstestene arver S — rydd helt opp.
+      resetTestState();
+      return { lovligPauseDeles, kron6, ingenTomPause, temperIkkeFoerKlar, kron2 };
+    })()""")
+    ok194 = all(r194.values())
+    results.append(('poolish_pause_tempering_cannot_precede_the_pause', ok194, r194))
+
+    # ------- r195 (v0.850): hurtig-kjeden står i klokkerekkefølge -------
+    # Samme fuzz-funn, andre klasse: «Sett på ovnen» (stek − 45 min i vanlig
+    # ovn) hører lovlig hjemme FØR «Form emner» på korte deiger (2t ved 28°C:
+    # ovnen trenger 45 min, form+etterheving tar 26) — men v0.810-byttet
+    # håndterte bare ovn-mot-etterheving, så steget sto midt i lista med
+    # tidligere klokkeslett enn naboen over. Kjeden sorteres nå etter tid;
+    # rådet (fyr ovnen før du former) var riktig hele veien.
+    page.evaluate("resetTestState()")
+    r195 = page.evaluate("""(() => {
+      S.method='hurtig'; S.type='newyork'; S.hurtigH=2; S.temp=28;
+      S.oven='vanlig'; S.mode='start';
+      const anchor=new Date(2027,2,20,17,0);
+      const steg=hurtigSteps(anchor).steps;
+      const kron=steg.every((s,i)=>i===0||new Date(s.at)>=new Date(steg[i-1].at));
+      const iOvn=steg.findIndex(s=>s.title.includes('Sett på ovnen'));
+      const iForm=steg.findIndex(s=>s.title.includes('Form emner'));
+      const ovnFoerForm=iOvn>=0 && iForm>=0 && iOvn<iForm
+        && new Date(steg[iOvn].at)<=new Date(steg[iForm].at);
+      const sisteErStek=steg[steg.length-1].title.includes('Strekk og stek');
+      // Rendringslaget etter atferdstestene arver S — uten denne sto
+      // S.oven='vanlig' igjen og veltet render-baselinene med én ovnsrad.
+      resetTestState();
+      return { kron, ovnFoerForm, sisteErStek };
+    })()""")
+    ok195 = all(r195.values())
+    results.append(('hurtig_step_chain_is_in_clock_order', ok195, r195))
+
 
 # v0.837: gruppene er nå LISTER av segmenter. Grupperingen utad er uendret
 # (--gruppe 6 kjører hele gamle gruppe 6, i samme rekkefølge) — segmentene

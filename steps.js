@@ -1071,16 +1071,23 @@ function rawSteps(a){
     // romtemperert poolish med kald pause er like kald i det den går i maskinen,
     // og ga nøyaktig samme måling: 12,7°C deig mot oppgitte 22-24.
     const kaldFor=kald||pauseMin>0;
-    const temperMin=kaldFor?poolishTemperMin():0;
+    // v0.850: tempereringen klampes mot pausens lengde. Før kunne temperAt havne
+    // FØR pausestarten (pause 2t, temper 3t → «ta poolish ut» én time før «sett
+    // den inn») — funnet av egenskapsfuzzen via kronologi-invarianten. UI-et
+    // tilbyr i dag bare 6/12/18t pause (autoPoolishPause/searchAllMethods), så
+    // tilfellet nås via lagrede oppsett eller fremtidige kandidatlister — men
+    // kjeden skal være fysisk konsistent uansett hvor verdien kommer fra. For
+    // kald poolish (kald=true) er kjøleskapsfasen alltid lang nok; der klampes ikke.
+    const temperMin=kald?poolishTemperMin():(pauseMin>0?Math.min(poolishTemperMin(),pauseMin):0);
     const kjolFra=aM(pa,POOLISH_ROMSTART_MIN);
     const temperAt=sM(mixAt,temperMin);
-    // En «kald pause» på en poolish som allerede står kaldt er ikke et eget steg —
-    // den forlenger bare kjøleskapsfasen. Tidene er de samme; vi viser bare ett
-    // kjøleskapssteg i stedet for to som ser ut som ulike ting.
-    const visPause=pauseMin>0 && !kald;
     // Tempereringen spiser den siste delen av pausen — den forlenger den ikke.
     // Bruker du 12 timers pause, står poolishen 9 timer kaldt og 3 på benken.
     const pauseKaldMin=Math.max(0,pauseMin-temperMin);
+    // En «kald pause» på en poolish som allerede står kaldt er ikke et eget steg —
+    // den forlenger bare kjøleskapsfasen. Og en pause tempereringen spiser helt
+    // har ingen kald fase igjen å vise som eget steg.
+    const visPause=pauseKaldMin>0 && !kald;
     return[
       {title:S.kjokkenmaskin==='ankarsrum'?'Lag poolish i Ankarsrum-bollen':S.kjokkenmaskin==='manuell'?'Lag poolish i en bolle':'Lag poolish i kjøkkenmaskin-bollen',loc:'benk',at:pa,dur:10,
         desc:(S.kjokkenmaskin==='ankarsrum'
@@ -1338,7 +1345,7 @@ function hurtigSteps(anchor){
   // fra det.
   const t0=ie?sM(anchor,KICK_DUR+30+ba+afmE):anchor;
   const mixAt=aM(t0,KICK_DUR);
-  return{o,w,ya,tmp,ba,afm,p,steps:[
+  const _steg=[
     kickstartStep(t0, wk, wr, ya),
     {title:S.kjokkenmaskin==='ankarsrum'?'Ankarsrum — bland deig raskt':S.kjokkenmaskin==='manuell'?'Bland og elt for hånd — raskt':'Kjøkkenmaskin — bland deig raskt',loc:'benk',at:mixAt,dur:15,
       desc:(()=>{const wt=calcWaterTempC();return S.kjokkenmaskin==='ankarsrum'
@@ -1387,7 +1394,15 @@ function hurtigSteps(anchor){
     })(),
     {title:'Strekk og stek 🔥',loc:'ovn',at:aM(mixAt,30+ba+afmE),dur:0,desc:L(`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`,`${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}.`),substeps:[...(flerEmneRåd()?[flerEmneRåd()]:[]),L(`Strekk/press emnet ut etter pizzatypens teknikk`,`Stretch/press the ball out using the technique for your pizza type`),L(`Ha på saus, ost og topping`,`Add sauce, cheese and toppings`),L(`Stek på ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sek':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`,`Bake at ${tmp} — ${S.type==='napoletana'?(S.oven==='pizza'?'90–120 sec':'6–9 min'):S.type==='langpanne'?(S.oven==='pizza'?'8–12 min':'12–16 min'):(S.oven==='pizza'?'20–25 min':'28–35 min')}`)],
       why:WHY.st,tip:(bakeTip(S.type)||'')+L(' Bruk semulegryn i stedet for vanlig mel til utbakingen — det tåler høy varme bedre og brenner seg sjeldnere enn løst mel på benken.',' Use semolina instead of regular flour for shaping — it handles high heat better and burns less easily than loose flour on the counter.')}
-  ]};
+  ];
+  // v0.850: kjeden sorteres etter klokkeslett før retur. «Sett på ovnen»
+  // (stek − 45 min i vanlig ovn) hører lovlig hjemme FØR «Form emner» på korte
+  // deiger (2t-deig ved 28°C: ovnen trenger 45 min, form+etterheving tar 26) —
+  // v0.810-byttet over håndterte bare ovn-mot-etterheving, ikke ovn-mot-forming.
+  // Funnet av egenskapsfuzzen. Stabil sort: likt klokkeslett beholder
+  // byggerekkefølgen, så ingen frosne planer endres.
+  _steg.sort((x,y)=>new Date(x.at)-new Date(y.at));
+  return{o,w,ya,tmp,ba,afm,p,steps:_steg};
 }
 
 function kveldSteps(anchor){
