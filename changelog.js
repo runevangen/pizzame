@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.854",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-serveren leser nå det LEVENDE melregisteret: ved første verktøykall som trenger mel hentes /api/flours — samme liste admin vedlikeholder i appen — validert av nøyaktig samme regel som appen bruker (valideringen er flyttet til motoren og deles). Uten nett gjelder innebygd seed, og svaret sier ærlig hvilken kilde som gjaldt. Nytt verktøy mel_som_passer: regner oppsettets totale gjæringstid og sier per mel om det tåler den, med gjæringsvindu og hydreringssjekk — de som passer først.",
+      "Appen selv: applyFlours bruker nå den delte valideringen fra motoren — ingen atferdsendring, men dommen over server-mel kan ikke lenger drifte mellom appen og samtaleflata."
+    ],
+    "changes_en": [
+      "The MCP server now reads the LIVE flour registry: on the first tool call that needs flour it fetches /api/flours — the same list admin maintains in the app — validated by exactly the rule the app uses (validation moved to the engine and shared). Offline, the built-in seed applies, and the answer honestly states which source was used. New tool mel_som_passer: computes the setup's total fermentation time and says per flour whether it tolerates it, with fermentation window and hydration check — matching flours first.",
+      "The app itself: applyFlours now uses the shared validation from the engine — no behavior change, but the judgment of server flours can no longer drift between the app and the conversational surface."
+    ]
+  },
+  {
     "v": "0.853",
     "d": "november 2026",
     "d_en": "November 2026",

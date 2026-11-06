@@ -492,6 +492,24 @@ let MELTYPER=[...MELTYPER_SEED.map(f=>({...f})), ANNET_FLOUR];
 // mer. Flyttet hit (v0.853): COLD_VALS under leste den allerede på tvers av
 // fil-grensen, og node-laget trengte en definert verdi.
 let COLD_MAX=120;
+// Validering av server-mel (v0.854) — delt mellom applyFlours i index.html og
+// MCP-serverens live-henting: ÉN fasit for hva et brukbart mel ER (v0.833-
+// prinsippet). Returnerer lista med gyldige mel, eller null når ingenting er
+// brukbart — da beholdes innebygd seed.
+function validerFlours(serverFlours){
+  if(!Array.isArray(serverFlours)) return null;
+  const valid=serverFlours.filter(f=> f && typeof f.v==='string' && f.v && f.v!=='annet'
+    && typeof f.t==='string' && f.t
+    && f.ferm && Number.isFinite(f.ferm.mn) && Number.isFinite(f.ferm.mx)
+    && f.hydroRange && Number.isFinite(f.hydroRange.mn) && Number.isFinite(f.hydroRange.mx));
+  return valid.length ? valid : null;
+}
+// Bygg registeret fra validerte mel: kopier, og «annet»-sentinelen alltid sist.
+function byggMelregister(valide){ return [...valide.map(f=>({...f})), ANNET_FLOUR]; }
+// Hvilke registrerte mel (sentinelen teller aldri) tåler en total gjæringstid.
+// Ren registerversjon — flourMatchesForHours i index.html legger melkurven
+// (melet du faktisk har) oppå denne fasiten.
+function melSomTaaler(hrs){ return MELTYPER.filter(m=>!m.generic && hrs>=m.ferm.mn && hrs<=m.ferm.mx); }
 
 // ===== «FRA–TIL»: MAKS GJÆRING I ET KJENT VINDU (v0.725) =====
 // Du vet når du TIDLIGST kan starte, og når du VIL steke. Steketiden er den

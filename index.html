@@ -1765,13 +1765,11 @@ function recomputeColdMax(){
 // Overstyr MELTYPER med server-data (validert). Beholder seed hvis alt er ugyldig,
 // og legger alltid «annet»-sentinelen sist. Kalt ved oppstart etter /api/flours.
 function applyFlours(serverFlours){
-  if(!Array.isArray(serverFlours)) return;
-  const valid=serverFlours.filter(f=> f && typeof f.v==='string' && f.v && f.v!=='annet'
-    && typeof f.t==='string' && f.t
-    && f.ferm && Number.isFinite(f.ferm.mn) && Number.isFinite(f.ferm.mx)
-    && f.hydroRange && Number.isFinite(f.hydroRange.mn) && Number.isFinite(f.hydroRange.mx));
-  if(!valid.length) return; // behold innebygd seed
-  MELTYPER=[...valid.map(f=>({...f})), ANNET_FLOUR];
+  // v0.854: valideringen bor i engine.js (validerFlours) — delt med MCP-
+  // serverens live-henting, så appen og samtaleflata dømmer mel likt.
+  const valid=validerFlours(serverFlours);
+  if(!valid) return; // behold innebygd seed
+  MELTYPER=byggMelregister(valid);
   try{ if(!MELTYPER.some(f=>f.v===S.meltype)) S.meltype=MELTYPER[0].v; }catch(e){}
   try{ recomputeColdMax(); }catch(e){}
   // v0.796: melkurven er bygget over MELTYPER. Kommer det nye mel fra serveren,

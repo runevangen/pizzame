@@ -10,6 +10,7 @@
 import { readFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
+import { createServer } from 'node:http';
 
 const baseline = JSON.parse(readFileSync(new URL('./baseline_results.json', import.meta.url), 'utf8'));
 
@@ -20,29 +21,55 @@ function t(navn, sann, detalj) {
 }
 
 // ===== Spawn serveren og snakk JSON-RPC med den =====
-const barn = spawn(process.execPath, [new URL('./mcp_server.mjs', import.meta.url).pathname],
-  { stdio: ['pipe', 'pipe', 'inherit'] });
-const ventere = new Map(); let nesteId = 1;
-createInterface({ input: barn.stdout }).on('line', (linje) => {
-  if (!linje.trim()) return;
-  const msg = JSON.parse(linje);
-  const v = ventere.get(msg.id);
-  if (v) { ventere.delete(msg.id); v(msg); }
-});
-function kall(method, params) {
-  const id = nesteId++;
-  barn.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
-  return new Promise((res, rej) => {
-    ventere.set(id, res);
-    setTimeout(() => { if (ventere.delete(id)) rej(new Error(`${method}: ingen svar på 10 s`)); }, 10000);
+// Fabrikk (v0.854): melregister-testene trenger flere instanser med ulik
+// PIZZAME_API. Hovedinstansen peker på en lukket port, så porten ALDRI er
+// avhengig av nett — connection refused er umiddelbar, og fallbacken til
+// innebygd seed er selve kontrakten som testes.
+const alleBarn = [];
+function startServer(env) {
+  const barn = spawn(process.execPath, [new URL('./mcp_server.mjs', import.meta.url).pathname],
+    { stdio: ['pipe', 'pipe', 'inherit'], env: { ...process.env, ...env } });
+  alleBarn.push(barn);
+  const ventere = new Map(); let nesteId = 1;
+  createInterface({ input: barn.stdout }).on('line', (linje) => {
+    if (!linje.trim()) return;
+    const msg = JSON.parse(linje);
+    const v = ventere.get(msg.id);
+    if (v) { ventere.delete(msg.id); v(msg); }
   });
+  function kall(method, params) {
+    const id = nesteId++;
+    barn.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
+    return new Promise((res, rej) => {
+      ventere.set(id, res);
+      setTimeout(() => { if (ventere.delete(id)) rej(new Error(`${method}: ingen svar på 10 s`)); }, 10000);
+    });
+  }
+  function verktoy(name, args) {
+    return kall('tools/call', { name, arguments: args })
+      .then(m => ({ err: m.error, isError: m.result && m.result.isError,
+                    data: m.result && !m.result.isError ? JSON.parse(m.result.content[0].text) : null,
+                    text: m.result ? m.result.content[0].text : '' }));
+  }
+  async function init() {
+    const i = await kall('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '0' } });
+    barn.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
+    return i;
+  }
+  return { barn, kall, verktoy, init };
 }
-function verktoy(name, args) {
-  return kall('tools/call', { name, arguments: args })
-    .then(m => ({ err: m.error, isError: m.result && m.result.isError,
-                  data: m.result && !m.result.isError ? JSON.parse(m.result.content[0].text) : null,
-                  text: m.result ? m.result.content[0].text : '' }));
+// Melregister-stubb: en liten http-server som svarer det testen bestemmer.
+function startMelStubb(svar) {
+  const srv = createServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(svar));
+  });
+  return new Promise((resolve) => srv.listen(0, '127.0.0.1', () =>
+    resolve({ url: `http://127.0.0.1:${srv.address().port}`, srv })));
 }
+
+const hoved = startServer({ PIZZAME_API: 'http://127.0.0.1:1' });
+const { barn, kall, verktoy } = hoved;
 
 try {
   // --- Håndtrykk ---
@@ -52,8 +79,8 @@ try {
 
   const liste = await kall('tools/list', {});
   const navn = (liste.result ? liste.result.tools : []).map(v => v.name).sort();
-  t('tools/list gir alle tre verktøyene',
-    JSON.stringify(navn) === JSON.stringify(['lag_plan', 'mengder', 'metoder_som_rekker']), navn);
+  t('tools/list gir alle fire verktøyene',
+    JSON.stringify(navn) === JSON.stringify(['lag_plan', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
 
   // --- Frosne scenarier gjennom protokollen — samme fasit som steglaget ---
   // Scenariofeltene speiler test_steg.mjs; anker='start' fordi baseline er
@@ -110,6 +137,7 @@ try {
       && per.standard.maatteStartet_iso < '2026-08-01T08:00:00.000Z'), per.standard);
     t('8t-vindu: beste hurtig starter etter «nå»', !!(per.hurtig.beste
       && per.hurtig.beste.start_iso >= '2026-08-01T08:00:00.000Z'), per.hurtig.beste);
+    t('uten nett: melkilden er ærlig («innebygd»)', trangt.data.melkilde === 'innebygd', trangt.data.melkilde);
   }
   const romslig = await verktoy('metoder_som_rekker', { tidspunkt: '2026-08-01T18:00', naa: '2026-07-20T10:00' });
   if (!romslig.data) { t('metoder_som_rekker (romslig) svarer', false, romslig.err || romslig.text); }
@@ -129,6 +157,53 @@ try {
       !!plan.data && plan.data.steg[0].tid_iso <= beste.start_iso, plan.data && plan.data.steg[0]);
   }
 
+  // --- mel_som_passer (v0.854): melregisteret gjennom protokollen ---
+  // Seed-fasiten: standard med 48t kald heving gir ~50t total gjæring — bare
+  // de to sterkeste melene (Cuoco 16–54, Manitoba 24–120) tåler det, og
+  // Dallari (4–8) gjør det ikke. Tallene bor i engine.js sin MELTYPER_SEED.
+  const melSvar = await verktoy('mel_som_passer', { metode: 'standard', cold: 48 });
+  if (!melSvar.data) { t('mel_som_passer svarer', false, melSvar.err || melSvar.text); }
+  else {
+    const d = melSvar.data;
+    const taaler = d.mel.filter(m => m.taaler).map(m => m.navn);
+    t('mel_som_passer: kilde er innebygd uten nett', d.melkilde === 'innebygd', d.melkilde);
+    t('mel_som_passer: 48t kald krever sterkt mel',
+      taaler.includes('Caputo Cuoco') && taaler.includes('Caputo Manitoba Oro') && taaler.length === 2,
+      { totalTimer: d.totalGjaeringTimer, taaler });
+    t('mel_som_passer: svake mel sier ærlig nei',
+      d.mel.some(m => m.navn === 'Dallari pizzamel' && !m.taaler), d.mel.map(m => `${m.navn}:${m.taaler}`));
+    t('mel_som_passer: de som tåler står først', d.mel[0].taaler === true && d.mel[d.mel.length - 1].taaler === false, d.mel[0]);
+    t('mel_som_passer: hydrering sjekkes mot melets spenn',
+      d.mel.every(m => typeof m.hydroPasser === 'boolean'), d.mel[0]);
+  }
+
+  // --- Levende register: en stubb-server spiller /api/flours ---
+  const stubbOK = await startMelStubb({ flours: [
+    { v: 'testmel', t: 'Testmel Ekstra', protein: '13%', w: '–', hydro: '60–80%',
+      hydroRange: { mn: 60, mx: 80 }, ferm: { mn: 1, mx: 200 } },
+  ] });
+  const live = startServer({ PIZZAME_API: stubbOK.url });
+  await live.init();
+  const lm = await live.verktoy('mel_som_passer', { metode: 'standard', cold: 48 });
+  t('levende register: kilden er «server»', !!lm.data && lm.data.melkilde === 'server', lm.data && lm.data.melkilde);
+  t('levende register: appens mel erstatter seed-en',
+    !!lm.data && lm.data.mel.length === 1 && lm.data.mel[0].navn === 'Testmel Ekstra' && lm.data.mel[0].taaler,
+    lm.data && lm.data.mel);
+  const lr = await live.verktoy('metoder_som_rekker', { tidspunkt: '2026-08-01T18:00', naa: '2026-07-20T10:00' });
+  t('levende register: metoder_som_rekker melder samme kilde', !!lr.data && lr.data.melkilde === 'server',
+    lr.data && lr.data.melkilde);
+  stubbOK.srv.close();
+
+  // --- Ugyldig serversvar: valideringen (delt med appen) skal beholde seed-en ---
+  const stubbSoppel = await startMelStubb({ flours: [{ v: 'annet', t: 'Kupp' }, { v: '' }, 42] });
+  const soppel = startServer({ PIZZAME_API: stubbSoppel.url });
+  await soppel.init();
+  const sm = await soppel.verktoy('mel_som_passer', { metode: 'standard', cold: 48 });
+  t('ugyldig serversvar: faller ærlig tilbake til innebygd',
+    !!sm.data && sm.data.melkilde === 'innebygd' && sm.data.mel.length === 10,
+    sm.data && { melkilde: sm.data.melkilde, antall: sm.data.mel.length });
+  stubbSoppel.srv.close();
+
   // --- Feilveiene skal være høflige, presise og aldri gjette ---
   const f1 = await verktoy('lag_plan', { metode: 'surdeig', tidspunkt: '2026-08-01T18:00' });
   t('ukjent metode avvises med navn i meldingen', f1.isError && f1.text.includes('surdeig'), f1.text);
@@ -141,7 +216,7 @@ try {
 } catch (e) {
   feil.push(`protokoll: ${e.message}`);
 } finally {
-  barn.kill();
+  for (const b of alleBarn) b.kill();
 }
 
 if (feil.length) {

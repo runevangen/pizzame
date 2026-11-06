@@ -1,4 +1,4 @@
-// MCP-server for pizzamotoren (v0.852, +metoder_som_rekker v0.853) — motoren som samtaleflate.
+// MCP-server for pizzamotoren (v0.852–v0.854) — motoren som samtaleflate.
 //
 // Dette er et nytt «hode» på NØYAKTIG samme søm som test_steg.mjs har brukt
 // siden v0.836: engine.js + steps.js lastes i ett globalt scope med et lite
@@ -16,6 +16,14 @@
 //   lag_plan — komplett tidsplan + oppskrift for et gitt tidspunkt
 //   mengder  — bare kjernetallene (mel/vann/salt/gjær ...)
 //   metoder_som_rekker — hvilke metoder er gjennomførbare til et ferdigtidspunkt
+//   mel_som_passer — hvilke meltyper tåler oppsettets totale gjæringstid
+//
+// Melregisteret (v0.854): verktøyene som leser mel henter det LEVENDE
+// registeret fra appen (/api/flours — admin kan legge til mel uten deploy)
+// ved første behov, validert av samme validerFlours som appen bruker.
+// Uten nett, eller ved ugyldig svar, gjelder innebygd seed — og svaret sier
+// ærlig hvilken kilde som gjaldt (melkilde: 'server' | 'innebygd').
+// PIZZAME_API-miljøvariabelen overstyrer basen (testene peker den på stubber).
 //
 // Testes av test_mcp.mjs (Gruppe 0d i porten): samme frosne scenarier som
 // steglaget, gjennom selve stdio-protokollen.
@@ -34,8 +42,38 @@ const S = {};
 const lag = new Function('window', 'S',
   engineSrc + '\n' + stepsSrc + `
   ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-            recipeFor, preheatMin, stepLoc, smartKandidater, mN };
+            recipeFor, preheatMin, stepLoc, smartKandidater, mN,
+            validerFlours, melSomTaaler, totalFermentHours,
+            lesMelregister: () => MELTYPER,
+            settMelregister: (valide) => { MELTYPER = byggMelregister(valide); } };
 `)(globalThis.window, S);
+
+// ===== Det levende melregisteret (v0.854) =====
+// Hentes fra appens /api/flours ved FØRSTE verktøykall som leser mel — lat og
+// memoisert, så serveren starter øyeblikkelig og fungerer uten nett (seed-en
+// er fasiten da, akkurat som i appen når backend ikke svarer). Valideres av
+// samme validerFlours som applyFlours i index.html bruker.
+const API_BASE = process.env.PIZZAME_API || 'https://ultimatepizza.netlify.app';
+let _melkildePromise = null;
+function hentMelregister() {
+  if (!_melkildePromise) {
+    _melkildePromise = (async () => {
+      try {
+        const ctl = new AbortController();
+        const tid = setTimeout(() => ctl.abort(), 3000);
+        const res = await fetch(API_BASE + '/api/flours', { signal: ctl.signal });
+        clearTimeout(tid);
+        if (res.ok) {
+          const data = await res.json();
+          const valid = lag.validerFlours(data && data.flours);
+          if (valid) { lag.settMelregister(valid); return 'server'; }
+        }
+      } catch (e) { /* uten nett / feil: innebygd seed er fasiten */ }
+      return 'innebygd';
+    })();
+  }
+  return _melkildePromise;
+}
 
 const METODER = ['standard', 'poolish', 'biga', 'mania', 'hurtig', 'kveld'];
 const TYPER = ['napoletana', 'newyork', 'langpanne', 'chicago', 'ingenelting'];
@@ -178,10 +216,12 @@ const VERKTOY = [
       },
       required: ['tidspunkt'],
     },
-    kjor(args) {
+    async kjor(args) {
       settScenario({ ...args, metode: 'standard' }); // sveipet varierer metoden selv
       const anker = lesTid(args.tidspunkt, 'tidspunkt');
       const naa = args.naa !== undefined ? lesTid(args.naa, 'naa').getTime() : Date.now();
+      // Sveipets 120t-tak leses fra melregisteret — hent det levende først.
+      const melkilde = await hentMelregister();
       const kand = lag.smartKandidater(anker);
       const metoder = METODER.map((m) => {
         const mine = kand.filter(c => c.snapshot.method === m);
@@ -205,7 +245,51 @@ const VERKTOY = [
         }
         return ut;
       });
-      return { ferdig: fmtTid(anker), ferdig_iso: anker.toISOString(), metoder };
+      return { ferdig: fmtTid(anker), ferdig_iso: anker.toISOString(), melkilde, metoder };
+    },
+  },
+  {
+    name: 'mel_som_passer',
+    description:
+      'Hvilke meltyper tåler deigen din? Regner total gjæringstid for oppsettet (metode + ' +
+      'tidsinnstillinger) og sjekker hvert mel i registeret: gjæringsvindu og hydrering. ' +
+      'Registeret hentes levende fra appen (fallback: innebygd liste — svaret sier hvilken).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        metode: { type: 'string', enum: METODER, description: 'Deigmetode.' },
+        type: { type: 'string', enum: TYPER, description: 'Pizzatype. Standard: napoletana.' },
+        hydro: { type: 'number', description: 'Hydrering i %. Standard 65 — sjekkes mot hvert mels anbefalte spenn.' },
+        temp: { type: 'number', description: 'Romtemperatur i °C. Standard 22.' },
+        cold: { type: 'number', description: 'Kald heving i timer (standard/poolish/biga). Standard 24.' },
+        poolishH: { type: 'number', description: 'Poolish-modningstid i timer.' },
+        poolishCold: { type: 'boolean', description: 'Poolish i kjøleskap.' },
+        bigaH: { type: 'number', description: 'Biga-modningstid i timer.' },
+        hurtigH: { type: 'number', description: 'For metode=hurtig: total tid i timer.' },
+        kveldH: { type: 'number', description: 'For metode=kveld: kald natt-tid i timer.' },
+        lang: { type: 'string', enum: ['no', 'en'] },
+      },
+      required: ['metode'],
+    },
+    async kjor(args) {
+      settScenario(args);
+      const melkilde = await hentMelregister();
+      const timer = lag.totalFermentHours();
+      // Motorens melSomTaaler er fasiten for hvem som tåler tiden — verktøyet
+      // regner ikke sitt eget filter (v0.833-prinsippet).
+      const taalerSett = new Set(lag.melSomTaaler(timer).map(m => m.v));
+      const mel = lag.lesMelregister().filter(m => !m.generic).map(m => ({
+        navn: m.t,
+        taaler: taalerSett.has(m.v),
+        gjaeringsvindu: `${m.ferm.mn}–${m.ferm.mx} t`,
+        hydroPasser: S.hydro >= m.hydroRange.mn && S.hydro <= m.hydroRange.mx,
+        hydrovindu: m.hydro,
+        ...(m.estimated ? { anslaatt: true } : {}),
+      }));
+      // De som tåler gjæringstiden først; innenfor hver gruppe beholdes
+      // registerets rekkefølge (svakest → sterkest mel).
+      mel.sort((a, b) => (b.taaler ? 1 : 0) - (a.taaler ? 1 : 0));
+      return { totalGjaeringTimer: timer, melkilde, mel };
     },
   },
 ];
@@ -219,7 +303,7 @@ function handle(req) {
     return send({ jsonrpc: '2.0', id, result: {
       protocolVersion: (params && params.protocolVersion) || '2025-06-18',
       capabilities: { tools: {} },
-      serverInfo: { name: 'pizzame-motor', version: '0.853' },
+      serverInfo: { name: 'pizzame-motor', version: '0.854' },
     } });
   }
   if (method === 'ping') return send({ jsonrpc: '2.0', id, result: {} });
@@ -232,15 +316,21 @@ function handle(req) {
   if (method === 'tools/call') {
     const v = VERKTOY.find(x => x.name === (params && params.name));
     if (!v) return send({ jsonrpc: '2.0', id, error: { code: -32602, message: `ukjent verktøy «${params && params.name}»` } });
-    try {
-      const res = v.kjor((params && params.arguments) || {});
-      return send({ jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(res, null, 1) }] } });
-    } catch (e) {
-      return send({ jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: 'Feil: ' + e.message }], isError: true } });
-    }
+    // v0.854: kjor kan være async (melregister-henting) — await-en er ufarlig
+    // for de synkrone. NB: verktøyene deler S, så kjøringen må være sekvensiell;
+    // _koen serialiserer kall som kommer inn mens et annet venter på nett.
+    return (_koen = _koen.then(async () => {
+      try {
+        const res = await v.kjor((params && params.arguments) || {});
+        send({ jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(res, null, 1) }] } });
+      } catch (e) {
+        send({ jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: 'Feil: ' + e.message }], isError: true } });
+      }
+    }));
   }
   if (id !== undefined) send({ jsonrpc: '2.0', id, error: { code: -32601, message: `Method not found: ${method}` } });
 }
+let _koen = Promise.resolve();
 
 createInterface({ input: process.stdin }).on('line', (linje) => {
   if (!linje.trim()) return;
