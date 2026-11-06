@@ -10516,6 +10516,18 @@ def main():
             print(_steg.stderr.rstrip())
         print("Steglaget FEILET — stopper foer nettleserkjoringen.")
         sys.exit(1)
+    # Gruppe 0d (v0.852): MCP-laget — mcp_server.mjs spawnes som ekte prosess
+    # og de frosne scenariene kjoeres gjennom selve stdio-protokollen, mot
+    # samme baseline_results.json. Svarer serveren noe annet enn motoren,
+    # stopper porten her.
+    _mcp = subprocess.run(["node", os.path.join(index_dir, "test_mcp.mjs")],
+                          capture_output=True, text=True)
+    print(_mcp.stdout.rstrip())
+    if _mcp.returncode != 0:
+        if _mcp.stderr.strip():
+            print(_mcp.stderr.rstrip())
+        print("MCP-laget FEILET — stopper foer nettleserkjoringen.")
+        sys.exit(1)
     print()
 
     os.chdir(index_dir)

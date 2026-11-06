@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.852",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Motoren har fått sin første samtaleflate: en MCP-server (mcp_server.mjs) lar en KI-assistent spørre selve pizzamotoren — «lag en biga-plan som er ferdig lørdag 18» gir appens egne tall og tidsplan, ikke en språkmodells gjetning om gjærmengder. Serveren inneholder null egen deiglogikk: den laster engine.js + steps.js gjennom samme søm som node-testene, så svarene kan aldri drifte fra appen. To verktøy: lag_plan (oppskrift + tidsstemplet stegplan, ankret på ferdig- eller starttidspunkt) og mengder (bare kjernetallene). Eget testlag (Gruppe 0d) kjører de frosne scenariene gjennom selve protokollen. Appen selv er uendret."
+    ],
+    "changes_en": [
+      "The engine got its first conversational surface: an MCP server (mcp_server.mjs) lets an AI assistant ask the pizza engine itself — \"make a biga plan ready Saturday at 6pm\" returns the app's own numbers and schedule, not a language model's guess at yeast amounts. The server contains zero dough logic of its own: it loads engine.js + steps.js through the same seam as the node tests, so its answers can never drift from the app. Two tools: lag_plan (recipe + timestamped step plan, anchored on finish or start time) and mengder (just the core numbers). A dedicated test layer (Group 0d) runs the frozen scenarios through the protocol itself. The app itself is unchanged."
+    ]
+  },
+  {
     "v": "0.851",
     "d": "november 2026",
     "d_en": "November 2026",
