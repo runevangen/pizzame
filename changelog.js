@@ -3,6 +3,43 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.854",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-serveren leser nå det LEVENDE melregisteret: ved første verktøykall som trenger mel hentes /api/flours — samme liste admin vedlikeholder i appen — validert av nøyaktig samme regel som appen bruker (valideringen er flyttet til motoren og deles). Uten nett gjelder innebygd seed, og svaret sier ærlig hvilken kilde som gjaldt. Nytt verktøy mel_som_passer: regner oppsettets totale gjæringstid og sier per mel om det tåler den, med gjæringsvindu og hydreringssjekk — de som passer først.",
+      "Appen selv: applyFlours bruker nå den delte valideringen fra motoren — ingen atferdsendring, men dommen over server-mel kan ikke lenger drifte mellom appen og samtaleflata."
+    ],
+    "changes_en": [
+      "The MCP server now reads the LIVE flour registry: on the first tool call that needs flour it fetches /api/flours — the same list admin maintains in the app — validated by exactly the rule the app uses (validation moved to the engine and shared). Offline, the built-in seed applies, and the answer honestly states which source was used. New tool mel_som_passer: computes the setup's total fermentation time and says per flour whether it tolerates it, with fermentation window and hydration check — matching flours first.",
+      "The app itself: applyFlours now uses the shared validation from the engine — no behavior change, but the judgment of server flours can no longer drift between the app and the conversational surface."
+    ]
+  },
+  {
+    "v": "0.853",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Smart-plan-søket kan nå regnes uten nettleser: kandidatgenereringen (metode × parameterrom, hver kombinasjon som full stegkjede bakover fra steketidspunktet) er flyttet til steglaget, og melregisteret fulgte med til motoren — melfakta er motorfakta. Det som er DITT blir igjen i appen: pizzatid-scoringen, metodefilteret og melkurven. Appens Smart-plan-fane oppfører seg nøyaktig som før.",
+      "MCP-serveren fikk sitt tredje verktøy: metoder_som_rekker svarer på «hva rekker jeg til lørdag 18?» med samme kandidater som Smart-plan — per metode: rekker den, seneste mulige start, og beste gjennomførbare variant. Rekker den ikke, sier svaret ærlig når du måtte ha startet. Ny rundtur-vokter beviser at oppsettet svaret peker på gir en plan som faktisk steker på ferdigtidspunktet."
+    ],
+    "changes_en": [
+      "The Smart plan search can now run without a browser: candidate generation (method × parameter space, each combination as a full step chain computed backwards from the bake time) moved to the step layer, and the flour registry followed into the engine — flour facts are engine facts. What is YOURS stays in the app: the pizza-time scoring, the method filter and the flour basket. The app's Smart plan tab behaves exactly as before.",
+      "The MCP server got its third tool: metoder_som_rekker answers \"what can I make by Saturday 6pm?\" with the same candidates as Smart plan — per method: whether it fits, the latest possible start, and the best feasible variant. If it doesn't fit, the answer honestly says when you would have had to start. A new round-trip guard proves the setup the answer points to yields a plan that actually bakes at the finish time."
+    ]
+  },
+  {
+    "v": "0.852",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Motoren har fått sin første samtaleflate: en MCP-server (mcp_server.mjs) lar en KI-assistent spørre selve pizzamotoren — «lag en biga-plan som er ferdig lørdag 18» gir appens egne tall og tidsplan, ikke en språkmodells gjetning om gjærmengder. Serveren inneholder null egen deiglogikk: den laster engine.js + steps.js gjennom samme søm som node-testene, så svarene kan aldri drifte fra appen. To verktøy: lag_plan (oppskrift + tidsstemplet stegplan, ankret på ferdig- eller starttidspunkt) og mengder (bare kjernetallene). Eget testlag (Gruppe 0d) kjører de frosne scenariene gjennom selve protokollen. Appen selv er uendret."
+    ],
+    "changes_en": [
+      "The engine got its first conversational surface: an MCP server (mcp_server.mjs) lets an AI assistant ask the pizza engine itself — \"make a biga plan ready Saturday at 6pm\" returns the app's own numbers and schedule, not a language model's guess at yeast amounts. The server contains zero dough logic of its own: it loads engine.js + steps.js through the same seam as the node tests, so its answers can never drift from the app. Two tools: lag_plan (recipe + timestamped step plan, anchored on finish or start time) and mengder (just the core numbers). A dedicated test layer (Group 0d) runs the frozen scenarios through the protocol itself. The app itself is unchanged."
+    ]
+  },
+  {
     "v": "0.851",
     "d": "november 2026",
     "d_en": "November 2026",

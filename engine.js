@@ -440,6 +440,77 @@ function ballWeightNote(){
   return {pst, per:p.perPizza, mal:eg, count:p.count, forslag:flourForCount(p.count)};
 }
 
+// ===== MELREGISTERET (v0.853, verbatim fra index.html) =====
+// Melfakta er motorfakta: ferm-vinduene styrer kald-taket (COLD_MAX),
+// Smart-plan-søkets øvre grense og meltype-varslene. Flyttet hit så
+// Smart-plan-sveipet (smartKandidater i steps.js) kan regne uten nettleser —
+// samme begrunnelse som steglag-utflyttingen (v0.836/v0.838). Serverlaget
+// (applyFlours — /api/flours kan overstyre seed-en uten deploy) og melkurven
+// (localStorage) blir igjen i index.html: de er miljø, ikke motor.
+function range(a,b,step){ const r=[]; for(let x=a;x<=b;x+=step) r.push(x); return r; }
+// Med 3-timerssteg dobles rasteret til åtte posisjoner i døgnet. Kalibrerings-
+// kurven for kald poolish interpolerer lineært, så mellomtimene trenger ingen
+// egne tall — 15t og 21t er allerede definert av kurven gjennom 12/16/24.
+// Ett sted, slik at søket, stepperen og sveipene ikke kan drifte fra hverandre.
+const POOLISH_KALD_STEG=3;
+function poolishColdHours(){ return range(12,48,POOLISH_KALD_STEG); }
+// «Annet mel / ikke i listen»: for et mel appen ikke kjenner. generic:true slår
+// av det mel-spesifikke gjærings-/hydreringsvarselet (appen kan ikke dømme et
+// spenn den ikke vet). Den tomme ferm-range-en {mn:999,mx:0} matcher aldri, så
+// melet påvirker verken kald-taket, Smart-plan-lista eller «bytt til»-forslag.
+// Dette er en frontend-SENTINEL — den lagres aldri på server og legges alltid
+// sist i MELTYPER, så admin verken kan redigere eller slette den bort.
+const ANNET_FLOUR={v:'annet',t:'Annet mel',tEn:'Other flour',generic:true,protein:'–',w:'–',hydro:'–',ferm:{mn:999,mx:0}};
+// Meltyper med anbefalt fermenteringsvindu (fra meny.no/italiensk-pizza/riktig-mel-til-pizza,
+// kryssjekket mot Maschmanns — norsk Caputo-distributør — 15. juli 2026).
+// v0.684: meltypene ligger på server (/api/flours) så nye mel kan legges til /
+// egenskaper endres uten deploy. Denne lista er den INNEBYGDE seed-en (fallback
+// hvis backend ikke svarer — bl.a. i regresjonstestene og node-laget, der
+// /api/flours ikke finnes); applyFlours() i index.html overstyrer den ved
+// oppstart om serveren har data. «annet» legges alltid til på slutten.
+const MELTYPER_SEED=[
+  {v:'dallari',t:'Dallari pizzamel',protein:'10,7%',w:'–',hydro:'55–60%',hydroRange:{mn:55,mx:60},ferm:{mn:4,mx:8}},
+  {v:'doppio_zero',t:'Caputo Doppio Zero',protein:'11%',w:'220–230',hydro:'60–70%',hydroRange:{mn:60,mx:70},ferm:{mn:6,mx:24}},
+  {v:'regal_pizzamel',t:'Regal Pizzamel',protein:'11%',w:'–',hydro:'60–68%',hydroRange:{mn:60,mx:68},ferm:{mn:6,mx:24},estimated:true},
+  {v:'vanlig_hvetemel',t:'Vanlig hvetemel',protein:'11,2%',w:'–',hydro:'55–63%',hydroRange:{mn:55,mx:63},ferm:{mn:4,mx:10},estimated:true},
+  // v0.802: Ramlösa Kvarn (Finax) Tipo 00 — siktet svensk vårvete, selges bl.a.
+  // hos Coop. Produsenten oppgir 12,5 % protein men ingen W-verdi, så spennene
+  // er anslått: samme protein som Caputo Pizzeria, men uten dokumentert styrke
+  // settes taket forsiktig til 36 t — ikke Pizzerias 48.
+  {v:'ramlosa_tipo00',t:'Ramlösa Kvarn Tipo 00',protein:'12,5%',w:'–',hydro:'58–70%',hydroRange:{mn:58,mx:70},ferm:{mn:10,mx:36},estimated:true},
+  {v:'pizzeria',t:'Caputo Pizzeria',protein:'12,5%',w:'260–270',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:12,mx:48}},
+  {v:'nuvola',t:'Caputo Nuvola',protein:'12,5%',w:'260–280',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48}},
+  {v:'regal_tipo00',t:'Regal Tipo 00',protein:'13%',w:'–',hydro:'60–75%',hydroRange:{mn:60,mx:75},ferm:{mn:12,mx:48},estimated:true},
+  {v:'couco',t:'Caputo Cuoco',protein:'13%',w:'300–320',hydro:'60–80%',hydroRange:{mn:60,mx:80},ferm:{mn:16,mx:54}},
+  {v:'manitoba',t:'Caputo Manitoba Oro',protein:'12,9–14,5%',w:'340–390',hydro:'70–100%',hydroRange:{mn:70,mx:100},ferm:{mn:24,mx:120}}
+];
+let MELTYPER=[...MELTYPER_SEED.map(f=>({...f})), ANNET_FLOUR];
+// v0.659/v0.680: øvre tak for kjøleskapsheving. v0.685: UTLEDES fra sterkeste
+// mels ferm.mx (var hardkodet 120t) — recomputeColdMax() i index.html regner
+// den på nytt etter applyFlours og oppdaterer sliderne. Invariant:
+// COLD_MAX === Math.max(ferm.mx) blant ekte mel. Over dette tåler intet mel
+// mer. Flyttet hit (v0.853): COLD_VALS under leste den allerede på tvers av
+// fil-grensen, og node-laget trengte en definert verdi.
+let COLD_MAX=120;
+// Validering av server-mel (v0.854) — delt mellom applyFlours i index.html og
+// MCP-serverens live-henting: ÉN fasit for hva et brukbart mel ER (v0.833-
+// prinsippet). Returnerer lista med gyldige mel, eller null når ingenting er
+// brukbart — da beholdes innebygd seed.
+function validerFlours(serverFlours){
+  if(!Array.isArray(serverFlours)) return null;
+  const valid=serverFlours.filter(f=> f && typeof f.v==='string' && f.v && f.v!=='annet'
+    && typeof f.t==='string' && f.t
+    && f.ferm && Number.isFinite(f.ferm.mn) && Number.isFinite(f.ferm.mx)
+    && f.hydroRange && Number.isFinite(f.hydroRange.mn) && Number.isFinite(f.hydroRange.mx));
+  return valid.length ? valid : null;
+}
+// Bygg registeret fra validerte mel: kopier, og «annet»-sentinelen alltid sist.
+function byggMelregister(valide){ return [...valide.map(f=>({...f})), ANNET_FLOUR]; }
+// Hvilke registrerte mel (sentinelen teller aldri) tåler en total gjæringstid.
+// Ren registerversjon — flourMatchesForHours i index.html legger melkurven
+// (melet du faktisk har) oppå denne fasiten.
+function melSomTaaler(hrs){ return MELTYPER.filter(m=>!m.generic && hrs>=m.ferm.mn && hrs<=m.ferm.mx); }
+
 // ===== «FRA–TIL»: MAKS GJÆRING I ET KJENT VINDU (v0.725) =====
 // Du vet når du TIDLIGST kan starte, og når du VIL steke. Steketiden er den
 // harde betingelsen (planen regnes fortsatt bakover fra den, S.mode='end');

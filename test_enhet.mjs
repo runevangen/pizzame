@@ -19,7 +19,8 @@ const src = readFileSync(new URL('./engine.js', import.meta.url), 'utf8');
 const eng = new Function(src + `;return { interpLin, coldMultForHours, tf, rtM,
   fridgeYeastMult, prefermentShareScale, gjaerStyrke, stepTempC,
   fermentLoadHours, poolishWindowHours, mN, mNVariant, totalFermentHours,
-  effSugarPct, CALIBRATION, Q10, Q10_REF_C, Q10_K };`)();
+  effSugarPct, CALIBRATION, Q10, Q10_REF_C, Q10_K,
+  validerFlours, byggMelregister, melSomTaaler };`)();
 
 let ok = 0; const feil = [];
 function t(navn, sann) {
@@ -125,6 +126,26 @@ S.method = 'standard'; S.cold = 48; S.temp = 22; t('total: standard er kaldtid +
 // ovn leser tabellverdien (newyork: 1,5 %).
 S.type = 'newyork'; S.oven = 'pizza'; t('sukker: droppes i pizzaovn', eng.effSugarPct() === 0);
 S.oven = 'vanlig'; t('sukker: beholdes i vanlig ovn', eng.effSugarPct() === 1.5);
+
+// Melregisteret (v0.854) — valideringen er delt mellom applyFlours (index.html)
+// og MCP-serverens live-henting, så begge dømmer server-mel med samme fasit.
+const gyldigMel = { v: 'x', t: 'X-mel', ferm: { mn: 1, mx: 2 }, hydroRange: { mn: 50, mx: 60 } };
+t('validerFlours: ikke-array gir null', eng.validerFlours('nei') === null);
+t('validerFlours: bare ubrukelige gir null (behold seed)',
+  eng.validerFlours([{ v: 'annet', t: 'A', ferm: { mn: 1, mx: 2 }, hydroRange: { mn: 1, mx: 2 } }, { v: 'y' }, null]) === null);
+t('validerFlours: beholder gyldige, kaster resten', (() => {
+  const r = eng.validerFlours([gyldigMel, { v: '' }, { v: 'z', t: 'Z', ferm: { mn: 'en' } }]);
+  return !!r && r.length === 1 && r[0].v === 'x';
+})());
+t('byggMelregister: kopierer og legger «annet»-sentinelen sist', (() => {
+  const r = eng.byggMelregister([gyldigMel]);
+  return r.length === 2 && r[1].v === 'annet' && r[0] !== gyldigMel && r[0].v === 'x';
+})());
+t('melSomTaaler: 26t gir de sterke melene, ikke de svake', (() => {
+  const n = eng.melSomTaaler(26).map(m => m.v);
+  return n.includes('pizzeria') && n.includes('manitoba') && !n.includes('dallari') && !n.includes('annet');
+})());
+t('melSomTaaler: 130t dekkes av ingen (over sterkeste mels tak)', eng.melSomTaaler(130).length === 0);
 
 if (feil.length) {
   console.log(`Enhetslag: ${ok} OK, ${feil.length} FEILET:`);

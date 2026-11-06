@@ -30,7 +30,7 @@ const S = {};
 const lag = new Function('window', 'S',
   engineSrc + '\n' + stepsSrc + `
   ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-            recipeFor, preheatMin, stepLoc };
+            recipeFor, preheatMin, stepLoc, smartKandidater };
 `)(globalThis.window, S);
 
 let ok = 0; const feil = [];
@@ -324,6 +324,49 @@ function ingOf(entry) {
     }
   }
   t('invariant_dough_ball_has_one_norwegian_name', !bad.length, [...new Set(bad)].slice(0, 12));
+}
+
+// ===== SMART-PLAN-SVEIPET (v0.853) — kandidatgenereringen i node =====
+// smartKandidater er searchAllMethods' generering flyttet hit fra index.html,
+// og dette er dens egne voktere: strukturen og fysikken i kandidatlista, ikke
+// personaliseringen (pizzatid/melkurv/filter — den testes i nettleserlaget).
+{
+  for (const k of Object.keys(S)) delete S[k];
+  Object.assign(S, lag.DEF, { mode: 'start', method: 'standard', cold: 24 });
+  const ANKER_SMART = new Date('2026-08-01T18:00:00');
+  const kand = lag.smartKandidater(ANKER_SMART);
+  // Kandidattallet er frossent med vilje: det er en direkte funksjon av
+  // sveipets parameterrom (metode × fordeigstimer × kaldtimer, kappet ved
+  // sterkeste mels 120t) og av melregister-seeden. Endrer tallet seg uten at
+  // noen UTVIDET rommet eller registeret bevisst, har noe driftet.
+  // 349 = standard 13 + poolish 254 (rt 65 + kald 169·kapp + pause 27·kapp)
+  //     + biga 64 (kapp) + hurtig 10 (HOPTS) + kveld 7 (KOPTS) + mania 1.
+  t('smart-sveip: 349 kandidater fra seed-registeret', kand.length === 349, kand.length);
+  const perMetode = {};
+  for (const c of kand) perMetode[c.snapshot.method] = (perMetode[c.snapshot.method] || 0) + 1;
+  t('smart-sveip: alle seks metoder representert',
+    JSON.stringify(Object.keys(perMetode).sort()) === JSON.stringify(['biga', 'hurtig', 'kveld', 'mania', 'poolish', 'standard']),
+    perMetode);
+  // Fysikken: mode='end' betyr at HVER kandidat steker nøyaktig på ankeret,
+  // starter før den steker, og ingen gjæring overstiger sterkeste mels tak.
+  const ankerIso = ANKER_SMART.toISOString();
+  t('smart-sveip: alle kandidater steker på ankeret', kand.every(c => c.bakeIso === ankerIso),
+    kand.filter(c => c.bakeIso !== ankerIso).slice(0, 3));
+  t('smart-sveip: alle starter før de steker', kand.every(c => c.startIso <= c.bakeIso),
+    kand.filter(c => c.startIso > c.bakeIso).slice(0, 3));
+  t('smart-sveip: ingen gjæring over 120t (sterkeste mel)', kand.every(c => c.totalHrs <= 120),
+    kand.filter(c => c.totalHrs > 120).slice(0, 3));
+  // Headless-kontrakten: uten vurder-callback er scoringen nøytral (0/[]),
+  // og S er NØYAKTIG som før kallet — sveipet skal aldri lekke sin prøving.
+  t('smart-sveip: nøytral scoring uten callback', kand.every(c => c.violations === 0 && c.conflicts.length === 0),
+    kand.find(c => c.violations !== 0 || c.conflicts.length));
+  t('smart-sveip: S gjenopprettes etter sveipet', S.method === 'standard' && S.mode === 'start' && S.cold === 24,
+    { method: S.method, mode: S.mode, cold: S.cold });
+  // Og vurder-callbacken brukes faktisk: en teller som scorer alt til 7
+  // skal stå på hver kandidat.
+  const kand2 = lag.smartKandidater(ANKER_SMART, () => ({ violations: 7, conflicts: ['x'] }));
+  t('smart-sveip: vurder-callbacken scorer kandidatene', kand2.every(c => c.violations === 7 && c.conflicts.length === 1),
+    kand2.find(c => c.violations !== 7));
 }
 
 if (feil.length) {
