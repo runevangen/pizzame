@@ -369,6 +369,31 @@ function ingOf(entry) {
     kand2.find(c => c.violations !== 7));
 }
 
+{ // --- I (v0.861): vanntemperaturen følger med inn i fokusvisningen ---
+  // Fokusvisningen viser KUN understegene. Sier stegteksten noe om vannets
+  // temperatur (°C eller et temperatur-ord), skal et understeg som ber deg
+  // tilsette vann bære samme informasjon — ellers mister den som baker i
+  // fokusmodus et tall som avgjør deigtemperaturen. Meldt inn fra kjøkkenet
+  // (v0.861): understeget sa «Tilsett 75g vann» der steget sa «vann rett fra
+  // kjøleskapet (ca. 4°C)» — og 4°C er forskjellen på en deig som treffer
+  // 22–24°C og en som ikke gjør det.
+  const TEMPCUE = /°C|kjølig|kaldt|romtemperert|lunkent|kjøleskapet|iskaldt/i;
+  const bad = [];
+  for (const d of sweep) {
+    if (d.err) continue;
+    for (const st of d.steps) {
+      const descTekst = String(st.desc || '');
+      if (!(/vann/i.test(descTekst) && TEMPCUE.test(descTekst))) continue;
+      for (const sub of st.substeps) {
+        const s = String(sub || '');
+        if (/\d+\s?g vann\b/i.test(s) && !TEMPCUE.test(s))
+          bad.push(`${d.m}/${d.t}: «${s.replace(/\s+/g, ' ').slice(0, 70)}»`);
+      }
+    }
+  }
+  t('invariant_water_temp_reaches_focus_view', !bad.length, [...new Set(bad)].slice(0, 8));
+}
+
 // ===== KALENDERBYGGEREN (v0.859) — ICS-utgaven av en stegkjede =====
 // byggIcs er downloadIcs' bygging flyttet hit fra index.html, delt med
 // /api/kalender. Vokterne tar på RFC 5545-kontrakten: struktur, tider,

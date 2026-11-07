@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.861",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Vanntemperaturen følger nå med inn i fokusvisningen, meldt inn fra kjøkkenet: understeget sa «Tilsett 75g vann» der selve steget sa «vann rett fra kjøleskapet (ca. 4°C)» — og fokusvisningen viser bare understegene, så tallet som avgjør deigtemperaturen forsvant. Rettet i tre kjeder (poolish-blanding, biga-blanding og Ingen elting), og en ny invariant håndhever regelen over alle 210 kombinasjoner: står det noe om vannets temperatur i steget, skal understeget som tilsetter vannet bære det samme. Invarianten fant selv den tredje synderen."
+    ],
+    "changes_en": [
+      "The water temperature now travels into the focus view, reported from the kitchen: the substep said \"Add 75g water\" where the step itself said \"water straight from the fridge (about 4°C)\" — and the focus view shows only the substeps, so the number that decides the dough temperature vanished. Fixed in three chains (poolish mix, biga mix and No-knead), and a new invariant enforces the rule across all 210 combinations: if the step says something about the water's temperature, the substep adding the water must carry the same. The invariant itself found the third offender."
+    ]
+  },
+  {
     "v": "0.860",
     "d": "november 2026",
     "d_en": "November 2026",
