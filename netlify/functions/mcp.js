@@ -80,7 +80,14 @@ export default async (req) => {
   try { melding = await req.json(); }
   catch (e) { return json(400, { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } }); }
   try {
-    const svar = await handter(melding);
+    // Identitet (v0.864): connectorens faste headere følger hvert kall og
+    // verifiseres i verktøylaget mot appens egen innlogging. Lambda-instansen
+    // deles mellom brukere, så identiteten er PER FORESPØRSEL, aldri modul-state.
+    const ident = {
+      navn: req.headers.get('x-pizzame-bruker') || undefined,
+      pin: req.headers.get('x-pizzame-pin') || undefined,
+    };
+    const svar = await handter(melding, ident);
     if (!svar) return new Response(null, { status: 202 }); // varsel — intet svar
     return json(200, svar);
   } catch (e) {

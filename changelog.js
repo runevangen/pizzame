@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.864",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Chatten kan nå lagre deiger: nytt MCP-verktøy lagre_deig («lagre denne som Fredagspizza») lagrer planen som privat deig i appen — åpne den under Deiger, så følger appen den videre med avhaking og gjenopptak. Krever identiteten din: brukernavn og PIN fra appen, lagt inn én gang som faste headere på connectoren (Claude lagrer dem kryptert) og verifisert mot appens egen innlogging per kall. Uten oppsett får du en vennlig forklaring, ikke et nei; feil PIN avvises ærlig."
+    ],
+    "changes_en": [
+      "Chat can now save doughs: new MCP tool lagre_deig (\"save this as Friday pizza\") stores the plan as a private dough in the app — open it under Doughs and the app carries it on with check-offs and resume. Requires your identity: the app's username and PIN, entered once as fixed headers on the connector (Claude stores them encrypted) and verified against the app's own login per call. Without setup you get a friendly explanation, not a refusal; a wrong PIN is honestly rejected."
+    ]
+  },
+  {
     "v": "0.863",
     "d": "november 2026",
     "d_en": "November 2026",

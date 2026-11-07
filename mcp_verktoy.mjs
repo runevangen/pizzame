@@ -105,6 +105,40 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
     return d;
   }
 
+  // ===== Identitet (v0.864) =====
+  // Skriveverktøyene krever samme innlogging som appen (brukernavn + PIN),
+  // verifisert mot appens egen /api/users/verify. Identiteten kommer per
+  // kall fra verten: connectorens faste headere (X-Pizzame-Bruker /
+  // X-Pizzame-Pin — Claude lagrer dem kryptert og sender dem på hvert kall),
+  // eller miljøvariabler for lokal server. Verifiserte svar huskes i 10 min
+  // per navn+PIN, så vi ikke hamrer på innloggingen.
+  const IDENT_HJELP =
+    'Dette verktøyet trenger identiteten din fra appen. Oppsett (én gang): åpne connectoren i ' +
+    'Claude-innstillingene → «Request headers» → legg til X-Pizzame-Bruker (brukernavnet ditt i appen) ' +
+    'og X-Pizzame-Pin (PIN-koden din). Lokal server bruker miljøvariablene PIZZAME_BRUKER og ' +
+    'PIZZAME_PIN. Har du ikke bruker, lager du en i appen (den beskytter bare dine egne deiger).';
+  const _identCache = new Map();
+  async function verifiserIdent(ident) {
+    if (!ident || !ident.navn || !ident.pin) throw new Error(IDENT_HJELP);
+    const nokkel = ident.navn + '\n' + ident.pin;
+    const c = _identCache.get(nokkel);
+    if (c && c.til > Date.now()) return c;
+    let res;
+    try {
+      const ctl = new AbortController();
+      const tid = setTimeout(() => ctl.abort(), 4000);
+      res = await fetch(apiBase + '/api/users/verify', { method: 'POST', signal: ctl.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: ident.navn, pin: ident.pin }) });
+      clearTimeout(tid);
+    } catch (e) { throw new Error('fikk ikke kontakt med brukertjenesten — prøv igjen om litt'); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error('feil brukernavn eller PIN — sjekk headerne på connectoren');
+    const ut = { id: data.id, name: data.name, til: Date.now() + 10 * 60000 };
+    _identCache.set(nokkel, ut);
+    return ut;
+  }
+
   // Kalenderlenken en plan bærer (v0.859) — delt mellom lag_plan og
   // juster_underveis, så begge peker på /api/kalender med samme feltnavn.
   const KALENDERFELT = ['metode', 'type', 'tidspunkt', 'anker', 'mel', 'hydro', 'temp', 'cold',
@@ -375,6 +409,63 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
         };
       },
     },
+    {
+      name: 'lagre_deig',
+      description:
+        'Lagre planen som en deig i appen («lagre denne som Fredagspizza»). Deigen blir privat, ' +
+        'dukker opp under Deiger i appen, og når du åpner den der følger appen den videre med ' +
+        'avhaking og gjenopptak. Krever identiteten din fra appen (brukernavn + PIN som faste ' +
+        'headere på connectoren — feilmeldingen forklarer oppsettet første gang). Samme felter ' +
+        'som lag_plan, pluss navn.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          navn: { type: 'string', description: 'Navnet deigen lagres under, f.eks. «Fredagspizza».' },
+          metode: { type: 'string', enum: METODER },
+          tidspunkt: { type: 'string', description: 'Ankertidspunkt (ISO, Europe/Oslo).' },
+          anker: { type: 'string', enum: ['ferdig', 'start'], description: '«ferdig» (standard) eller «start».' },
+          type: { type: 'string', enum: TYPER },
+          mel: { type: 'number' }, hydro: { type: 'number' }, temp: { type: 'number' },
+          cold: { type: 'number' }, poolishH: { type: 'number' }, poolishCold: { type: 'boolean' },
+          bigaH: { type: 'number' }, hurtigH: { type: 'number' }, kveldH: { type: 'number' },
+          oven: { type: 'string', enum: ['vanlig', 'pizza'] },
+          lang: { type: 'string', enum: ['no', 'en'] },
+        },
+        required: ['navn', 'metode', 'tidspunkt'],
+      },
+      async kjor(args, ident) {
+        const bruker = await verifiserIdent(ident);
+        const navn = String(args.navn || '').trim();
+        if (!navn) throw new Error('deigen trenger et navn');
+        settScenario(args);
+        S.mode = args.anker === 'start' ? 'start' : 'end';
+        const nar = lesTid(args.tidspunkt, 'tidspunkt');
+        lag.stepsForAnchor(nar); // kaster ved et oppsett kjeden ikke kan regne
+        // Samme kropp som appens egen «Lagre deig» (saveBake i index.html):
+        // privat som standard, eid av den verifiserte brukeren.
+        let res;
+        try {
+          const ctl = new AbortController();
+          const tid = setTimeout(() => ctl.abort(), 5000);
+          res = await fetch(apiBase + '/api/bakes', { method: 'POST', signal: ctl.signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: navn, config: { ...S },
+              anchorMode: S.mode === 'end' ? 'end' : 'start', anchorISO: nar.toISOString(),
+              checkedSteps: [], checkedIngredients: [], checkedSubsteps: [],
+              savedBy: bruker.name, ownerId: bruker.id, shared: false }) });
+          clearTimeout(tid);
+        } catch (e) { throw new Error('fikk ikke kontakt med deig-lageret — prøv igjen om litt'); }
+        if (!res.ok) throw new Error('lagringen feilet (HTTP ' + res.status + ')');
+        const lagret = await res.json();
+        return {
+          id: lagret.id, navn: lagret.name, lagretAv: bruker.name,
+          melding: lag.L(
+            'Deigen ligger nå under Deiger i appen — åpne den der én gang, så husker appen at det er den du holder på med.',
+            'The dough is now under Doughs in the app — open it there once, and the app remembers it is the one you are working on.'),
+          kalender_url: kalenderLenke(args),
+        };
+      },
+    },
   ];
 
   // Verktøyene deler S, så kjøringen må være sekvensiell — køen serialiserer
@@ -388,7 +479,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
 
   // Én JSON-RPC-melding inn, ett svarobjekt ut (null for varsler, som ikke
   // skal besvares). Transporten rundt er vertens jobb.
-  async function handter(melding) {
+  async function handter(melding, ident) {
     const { id, method, params } = melding || {};
     if (method === 'initialize') {
       return { jsonrpc: '2.0', id, result: {
@@ -426,7 +517,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
       if (!v) return { jsonrpc: '2.0', id, error: { code: -32602, message: `ukjent verktøy «${params && params.name}»` } };
       return iKoen(async () => {
         try {
-          const res = await v.kjor((params && params.arguments) || {});
+          const res = await v.kjor((params && params.arguments) || {}, ident || {});
           return { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(res, null, 1) }] } };
         } catch (e) {
           return { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: 'Feil: ' + e.message }], isError: true } };

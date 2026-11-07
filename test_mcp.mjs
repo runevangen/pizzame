@@ -72,6 +72,23 @@ function startMelStubb(svar) {
     resolve({ url: `http://127.0.0.1:${srv.address().port}`, srv })));
 }
 
+// Generell API-stubb (v0.864): spiller hvilken som helst rute, og lar testen
+// fange det serveren sender inn (f.eks. kroppen til POST /api/bakes).
+function startApiStubb(handler) {
+  const srv = createServer((req, res) => {
+    let kropp = '';
+    req.on('data', (c) => { kropp += c; });
+    req.on('end', () => {
+      const ut = handler(req.method, req.url, kropp) || { status: 404, body: {} };
+      res.setHeader('Content-Type', 'application/json');
+      res.statusCode = ut.status || 200;
+      res.end(JSON.stringify(ut.body));
+    });
+  });
+  return new Promise((resolve) => srv.listen(0, '127.0.0.1', () =>
+    resolve({ url: `http://127.0.0.1:${srv.address().port}`, srv })));
+}
+
 const hoved = startServer({ PIZZAME_API: 'http://127.0.0.1:1' });
 const { barn, kall, verktoy } = hoved;
 
@@ -102,8 +119,8 @@ try {
 
   const liste = await kall('tools/list', {});
   const navn = (liste.result ? liste.result.tools : []).map(v => v.name).sort();
-  t('tools/list gir alle fem verktøyene',
-    JSON.stringify(navn) === JSON.stringify(['juster_underveis', 'lag_plan', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
+  t('tools/list gir alle seks verktøyene',
+    JSON.stringify(navn) === JSON.stringify(['juster_underveis', 'lag_plan', 'lagre_deig', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
 
   // --- Frosne scenarier gjennom protokollen — samme fasit som steglaget ---
   // Scenariofeltene speiler test_steg.mjs; anker='start' fordi baseline er
@@ -247,7 +264,7 @@ try {
   const hVarsel = await post({ jsonrpc: '2.0', method: 'notifications/initialized' });
   t('http: varsel kvitteres med 202 uten svar', hVarsel.status === 202, hVarsel.status);
   const hListe = await (await post({ jsonrpc: '2.0', id: 2, method: 'tools/list' })).json();
-  t('http: alle fem verktøyene', !!hListe.result && hListe.result.tools.length === 5,
+  t('http: alle seks verktøyene', !!hListe.result && hListe.result.tools.length === 6,
     hListe.result && hListe.result.tools.map(x => x.name));
   const hPlan = await (await post({ jsonrpc: '2.0', id: 3, method: 'tools/call',
     params: { name: 'lag_plan', arguments: { ...SCEN[0].args, tidspunkt: '2026-08-01T18:00', anker: 'start' } } })).json();
@@ -307,6 +324,50 @@ try {
     opprinnelig: '2026-08-01T18:00', forsinkelseMin: 60, nyttTidspunkt: '2026-08-01T19:00' });
   t('justering: begge tidsfelter avvises med forklaring',
     beggeFeil.isError && beggeFeil.text.includes('nøyaktig én'), beggeFeil.text);
+
+  // --- lagre_deig + identitet (v0.864) ---
+  // Uten identitet: en vennlig forklaring på header-oppsettet, ikke et nei.
+  const utenIdent = await verktoy('lagre_deig', { navn: 'Test', metode: 'biga', tidspunkt: '2026-08-01T18:00' });
+  t('lagre_deig uten identitet forklarer header-oppsettet',
+    utenIdent.isError && utenIdent.text.includes('X-Pizzame-Bruker') && utenIdent.text.includes('X-Pizzame-Pin'),
+    utenIdent.text);
+  // Med identitet: verifiseres mot appens /api/users/verify, og POST-en til
+  // /api/bakes skal ha NØYAKTIG appens egen lagringskropp (privat, eid av
+  // den verifiserte brukeren) — fanget av stubben.
+  let sisteBake = null;
+  const apiStubb = await startApiStubb((metode, url, kropp) => {
+    if (metode === 'POST' && url === '/api/users/verify') {
+      const b = JSON.parse(kropp || '{}');
+      return b.name === 'Rune' && b.pin === '1234'
+        ? { body: { ok: true, id: 'u1', name: 'Rune' } }
+        : { status: 401, body: { ok: false } };
+    }
+    if (metode === 'POST' && url === '/api/bakes') {
+      sisteBake = JSON.parse(kropp || '{}');
+      return { body: { id: 'b1', name: sisteBake.name } };
+    }
+    if (url === '/api/flours') return { body: { flours: [] } };
+    return { status: 404, body: {} };
+  });
+  const medIdent = startServer({ PIZZAME_API: apiStubb.url, PIZZAME_BRUKER: 'Rune', PIZZAME_PIN: '1234' });
+  await medIdent.init();
+  const lagret = await medIdent.verktoy('lagre_deig', { navn: 'Fredagspizza', metode: 'biga',
+    bigaH: 18, cold: 48, tidspunkt: '2026-08-01T18:00', anker: 'ferdig' });
+  t('lagre_deig: lagrer og svarer med id + kalenderlenke',
+    !!lagret.data && lagret.data.id === 'b1' && lagret.data.navn === 'Fredagspizza'
+    && lagret.data.kalender_url.includes('/api/kalender?'), lagret.data || lagret.text);
+  t('lagre_deig: kroppen er appens egen — privat, eid av verifisert bruker',
+    !!sisteBake && sisteBake.ownerId === 'u1' && sisteBake.shared === false
+    && sisteBake.savedBy === 'Rune' && sisteBake.anchorMode === 'end'
+    && sisteBake.config && sisteBake.config.method === 'biga' && sisteBake.config.bigaH === 18,
+    sisteBake && { ownerId: sisteBake.ownerId, shared: sisteBake.shared, anchorMode: sisteBake.anchorMode });
+  const feilPin = startServer({ PIZZAME_API: apiStubb.url, PIZZAME_BRUKER: 'Rune', PIZZAME_PIN: '9999' });
+  await feilPin.init();
+  const avvist = await feilPin.verktoy('lagre_deig', { navn: 'Test', metode: 'biga', tidspunkt: '2026-08-01T18:00' });
+  t('lagre_deig: feil PIN avvises ærlig, ingenting lagres',
+    avvist.isError && avvist.text.includes('feil brukernavn eller PIN') && sisteBake.name === 'Fredagspizza',
+    avvist.text);
+  apiStubb.srv.close();
 
   // --- Feilveiene skal være høflige, presise og aldri gjette ---
   const f1 = await verktoy('lag_plan', { metode: 'surdeig', tidspunkt: '2026-08-01T18:00' });
