@@ -34,7 +34,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
   const lag = new Function('window', 'S',
     engineSrc + '\n' + stepsSrc + `
     ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-              recipeFor, preheatMin, stepLoc, smartKandidater, mN, byggIcs,
+              recipeFor, preheatMin, stepLoc, smartKandidater, mN, byggIcs, L,
               validerFlours, melSomTaaler, totalFermentHours,
               lesMelregister: () => MELTYPER,
               settMelregister: (valide) => { MELTYPER = byggMelregister(valide); } };
@@ -105,6 +105,16 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
     return d;
   }
 
+  // Kalenderlenken en plan bærer (v0.859) — delt mellom lag_plan og
+  // juster_underveis, så begge peker på /api/kalender med samme feltnavn.
+  const KALENDERFELT = ['metode', 'type', 'tidspunkt', 'anker', 'mel', 'hydro', 'temp', 'cold',
+                        'poolishH', 'poolishCold', 'bigaH', 'hurtigH', 'kveldH', 'oven', 'lang'];
+  function kalenderLenke(args) {
+    const q = new URLSearchParams();
+    for (const f of KALENDERFELT) if (args[f] !== undefined) q.set(f, String(args[f]));
+    return apiBase + '/api/kalender?' + q.toString();
+  }
+
   // ===== Verktøyene =====
   const VERKTOY = [
     {
@@ -143,14 +153,9 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
         // v0.859: hver plan bærer sin kalenderlenke — /api/kalender regner
         // NØYAKTIG samme plan på serveren (samme felter) og svarer med en
         // .ics-fil: ett trykk på mobilen gir varsler per steg via kalenderen.
-        const q = new URLSearchParams();
-        for (const f of ['metode', 'type', 'tidspunkt', 'anker', 'mel', 'hydro', 'temp', 'cold',
-                         'poolishH', 'poolishCold', 'bigaH', 'hurtigH', 'kveldH', 'oven', 'lang']) {
-          if (args[f] !== undefined) q.set(f, String(args[f]));
-        }
         return {
           oppskrift: oppskrift(metode),
-          kalender_url: apiBase + '/api/kalender?' + q.toString(),
+          kalender_url: kalenderLenke(args),
           forvarmingMin: lag.preheatMin(),
           steg: steg.map((s, i) => ({
             tid: fmtTid(s.at),
@@ -282,6 +287,92 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
         // registerets rekkefølge (svakest → sterkest mel).
         mel.sort((a, b) => (b.taaler ? 1 : 0) - (a.taaler ? 1 : 0));
         return { totalGjaeringTimer: timer, melkilde, mel };
+      },
+    },
+    {
+      name: 'juster_underveis',
+      description:
+        'Planen er i gang og tidspunktet flytter seg («gjestene er en time forsinket»). Oppgi det ' +
+        'OPPRINNELIGE ferdigtidspunktet, oppsettet (samme felter som lag_plan) og forsinkelsen — ' +
+        'verktøyet regner hele kjeden på nytt mot det nye tidspunktet og svarer med hva som er ' +
+        'fullført, hvor forskyvningen lander, nye klokkeslett for gjenstående steg, og en ærlig ' +
+        'advarsel hvis en fremskynding ikke rekker. Ny kalenderlenke følger med.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          metode: { type: 'string', enum: METODER, description: 'Deigmetode planen ble laget med.' },
+          opprinnelig: { type: 'string', description: 'Planens opprinnelige FERDIG-tidspunkt (ISO, Europe/Oslo).' },
+          forsinkelseMin: { type: 'number', description: 'Minutter senere (positiv) eller tidligere (negativ). Alternativ til nyttTidspunkt.' },
+          nyttTidspunkt: { type: 'string', description: 'Nytt ferdigtidspunkt (ISO). Alternativ til forsinkelseMin.' },
+          naa: { type: 'string', description: 'Hva som regnes som «nå» (ISO). Standard: faktisk klokkeslett.' },
+          type: { type: 'string', enum: TYPER },
+          mel: { type: 'number' }, hydro: { type: 'number' }, temp: { type: 'number' },
+          cold: { type: 'number' }, poolishH: { type: 'number' }, poolishCold: { type: 'boolean' },
+          bigaH: { type: 'number' }, hurtigH: { type: 'number' }, kveldH: { type: 'number' },
+          oven: { type: 'string', enum: ['vanlig', 'pizza'] },
+          lang: { type: 'string', enum: ['no', 'en'] },
+        },
+        required: ['metode', 'opprinnelig'],
+      },
+      kjor(args) {
+        settScenario(args);
+        S.mode = 'end';
+        const foer = lesTid(args.opprinnelig, 'opprinnelig');
+        if ((args.nyttTidspunkt === undefined) === (args.forsinkelseMin === undefined)) {
+          throw new Error('oppgi nøyaktig én av nyttTidspunkt og forsinkelseMin');
+        }
+        if (args.forsinkelseMin !== undefined && !Number.isFinite(Number(args.forsinkelseMin))) {
+          throw new Error('feltet «forsinkelseMin» må være et tall');
+        }
+        const etterTid = args.nyttTidspunkt !== undefined
+          ? lesTid(args.nyttTidspunkt, 'nyttTidspunkt')
+          : new Date(foer.getTime() + Number(args.forsinkelseMin) * 60000);
+        const naa = args.naa !== undefined ? lesTid(args.naa, 'naa').getTime() : Date.now();
+        const deltaMin = Math.round((etterTid - foer) / 60000);
+        // Samme oppsett, to ankre: kjedene er like lange, så stegene parres på
+        // indeks. Total gjæringstid er uendret — bare klokka flytter seg, og
+        // det som allerede er gjort kan ikke flyttes: forskyvningen lander i
+        // perioden du står i NÅ (typisk en hvile).
+        const stegFoer = lag.stepsForAnchor(foer);
+        const stegEtter = lag.stepsForAnchor(etterTid);
+        const fullfort = [], gjenstaar = [];
+        let rekker = true;
+        stegFoer.forEach((s, i) => {
+          const nyAt = stegEtter[i].at;
+          if (s.at.getTime() <= naa) {
+            fullfort.push({ tittel: s.title, tid: fmtTid(s.at) });
+          } else {
+            if (nyAt.getTime() < naa) rekker = false;
+            gjenstaar.push({ tittel: s.title, foer: fmtTid(s.at), naa: fmtTid(nyAt),
+                             naa_iso: new Date(nyAt).toISOString(), passiv: !!s.passive });
+          }
+        });
+        // Rådet er stedsbasert (kjøleskap tåler strekk godt; romtemperatur er
+        // mer sårbar) — uten å dikte nye tall.
+        const sisteGjorte = stegFoer.filter(s => s.at.getTime() <= naa).slice(-1)[0] || null;
+        const standerI = sisteGjorte
+          ? { tittel: sisteGjorte.title, sted: lag.stepLoc(sisteGjorte), endringMin: deltaMin }
+          : null;
+        const raad = !rekker
+          ? lag.L('Fremskyndingen rekker ikke — sammenlign naa_iso på første gjenstående steg med klokka.',
+              'The move-up does not fit — compare naa_iso on the first remaining step with the clock.')
+          : sisteGjorte && lag.stepLoc(sisteGjorte) === 'kjol'
+          ? lag.L(`Forskyvningen (${deltaMin} min) tas i kjøleskapshvilen — det tåler deigen godt.`,
+              `The shift (${deltaMin} min) lands in the fridge rest — the dough handles that well.`)
+          : sisteGjorte && deltaMin > 0
+          ? lag.L(`Forskyvningen (${deltaMin} min) strekker en hvile i romtemperatur — blir ventetiden lang, sett emnene kaldt i mellomtiden.`,
+              `The shift (${deltaMin} min) stretches a room-temperature rest — if the wait gets long, move the dough to the fridge in the meantime.`)
+          : lag.L(`Alle gjenstående steg flytter ${deltaMin} min.`, `All remaining steps move ${deltaMin} min.`);
+        // Kalenderlenken peker på den NYE planen. /api/kalender tolker tider i
+        // norsk tid, så det nye ankeret skrives som lokal ISO uten sone.
+        const lokalIso = new Date(etterTid.getTime() - etterTid.getTimezoneOffset() * 60000)
+          .toISOString().slice(0, 16);
+        return {
+          opprinneligFerdig: fmtTid(foer), nyFerdig: fmtTid(etterTid),
+          nyFerdig_iso: etterTid.toISOString(), forskyvningMin: deltaMin,
+          rekker, raad, standerI, fullfort, gjenstaar,
+          kalender_url: kalenderLenke({ ...args, tidspunkt: lokalIso, anker: 'ferdig' }),
+        };
       },
     },
   ];

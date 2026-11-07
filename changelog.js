@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.863",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Nytt MCP-verktøy juster_underveis: «gjestene er en time forsinket» midt i baksten — verktøyet regner hele kjeden mot det nye tidspunktet og svarer med hva som alt er gjort (urørt), hvor forskyvningen lander (kjøleskapshvile tåler strekk godt; romtemperatur får et ærlig råd), nye klokkeslett for alt gjenstående, og rekker/rekker ikke ved fremskynding. Ny kalenderlenke følger med. Sikkerhetsgjennomgangen fra samme økt er dokumentert i BACKLOG.md (S1–S4)."
+    ],
+    "changes_en": [
+      "New MCP tool juster_underveis: \"guests are an hour late\" mid-bake — the tool recomputes the whole chain against the new time and answers with what is already done (untouched), where the shift lands (a fridge rest takes stretching well; room temperature gets an honest tip), new times for everything remaining, and fits/doesn't fit when moving up. A new calendar link comes along. The security review from the same session is documented in BACKLOG.md (S1–S4)."
+    ]
+  },
+  {
     "v": "0.862",
     "d": "november 2026",
     "d_en": "November 2026",

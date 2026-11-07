@@ -27,6 +27,43 @@ fiks sannsynligvis flytter frosne tall.
 
 ---
 
+## Sikkerhet — gjennomgang 07.11.2026 (MCP-økta)
+
+Full gjennomgang av serverfunksjonene, MCP-flaten og klienten etter at repoet
+ble offentlig. Det som står seg: MCP-verktøyene er rene lesefunksjoner med
+strenge felt-hvitelister; eierskap håndheves på serveren for deiger (v0.642);
+navn escapes i UI; PIN lagres hashet; ingen CORS-headere. Gjenstående punkter
+i synkende viktighet:
+
+### S1. Admin-funksjonene må feile LUKKET uten konfigurert passord
+- Alle fem admin-flatene (bakes, config, flours, users, feedback) bruker
+  mønsteret `process.env.ADMIN_PASSWORD || '<innebygd reserve>'`. Repoet er
+  offentlig → reserveverdien er offentlig lesbar. Er miljøvariabelen ikke
+  satt hos Netlify, godtar admin-flatene en verdi hvem som helst kan slå opp.
+- **Fiks:** fjern reserven i alle fem; mangler miljøvariabelen, avvis
+  admin-kall (503, «admin ikke konfigurert»). Verifiser at ADMIN_PASSWORD er
+  satt i Netlify-panelet, og BYTT verdien — den gamle reserven ligger i
+  git-historikken for alltid. test_funksjoner.mjs setter alt sin egen verdi
+  før lasting, så porten er upåvirket.
+- **I klartekst:** liten jobb, størst gevinst. Gjøres først.
+
+### S2. Admin-passord ut av URL-er
+- Enkelte admin-ruter (GET/DELETE) tar passordet som query-parameter — URL-er
+  havner i server- og proxylogger. **Fiks:** header (eller body) på alle
+  admin-ruter, og klientkallene i index.html oppdateres tilsvarende.
+
+### S3. Brems på PIN-innlogging
+- `/api/users/verify` kan prøves ubegrenset, og PIN-rommet er 4 siffer. PIN
+  beskytter kun private deiger (lav verdi), men en enkel tellegrense per
+  bruker/epoke i blobs er billig. Vurder samtidig Netlifys rate limiting på
+  `/api/mcp` og `/api/kalender` (CPU-kost per kall, ingen data i fare).
+
+### S4. Småting (gjøres når man likevel er i filene)
+- Passordsammenligning med `===` → `crypto.timingSafeEqual` (gratis å bytte).
+- PIN-hashen er usaltet sha256 — med 4 siffer er hashing uansett mest
+  kosmetikk. Dokumentert som bevisst valg: PIN er komfortlås for private
+  deiger, ikke en sikkerhetsgrense. Si det også i UI-et ved registrering.
+
 ## P0 — Reelle feil, bør fikses først
 
 > ✅ **Alle P0 + #3/#4 fikset i commit `fa2c1d6`.** Under gjenstår som dokumentasjon.

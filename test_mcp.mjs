@@ -102,8 +102,8 @@ try {
 
   const liste = await kall('tools/list', {});
   const navn = (liste.result ? liste.result.tools : []).map(v => v.name).sort();
-  t('tools/list gir alle fire verktøyene',
-    JSON.stringify(navn) === JSON.stringify(['lag_plan', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
+  t('tools/list gir alle fem verktøyene',
+    JSON.stringify(navn) === JSON.stringify(['juster_underveis', 'lag_plan', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
 
   // --- Frosne scenarier gjennom protokollen — samme fasit som steglaget ---
   // Scenariofeltene speiler test_steg.mjs; anker='start' fordi baseline er
@@ -247,7 +247,7 @@ try {
   const hVarsel = await post({ jsonrpc: '2.0', method: 'notifications/initialized' });
   t('http: varsel kvitteres med 202 uten svar', hVarsel.status === 202, hVarsel.status);
   const hListe = await (await post({ jsonrpc: '2.0', id: 2, method: 'tools/list' })).json();
-  t('http: alle fire verktøyene', !!hListe.result && hListe.result.tools.length === 4,
+  t('http: alle fem verktøyene', !!hListe.result && hListe.result.tools.length === 5,
     hListe.result && hListe.result.tools.map(x => x.name));
   const hPlan = await (await post({ jsonrpc: '2.0', id: 3, method: 'tools/call',
     params: { name: 'lag_plan', arguments: { ...SCEN[0].args, tidspunkt: '2026-08-01T18:00', anker: 'start' } } })).json();
@@ -278,6 +278,35 @@ try {
   t('kalender: POST avvises med 405', hKalPost.status === 405, hKalPost.status);
   const hRot = await httpHandler(new Request('http://localhost/api/mcp', { method: 'POST', body: 'ikke json' }));
   t('http: ugyldig JSON gir -32700', hRot.status === 400 && (await hRot.json()).error.code === -32700, hRot.status);
+
+  // --- juster_underveis (v0.863): planen flytter seg midt i baksten ---
+  // Standard med 48t kald, ferdig lør 18:00, «nå» = lør 10:00 (midt i
+  // kjøleskapshvilen), gjestene én time forsinket. Fasit: ny ferdig 19:00,
+  // alt gjenstående flytter 60 min, forskyvningen lander i kjøleskapet.
+  const just = await verktoy('juster_underveis', { metode: 'standard', cold: 48,
+    opprinnelig: '2026-08-01T18:00', forsinkelseMin: 60, naa: '2026-08-01T10:00' });
+  if (!just.data) { t('juster_underveis svarer', false, just.err || just.text); }
+  else {
+    const d = just.data;
+    t('justering: ny ferdig = opprinnelig + 60 min', d.nyFerdig_iso === '2026-08-01T17:00:00.000Z' && d.forskyvningMin === 60,
+      { nyFerdig_iso: d.nyFerdig_iso, forskyvningMin: d.forskyvningMin });
+    t('justering: fullførte steg står urørt, gjenstående finnes',
+      d.fullfort.length >= 1 && d.gjenstaar.length >= 2, { fullfort: d.fullfort.length, gjenstaar: d.gjenstaar.length });
+    t('justering: siste gjenstående steg steker på NYTT tidspunkt',
+      d.gjenstaar[d.gjenstaar.length - 1].naa_iso === '2026-08-01T17:00:00.000Z', d.gjenstaar.slice(-1)[0]);
+    t('justering: forskyvningen lander i kjøleskapet, rådet sier det',
+      d.rekker === true && !!d.standerI && d.standerI.sted === 'kjol' && d.raad.includes('kjøleskap'),
+      { rekker: d.rekker, standerI: d.standerI, raad: d.raad });
+  }
+  const forTidlig = await verktoy('juster_underveis', { metode: 'standard', cold: 48,
+    opprinnelig: '2026-08-01T18:00', forsinkelseMin: -240, naa: '2026-08-01T13:00' });
+  t('justering: umulig fremskynding sies ærlig (rekker=false)',
+    !!forTidlig.data && forTidlig.data.rekker === false && forTidlig.data.raad.includes('rekker ikke'),
+    forTidlig.data && { rekker: forTidlig.data.rekker, raad: forTidlig.data.raad });
+  const beggeFeil = await verktoy('juster_underveis', { metode: 'standard',
+    opprinnelig: '2026-08-01T18:00', forsinkelseMin: 60, nyttTidspunkt: '2026-08-01T19:00' });
+  t('justering: begge tidsfelter avvises med forklaring',
+    beggeFeil.isError && beggeFeil.text.includes('nøyaktig én'), beggeFeil.text);
 
   // --- Feilveiene skal være høflige, presise og aldri gjette ---
   const f1 = await verktoy('lag_plan', { metode: 'surdeig', tidspunkt: '2026-08-01T18:00' });
