@@ -2226,6 +2226,7 @@ function doReset(){
   // ikke lenger et testbakst, som gjør hele sammenligningen verdiløs.
   loadPrefs();
   window._activeDeigId=null;window._activeDeigName=null;window._activeAnchorISO=null;
+  fjernAktivDeigKvittering(); // v0.862: «Start ny» legger også bort gjenopptakingen
   window._metodeValgtAvBruker=false; window._autoByttet=null;   // v0.843
   try{ localStorage.removeItem('pizzaSetup'); }catch(e){} // F3: «Start ny deig» rydder også lagret oppsett
   window._checked=new Set();
@@ -6714,6 +6715,10 @@ async function loadConfigThenStart(){
     // så mobShowTab('settings') kalles aldri automatisk ved første sideinnlasting — uten dette
     // kallet her ville wizarden aldri vist seg før man bytter fane frem og tilbake manuelt.
     if(targetLayout==='mob') wizEnterSettingsTab();
+    // v0.862: holder du på med en lagret deig, kommer den opp av seg selv —
+    // helt til du sier Ferdig eller Lukk. Asynkron (henter fra serveren) og
+    // ufarlig: feiler nettet, står appen som før og prøver ved neste åpning.
+    try{ gjenopptaAktivDeig(); }catch(e){}
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', finish, {once:true});
   else finish();
@@ -9710,6 +9715,7 @@ async function saveBake(){
     const saved = await res.json();
     window._activeDeigId = saved.id;
     window._activeDeigName = saved.name;
+    settAktivDeigKvittering(saved.id); // v0.862: lagret = den du holder på med
     syncSaveBakeLabel();
     refreshDeigerBanner();
     syncFavoriteButton();
@@ -9864,8 +9870,33 @@ function activeDeigBar(isMob){
   return `<div style="${style}">${activeDeigIndicatorHTML()}</div>`;
 }
 
+// ===== GJENOPPTA AKTIV DEIG (v0.862) =====
+// En lagret deig du jobber med skal komme opp av seg selv neste gang appen
+// åpnes — helt til du sier «Ferdig» (fullfører baksten) eller «Lukk» (legger
+// den bort for denne gangen). Kvitteringen er en localStorage-nøkkel med
+// deig-id (samme mønster som pizzaThemeValgt): settes når du åpner/lagrer en
+// EGEN deig, ryddes av Lukk, Ferdig, sletting og «Start ny». Selve deigen bor
+// fortsatt på serveren — kvitteringen sier bare «denne holder jeg på med».
+function settAktivDeigKvittering(id){ try{ localStorage.setItem('pizzaAktivDeig', id); }catch(e){} }
+function fjernAktivDeigKvittering(){ try{ localStorage.removeItem('pizzaAktivDeig'); }catch(e){} }
+async function gjenopptaAktivDeig(){
+  let id=null; try{ id=localStorage.getItem('pizzaAktivDeig'); }catch(e){}
+  if(!id) return false;
+  const bakes=await fetchBakes();
+  if(bakes===null) return false; // uten nett: behold kvitteringen, prøv neste åpning
+  const b=bakes.find(x=>x.id===id);
+  if(b && b.status==='active' && bakeIsMine(b)){
+    window._bakesCache=bakes;
+    openBake(id);
+    return true;
+  }
+  fjernAktivDeigKvittering(); // slettet, ferdig eller en annens — ikke mas igjen
+  return false;
+}
+
 function closeActiveDeig(){
   window._activeDeigId=null; window._activeDeigName=null; window._activeAnchorISO=null;
+  fjernAktivDeigKvittering();
   window._checked=new Set();
   window._checkedIngredients=new Set();
   syncSaveBakeLabel();
@@ -9977,6 +10008,8 @@ function openBake(id){
   window._planChosen = true;  // v0.655: åpnet en lagret deig = et reelt valg
   window._activeDeigId = mine ? id : null;
   window._activeDeigName = mine ? b.name : null;
+  // v0.862: egen deig = den du holder på med — husk til neste appåpning.
+  if(mine) settAktivDeigKvittering(id); else fjernAktivDeigKvittering();
   // v0.816: egen, start-forankret deig beholder sitt lagrede anker ved
   // gjenåpning (se mobGetAnchor). Andres deig åpnes «som ny» og skal
   // naturlig re-forankres til nå.
@@ -10100,7 +10133,10 @@ async function confirmFinishBake(alreadyFinished, skip){
     // starte en ny — tilby det (🎉-varianten). Kun ved ekte fullføring, ikke
     // ved redigering av en alt ferdig bakst, og aldri for en annen deig enn
     // den du faktisk står i.
-    if(!alreadyFinished && window._activeDeigId===id) startNyDeigForespoersel(true);
+    if(!alreadyFinished && window._activeDeigId===id){
+      fjernAktivDeigKvittering(); // v0.862: «Ferdig» avslutter gjenopptakingen
+      startNyDeigForespoersel(true);
+    }
   }catch(e){
     if(statusEl) statusEl.textContent = L('Kunne ikke lagre — prøv igjen.','Could not save — try again.');
   }
@@ -10118,7 +10154,7 @@ async function deleteBakeConfirm(id){
   try{
     const res = await fetch('/api/bakes/'+id+bakeAuthQuery(), { method: 'DELETE' });
     if(!res.ok) throw new Error('HTTP '+res.status);
-    if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; window._activeAnchorISO=null; syncSaveBakeLabel(); }
+    if(window._activeDeigId===id){ window._activeDeigId=null; window._activeDeigName=null; window._activeAnchorISO=null; fjernAktivDeigKvittering(); syncSaveBakeLabel(); }
     refreshBaksterPanels();
     refreshNotesPanels();
     refreshDeigerBanner();
