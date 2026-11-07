@@ -819,7 +819,7 @@ function rawSteps(a){
         needs:[nI('mel', r.flour), nI('salt', r.salt), nGjaerTxt(yA(r)), nI('vann', r.water)],
         substeps:[
           L(`Bland ${r.flour}g mel, ${r.salt}g salt og ${yA(r)} tørt i en stor bolle`,`Mix ${r.flour}g flour, ${r.salt}g salt and ${yA(r)} dry in a large bowl`),
-          L(`Tilsett ${r.water}g vann`,`Add ${r.water}g water`),
+          L(`Tilsett ${r.water}g ${waterTempPhrase()}`,`Add ${r.water}g ${waterTempPhrase()}`),
           L(`Rør sammen med en skje til alt melet er fuktet — klumpete er helt greit`,`Stir together with a spoon until all the flour is moistened — lumpy is perfectly fine`)
         ],
         why:L('Lang, langsom heving bygger opp glutenstrukturen av seg selv — helt uten mekanisk arbeid.',`A long, slow rise builds up the gluten structure on its own — entirely without mechanical work.`),
@@ -1151,7 +1151,11 @@ function rawSteps(a){
           :L(`Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()} i bollen med poolishen. Kjør eltekroken på lav hastighet mens du tilsetter ${poolishSplit(r2).restMel}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}. Tilsett ${r2.salt}g salt etter 2–3 min — ingen ekstra gjær trengs, poolishen har alt du trenger. Øk til middels lav hastighet. Elt totalt 6–9 min.`,`Add ${poolishSplit(r2).rest}g ${waterTempPhrase()} to the bowl with the poolish. Run the dough hook on low speed while you add ${poolishSplit(r2).restMel}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}. Add ${r2.salt}g salt after 2–3 min — no extra yeast needed, the poolish has everything you need. Increase to medium-low speed. Knead 6–9 min total.`))+mixWorkNote(),
         needs:[nI('vann', poolishSplit(r2).rest), nI('mel', poolishSplit(r2).restMel), nI('salt', r2.salt), ...nIOpt('olje',r2.oil), ...nIOpt('smor',r2.butter), ...nIOpt('sukker',r2.sugar)],
         substeps:[
-          L(`Tilsett ${poolishSplit(r2).rest}g vann i bollen med poolishen`,`Add ${poolishSplit(r2).rest}g water to the bowl with the poolish`),
+          // v0.861: temperaturen MÅ med her — fokusvisningen viser bare
+          // understegene, og «4°C rett fra kjøleskapet» er forskjellen på en
+          // deig som treffer 22–24°C og en som ikke gjør det (meldt inn fra
+          // kjøkkenet: steget sa bare «vann»).
+          L(`Tilsett ${poolishSplit(r2).rest}g ${waterTempPhrase()} i bollen med poolishen`,`Add ${poolishSplit(r2).rest}g ${waterTempPhrase()} to the bowl with the poolish`),
           L(`Bland inn ${poolishSplit(r2).restMel}g mel gradvis${r2.oil?`, ${r2.oil}g olje`:''}${r2.butter?` + ${r2.butter}g smeltet smør`:''}${r2.sugar?` + ${r2.sugar}g sukker`:''}`,`Mix in ${poolishSplit(r2).restMel}g flour gradually${r2.oil?`, ${r2.oil}g oil`:''}${r2.butter?` + ${r2.butter}g melted butter`:''}${r2.sugar?` + ${r2.sugar}g sugar`:''}`),
           L(`Tilsett ${r2.salt}g salt — ingen ekstra gjær trengs`,`Add ${r2.salt}g salt — no extra yeast needed`),
           L(`Elt til deigen er glatt og smidig`,`Knead until the dough is smooth and supple`)
@@ -1187,7 +1191,7 @@ function rawSteps(a){
           :L(`Legg bigaen i kjøkkenmaskinens bolle. Tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Kjør eltekroken på lav hastighet mens du tilsetter ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}${r3.sugar?` + ${r3.sugar}g sukker`:''}. Tilsett ${r3.salt}g salt etter 2–3 min. Øk til middels lav hastighet. Elt 8–10 min — bigaen er stiv og kan belaste maskinen, så gå ned i hastighet om den strever.`,`Put the biga in the stand mixer bowl. Add ${Math.round(r3.water-bv)}g ${waterTempPhrase()}. Run the dough hook on low speed while you add ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}${r3.sugar?` + ${r3.sugar}g sugar`:''}. Add ${r3.salt}g salt after 2–3 min. Increase to medium-low speed. Knead 8–10 min — the biga is stiff and can strain the machine, so lower the speed if it struggles.`),
         needs:[nI('vann', Math.round(r3.water-bv)), nI('mel', Math.round(r3.flour*0.4)), nI('salt', r3.salt), ...nIOpt('olje',r3.oil), ...nIOpt('smor',r3.butter), ...nIOpt('sukker',r3.sugar)],
         substeps:[
-          L(`Legg bigaen i bollen, tilsett ${Math.round(r3.water-bv)}g vann`,`Put the biga in the bowl, add ${Math.round(r3.water-bv)}g water`),
+          L(`Legg bigaen i bollen, tilsett ${Math.round(r3.water-bv)}g ${waterTempPhrase()}`,`Put the biga in the bowl, add ${Math.round(r3.water-bv)}g ${waterTempPhrase()}`),
           L(`Bland inn ${Math.round(r3.flour*0.4)}g mel gradvis${r3.oil?`, ${r3.oil}g olje`:''}${r3.butter?` + ${r3.butter}g smeltet smør`:''}${r3.sugar?` + ${r3.sugar}g sukker`:''}`,`Mix in ${Math.round(r3.flour*0.4)}g flour gradually${r3.oil?`, ${r3.oil}g oil`:''}${r3.butter?` + ${r3.butter}g melted butter`:''}${r3.sugar?` + ${r3.sugar}g sugar`:''}`),
           L(`Tilsett ${r3.salt}g salt`,`Add ${r3.salt}g salt`),
           L(`Elt til bigaen løsner og blir smidig`,`Knead until the biga loosens and becomes supple`)

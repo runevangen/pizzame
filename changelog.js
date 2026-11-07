@@ -3,6 +3,28 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.862",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Deigen du holder på med kommer nå opp av seg selv: lagrer eller åpner du en egen deig, husker appen det — og neste gang du åpner den, står deigen klar med plan og avhakede steg, uansett enhet-reload. Helt til du sier «Ferdig» (fullfører baksten) eller «Lukk» (legger den bort for denne gangen) — da slutter appen å gjenoppta den. Sletting og «Start ny» rydder også. Uten nett ved oppstart beholdes huskelappen stille til neste åpning."
+    ],
+    "changes_en": [
+      "The dough you are working on now comes up by itself: save or open one of your own doughs and the app remembers — next time you open it, the dough is ready with plan and checked steps, across reloads. Until you say \"Done\" (finish the bake) or \"Close\" (put it away for now) — then the app stops resuming it. Deleting and \"Start new\" also clear it. Offline at startup, the note is quietly kept for the next visit."
+    ]
+  },
+  {
+    "v": "0.861",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Vanntemperaturen følger nå med inn i fokusvisningen, meldt inn fra kjøkkenet: understeget sa «Tilsett 75g vann» der selve steget sa «vann rett fra kjøleskapet (ca. 4°C)» — og fokusvisningen viser bare understegene, så tallet som avgjør deigtemperaturen forsvant. Rettet i tre kjeder (poolish-blanding, biga-blanding og Ingen elting), og en ny invariant håndhever regelen over alle 210 kombinasjoner: står det noe om vannets temperatur i steget, skal understeget som tilsetter vannet bære det samme. Invarianten fant selv den tredje synderen."
+    ],
+    "changes_en": [
+      "The water temperature now travels into the focus view, reported from the kitchen: the substep said \"Add 75g water\" where the step itself said \"water straight from the fridge (about 4°C)\" — and the focus view shows only the substeps, so the number that decides the dough temperature vanished. Fixed in three chains (poolish mix, biga mix and No-knead), and a new invariant enforces the rule across all 210 combinations: if the step says something about the water's temperature, the substep adding the water must carry the same. The invariant itself found the third offender."
+    ]
+  },
+  {
     "v": "0.860",
     "d": "november 2026",
     "d_en": "November 2026",

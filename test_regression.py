@@ -9024,6 +9024,53 @@ const svSched=window._pizzatidSchedule;
     ok174 = all(r174.values())
     results.append(('reopened_dough_keeps_its_saved_start_anchor', ok174, r174))
 
+    # v0.862: en lagret deig du holder paa med kommer opp AV SEG SELV ved neste
+    # appaapning — helt til du sier Ferdig eller Lukk (Runes bestilling, ordrett).
+    # Kvitteringen er localStorage-noekkelen pizzaAktivDeig. Fryser kontrakten:
+    # aapning/lagring setter den, Lukk/Ferdig/sletting rydder den, gjenopptak
+    # aapner kun EGEN, AKTIV deig, og uten nett beholdes kvitteringen stille
+    # til neste aapning i stedet for aa ryddes.
+    r175 = page.evaluate("""async () => {
+      resetTestState();
+      setLayout('mob');
+      const bake={id:'ra1',name:'Lørdagspizza',status:'active',favorite:false,
+                  ownerId:currentUserId(),
+                  config:{type:'napoletana',method:'kveld',kveldH:10,mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+                  anchorMode:'end',anchorISO:'2026-08-16T17:00:00',
+                  checkedSteps:[],checkedIngredients:[]};
+      const ekteFetch=fetchBakes;
+      try{
+        window._bakesCache=[bake]; openBake('ra1');
+        const kvittertVedAapning=localStorage.getItem('pizzaAktivDeig')==='ra1';
+        closeActiveDeig();
+        const ryddetVedLukk=localStorage.getItem('pizzaAktivDeig')===null;
+        localStorage.setItem('pizzaAktivDeig','ra1');
+        fetchBakes=async()=>[bake];
+        const aapnet=await gjenopptaAktivDeig();
+        const gjenopptatt=aapnet===true && window._activeDeigId==='ra1' && S.method==='kveld';
+        closeActiveDeig();
+        localStorage.setItem('pizzaAktivDeig','ra1');
+        fetchBakes=async()=>[{...bake,status:'finished'}];
+        const ferdigRyddet=(await gjenopptaAktivDeig())===false
+          && localStorage.getItem('pizzaAktivDeig')===null && !window._activeDeigId;
+        localStorage.setItem('pizzaAktivDeig','ra1');
+        fetchBakes=async()=>null;
+        const beholdtOffline=(await gjenopptaAktivDeig())===false
+          && localStorage.getItem('pizzaAktivDeig')==='ra1';
+        try{ localStorage.removeItem('pizzaAktivDeig'); }catch(e){}
+        window._bakesCache=[{...bake,id:'ra2',ownerId:'noen-andre',savedBy:'Noen Andre'}];
+        openBake('ra2');
+        const andresSetterIkke=localStorage.getItem('pizzaAktivDeig')===null;
+        return {kvittertVedAapning,ryddetVedLukk,gjenopptatt,ferdigRyddet,beholdtOffline,andresSetterIkke};
+      } finally {
+        fetchBakes=ekteFetch;
+        try{ localStorage.removeItem('pizzaAktivDeig'); }catch(e){}
+        closeActiveDeig(); window._bakesCache=[];
+      }
+    }""")
+    ok175 = all(r175.values())
+    results.append(('saved_dough_reopens_on_next_visit_until_done_or_closed', ok175, r175))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
