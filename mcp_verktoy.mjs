@@ -11,7 +11,9 @@
 
 // Baseline og appen regner i norsk tidssone; verten setter TZ før Date brukes.
 export const MCP_NAVN = 'pizzame-motor';
-export const MCP_VERSJON = '0.856';
+// Versjonen EIES av changelog.js (toppinnslaget) — vertene leser den derfra
+// og sender den inn (v0.860). Serveren og appen er samme deploy, så de skal
+// rapportere samme tall; en egen kopi her drev fra virkeligheten på tre dager.
 
 const METODER = ['standard', 'poolish', 'biga', 'mania', 'hurtig', 'kveld'];
 const TYPER = ['napoletana', 'newyork', 'langpanne', 'chicago', 'ingenelting'];
@@ -25,7 +27,7 @@ const VALGFELT = { meltype: null, oven: ['vanlig', 'pizza'], gjaer: ['torr', 'fe
 // Bygg en komplett, selvstendig MCP-håndterer. `handter(melding)` tar én
 // JSON-RPC-melding og returnerer svaret (eller null for varsler) — transporten
 // rundt (stdio-linjer eller HTTP) er vertens jobb.
-export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
+export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
   // ===== Motorlaget — verbatim samme søm som test_steg.mjs =====
   const vindu = { _lang: 'no', _openSub: new Set(), _openTip: new Set(), _openIng: new Set() };
   const S = {};
@@ -301,7 +303,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
       return { jsonrpc: '2.0', id, result: {
         protocolVersion: (params && params.protocolVersion) || '2025-06-18',
         capabilities: { tools: {} },
-        serverInfo: { name: MCP_NAVN, version: MCP_VERSJON },
+        serverInfo: { name: MCP_NAVN, version: versjon || '0' },
         // v0.857: tonen. instructions følger connectoren inn i hver samtale
         // som bruker den — dette er stedet å forme HVORDAN svarene legges
         // fram, uten å røre verktøyene eller tallene de regner.
@@ -313,6 +315,11 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
           '(«da måtte du ha startet …») og pek på det beste alternativet som faktisk rekker. ' +
           'Når du har gitt en plan, tilby kalenderlenken (kalender_url i svaret): ett trykk legger ' +
           'hele planen i telefonens kalender med varsel før hvert aktive steg. ' +
+          'La pizzaen farge stemningen, men språket forblir norsk: baker vi italiensk ' +
+          '(napoletana), dryss inn noen italienske gloser for moro skyld (allora, la farina, il forno, ' +
+          'cornicione — og en «mamma mia!» når planen går opp); baker vi amerikansk (New York eller ' +
+          'Chicago deep dish), vær skikkelig amerikansk i gemyttet — entusiastisk, «alright!», ' +
+          '«that\'s a proper pie» — fortsatt på norsk. Langpanne er trygt og hjemmekoselig norsk. ' +
           'Svar på brukerens språk; bruk lang="en" i verktøykallene når brukeren skriver engelsk.',
       } };
     }

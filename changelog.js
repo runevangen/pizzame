@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.860",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Pizzacoachen i chatten har fått nasjonalitet: baker du napoletansk drysses det italienske gloser (allora, la farina, cornicione), baker du New York eller Chicago blir gemyttet skikkelig amerikansk — men språket forblir norsk. Og MCP-serverens versjonsnummer leses nå fra endringsloggens toppinnslag i stedet for en egen kopi som alt hadde rukket å drifte — serveren og appen er samme deploy og rapporterer nå alltid samme tall."
+    ],
+    "changes_en": [
+      "The pizza coach in chat got a nationality: bake Neapolitan and Italian words get sprinkled in (allora, la farina, cornicione), bake New York or Chicago and the mood goes properly American — but the language stays Norwegian. And the MCP server's version number is now read from the changelog's top entry instead of a separate copy that had already drifted — server and app are the same deploy and now always report the same number."
+    ]
+  },
+  {
     "v": "0.859",
     "d": "november 2026",
     "d_en": "November 2026",

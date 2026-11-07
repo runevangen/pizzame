@@ -19,10 +19,16 @@ import { lagMcpHandterer } from './mcp_verktoy.mjs';
 // Baseline og appen regner i norsk tidssone — serveren tolker og svarer i samme.
 process.env.TZ = 'Europe/Oslo';
 
+// Versjonen eies av changelog.js (toppinnslaget) — server og app er samme
+// kodebase og skal rapportere samme tall.
+const versjon = (readFileSync(new URL('./changelog.js', import.meta.url), 'utf8')
+  .match(/"v":\s*"([\d.]+)"/) || [])[1];
+
 const { handter } = lagMcpHandterer({
   engineSrc: readFileSync(new URL('./engine.js', import.meta.url), 'utf8'),
   stepsSrc: readFileSync(new URL('./steps.js', import.meta.url), 'utf8'),
   apiBase: process.env.PIZZAME_API || 'https://ultimatepizza.netlify.app',
+  versjon,
 });
 
 function send(msg) { process.stdout.write(JSON.stringify(msg) + '\n'); }

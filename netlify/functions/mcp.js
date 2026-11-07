@@ -46,6 +46,8 @@ const { handter, lagIcs } = lagMcpHandterer({
   stepsSrc: lesKilde('steps.js'),
   // PIZZAME_API lar tester peke på stubber; ellers deployens egen URL.
   apiBase: process.env.PIZZAME_API || process.env.URL || 'https://ultimatepizza.netlify.app',
+  // Versjonen eies av changelog.js (toppinnslaget) — samme deploy, samme tall.
+  versjon: (lesKilde('changelog.js').match(/"v":\s*"([\d.]+)"/) || [])[1],
 });
 
 function json(status, body) {

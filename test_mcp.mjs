@@ -84,6 +84,20 @@ try {
   t('initialize bærer tone-instruksen («motoren sier» er forbudt)',
     typeof init.result.instructions === 'string' && init.result.instructions.includes('«motoren sier»')
     && init.result.instructions.includes('pizzacoach'), init.result.instructions);
+  // v0.860: pizzaens nasjonalitet farger stemningen, men språket er norsk.
+  // Vokteren tar på det testbare: instruksen nevner italiensk-glosene,
+  // amerikansk gemytt og at språket forblir norsk.
+  t('tone-instruksen bærer nasjonalitetsregelen (italiensk/amerikansk, norsk språk)',
+    init.result.instructions.includes('italienske gloser')
+    && init.result.instructions.includes('amerikansk')
+    && init.result.instructions.includes('språket forblir norsk'), init.result.instructions);
+  // v0.860: serverversjonen EIES av changelog.js — en egen kopi i verktøylaget
+  // drev fra virkeligheten på tre dager (sto på 0.856 t.o.m. v0.859).
+  const changelogTopp = (readFileSync(new URL('./changelog.js', import.meta.url), 'utf8')
+    .match(/"v":\s*"([\d.]+)"/) || [])[1];
+  t('serverversjonen er changelog-toppen (ingen egen kopi)',
+    !!changelogTopp && init.result.serverInfo.version === changelogTopp,
+    { server: init.result.serverInfo.version, changelog: changelogTopp });
   barn.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
 
   const liste = await kall('tools/list', {});
@@ -227,6 +241,9 @@ try {
   t('http: initialize svarer med serverInfo', !!hInit.result && hInit.result.serverInfo.name === 'pizzame-motor', hInit);
   t('http: samme tone-instruks som stdio (delt lag)',
     !!hInit.result && hInit.result.instructions === init.result.instructions, hInit.result && hInit.result.instructions);
+  t('http: samme versjon som stdio (begge leser changelog-toppen)',
+    !!hInit.result && hInit.result.serverInfo.version === init.result.serverInfo.version,
+    hInit.result && hInit.result.serverInfo);
   const hVarsel = await post({ jsonrpc: '2.0', method: 'notifications/initialized' });
   t('http: varsel kvitteres med 202 uten svar', hVarsel.status === 202, hVarsel.status);
   const hListe = await (await post({ jsonrpc: '2.0', id: 2, method: 'tools/list' })).json();
