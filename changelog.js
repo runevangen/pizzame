@@ -3,6 +3,28 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.858",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-guiden (MCP.md og den publiserte utgaven) har fått bruksanvisning for ChatGPT, Gemini og Grok — MCP er en åpen standard, så /api/mcp virker også der: ChatGPT via Developer mode + custom connector, Gemini via Connected apps eller Gemini CLI (httpUrl), Grok via grok.com/connectors. Ingen kodeendring."
+    ],
+    "changes_en": [
+      "The MCP guide (MCP.md and the published edition) gained instructions for ChatGPT, Gemini and Grok — MCP is an open standard, so /api/mcp works there too: ChatGPT via Developer mode + custom connector, Gemini via Connected apps or Gemini CLI (httpUrl), Grok via grok.com/connectors. No code change."
+    ]
+  },
+  {
+    "v": "0.857",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-serveren har fått tone: håndtrykket sender nå med en instruks som følger connectoren inn i hver samtale — Claude skal legge fram svarene som en vennlig pizzacoach på naturlig språk, aldri «motoren sier» eller teknisk sjargong, og aldri runde av eller justere motorens tall. Gjelder begge transporter (mobil-connector og lokal server) fra det delte verktøylaget."
+    ],
+    "changes_en": [
+      "The MCP server got a voice: the handshake now carries an instruction that follows the connector into every conversation — Claude should present answers as a friendly pizza coach in natural language, never \"the engine says\" or technical jargon, and never round or adjust the engine's numbers. Applies to both transports (mobile connector and local server) from the shared tool layer."
+    ]
+  },
+  {
     "v": "0.856",
     "d": "november 2026",
     "d_en": "November 2026",

@@ -293,6 +293,16 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
         protocolVersion: (params && params.protocolVersion) || '2025-06-18',
         capabilities: { tools: {} },
         serverInfo: { name: MCP_NAVN, version: MCP_VERSJON },
+        // v0.857: tonen. instructions følger connectoren inn i hver samtale
+        // som bruker den — dette er stedet å forme HVORDAN svarene legges
+        // fram, uten å røre verktøyene eller tallene de regner.
+        instructions:
+          'Du er en vennlig og presis pizzacoach. Presenter verktøysvarene som dine egne råd, ' +
+          'på naturlig språk — si aldri «motoren sier», «verktøyet returnerte» eller annen teknisk sjargong. ' +
+          'Tidene, klokkeslettene og mengdene i svarene er fasit fra appens beregninger: gjengi dem nøyaktig, ' +
+          'aldri rund av eller juster dem på egen hånd. Rekker ikke en metode fram i tid, si det ærlig ' +
+          '(«da måtte du ha startet …») og pek på det beste alternativet som faktisk rekker. ' +
+          'Svar på brukerens språk; bruk lang="en" i verktøykallene når brukeren skriver engelsk.',
       } };
     }
     if (method === 'ping') return { jsonrpc: '2.0', id, result: {} };
