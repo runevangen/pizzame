@@ -30,7 +30,7 @@ const S = {};
 const lag = new Function('window', 'S',
   engineSrc + '\n' + stepsSrc + `
   ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-            recipeFor, preheatMin, stepLoc, smartKandidater };
+            recipeFor, preheatMin, stepLoc, smartKandidater, byggIcs };
 `)(globalThis.window, S);
 
 let ok = 0; const feil = [];
@@ -367,6 +367,28 @@ function ingOf(entry) {
   const kand2 = lag.smartKandidater(ANKER_SMART, () => ({ violations: 7, conflicts: ['x'] }));
   t('smart-sveip: vurder-callbacken scorer kandidatene', kand2.every(c => c.violations === 7 && c.conflicts.length === 1),
     kand2.find(c => c.violations !== 7));
+}
+
+// ===== KALENDERBYGGEREN (v0.859) — ICS-utgaven av en stegkjede =====
+// byggIcs er downloadIcs' bygging flyttet hit fra index.html, delt med
+// /api/kalender. Vokterne tar på RFC 5545-kontrakten: struktur, tider,
+// varsler kun på aktive steg, og linjebryting.
+{
+  for (const k of Object.keys(S)) delete S[k];
+  Object.assign(S, lag.DEF, { mode: 'start', method: 'standard', cold: 48, mel: 500, hydro: 65, temp: 22, meltype: 'doppio_zero' });
+  const steg = lag.rawSteps(new Date('2026-08-01T18:00:00'));
+  const ics = lag.byggIcs(steg);
+  t('ics: gyldig konvolutt', ics.startsWith('BEGIN:VCALENDAR') && ics.trimEnd().endsWith('END:VCALENDAR'),
+    ics.slice(0, 40));
+  t('ics: én hendelse per steg', (ics.match(/BEGIN:VEVENT/g) || []).length === steg.length,
+    { steg: steg.length, hendelser: (ics.match(/BEGIN:VEVENT/g) || []).length });
+  t('ics: første hendelse starter når planen starter (lokal tid)', ics.includes('DTSTART:20260801T180000'),
+    ics.match(/DTSTART:[0-9T]+/g));
+  const aktive = steg.filter(s => !s.passive).length;
+  t('ics: varsel KUN på aktive steg (ikke hevingsventing)', (ics.match(/BEGIN:VALARM/g) || []).length === aktive,
+    { aktive, varsler: (ics.match(/BEGIN:VALARM/g) || []).length });
+  t('ics: ingen linje over 75 tegn (RFC 5545-folding)', ics.split('\r\n').every(l => l.length <= 75),
+    ics.split('\r\n').filter(l => l.length > 75).slice(0, 2));
 }
 
 if (feil.length) {

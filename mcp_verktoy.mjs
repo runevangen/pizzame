@@ -11,7 +11,9 @@
 
 // Baseline og appen regner i norsk tidssone; verten setter TZ før Date brukes.
 export const MCP_NAVN = 'pizzame-motor';
-export const MCP_VERSJON = '0.856';
+// Versjonen EIES av changelog.js (toppinnslaget) — vertene leser den derfra
+// og sender den inn (v0.860). Serveren og appen er samme deploy, så de skal
+// rapportere samme tall; en egen kopi her drev fra virkeligheten på tre dager.
 
 const METODER = ['standard', 'poolish', 'biga', 'mania', 'hurtig', 'kveld'];
 const TYPER = ['napoletana', 'newyork', 'langpanne', 'chicago', 'ingenelting'];
@@ -25,14 +27,14 @@ const VALGFELT = { meltype: null, oven: ['vanlig', 'pizza'], gjaer: ['torr', 'fe
 // Bygg en komplett, selvstendig MCP-håndterer. `handter(melding)` tar én
 // JSON-RPC-melding og returnerer svaret (eller null for varsler) — transporten
 // rundt (stdio-linjer eller HTTP) er vertens jobb.
-export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
+export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
   // ===== Motorlaget — verbatim samme søm som test_steg.mjs =====
   const vindu = { _lang: 'no', _openSub: new Set(), _openTip: new Set(), _openIng: new Set() };
   const S = {};
   const lag = new Function('window', 'S',
     engineSrc + '\n' + stepsSrc + `
     ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-              recipeFor, preheatMin, stepLoc, smartKandidater, mN,
+              recipeFor, preheatMin, stepLoc, smartKandidater, mN, byggIcs,
               validerFlours, melSomTaaler, totalFermentHours,
               lesMelregister: () => MELTYPER,
               settMelregister: (valide) => { MELTYPER = byggMelregister(valide); } };
@@ -138,8 +140,17 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
         S.mode = args.anker === 'start' ? 'start' : 'end';
         const nar = lesTid(args.tidspunkt, 'tidspunkt');
         const steg = lag.stepsForAnchor(nar);
+        // v0.859: hver plan bærer sin kalenderlenke — /api/kalender regner
+        // NØYAKTIG samme plan på serveren (samme felter) og svarer med en
+        // .ics-fil: ett trykk på mobilen gir varsler per steg via kalenderen.
+        const q = new URLSearchParams();
+        for (const f of ['metode', 'type', 'tidspunkt', 'anker', 'mel', 'hydro', 'temp', 'cold',
+                         'poolishH', 'poolishCold', 'bigaH', 'hurtigH', 'kveldH', 'oven', 'lang']) {
+          if (args[f] !== undefined) q.set(f, String(args[f]));
+        }
         return {
           oppskrift: oppskrift(metode),
+          kalender_url: apiBase + '/api/kalender?' + q.toString(),
           forvarmingMin: lag.preheatMin(),
           steg: steg.map((s, i) => ({
             tid: fmtTid(s.at),
@@ -292,7 +303,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
       return { jsonrpc: '2.0', id, result: {
         protocolVersion: (params && params.protocolVersion) || '2025-06-18',
         capabilities: { tools: {} },
-        serverInfo: { name: MCP_NAVN, version: MCP_VERSJON },
+        serverInfo: { name: MCP_NAVN, version: versjon || '0' },
         // v0.857: tonen. instructions følger connectoren inn i hver samtale
         // som bruker den — dette er stedet å forme HVORDAN svarene legges
         // fram, uten å røre verktøyene eller tallene de regner.
@@ -302,6 +313,13 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
           'Tidene, klokkeslettene og mengdene i svarene er fasit fra appens beregninger: gjengi dem nøyaktig, ' +
           'aldri rund av eller juster dem på egen hånd. Rekker ikke en metode fram i tid, si det ærlig ' +
           '(«da måtte du ha startet …») og pek på det beste alternativet som faktisk rekker. ' +
+          'Når du har gitt en plan, tilby kalenderlenken (kalender_url i svaret): ett trykk legger ' +
+          'hele planen i telefonens kalender med varsel før hvert aktive steg. ' +
+          'La pizzaen farge stemningen, men språket forblir norsk: baker vi italiensk ' +
+          '(napoletana), dryss inn noen italienske gloser for moro skyld (allora, la farina, il forno, ' +
+          'cornicione — og en «mamma mia!» når planen går opp); baker vi amerikansk (New York eller ' +
+          'Chicago deep dish), vær skikkelig amerikansk i gemyttet — entusiastisk, «alright!», ' +
+          '«that\'s a proper pie» — fortsatt på norsk. Langpanne er trygt og hjemmekoselig norsk. ' +
           'Svar på brukerens språk; bruk lang="en" i verktøykallene når brukeren skriver engelsk.',
       } };
     }
@@ -328,5 +346,16 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
     return null;
   }
 
-  return handter;
+  // v0.859: ICS-utgaven av en plan — samme felter som lag_plan, samme kø
+  // (deler S). Brukes av /api/kalender; kaster med forklaring ved ugyldige felt.
+  function lagIcs(args) {
+    return iKoen(() => {
+      settScenario(args);
+      S.mode = args.anker === 'start' ? 'start' : 'end';
+      const nar = lesTid(args.tidspunkt, 'tidspunkt');
+      return lag.byggIcs(lag.stepsForAnchor(nar));
+    });
+  }
+
+  return { handter, lagIcs };
 }

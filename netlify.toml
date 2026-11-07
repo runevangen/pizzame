@@ -5,4 +5,4 @@
   node_bundler = "esbuild"
   # MCP-funksjonen (/api/mcp) leser motoren fra deployen — samme filer som
   # appen, så samtaleflata kan aldri drifte fra det appen regner.
-  included_files = ["engine.js", "steps.js"]
+  included_files = ["engine.js", "steps.js", "changelog.js"]

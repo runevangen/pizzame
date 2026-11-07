@@ -3,6 +3,28 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.860",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Pizzacoachen i chatten har fått nasjonalitet: baker du napoletansk drysses det italienske gloser (allora, la farina, cornicione), baker du New York eller Chicago blir gemyttet skikkelig amerikansk — men språket forblir norsk. Og MCP-serverens versjonsnummer leses nå fra endringsloggens toppinnslag i stedet for en egen kopi som alt hadde rukket å drifte — serveren og appen er samme deploy og rapporterer nå alltid samme tall."
+    ],
+    "changes_en": [
+      "The pizza coach in chat got a nationality: bake Neapolitan and Italian words get sprinkled in (allora, la farina, cornicione), bake New York or Chicago and the mood goes properly American — but the language stays Norwegian. And the MCP server's version number is now read from the changelog's top entry instead of a separate copy that had already drifted — server and app are the same deploy and now always report the same number."
+    ]
+  },
+  {
+    "v": "0.859",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Planer fra MCP-en kan nå legges rett i telefonens kalender: hvert lag_plan-svar bærer en kalenderlenke (/api/kalender) som regner nøyaktig samme plan på serveren og svarer med en .ics-fil — ett trykk gir kalenderimport med varsel 10 min før hvert aktive steg (ikke før passive hevinger). Selve ICS-byggingen er flyttet fra appens «Last ned kalender»-knapp til steglaget og deles, så kalenderfila fra chatten og appen aldri kan drifte fra hverandre. Appens knapp virker som før."
+    ],
+    "changes_en": [
+      "Plans from the MCP can now go straight into your phone's calendar: every lag_plan answer carries a calendar link (/api/kalender) that computes exactly the same plan on the server and responds with an .ics file — one tap imports it with an alert 10 min before each active step (not before passive proofs). The ICS building itself moved from the app's \"Download calendar\" button into the step layer and is shared, so the calendar file from chat and app can never drift apart. The app's button works as before."
+    ]
+  },
+  {
     "v": "0.858",
     "d": "november 2026",
     "d_en": "November 2026",
