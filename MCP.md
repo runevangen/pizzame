@@ -24,6 +24,27 @@ Del gjerne URL-en: hvem som helst kan legge den til like enkelt. Endepunktet
 er offentlig og uten autentisering — verktøyene er rene regnestykker uten
 skrivetilgang, som appens øvrige lese-API-er.
 
+## Også utenfor Claude: ChatGPT, Gemini og Grok
+
+MCP er en åpen standard — samme URL virker i andre KI-er. Velg alltid
+«ingen autentisering» der det spørres.
+
+- **ChatGPT** (Plus/Pro/Team): slå først på Developer mode under
+  Settings → Apps & Connectors → Advanced settings (ellers vises ikke
+  verktøyene), deretter Settings → Apps & Connectors → Create → lim inn
+  URL-en, autentisering None. Start en ny chat etterpå.
+- **Gemini** (nettutgaven): Settings → Connected apps → Add a custom app →
+  URL-en. **Gemini CLI**: i `~/.gemini/settings.json`:
+  `{ "mcpServers": { "ultimatepizza": { "httpUrl": "https://ultimatepizza.netlify.app/api/mcp" } } }`
+  — merk `httpUrl` (feltet for Streamable HTTP).
+- **Grok** (betalte planer): grok.com/connectors → New Connector → Custom →
+  URL-en.
+
+Tone-instruksen (v0.857) sendes i MCP-håndtrykkets standardfelt; andre
+klienter kan velge å ignorere den, så pizzacoach-stemmen er best i Claude.
+Menyene i disse appene flytter på seg — stemmer ikke stegene, søk
+«add custom MCP connector» for klienten.
+
 ## Lokal utgave (utvikling)
 
 Krav: Node ≥ 18 og en klon av repoet. Ingen `npm install`, ingen byggesteg.

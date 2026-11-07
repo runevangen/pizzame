@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.858",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-guiden (MCP.md og den publiserte utgaven) har fått bruksanvisning for ChatGPT, Gemini og Grok — MCP er en åpen standard, så /api/mcp virker også der: ChatGPT via Developer mode + custom connector, Gemini via Connected apps eller Gemini CLI (httpUrl), Grok via grok.com/connectors. Ingen kodeendring."
+    ],
+    "changes_en": [
+      "The MCP guide (MCP.md and the published edition) gained instructions for ChatGPT, Gemini and Grok — MCP is an open standard, so /api/mcp works there too: ChatGPT via Developer mode + custom connector, Gemini via Connected apps or Gemini CLI (httpUrl), Grok via grok.com/connectors. No code change."
+    ]
+  },
+  {
     "v": "0.857",
     "d": "november 2026",
     "d_en": "November 2026",
