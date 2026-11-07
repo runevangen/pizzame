@@ -41,7 +41,7 @@ function lesKilde(navn) {
   throw new Error(`fant ikke ${navn} i deployen (prøvde: ${kandidater.join(', ')})`);
 }
 
-const handter = lagMcpHandterer({
+const { handter, lagIcs } = lagMcpHandterer({
   engineSrc: lesKilde('engine.js'),
   stepsSrc: lesKilde('steps.js'),
   // PIZZAME_API lar tester peke på stubber; ellers deployens egen URL.
@@ -53,6 +53,23 @@ function json(status, body) {
 }
 
 export default async (req) => {
+  // /api/kalender (v0.859): planen som .ics-fil — lenken lag_plan-svarene
+  // bærer. GET med samme felter som lag_plan; mobilen åpner kalenderimport.
+  const sti = new URL(req.url).pathname;
+  if (sti === '/api/kalender') {
+    if (req.method !== 'GET') return new Response(null, { status: 405, headers: { Allow: 'GET' } });
+    const args = Object.fromEntries(new URL(req.url).searchParams);
+    if (args.poolishCold !== undefined) args.poolishCold = args.poolishCold === 'true';
+    try {
+      const ics = await lagIcs(args);
+      return new Response(ics, { status: 200, headers: {
+        'Content-Type': 'text/calendar; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="pizzaplan.ics"',
+      } });
+    } catch (e) {
+      return new Response('Feil: ' + e.message, { status: 400, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+    }
+  }
   if (req.method !== 'POST') {
     // Streamable HTTP: en server uten SSE-strøm svarer 405 på GET.
     return new Response(null, { status: 405, headers: { Allow: 'POST' } });
@@ -69,4 +86,4 @@ export default async (req) => {
   }
 };
 
-export const config = { path: ['/api/mcp'] };
+export const config = { path: ['/api/mcp', '/api/kalender'] };

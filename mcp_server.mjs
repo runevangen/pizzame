@@ -19,7 +19,7 @@ import { lagMcpHandterer } from './mcp_verktoy.mjs';
 // Baseline og appen regner i norsk tidssone — serveren tolker og svarer i samme.
 process.env.TZ = 'Europe/Oslo';
 
-const handter = lagMcpHandterer({
+const { handter } = lagMcpHandterer({
   engineSrc: readFileSync(new URL('./engine.js', import.meta.url), 'utf8'),
   stepsSrc: readFileSync(new URL('./steps.js', import.meta.url), 'utf8'),
   apiBase: process.env.PIZZAME_API || 'https://ultimatepizza.netlify.app',

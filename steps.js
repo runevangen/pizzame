@@ -1600,3 +1600,57 @@ function smartKandidater(anchor, vurder){
   S.bigaH=origBigaH; S.hurtigH=origHurtigH; S.kveldH=origKveldH; S.poolishCold=origPoolishCold; S.poolishPauseH=origPoolishPauseH;
   return candidates;
 }
+
+// ===== KALENDERBYGGEREN (v0.859, verbatim fra downloadIcs i index.html) =====
+// Selve ICS-byggingen (RFC 5545) er ren tekst-av-stegkjede og bor derfor her,
+// delt mellom nettleserens «Last ned kalender»-knapp og /api/kalender-
+// endepunktet som MCP-svarene lenker til. Det som er UI-spesifikt kommer inn
+// som valgfrie callbacks: `tittel` (dispTitle — engelsk tittel-oversettelse)
+// og `fritekst` (localizeUnits — imperial-konvertering). Uten dem brukes
+// tekstene som de er — det er riktig for serveren, som svarer på språket
+// stegene alt er regnet i.
+function icsStamp(d){
+  return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
+}
+// iCal-teksten må escapes: backslash, semikolon, komma og linjeskift har spesiell
+// betydning i RFC 5545. Uten dette brekker et komma i en tittel hele hendelsen.
+function icsEsc(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/;/g,'\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
+// RFC 5545: linjer over 75 oktetter skal brytes med CRLF + mellomrom.
+function icsFold(line){
+  if(line.length<=74) return line;
+  let out='', s=line;
+  while(s.length>74){ out+=s.slice(0,74)+'\r\n '; s=s.slice(74); }
+  return out+s;
+}
+function byggIcs(steps, o){
+  const tittelFn=(o&&o.tittel)||(t=>t);
+  const fritekst=(o&&o.fritekst)||(t=>String(t==null?'':t));
+  const now=new Date();
+  const stamp=icsStamp(now);
+  const planId=(window._activeDeigId||'plan')+'-'+stamp;
+  const locName={kjol:L('Kjøleskap','Fridge'),rom:L('Romtemperatur','Room temperature'),ovn:L('Ovn','Oven'),benk:L('Kjøkkenbenk','Counter')};
+  let lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//UltimatePizza//NO','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  steps.forEach((s,i)=>{
+    const start=s.at;
+    const end=aM(s.at,Math.max(s.dur||15,15));
+    const title=tittelFn(s.title).replace(/🔥/g,'').trim();
+    // Beskrivelse: stegets tekst (uten HTML, enhets-lokalisert) + «trenger»-liste.
+    const descPlain=fritekst((s.desc||'').replace(/<[^>]+>/g,''));
+    const needsPlain=(s.needs&&s.needs.length)?L('\n\nTrenger: ','\n\nNeeds: ')+fritekst(s.needs.join(', ')):'';
+    const descVal=descPlain+needsPlain;
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:pizza-'+planId+'-'+i+'@pizzaplanlegger');
+    lines.push('DTSTAMP:'+stamp);
+    lines.push('DTSTART:'+icsStamp(start));
+    lines.push('DTEND:'+icsStamp(end));
+    lines.push('SUMMARY:🍕 '+icsEsc(title));
+    if(descVal.trim()) lines.push('DESCRIPTION:'+icsEsc(descVal));
+    if(stepLoc(s)&&locName[stepLoc(s)]) lines.push('LOCATION:'+icsEsc(locName[stepLoc(s)]));
+    // Varsel kun på handlingssteg (ikke passive «heving»-venter) — så du får pling
+    // når du faktisk skal gjøre noe, ikke før hver hvile.
+    if(!s.passive) lines.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(title),'TRIGGER:-PT10M','END:VALARM');
+    lines.push('END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  return lines.map(icsFold).join('\r\n')+'\r\n';
+}

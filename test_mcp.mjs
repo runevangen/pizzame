@@ -219,7 +219,8 @@ try {
   // PIZZAME_API settes FØR import, så porten aldri avhenger av nett.
   process.env.PIZZAME_API = 'http://127.0.0.1:1';
   const { default: httpHandler, config: httpConfig } = await import('./netlify/functions/mcp.js');
-  t('http: ruter på /api/mcp', JSON.stringify(httpConfig.path) === JSON.stringify(['/api/mcp']), httpConfig);
+  t('http: ruter på /api/mcp og /api/kalender',
+    JSON.stringify(httpConfig.path) === JSON.stringify(['/api/mcp', '/api/kalender']), httpConfig);
   const post = (body) => httpHandler(new Request('http://localhost/api/mcp',
     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
   const hInit = await (await post({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18' } })).json();
@@ -240,6 +241,24 @@ try {
     { fikk: hData.steg[0], forventet: baseline.standard_napoletana.firstStep });
   const hGet = await httpHandler(new Request('http://localhost/api/mcp', { method: 'GET' }));
   t('http: GET avvises med 405 (ingen SSE-strøm tilbys)', hGet.status === 405, hGet.status);
+
+  // --- /api/kalender (v0.859): planen som .ics, lenket fra lag_plan ---
+  t('kalender: lag_plan bærer kalender_url med samme felter',
+    hData.kalender_url && hData.kalender_url.includes('/api/kalender?')
+    && hData.kalender_url.includes('metode=standard') && hData.kalender_url.includes('tidspunkt=2026-08-01T18%3A00'),
+    hData.kalender_url);
+  const hKal = await httpHandler(new Request('http://localhost' + hData.kalender_url.slice(hData.kalender_url.indexOf('/api/kalender')), { method: 'GET' }));
+  const kalTekst = await hKal.text();
+  t('kalender: GET svarer med .ics-fil', hKal.status === 200
+    && (hKal.headers.get('Content-Type') || '').includes('text/calendar')
+    && (hKal.headers.get('Content-Disposition') || '').includes('pizzaplan.ics'), hKal.status);
+  t('kalender: én hendelse per plansteg (rundtur mot lag_plan)',
+    (kalTekst.match(/BEGIN:VEVENT/g) || []).length === hData.steg.length,
+    { steg: hData.steg.length, hendelser: (kalTekst.match(/BEGIN:VEVENT/g) || []).length });
+  const hKalFeil = await httpHandler(new Request('http://localhost/api/kalender?metode=surdeig&tidspunkt=2026-08-01T18:00', { method: 'GET' }));
+  t('kalender: ugyldig metode gir 400 med forklaring', hKalFeil.status === 400 && (await hKalFeil.text()).includes('surdeig'), hKalFeil.status);
+  const hKalPost = await httpHandler(new Request('http://localhost/api/kalender', { method: 'POST', body: '{}' }));
+  t('kalender: POST avvises med 405', hKalPost.status === 405, hKalPost.status);
   const hRot = await httpHandler(new Request('http://localhost/api/mcp', { method: 'POST', body: 'ikke json' }));
   t('http: ugyldig JSON gir -32700', hRot.status === 400 && (await hRot.json()).error.code === -32700, hRot.status);
 

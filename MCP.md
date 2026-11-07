@@ -76,6 +76,10 @@ Krav: Node ≥ 18 og en klon av repoet. Ingen `npm install`, ingen byggesteg.
 
 Alle svar er JSON med både ISO-tidspunkter og leselige norske tider
 (Europe/Oslo, som appen). `lang: "en"` gir engelske tekster.
+Hvert `lag_plan`-svar bærer en `kalender_url` (`/api/kalender` + samme
+felter): GET-en svarer med en `.ics`-fil — ett trykk på mobilen legger
+planen i kalenderen med varsel før hvert aktive steg. ICS-byggingen deles
+med appens «Last ned kalender»-knapp (steps.js), så de kan ikke drifte.
 Oppsett-feltene fra `metoder_som_rekker` kan mates rett inn i `lag_plan` —
 rundtur-vokteren i test_mcp.mjs beviser at det steker på ferdigtidspunktet.
 

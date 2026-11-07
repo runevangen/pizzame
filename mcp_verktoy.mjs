@@ -32,7 +32,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
   const lag = new Function('window', 'S',
     engineSrc + '\n' + stepsSrc + `
     ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-              recipeFor, preheatMin, stepLoc, smartKandidater, mN,
+              recipeFor, preheatMin, stepLoc, smartKandidater, mN, byggIcs,
               validerFlours, melSomTaaler, totalFermentHours,
               lesMelregister: () => MELTYPER,
               settMelregister: (valide) => { MELTYPER = byggMelregister(valide); } };
@@ -138,8 +138,17 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
         S.mode = args.anker === 'start' ? 'start' : 'end';
         const nar = lesTid(args.tidspunkt, 'tidspunkt');
         const steg = lag.stepsForAnchor(nar);
+        // v0.859: hver plan bærer sin kalenderlenke — /api/kalender regner
+        // NØYAKTIG samme plan på serveren (samme felter) og svarer med en
+        // .ics-fil: ett trykk på mobilen gir varsler per steg via kalenderen.
+        const q = new URLSearchParams();
+        for (const f of ['metode', 'type', 'tidspunkt', 'anker', 'mel', 'hydro', 'temp', 'cold',
+                         'poolishH', 'poolishCold', 'bigaH', 'hurtigH', 'kveldH', 'oven', 'lang']) {
+          if (args[f] !== undefined) q.set(f, String(args[f]));
+        }
         return {
           oppskrift: oppskrift(metode),
+          kalender_url: apiBase + '/api/kalender?' + q.toString(),
           forvarmingMin: lag.preheatMin(),
           steg: steg.map((s, i) => ({
             tid: fmtTid(s.at),
@@ -302,6 +311,8 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
           'Tidene, klokkeslettene og mengdene i svarene er fasit fra appens beregninger: gjengi dem nøyaktig, ' +
           'aldri rund av eller juster dem på egen hånd. Rekker ikke en metode fram i tid, si det ærlig ' +
           '(«da måtte du ha startet …») og pek på det beste alternativet som faktisk rekker. ' +
+          'Når du har gitt en plan, tilby kalenderlenken (kalender_url i svaret): ett trykk legger ' +
+          'hele planen i telefonens kalender med varsel før hvert aktive steg. ' +
           'Svar på brukerens språk; bruk lang="en" i verktøykallene når brukeren skriver engelsk.',
       } };
     }
@@ -328,5 +339,16 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase }) {
     return null;
   }
 
-  return handter;
+  // v0.859: ICS-utgaven av en plan — samme felter som lag_plan, samme kø
+  // (deler S). Brukes av /api/kalender; kaster med forklaring ved ugyldige felt.
+  function lagIcs(args) {
+    return iKoen(() => {
+      settScenario(args);
+      S.mode = args.anker === 'start' ? 'start' : 'end';
+      const nar = lesTid(args.tidspunkt, 'tidspunkt');
+      return lag.byggIcs(lag.stepsForAnchor(nar));
+    });
+  }
+
+  return { handter, lagIcs };
 }
