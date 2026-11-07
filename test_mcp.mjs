@@ -79,6 +79,11 @@ try {
   // --- Håndtrykk ---
   const init = await kall('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '0' } });
   t('initialize svarer med serverInfo', init.result && init.result.serverInfo.name === 'pizzame-motor', init.result);
+  // v0.857: tonen følger håndtrykket. Instruksen skal finnes, og den skal
+  // navngi selve frasen den forbyr — det er den vokteren kan ta på.
+  t('initialize bærer tone-instruksen («motoren sier» er forbudt)',
+    typeof init.result.instructions === 'string' && init.result.instructions.includes('«motoren sier»')
+    && init.result.instructions.includes('pizzacoach'), init.result.instructions);
   barn.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
 
   const liste = await kall('tools/list', {});
@@ -219,6 +224,8 @@ try {
     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
   const hInit = await (await post({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18' } })).json();
   t('http: initialize svarer med serverInfo', !!hInit.result && hInit.result.serverInfo.name === 'pizzame-motor', hInit);
+  t('http: samme tone-instruks som stdio (delt lag)',
+    !!hInit.result && hInit.result.instructions === init.result.instructions, hInit.result && hInit.result.instructions);
   const hVarsel = await post({ jsonrpc: '2.0', method: 'notifications/initialized' });
   t('http: varsel kvitteres med 202 uten svar', hVarsel.status === 202, hVarsel.status);
   const hListe = await (await post({ jsonrpc: '2.0', id: 2, method: 'tools/list' })).json();

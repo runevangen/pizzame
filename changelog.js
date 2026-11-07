@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.857",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-serveren har fått tone: håndtrykket sender nå med en instruks som følger connectoren inn i hver samtale — Claude skal legge fram svarene som en vennlig pizzacoach på naturlig språk, aldri «motoren sier» eller teknisk sjargong, og aldri runde av eller justere motorens tall. Gjelder begge transporter (mobil-connector og lokal server) fra det delte verktøylaget."
+    ],
+    "changes_en": [
+      "The MCP server got a voice: the handshake now carries an instruction that follows the connector into every conversation — Claude should present answers as a friendly pizza coach in natural language, never \"the engine says\" or technical jargon, and never round or adjust the engine's numbers. Applies to both transports (mobile connector and local server) from the shared tool layer."
+    ]
+  },
+  {
     "v": "0.856",
     "d": "november 2026",
     "d_en": "November 2026",
