@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.856",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "MCP-serveren finnes nå også som fjernutgave: /api/mcp er en Netlify-funksjon i samme deploy som appen, og kan legges til i Claude som Custom Connector — da virker pizzaverktøyene fra mobil, nettleser og desktop, uavhengig av om noen PC står på. Verktøydefinisjonene er flyttet til én delt modul (mcp_verktoy.mjs) som driver både lokal stdio-server og fjernutgaven, og fjernutgaven leser engine.js/steps.js fra deployen — endres motoren, følger samtaleflata med automatisk, i samme utrulling."
+    ],
+    "changes_en": [
+      "The MCP server now also exists as a remote edition: /api/mcp is a Netlify function in the same deploy as the app, addable in Claude as a Custom Connector — the pizza tools then work from phone, browser and desktop, regardless of any PC being on. Tool definitions moved to one shared module (mcp_verktoy.mjs) driving both the local stdio server and the remote edition, and the remote edition reads engine.js/steps.js from the deploy — change the engine and the conversational surface follows automatically, in the same rollout."
+    ]
+  },
+  {
     "v": "0.855",
     "d": "november 2026",
     "d_en": "November 2026",

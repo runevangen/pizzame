@@ -1,14 +1,30 @@
 # Pizzamotoren som MCP-server
 
-`mcp_server.mjs` er motoren som samtaleflate: en MCP-server uten avhengigheter
-som lar Claude (eller en annen MCP-klient) spørre selve pizzamotoren.
-Den laster `engine.js` + `steps.js` gjennom samme søm som node-testlagene —
-null egen deiglogikk, så svarene kan aldri drifte fra appen.
+Motoren som samtaleflate: Claude (eller en annen MCP-klient) kan spørre selve
+pizzamotoren. Verktøyene bor i én delt modul (`mcp_verktoy.mjs`) med to
+transporter — begge laster `engine.js` + `steps.js` gjennom samme søm som
+node-testlagene: null egen deiglogikk, så svarene kan aldri drifte fra appen.
+
+- **Fjernutgave** — `netlify/functions/mcp.js`, servert på `/api/mcp` i samme
+  deploy som appen. For mobil/web/desktop, uavhengig av egen PC.
+- **Lokal utgave** — `mcp_server.mjs` over stdio. For utvikling på egen maskin.
 
 Lesevennlig utgave av denne guiden: publisert som artifact
 («Pizzamotoren i Claude»); dette er kildeversjonen som bor hos koden.
 
-## Kom i gang
+## Enklest: Connector (mobil, nettleser og desktop)
+
+Ingen installasjon, ingen PC som må stå på — endepunktet kjører hos Netlify:
+
+1. Gå til **claude.ai → Innstillinger → Connectors → Add custom connector**.
+2. Lim inn `https://ultimatepizza.netlify.app/api/mcp` og lagre.
+3. Connectoren følger kontoen din — spør i vei fra mobilen.
+
+Del gjerne URL-en: hvem som helst kan legge den til like enkelt. Endepunktet
+er offentlig og uten autentisering — verktøyene er rene regnestykker uten
+skrivetilgang, som appens øvrige lese-API-er.
+
+## Lokal utgave (utvikling)
 
 Krav: Node ≥ 18 og en klon av repoet. Ingen `npm install`, ingen byggesteg.
 
@@ -53,10 +69,12 @@ overstyrer basen (testene peker den på stubber).
 
 ## Testing
 
-Gruppe 0d i porten (`node test_mcp.mjs`): serveren spawnes som ekte prosess
-og de frosne scenariene i baseline_results.json kjøres gjennom selve
-stdio-protokollen. Melregister-testene bruker http-stubber og en lukket port
-som hoved-API, så porten aldri avhenger av nett.
+Gruppe 0d i porten (`node test_mcp.mjs`) tester begge transporter: den lokale
+serveren spawnes som ekte prosess og de frosne scenariene i
+baseline_results.json kjøres gjennom stdio-protokollen; Netlify-funksjonen
+importeres i prosess og kalles med ekte Request/Response-objekter.
+Melregister-testene bruker http-stubber og en lukket port som hoved-API,
+så porten aldri avhenger av nett.
 
 ## Feilsøking
 
