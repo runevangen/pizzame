@@ -12,6 +12,10 @@ import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { createServer } from 'node:http';
 
+// HTTP-utgaven (netlify/functions/mcp.js) kjører i DENNE prosessen — ankre
+// som "2026-08-01T18:00" må tolkes i norsk tid, som i de andre lagene.
+process.env.TZ = 'Europe/Oslo';
+
 const baseline = JSON.parse(readFileSync(new URL('./baseline_results.json', import.meta.url), 'utf8'));
 
 let ok = 0; const feil = [];
@@ -204,6 +208,34 @@ try {
     sm.data && { melkilde: sm.data.melkilde, antall: sm.data.mel.length });
   stubbSoppel.srv.close();
 
+  // --- HTTP-transporten (v0.856): fjernutgaven gjennom /api/mcp ---
+  // Samme delte håndterer (mcp_verktoy.mjs) — her testes selve
+  // Netlify-funksjonen i prosess, med ekte Request/Response-objekter.
+  // PIZZAME_API settes FØR import, så porten aldri avhenger av nett.
+  process.env.PIZZAME_API = 'http://127.0.0.1:1';
+  const { default: httpHandler, config: httpConfig } = await import('./netlify/functions/mcp.js');
+  t('http: ruter på /api/mcp', JSON.stringify(httpConfig.path) === JSON.stringify(['/api/mcp']), httpConfig);
+  const post = (body) => httpHandler(new Request('http://localhost/api/mcp',
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
+  const hInit = await (await post({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18' } })).json();
+  t('http: initialize svarer med serverInfo', !!hInit.result && hInit.result.serverInfo.name === 'pizzame-motor', hInit);
+  const hVarsel = await post({ jsonrpc: '2.0', method: 'notifications/initialized' });
+  t('http: varsel kvitteres med 202 uten svar', hVarsel.status === 202, hVarsel.status);
+  const hListe = await (await post({ jsonrpc: '2.0', id: 2, method: 'tools/list' })).json();
+  t('http: alle fire verktøyene', !!hListe.result && hListe.result.tools.length === 4,
+    hListe.result && hListe.result.tools.map(x => x.name));
+  const hPlan = await (await post({ jsonrpc: '2.0', id: 3, method: 'tools/call',
+    params: { name: 'lag_plan', arguments: { ...SCEN[0].args, tidspunkt: '2026-08-01T18:00', anker: 'start' } } })).json();
+  const hData = JSON.parse(hPlan.result.content[0].text);
+  t('http: lag_plan regner samme frosne scenario som steglaget',
+    hData.steg[0].tid_iso === baseline.standard_napoletana.firstStep.iso
+    && hData.steg.length === baseline.standard_napoletana.stepCount,
+    { fikk: hData.steg[0], forventet: baseline.standard_napoletana.firstStep });
+  const hGet = await httpHandler(new Request('http://localhost/api/mcp', { method: 'GET' }));
+  t('http: GET avvises med 405 (ingen SSE-strøm tilbys)', hGet.status === 405, hGet.status);
+  const hRot = await httpHandler(new Request('http://localhost/api/mcp', { method: 'POST', body: 'ikke json' }));
+  t('http: ugyldig JSON gir -32700', hRot.status === 400 && (await hRot.json()).error.code === -32700, hRot.status);
+
   // --- Feilveiene skal være høflige, presise og aldri gjette ---
   const f1 = await verktoy('lag_plan', { metode: 'surdeig', tidspunkt: '2026-08-01T18:00' });
   t('ukjent metode avvises med navn i meldingen', f1.isError && f1.text.includes('surdeig'), f1.text);
@@ -224,4 +256,4 @@ if (feil.length) {
   console.log(`MCP-laget: ${feil.length} av ${ok + feil.length} tester FEILET.`);
   process.exit(1);
 }
-console.log(`MCP-laget: alle ${ok} tester OK (node, mcp_server.mjs over stdio).`);
+console.log(`MCP-laget: alle ${ok} tester OK (node, stdio + HTTP gjennom delt mcp_verktoy.mjs).`);
