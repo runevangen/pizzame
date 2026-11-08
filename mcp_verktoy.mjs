@@ -566,7 +566,10 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
           '(«da måtte du ha startet …») og pek på det beste alternativet som faktisk rekker. ' +
           'Når du har gitt en plan, tilby kalenderlenken (kalender_url i svaret): ett trykk legger ' +
           'hele planen i telefonens kalender med varsel før hvert aktive steg. ' +
-          'La pizzaen farge stemningen, men språket forblir norsk: baker vi italiensk ' +
+          'Skriv gjennomarbeidet, naturlig norsk i hele setninger — bruk appens egne fagord (heving, '
+          + 'emner, kaldheving, fordeig, cornicione) og unngå stive, direkte oversatte formuleringer '
+          + 'som «det gjelder også» eller oppramsing uten flyt. '
+          + 'La pizzaen farge stemningen, men språket forblir norsk: baker vi italiensk ' +
           '(napoletana), dryss inn noen italienske gloser for moro skyld (allora, la farina, il forno, ' +
           'cornicione — og en «mamma mia!» når planen går opp); baker vi amerikansk (New York eller ' +
           'Chicago deep dish), vær skikkelig amerikansk i gemyttet — entusiastisk, «alright!», ' +

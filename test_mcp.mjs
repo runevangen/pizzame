@@ -108,6 +108,12 @@ try {
     init.result.instructions.includes('italienske gloser')
     && init.result.instructions.includes('amerikansk')
     && init.result.instructions.includes('språket forblir norsk'), init.result.instructions);
+  // v0.866: språkkvalitet — meldt inn fra mobilen («Det gjelder også justering
+  // av gjærmengde etter kjøleskapstemperatur», stivt og oversatt). Instruksen
+  // skal kreve naturlig norsk og navngi nettopp den stive frasen den forbyr.
+  t('tone-instruksen krever gjennomarbeidet norsk (med den stive frasen navngitt)',
+    init.result.instructions.includes('naturlig norsk')
+    && init.result.instructions.includes('«det gjelder også»'), init.result.instructions);
   // v0.860: serverversjonen EIES av changelog.js — en egen kopi i verktøylaget
   // drev fra virkeligheten på tre dager (sto på 0.856 t.o.m. v0.859).
   const changelogTopp = (readFileSync(new URL('./changelog.js', import.meta.url), 'utf8')

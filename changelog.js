@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.866",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Pizzacoachen i chatten skal snakke bedre norsk, meldt inn fra mobilen («Det gjelder også justering av gjærmengde etter kjøleskapstemperatur» — stivt og oversatt): tone-instruksen krever nå gjennomarbeidet, naturlig norsk i hele setninger, med appens egne fagord, og navngir selve den stive frasen den forbyr."
+    ],
+    "changes_en": [
+      "The pizza coach in chat should speak better Norwegian, reported from the phone (a stiff, translated phrasing): the tone instruction now demands polished, natural Norwegian in full sentences, using the app's own terms of craft, and names the very stiff phrase it forbids."
+    ]
+  },
+  {
     "v": "0.865",
     "d": "november 2026",
     "d_en": "November 2026",
