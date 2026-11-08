@@ -72,6 +72,23 @@ function startMelStubb(svar) {
     resolve({ url: `http://127.0.0.1:${srv.address().port}`, srv })));
 }
 
+// Generell API-stubb (v0.864): spiller hvilken som helst rute, og lar testen
+// fange det serveren sender inn (f.eks. kroppen til POST /api/bakes).
+function startApiStubb(handler) {
+  const srv = createServer((req, res) => {
+    let kropp = '';
+    req.on('data', (c) => { kropp += c; });
+    req.on('end', () => {
+      const ut = handler(req.method, req.url, kropp) || { status: 404, body: {} };
+      res.setHeader('Content-Type', 'application/json');
+      res.statusCode = ut.status || 200;
+      res.end(JSON.stringify(ut.body));
+    });
+  });
+  return new Promise((resolve) => srv.listen(0, '127.0.0.1', () =>
+    resolve({ url: `http://127.0.0.1:${srv.address().port}`, srv })));
+}
+
 const hoved = startServer({ PIZZAME_API: 'http://127.0.0.1:1' });
 const { barn, kall, verktoy } = hoved;
 
@@ -91,6 +108,12 @@ try {
     init.result.instructions.includes('italienske gloser')
     && init.result.instructions.includes('amerikansk')
     && init.result.instructions.includes('språket forblir norsk'), init.result.instructions);
+  // v0.866: språkkvalitet — meldt inn fra mobilen («Det gjelder også justering
+  // av gjærmengde etter kjøleskapstemperatur», stivt og oversatt). Instruksen
+  // skal kreve naturlig norsk og navngi nettopp den stive frasen den forbyr.
+  t('tone-instruksen krever gjennomarbeidet norsk (med den stive frasen navngitt)',
+    init.result.instructions.includes('naturlig norsk')
+    && init.result.instructions.includes('«det gjelder også»'), init.result.instructions);
   // v0.860: serverversjonen EIES av changelog.js — en egen kopi i verktøylaget
   // drev fra virkeligheten på tre dager (sto på 0.856 t.o.m. v0.859).
   const changelogTopp = (readFileSync(new URL('./changelog.js', import.meta.url), 'utf8')
@@ -102,8 +125,8 @@ try {
 
   const liste = await kall('tools/list', {});
   const navn = (liste.result ? liste.result.tools : []).map(v => v.name).sort();
-  t('tools/list gir alle fire verktøyene',
-    JSON.stringify(navn) === JSON.stringify(['lag_plan', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
+  t('tools/list gir alle sju verktøyene',
+    JSON.stringify(navn) === JSON.stringify(['deigen_min', 'juster_underveis', 'lag_plan', 'lagre_deig', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
 
   // --- Frosne scenarier gjennom protokollen — samme fasit som steglaget ---
   // Scenariofeltene speiler test_steg.mjs; anker='start' fordi baseline er
@@ -247,7 +270,7 @@ try {
   const hVarsel = await post({ jsonrpc: '2.0', method: 'notifications/initialized' });
   t('http: varsel kvitteres med 202 uten svar', hVarsel.status === 202, hVarsel.status);
   const hListe = await (await post({ jsonrpc: '2.0', id: 2, method: 'tools/list' })).json();
-  t('http: alle fire verktøyene', !!hListe.result && hListe.result.tools.length === 4,
+  t('http: alle sju verktøyene', !!hListe.result && hListe.result.tools.length === 7,
     hListe.result && hListe.result.tools.map(x => x.name));
   const hPlan = await (await post({ jsonrpc: '2.0', id: 3, method: 'tools/call',
     params: { name: 'lag_plan', arguments: { ...SCEN[0].args, tidspunkt: '2026-08-01T18:00', anker: 'start' } } })).json();
@@ -278,6 +301,114 @@ try {
   t('kalender: POST avvises med 405', hKalPost.status === 405, hKalPost.status);
   const hRot = await httpHandler(new Request('http://localhost/api/mcp', { method: 'POST', body: 'ikke json' }));
   t('http: ugyldig JSON gir -32700', hRot.status === 400 && (await hRot.json()).error.code === -32700, hRot.status);
+
+  // --- juster_underveis (v0.863): planen flytter seg midt i baksten ---
+  // Standard med 48t kald, ferdig lør 18:00, «nå» = lør 10:00 (midt i
+  // kjøleskapshvilen), gjestene én time forsinket. Fasit: ny ferdig 19:00,
+  // alt gjenstående flytter 60 min, forskyvningen lander i kjøleskapet.
+  const just = await verktoy('juster_underveis', { metode: 'standard', cold: 48,
+    opprinnelig: '2026-08-01T18:00', forsinkelseMin: 60, naa: '2026-08-01T10:00' });
+  if (!just.data) { t('juster_underveis svarer', false, just.err || just.text); }
+  else {
+    const d = just.data;
+    t('justering: ny ferdig = opprinnelig + 60 min', d.nyFerdig_iso === '2026-08-01T17:00:00.000Z' && d.forskyvningMin === 60,
+      { nyFerdig_iso: d.nyFerdig_iso, forskyvningMin: d.forskyvningMin });
+    t('justering: fullførte steg står urørt, gjenstående finnes',
+      d.fullfort.length >= 1 && d.gjenstaar.length >= 2, { fullfort: d.fullfort.length, gjenstaar: d.gjenstaar.length });
+    t('justering: siste gjenstående steg steker på NYTT tidspunkt',
+      d.gjenstaar[d.gjenstaar.length - 1].naa_iso === '2026-08-01T17:00:00.000Z', d.gjenstaar.slice(-1)[0]);
+    t('justering: forskyvningen lander i kjøleskapet, rådet sier det',
+      d.rekker === true && !!d.standerI && d.standerI.sted === 'kjol' && d.raad.includes('kjøleskap'),
+      { rekker: d.rekker, standerI: d.standerI, raad: d.raad });
+  }
+  const forTidlig = await verktoy('juster_underveis', { metode: 'standard', cold: 48,
+    opprinnelig: '2026-08-01T18:00', forsinkelseMin: -240, naa: '2026-08-01T13:00' });
+  t('justering: umulig fremskynding sies ærlig (rekker=false)',
+    !!forTidlig.data && forTidlig.data.rekker === false && forTidlig.data.raad.includes('rekker ikke'),
+    forTidlig.data && { rekker: forTidlig.data.rekker, raad: forTidlig.data.raad });
+  const beggeFeil = await verktoy('juster_underveis', { metode: 'standard',
+    opprinnelig: '2026-08-01T18:00', forsinkelseMin: 60, nyttTidspunkt: '2026-08-01T19:00' });
+  t('justering: begge tidsfelter avvises med forklaring',
+    beggeFeil.isError && beggeFeil.text.includes('nøyaktig én'), beggeFeil.text);
+
+  // --- lagre_deig + identitet (v0.864) ---
+  // Uten identitet: en vennlig forklaring på header-oppsettet, ikke et nei.
+  const utenIdent = await verktoy('lagre_deig', { navn: 'Test', metode: 'biga', tidspunkt: '2026-08-01T18:00' });
+  t('lagre_deig uten identitet forklarer header-oppsettet',
+    utenIdent.isError && utenIdent.text.includes('X-Pizzame-Bruker') && utenIdent.text.includes('X-Pizzame-Pin'),
+    utenIdent.text);
+  // Med identitet: verifiseres mot appens /api/users/verify, og POST-en til
+  // /api/bakes skal ha NØYAKTIG appens egen lagringskropp (privat, eid av
+  // den verifiserte brukeren) — fanget av stubben.
+  let sisteBake = null;
+  const apiStubb = await startApiStubb((metode, url, kropp) => {
+    if (metode === 'POST' && url === '/api/users/verify') {
+      const b = JSON.parse(kropp || '{}');
+      return b.name === 'Rune' && b.pin === '1234'
+        ? { body: { ok: true, id: 'u1', name: 'Rune' } }
+        : { status: 401, body: { ok: false } };
+    }
+    if (metode === 'POST' && url === '/api/bakes') {
+      sisteBake = JSON.parse(kropp || '{}');
+      return { body: { id: 'b1', name: sisteBake.name } };
+    }
+    if (metode === 'GET' && url.startsWith('/api/bakes')) {
+      return { body: { bakes: [
+        { id: 'd1', name: 'Fredagspizza', status: 'active', ownerId: 'u1',
+          config: { method: 'standard', type: 'napoletana', cold: 48, mel: 500, hydro: 65, temp: 22,
+                    gjaer: 'torr', kjokkenmaskin: 'ankarsrum', oven: 'pizza', meltype: 'doppio_zero' },
+          anchorMode: 'end', anchorISO: '2026-08-01T16:00:00.000Z',
+          savedAt: '2026-07-31T10:00:00Z', checkedSteps: ['a', 'b'] },
+        { id: 'd2', name: 'Gammel', status: 'finished', ownerId: 'u1',
+          config: { method: 'hurtig' }, anchorMode: 'end', anchorISO: '2026-07-01T16:00:00.000Z' },
+      ] } };
+    }
+    if (url === '/api/flours') return { body: { flours: [] } };
+    return { status: 404, body: {} };
+  });
+  const medIdent = startServer({ PIZZAME_API: apiStubb.url, PIZZAME_BRUKER: 'Rune', PIZZAME_PIN: '1234' });
+  await medIdent.init();
+  const lagret = await medIdent.verktoy('lagre_deig', { navn: 'Fredagspizza', metode: 'biga',
+    bigaH: 18, cold: 48, tidspunkt: '2026-08-01T18:00', anker: 'ferdig' });
+  t('lagre_deig: lagrer og svarer med id + kalenderlenke',
+    !!lagret.data && lagret.data.id === 'b1' && lagret.data.navn === 'Fredagspizza'
+    && lagret.data.kalender_url.includes('/api/kalender?'), lagret.data || lagret.text);
+  t('lagre_deig: kroppen er appens egen — privat, eid av verifisert bruker',
+    !!sisteBake && sisteBake.ownerId === 'u1' && sisteBake.shared === false
+    && sisteBake.savedBy === 'Rune' && sisteBake.anchorMode === 'end'
+    && sisteBake.config && sisteBake.config.method === 'biga' && sisteBake.config.bigaH === 18,
+    sisteBake && { ownerId: sisteBake.ownerId, shared: sisteBake.shared, anchorMode: sisteBake.anchorMode });
+  const feilPin = startServer({ PIZZAME_API: apiStubb.url, PIZZAME_BRUKER: 'Rune', PIZZAME_PIN: '9999' });
+  await feilPin.init();
+  const avvist = await feilPin.verktoy('lagre_deig', { navn: 'Test', metode: 'biga', tidspunkt: '2026-08-01T18:00' });
+  t('lagre_deig: feil PIN avvises ærlig, ingenting lagres',
+    avvist.isError && avvist.text.includes('feil brukernavn eller PIN') && sisteBake.name === 'Fredagspizza',
+    avvist.text);
+
+  // --- deigen_min (v0.865): «hvordan ligger deigen min an?» ---
+  // Stubben har én aktiv deig (standard, 48t kald, ferdig lør 18:00) og én
+  // ferdig. «Nå» = lør 10:00: deigen står i kjøleskapet, neste steg er å ta
+  // den ut kl. 14:00 — om 240 min. Samme motor som appen, samme tall.
+  const minDeig = await medIdent.verktoy('deigen_min', { naa: '2026-08-01T10:00' });
+  if (!minDeig.data) { t('deigen_min svarer', false, minDeig.err || minDeig.text); }
+  else {
+    const d = minDeig.data;
+    t('deigen_min: finner den aktive deigen (ferdige filtreres bort)',
+      d.deig && d.deig.navn === 'Fredagspizza' && d.andreAktive.length === 0, d.deig);
+    t('deigen_min: vet hvor deigen står nå', !!d.status && d.status.sted === 'kjol', d.status);
+    t('deigen_min: neste steg med nedtelling fra motoren',
+      !!d.neste && d.neste.omMin === 240 && d.neste.tid_iso === '2026-08-01T12:00:00.000Z', d.neste);
+    t('deigen_min: fremdrift teller appens avhaking',
+      d.fremdrift && d.fremdrift.avhaketIAppen === 2 && d.fremdrift.totaltSteg > d.fremdrift.stegPassert,
+      d.fremdrift);
+  }
+  const ukjentNavn = await medIdent.verktoy('deigen_min', { navn: 'Lørdagscalzone', naa: '2026-08-01T10:00' });
+  t('deigen_min: ukjent navn avvises med lista over aktive',
+    ukjentNavn.isError && ukjentNavn.text.includes('Fredagspizza'), ukjentNavn.text);
+  const minUtenIdent = await verktoy('deigen_min', {});
+  t('deigen_min uten identitet forklarer header-oppsettet',
+    minUtenIdent.isError && minUtenIdent.text.includes('X-Pizzame-Bruker'), minUtenIdent.text);
+  apiStubb.srv.close();
 
   // --- Feilveiene skal være høflige, presise og aldri gjette ---
   const f1 = await verktoy('lag_plan', { metode: 'surdeig', tidspunkt: '2026-08-01T18:00' });

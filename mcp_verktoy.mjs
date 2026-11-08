@@ -34,7 +34,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
   const lag = new Function('window', 'S',
     engineSrc + '\n' + stepsSrc + `
     ;return { rawSteps, hurtigSteps, kveldSteps, stepsForAnchor, maniaRecipe, R, DEF,
-              recipeFor, preheatMin, stepLoc, smartKandidater, mN, byggIcs,
+              recipeFor, preheatMin, stepLoc, smartKandidater, mN, byggIcs, L,
               validerFlours, melSomTaaler, totalFermentHours,
               lesMelregister: () => MELTYPER,
               settMelregister: (valide) => { MELTYPER = byggMelregister(valide); } };
@@ -105,6 +105,50 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
     return d;
   }
 
+  // ===== Identitet (v0.864) =====
+  // Skriveverktøyene krever samme innlogging som appen (brukernavn + PIN),
+  // verifisert mot appens egen /api/users/verify. Identiteten kommer per
+  // kall fra verten: connectorens faste headere (X-Pizzame-Bruker /
+  // X-Pizzame-Pin — Claude lagrer dem kryptert og sender dem på hvert kall),
+  // eller miljøvariabler for lokal server. Verifiserte svar huskes i 10 min
+  // per navn+PIN, så vi ikke hamrer på innloggingen.
+  const IDENT_HJELP =
+    'Dette verktøyet trenger identiteten din fra appen. Oppsett (én gang): åpne connectoren i ' +
+    'Claude-innstillingene → «Request headers» → legg til X-Pizzame-Bruker (brukernavnet ditt i appen) ' +
+    'og X-Pizzame-Pin (PIN-koden din). Lokal server bruker miljøvariablene PIZZAME_BRUKER og ' +
+    'PIZZAME_PIN. Har du ikke bruker, lager du en i appen (den beskytter bare dine egne deiger).';
+  const _identCache = new Map();
+  async function verifiserIdent(ident) {
+    if (!ident || !ident.navn || !ident.pin) throw new Error(IDENT_HJELP);
+    const nokkel = ident.navn + '\n' + ident.pin;
+    const c = _identCache.get(nokkel);
+    if (c && c.til > Date.now()) return c;
+    let res;
+    try {
+      const ctl = new AbortController();
+      const tid = setTimeout(() => ctl.abort(), 4000);
+      res = await fetch(apiBase + '/api/users/verify', { method: 'POST', signal: ctl.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: ident.navn, pin: ident.pin }) });
+      clearTimeout(tid);
+    } catch (e) { throw new Error('fikk ikke kontakt med brukertjenesten — prøv igjen om litt'); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error('feil brukernavn eller PIN — sjekk headerne på connectoren');
+    const ut = { id: data.id, name: data.name, til: Date.now() + 10 * 60000 };
+    _identCache.set(nokkel, ut);
+    return ut;
+  }
+
+  // Kalenderlenken en plan bærer (v0.859) — delt mellom lag_plan og
+  // juster_underveis, så begge peker på /api/kalender med samme feltnavn.
+  const KALENDERFELT = ['metode', 'type', 'tidspunkt', 'anker', 'mel', 'hydro', 'temp', 'cold',
+                        'poolishH', 'poolishCold', 'bigaH', 'hurtigH', 'kveldH', 'oven', 'lang'];
+  function kalenderLenke(args) {
+    const q = new URLSearchParams();
+    for (const f of KALENDERFELT) if (args[f] !== undefined) q.set(f, String(args[f]));
+    return apiBase + '/api/kalender?' + q.toString();
+  }
+
   // ===== Verktøyene =====
   const VERKTOY = [
     {
@@ -143,14 +187,9 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
         // v0.859: hver plan bærer sin kalenderlenke — /api/kalender regner
         // NØYAKTIG samme plan på serveren (samme felter) og svarer med en
         // .ics-fil: ett trykk på mobilen gir varsler per steg via kalenderen.
-        const q = new URLSearchParams();
-        for (const f of ['metode', 'type', 'tidspunkt', 'anker', 'mel', 'hydro', 'temp', 'cold',
-                         'poolishH', 'poolishCold', 'bigaH', 'hurtigH', 'kveldH', 'oven', 'lang']) {
-          if (args[f] !== undefined) q.set(f, String(args[f]));
-        }
         return {
           oppskrift: oppskrift(metode),
-          kalender_url: apiBase + '/api/kalender?' + q.toString(),
+          kalender_url: kalenderLenke(args),
           forvarmingMin: lag.preheatMin(),
           steg: steg.map((s, i) => ({
             tid: fmtTid(s.at),
@@ -284,6 +323,218 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
         return { totalGjaeringTimer: timer, melkilde, mel };
       },
     },
+    {
+      name: 'juster_underveis',
+      description:
+        'Planen er i gang og tidspunktet flytter seg («gjestene er en time forsinket»). Oppgi det ' +
+        'OPPRINNELIGE ferdigtidspunktet, oppsettet (samme felter som lag_plan) og forsinkelsen — ' +
+        'verktøyet regner hele kjeden på nytt mot det nye tidspunktet og svarer med hva som er ' +
+        'fullført, hvor forskyvningen lander, nye klokkeslett for gjenstående steg, og en ærlig ' +
+        'advarsel hvis en fremskynding ikke rekker. Ny kalenderlenke følger med.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          metode: { type: 'string', enum: METODER, description: 'Deigmetode planen ble laget med.' },
+          opprinnelig: { type: 'string', description: 'Planens opprinnelige FERDIG-tidspunkt (ISO, Europe/Oslo).' },
+          forsinkelseMin: { type: 'number', description: 'Minutter senere (positiv) eller tidligere (negativ). Alternativ til nyttTidspunkt.' },
+          nyttTidspunkt: { type: 'string', description: 'Nytt ferdigtidspunkt (ISO). Alternativ til forsinkelseMin.' },
+          naa: { type: 'string', description: 'Hva som regnes som «nå» (ISO). Standard: faktisk klokkeslett.' },
+          type: { type: 'string', enum: TYPER },
+          mel: { type: 'number' }, hydro: { type: 'number' }, temp: { type: 'number' },
+          cold: { type: 'number' }, poolishH: { type: 'number' }, poolishCold: { type: 'boolean' },
+          bigaH: { type: 'number' }, hurtigH: { type: 'number' }, kveldH: { type: 'number' },
+          oven: { type: 'string', enum: ['vanlig', 'pizza'] },
+          lang: { type: 'string', enum: ['no', 'en'] },
+        },
+        required: ['metode', 'opprinnelig'],
+      },
+      kjor(args) {
+        settScenario(args);
+        S.mode = 'end';
+        const foer = lesTid(args.opprinnelig, 'opprinnelig');
+        if ((args.nyttTidspunkt === undefined) === (args.forsinkelseMin === undefined)) {
+          throw new Error('oppgi nøyaktig én av nyttTidspunkt og forsinkelseMin');
+        }
+        if (args.forsinkelseMin !== undefined && !Number.isFinite(Number(args.forsinkelseMin))) {
+          throw new Error('feltet «forsinkelseMin» må være et tall');
+        }
+        const etterTid = args.nyttTidspunkt !== undefined
+          ? lesTid(args.nyttTidspunkt, 'nyttTidspunkt')
+          : new Date(foer.getTime() + Number(args.forsinkelseMin) * 60000);
+        const naa = args.naa !== undefined ? lesTid(args.naa, 'naa').getTime() : Date.now();
+        const deltaMin = Math.round((etterTid - foer) / 60000);
+        // Samme oppsett, to ankre: kjedene er like lange, så stegene parres på
+        // indeks. Total gjæringstid er uendret — bare klokka flytter seg, og
+        // det som allerede er gjort kan ikke flyttes: forskyvningen lander i
+        // perioden du står i NÅ (typisk en hvile).
+        const stegFoer = lag.stepsForAnchor(foer);
+        const stegEtter = lag.stepsForAnchor(etterTid);
+        const fullfort = [], gjenstaar = [];
+        let rekker = true;
+        stegFoer.forEach((s, i) => {
+          const nyAt = stegEtter[i].at;
+          if (s.at.getTime() <= naa) {
+            fullfort.push({ tittel: s.title, tid: fmtTid(s.at) });
+          } else {
+            if (nyAt.getTime() < naa) rekker = false;
+            gjenstaar.push({ tittel: s.title, foer: fmtTid(s.at), naa: fmtTid(nyAt),
+                             naa_iso: new Date(nyAt).toISOString(), passiv: !!s.passive });
+          }
+        });
+        // Rådet er stedsbasert (kjøleskap tåler strekk godt; romtemperatur er
+        // mer sårbar) — uten å dikte nye tall.
+        const sisteGjorte = stegFoer.filter(s => s.at.getTime() <= naa).slice(-1)[0] || null;
+        const standerI = sisteGjorte
+          ? { tittel: sisteGjorte.title, sted: lag.stepLoc(sisteGjorte), endringMin: deltaMin }
+          : null;
+        const raad = !rekker
+          ? lag.L('Fremskyndingen rekker ikke — sammenlign naa_iso på første gjenstående steg med klokka.',
+              'The move-up does not fit — compare naa_iso on the first remaining step with the clock.')
+          : sisteGjorte && lag.stepLoc(sisteGjorte) === 'kjol'
+          ? lag.L(`Forskyvningen (${deltaMin} min) tas i kjøleskapshvilen — det tåler deigen godt.`,
+              `The shift (${deltaMin} min) lands in the fridge rest — the dough handles that well.`)
+          : sisteGjorte && deltaMin > 0
+          ? lag.L(`Forskyvningen (${deltaMin} min) strekker en hvile i romtemperatur — blir ventetiden lang, sett emnene kaldt i mellomtiden.`,
+              `The shift (${deltaMin} min) stretches a room-temperature rest — if the wait gets long, move the dough to the fridge in the meantime.`)
+          : lag.L(`Alle gjenstående steg flytter ${deltaMin} min.`, `All remaining steps move ${deltaMin} min.`);
+        // Kalenderlenken peker på den NYE planen. /api/kalender tolker tider i
+        // norsk tid, så det nye ankeret skrives som lokal ISO uten sone.
+        const lokalIso = new Date(etterTid.getTime() - etterTid.getTimezoneOffset() * 60000)
+          .toISOString().slice(0, 16);
+        return {
+          opprinneligFerdig: fmtTid(foer), nyFerdig: fmtTid(etterTid),
+          nyFerdig_iso: etterTid.toISOString(), forskyvningMin: deltaMin,
+          rekker, raad, standerI, fullfort, gjenstaar,
+          kalender_url: kalenderLenke({ ...args, tidspunkt: lokalIso, anker: 'ferdig' }),
+        };
+      },
+    },
+    {
+      name: 'lagre_deig',
+      description:
+        'Lagre planen som en deig i appen («lagre denne som Fredagspizza»). Deigen blir privat, ' +
+        'dukker opp under Deiger i appen, og når du åpner den der følger appen den videre med ' +
+        'avhaking og gjenopptak. Krever identiteten din fra appen (brukernavn + PIN som faste ' +
+        'headere på connectoren — feilmeldingen forklarer oppsettet første gang). Samme felter ' +
+        'som lag_plan, pluss navn.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          navn: { type: 'string', description: 'Navnet deigen lagres under, f.eks. «Fredagspizza».' },
+          metode: { type: 'string', enum: METODER },
+          tidspunkt: { type: 'string', description: 'Ankertidspunkt (ISO, Europe/Oslo).' },
+          anker: { type: 'string', enum: ['ferdig', 'start'], description: '«ferdig» (standard) eller «start».' },
+          type: { type: 'string', enum: TYPER },
+          mel: { type: 'number' }, hydro: { type: 'number' }, temp: { type: 'number' },
+          cold: { type: 'number' }, poolishH: { type: 'number' }, poolishCold: { type: 'boolean' },
+          bigaH: { type: 'number' }, hurtigH: { type: 'number' }, kveldH: { type: 'number' },
+          oven: { type: 'string', enum: ['vanlig', 'pizza'] },
+          lang: { type: 'string', enum: ['no', 'en'] },
+        },
+        required: ['navn', 'metode', 'tidspunkt'],
+      },
+      async kjor(args, ident) {
+        const bruker = await verifiserIdent(ident);
+        const navn = String(args.navn || '').trim();
+        if (!navn) throw new Error('deigen trenger et navn');
+        settScenario(args);
+        S.mode = args.anker === 'start' ? 'start' : 'end';
+        const nar = lesTid(args.tidspunkt, 'tidspunkt');
+        lag.stepsForAnchor(nar); // kaster ved et oppsett kjeden ikke kan regne
+        // Samme kropp som appens egen «Lagre deig» (saveBake i index.html):
+        // privat som standard, eid av den verifiserte brukeren.
+        let res;
+        try {
+          const ctl = new AbortController();
+          const tid = setTimeout(() => ctl.abort(), 5000);
+          res = await fetch(apiBase + '/api/bakes', { method: 'POST', signal: ctl.signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: navn, config: { ...S },
+              anchorMode: S.mode === 'end' ? 'end' : 'start', anchorISO: nar.toISOString(),
+              checkedSteps: [], checkedIngredients: [], checkedSubsteps: [],
+              savedBy: bruker.name, ownerId: bruker.id, shared: false }) });
+          clearTimeout(tid);
+        } catch (e) { throw new Error('fikk ikke kontakt med deig-lageret — prøv igjen om litt'); }
+        if (!res.ok) throw new Error('lagringen feilet (HTTP ' + res.status + ')');
+        const lagret = await res.json();
+        return {
+          id: lagret.id, navn: lagret.name, lagretAv: bruker.name,
+          melding: lag.L(
+            'Deigen ligger nå under Deiger i appen — åpne den der én gang, så husker appen at det er den du holder på med.',
+            'The dough is now under Doughs in the app — open it there once, and the app remembers it is the one you are working on.'),
+          kalender_url: kalenderLenke(args),
+        };
+      },
+    },
+    {
+      name: 'deigen_min',
+      description:
+        '«Hvordan ligger deigen min an?» Henter dine aktive deiger fra appen og svarer for den ' +
+        'nyeste (eller en navngitt): hva som er gjort, hva som pågår nå og hvor, neste steg og om ' +
+        'hvor lenge, og hvor mange steg som er huket av i appen. Krever samme identitet som ' +
+        'lagre_deig (brukernavn + PIN som headere på connectoren).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          navn: { type: 'string', description: 'Valgfritt: hvilken deig (en del av navnet holder). Standard: den nyeste aktive.' },
+          naa: { type: 'string', description: 'Hva som regnes som «nå» (ISO). Standard: faktisk klokkeslett.' },
+          lang: { type: 'string', enum: ['no', 'en'] },
+        },
+        required: [],
+      },
+      async kjor(args, ident) {
+        const bruker = await verifiserIdent(ident);
+        vindu._lang = args.lang === 'en' ? 'en' : 'no';
+        let res;
+        try {
+          const ctl = new AbortController();
+          const tid = setTimeout(() => ctl.abort(), 5000);
+          res = await fetch(apiBase + '/api/bakes?userId=' + encodeURIComponent(bruker.id), { signal: ctl.signal });
+          clearTimeout(tid);
+        } catch (e) { throw new Error('fikk ikke kontakt med deig-lageret — prøv igjen om litt'); }
+        if (!res.ok) throw new Error('kunne ikke hente deigene (HTTP ' + res.status + ')');
+        const data = await res.json().catch(() => ({}));
+        const alle = (data.bakes || []).filter(b => b && b.status === 'active' && b.ownerId === bruker.id);
+        if (!alle.length) {
+          return { melding: lag.L('Du har ingen aktive deiger akkurat nå — si fra, så lager vi en plan og lagrer den.',
+                                  'You have no active doughs right now — say the word and we will make a plan and save it.') };
+        }
+        const sok = args.navn ? String(args.navn).toLowerCase() : null;
+        const kandidater = sok ? alle.filter(b => String(b.name || '').toLowerCase().includes(sok)) : alle;
+        if (!kandidater.length) {
+          throw new Error(`fant ingen aktiv deig som matcher «${args.navn}» — aktive: ${alle.map(b => b.name).join(', ')}`);
+        }
+        kandidater.sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
+        const b = kandidater[0];
+        // Regn kjeden fra deigens eget oppsett og anker — samme motor, samme
+        // tall som appen viser for den samme deigen.
+        for (const k of Object.keys(S)) delete S[k];
+        Object.assign(S, lag.DEF, b.config || {});
+        S.mode = b.anchorMode === 'end' ? 'end' : 'start';
+        const anker = new Date(b.anchorISO);
+        if (isNaN(anker)) throw new Error('deigen mangler gyldig ankertidspunkt — åpne den i appen og lagre på nytt');
+        const steg = lag.stepsForAnchor(anker);
+        const naa = args.naa !== undefined ? lesTid(args.naa, 'naa').getTime() : Date.now();
+        const passert = steg.filter(s => s.at.getTime() <= naa);
+        const neste = steg.find(s => s.at.getTime() > naa) || null;
+        const paagaar = passert.slice(-1)[0] || null;
+        return {
+          deig: { navn: b.name, metode: lag.mN(S.method),
+                  anker: fmtTid(anker), ankerType: S.mode === 'end' ? 'ferdig' : 'start' },
+          status: paagaar
+            ? { paagaar: paagaar.title, sted: lag.stepLoc(paagaar), siden: fmtTid(paagaar.at) }
+            : { paagaar: null, melding: lag.L('Planen har ikke startet ennå.', 'The plan has not started yet.') },
+          neste: neste
+            ? { tittel: neste.title, tid: fmtTid(neste.at), tid_iso: new Date(neste.at).toISOString(),
+                omMin: Math.round((neste.at.getTime() - naa) / 60000) }
+            : { melding: lag.L('Alle steg er passert — den skal være ferdig stekt!',
+                               'All steps have passed — it should be baked and done!') },
+          fremdrift: { stegPassert: passert.length, totaltSteg: steg.length,
+                       avhaketIAppen: Array.isArray(b.checkedSteps) ? b.checkedSteps.length : 0 },
+          andreAktive: alle.filter(x => x.id !== b.id).map(x => x.name),
+        };
+      },
+    },
   ];
 
   // Verktøyene deler S, så kjøringen må være sekvensiell — køen serialiserer
@@ -297,7 +548,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
 
   // Én JSON-RPC-melding inn, ett svarobjekt ut (null for varsler, som ikke
   // skal besvares). Transporten rundt er vertens jobb.
-  async function handter(melding) {
+  async function handter(melding, ident) {
     const { id, method, params } = melding || {};
     if (method === 'initialize') {
       return { jsonrpc: '2.0', id, result: {
@@ -315,7 +566,10 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
           '(«da måtte du ha startet …») og pek på det beste alternativet som faktisk rekker. ' +
           'Når du har gitt en plan, tilby kalenderlenken (kalender_url i svaret): ett trykk legger ' +
           'hele planen i telefonens kalender med varsel før hvert aktive steg. ' +
-          'La pizzaen farge stemningen, men språket forblir norsk: baker vi italiensk ' +
+          'Skriv gjennomarbeidet, naturlig norsk i hele setninger — bruk appens egne fagord (heving, '
+          + 'emner, kaldheving, fordeig, cornicione) og unngå stive, direkte oversatte formuleringer '
+          + 'som «det gjelder også» eller oppramsing uten flyt. '
+          + 'La pizzaen farge stemningen, men språket forblir norsk: baker vi italiensk ' +
           '(napoletana), dryss inn noen italienske gloser for moro skyld (allora, la farina, il forno, ' +
           'cornicione — og en «mamma mia!» når planen går opp); baker vi amerikansk (New York eller ' +
           'Chicago deep dish), vær skikkelig amerikansk i gemyttet — entusiastisk, «alright!», ' +
@@ -335,7 +589,7 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
       if (!v) return { jsonrpc: '2.0', id, error: { code: -32602, message: `ukjent verktøy «${params && params.name}»` } };
       return iKoen(async () => {
         try {
-          const res = await v.kjor((params && params.arguments) || {});
+          const res = await v.kjor((params && params.arguments) || {}, ident || {});
           return { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: JSON.stringify(res, null, 1) }] } };
         } catch (e) {
           return { jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: 'Feil: ' + e.message }], isError: true } };

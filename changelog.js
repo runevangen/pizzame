@@ -3,6 +3,50 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.866",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Pizzacoachen i chatten skal snakke bedre norsk, meldt inn fra mobilen («Det gjelder også justering av gjærmengde etter kjøleskapstemperatur» — stivt og oversatt): tone-instruksen krever nå gjennomarbeidet, naturlig norsk i hele setninger, med appens egne fagord, og navngir selve den stive frasen den forbyr."
+    ],
+    "changes_en": [
+      "The pizza coach in chat should speak better Norwegian, reported from the phone (a stiff, translated phrasing): the tone instruction now demands polished, natural Norwegian in full sentences, using the app's own terms of craft, and names the very stiff phrase it forbids."
+    ]
+  },
+  {
+    "v": "0.865",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Nytt MCP-verktøy deigen_min: «hvordan ligger deigen min an?» henter dine aktive deiger fra appen og svarer med motorens egne tall — hva som er gjort, hvor deigen står nå (kjøleskap/benk/rom), neste steg med nedtelling, og hvor mange steg du har huket av i appen. Navngi en deig eller få den nyeste. Chat og app deler dermed samme pågående bakst begge veier: lagre_deig skriver inn, deigen_min leser ut."
+    ],
+    "changes_en": [
+      "New MCP tool deigen_min: \"how is my dough doing?\" fetches your active doughs from the app and answers with the engine's own numbers — what is done, where the dough is now (fridge/counter/room), the next step with a countdown, and how many steps you have checked off in the app. Name a dough or get the newest. Chat and app thus share the same ongoing bake both ways: lagre_deig writes in, deigen_min reads out."
+    ]
+  },
+  {
+    "v": "0.864",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Chatten kan nå lagre deiger: nytt MCP-verktøy lagre_deig («lagre denne som Fredagspizza») lagrer planen som privat deig i appen — åpne den under Deiger, så følger appen den videre med avhaking og gjenopptak. Krever identiteten din: brukernavn og PIN fra appen, lagt inn én gang som faste headere på connectoren (Claude lagrer dem kryptert) og verifisert mot appens egen innlogging per kall. Uten oppsett får du en vennlig forklaring, ikke et nei; feil PIN avvises ærlig."
+    ],
+    "changes_en": [
+      "Chat can now save doughs: new MCP tool lagre_deig (\"save this as Friday pizza\") stores the plan as a private dough in the app — open it under Doughs and the app carries it on with check-offs and resume. Requires your identity: the app's username and PIN, entered once as fixed headers on the connector (Claude stores them encrypted) and verified against the app's own login per call. Without setup you get a friendly explanation, not a refusal; a wrong PIN is honestly rejected."
+    ]
+  },
+  {
+    "v": "0.863",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Nytt MCP-verktøy juster_underveis: «gjestene er en time forsinket» midt i baksten — verktøyet regner hele kjeden mot det nye tidspunktet og svarer med hva som alt er gjort (urørt), hvor forskyvningen lander (kjøleskapshvile tåler strekk godt; romtemperatur får et ærlig råd), nye klokkeslett for alt gjenstående, og rekker/rekker ikke ved fremskynding. Ny kalenderlenke følger med. Sikkerhetsgjennomgangen fra samme økt er dokumentert i BACKLOG.md (S1–S4)."
+    ],
+    "changes_en": [
+      "New MCP tool juster_underveis: \"guests are an hour late\" mid-bake — the tool recomputes the whole chain against the new time and answers with what is already done (untouched), where the shift lands (a fridge rest takes stretching well; room temperature gets an honest tip), new times for everything remaining, and fits/doesn't fit when moving up. A new calendar link comes along. The security review from the same session is documented in BACKLOG.md (S1–S4)."
+    ]
+  },
+  {
     "v": "0.862",
     "d": "november 2026",
     "d_en": "November 2026",

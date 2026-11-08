@@ -33,11 +33,15 @@ const { handter } = lagMcpHandterer({
 
 function send(msg) { process.stdout.write(JSON.stringify(msg) + '\n'); }
 
+// Identitet for skriveverktøyene (v0.864): lokal server er én bruker —
+// miljøvariabler, satt der serveren startes (aldri i repoet).
+const IDENT = { navn: process.env.PIZZAME_BRUKER, pin: process.env.PIZZAME_PIN };
+
 createInterface({ input: process.stdin }).on('line', (linje) => {
   if (!linje.trim()) return;
   let req;
   try { req = JSON.parse(linje); } catch { return send({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } }); }
-  handter(req).then(
+  handter(req, IDENT).then(
     (svar) => { if (svar) send(svar); },
     (e) => { if (req.id !== undefined) send({ jsonrpc: '2.0', id: req.id, error: { code: -32603, message: e.message } }); },
   );
