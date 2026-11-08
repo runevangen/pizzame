@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.865",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Nytt MCP-verktøy deigen_min: «hvordan ligger deigen min an?» henter dine aktive deiger fra appen og svarer med motorens egne tall — hva som er gjort, hvor deigen står nå (kjøleskap/benk/rom), neste steg med nedtelling, og hvor mange steg du har huket av i appen. Navngi en deig eller få den nyeste. Chat og app deler dermed samme pågående bakst begge veier: lagre_deig skriver inn, deigen_min leser ut."
+    ],
+    "changes_en": [
+      "New MCP tool deigen_min: \"how is my dough doing?\" fetches your active doughs from the app and answers with the engine's own numbers — what is done, where the dough is now (fridge/counter/room), the next step with a countdown, and how many steps you have checked off in the app. Name a dough or get the newest. Chat and app thus share the same ongoing bake both ways: lagre_deig writes in, deigen_min reads out."
+    ]
+  },
+  {
     "v": "0.864",
     "d": "november 2026",
     "d_en": "November 2026",

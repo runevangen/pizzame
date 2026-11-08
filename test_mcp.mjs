@@ -119,8 +119,8 @@ try {
 
   const liste = await kall('tools/list', {});
   const navn = (liste.result ? liste.result.tools : []).map(v => v.name).sort();
-  t('tools/list gir alle seks verktøyene',
-    JSON.stringify(navn) === JSON.stringify(['juster_underveis', 'lag_plan', 'lagre_deig', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
+  t('tools/list gir alle sju verktøyene',
+    JSON.stringify(navn) === JSON.stringify(['deigen_min', 'juster_underveis', 'lag_plan', 'lagre_deig', 'mel_som_passer', 'mengder', 'metoder_som_rekker']), navn);
 
   // --- Frosne scenarier gjennom protokollen — samme fasit som steglaget ---
   // Scenariofeltene speiler test_steg.mjs; anker='start' fordi baseline er
@@ -264,7 +264,7 @@ try {
   const hVarsel = await post({ jsonrpc: '2.0', method: 'notifications/initialized' });
   t('http: varsel kvitteres med 202 uten svar', hVarsel.status === 202, hVarsel.status);
   const hListe = await (await post({ jsonrpc: '2.0', id: 2, method: 'tools/list' })).json();
-  t('http: alle seks verktøyene', !!hListe.result && hListe.result.tools.length === 6,
+  t('http: alle sju verktøyene', !!hListe.result && hListe.result.tools.length === 7,
     hListe.result && hListe.result.tools.map(x => x.name));
   const hPlan = await (await post({ jsonrpc: '2.0', id: 3, method: 'tools/call',
     params: { name: 'lag_plan', arguments: { ...SCEN[0].args, tidspunkt: '2026-08-01T18:00', anker: 'start' } } })).json();
@@ -346,6 +346,17 @@ try {
       sisteBake = JSON.parse(kropp || '{}');
       return { body: { id: 'b1', name: sisteBake.name } };
     }
+    if (metode === 'GET' && url.startsWith('/api/bakes')) {
+      return { body: { bakes: [
+        { id: 'd1', name: 'Fredagspizza', status: 'active', ownerId: 'u1',
+          config: { method: 'standard', type: 'napoletana', cold: 48, mel: 500, hydro: 65, temp: 22,
+                    gjaer: 'torr', kjokkenmaskin: 'ankarsrum', oven: 'pizza', meltype: 'doppio_zero' },
+          anchorMode: 'end', anchorISO: '2026-08-01T16:00:00.000Z',
+          savedAt: '2026-07-31T10:00:00Z', checkedSteps: ['a', 'b'] },
+        { id: 'd2', name: 'Gammel', status: 'finished', ownerId: 'u1',
+          config: { method: 'hurtig' }, anchorMode: 'end', anchorISO: '2026-07-01T16:00:00.000Z' },
+      ] } };
+    }
     if (url === '/api/flours') return { body: { flours: [] } };
     return { status: 404, body: {} };
   });
@@ -367,6 +378,30 @@ try {
   t('lagre_deig: feil PIN avvises ærlig, ingenting lagres',
     avvist.isError && avvist.text.includes('feil brukernavn eller PIN') && sisteBake.name === 'Fredagspizza',
     avvist.text);
+
+  // --- deigen_min (v0.865): «hvordan ligger deigen min an?» ---
+  // Stubben har én aktiv deig (standard, 48t kald, ferdig lør 18:00) og én
+  // ferdig. «Nå» = lør 10:00: deigen står i kjøleskapet, neste steg er å ta
+  // den ut kl. 14:00 — om 240 min. Samme motor som appen, samme tall.
+  const minDeig = await medIdent.verktoy('deigen_min', { naa: '2026-08-01T10:00' });
+  if (!minDeig.data) { t('deigen_min svarer', false, minDeig.err || minDeig.text); }
+  else {
+    const d = minDeig.data;
+    t('deigen_min: finner den aktive deigen (ferdige filtreres bort)',
+      d.deig && d.deig.navn === 'Fredagspizza' && d.andreAktive.length === 0, d.deig);
+    t('deigen_min: vet hvor deigen står nå', !!d.status && d.status.sted === 'kjol', d.status);
+    t('deigen_min: neste steg med nedtelling fra motoren',
+      !!d.neste && d.neste.omMin === 240 && d.neste.tid_iso === '2026-08-01T12:00:00.000Z', d.neste);
+    t('deigen_min: fremdrift teller appens avhaking',
+      d.fremdrift && d.fremdrift.avhaketIAppen === 2 && d.fremdrift.totaltSteg > d.fremdrift.stegPassert,
+      d.fremdrift);
+  }
+  const ukjentNavn = await medIdent.verktoy('deigen_min', { navn: 'Lørdagscalzone', naa: '2026-08-01T10:00' });
+  t('deigen_min: ukjent navn avvises med lista over aktive',
+    ukjentNavn.isError && ukjentNavn.text.includes('Fredagspizza'), ukjentNavn.text);
+  const minUtenIdent = await verktoy('deigen_min', {});
+  t('deigen_min uten identitet forklarer header-oppsettet',
+    minUtenIdent.isError && minUtenIdent.text.includes('X-Pizzame-Bruker'), minUtenIdent.text);
   apiStubb.srv.close();
 
   // --- Feilveiene skal være høflige, presise og aldri gjette ---

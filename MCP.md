@@ -73,6 +73,20 @@ Krav: Node ≥ 18 og en klon av repoet. Ingen `npm install`, ingen byggesteg.
 | `metoder_som_rekker` | Hvilke metoder er gjennomførbare til et ferdigtidspunkt (Smart-plan-sveipet) | `tidspunkt`, valgfri `naa` for deterministisk «nå» |
 | `mel_som_passer` | Hvilke mel tåler oppsettets totale gjæringstid (+ hydreringssjekk) | `metode` + tidsinnstillinger, `hydro` |
 | `mengder` | Bare kjernetallene (mel/vann/salt/gjær) | `metode`, `type`, `mel`, `hydro` |
+| `juster_underveis` | Planen flytter seg midt i baksten: nye tider for gjenstående steg, stedsbasert råd, ærlig «rekker ikke» | `metode` + oppsett, `opprinnelig`, `forsinkelseMin` eller `nyttTidspunkt` |
+| `lagre_deig` 🔐 | Lagrer planen som privat deig i appen (åpne den der → avhaking + gjenopptak) | som `lag_plan` + `navn` |
+| `deigen_min` 🔐 | «Hvordan ligger deigen min an?» — pågående steg, neste steg med nedtelling, avhaking | valgfri `navn`, `naa` |
+
+## Identitet for 🔐-verktøyene
+
+Skriv-/leseverktøyene for dine deiger bruker samme innlogging som appen
+(brukernavn + 4-sifret PIN), verifisert mot appens `/api/users/verify` per
+kall. Oppsett én gang: åpne connectoren i Claude-innstillingene → **Request
+headers** → legg til `X-Pizzame-Bruker` (brukernavnet) og `X-Pizzame-Pin`
+(PIN-koden). Claude lagrer headerne kryptert og sender dem på hvert kall.
+Lokal server: miljøvariablene `PIZZAME_BRUKER`/`PIZZAME_PIN`. Uten oppsett
+svarer verktøyene med en vennlig forklaring; PIN beskytter bare dine egne
+deiger (komfortlås, ikke bankhvelv — se BACKLOG S3/S4).
 
 Alle svar er JSON med både ISO-tidspunkter og leselige norske tider
 (Europe/Oslo, som appen). `lang: "en"` gir engelske tekster.

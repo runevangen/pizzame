@@ -466,6 +466,75 @@ export function lagMcpHandterer({ engineSrc, stepsSrc, apiBase, versjon }) {
         };
       },
     },
+    {
+      name: 'deigen_min',
+      description:
+        '«Hvordan ligger deigen min an?» Henter dine aktive deiger fra appen og svarer for den ' +
+        'nyeste (eller en navngitt): hva som er gjort, hva som pågår nå og hvor, neste steg og om ' +
+        'hvor lenge, og hvor mange steg som er huket av i appen. Krever samme identitet som ' +
+        'lagre_deig (brukernavn + PIN som headere på connectoren).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          navn: { type: 'string', description: 'Valgfritt: hvilken deig (en del av navnet holder). Standard: den nyeste aktive.' },
+          naa: { type: 'string', description: 'Hva som regnes som «nå» (ISO). Standard: faktisk klokkeslett.' },
+          lang: { type: 'string', enum: ['no', 'en'] },
+        },
+        required: [],
+      },
+      async kjor(args, ident) {
+        const bruker = await verifiserIdent(ident);
+        vindu._lang = args.lang === 'en' ? 'en' : 'no';
+        let res;
+        try {
+          const ctl = new AbortController();
+          const tid = setTimeout(() => ctl.abort(), 5000);
+          res = await fetch(apiBase + '/api/bakes?userId=' + encodeURIComponent(bruker.id), { signal: ctl.signal });
+          clearTimeout(tid);
+        } catch (e) { throw new Error('fikk ikke kontakt med deig-lageret — prøv igjen om litt'); }
+        if (!res.ok) throw new Error('kunne ikke hente deigene (HTTP ' + res.status + ')');
+        const data = await res.json().catch(() => ({}));
+        const alle = (data.bakes || []).filter(b => b && b.status === 'active' && b.ownerId === bruker.id);
+        if (!alle.length) {
+          return { melding: lag.L('Du har ingen aktive deiger akkurat nå — si fra, så lager vi en plan og lagrer den.',
+                                  'You have no active doughs right now — say the word and we will make a plan and save it.') };
+        }
+        const sok = args.navn ? String(args.navn).toLowerCase() : null;
+        const kandidater = sok ? alle.filter(b => String(b.name || '').toLowerCase().includes(sok)) : alle;
+        if (!kandidater.length) {
+          throw new Error(`fant ingen aktiv deig som matcher «${args.navn}» — aktive: ${alle.map(b => b.name).join(', ')}`);
+        }
+        kandidater.sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
+        const b = kandidater[0];
+        // Regn kjeden fra deigens eget oppsett og anker — samme motor, samme
+        // tall som appen viser for den samme deigen.
+        for (const k of Object.keys(S)) delete S[k];
+        Object.assign(S, lag.DEF, b.config || {});
+        S.mode = b.anchorMode === 'end' ? 'end' : 'start';
+        const anker = new Date(b.anchorISO);
+        if (isNaN(anker)) throw new Error('deigen mangler gyldig ankertidspunkt — åpne den i appen og lagre på nytt');
+        const steg = lag.stepsForAnchor(anker);
+        const naa = args.naa !== undefined ? lesTid(args.naa, 'naa').getTime() : Date.now();
+        const passert = steg.filter(s => s.at.getTime() <= naa);
+        const neste = steg.find(s => s.at.getTime() > naa) || null;
+        const paagaar = passert.slice(-1)[0] || null;
+        return {
+          deig: { navn: b.name, metode: lag.mN(S.method),
+                  anker: fmtTid(anker), ankerType: S.mode === 'end' ? 'ferdig' : 'start' },
+          status: paagaar
+            ? { paagaar: paagaar.title, sted: lag.stepLoc(paagaar), siden: fmtTid(paagaar.at) }
+            : { paagaar: null, melding: lag.L('Planen har ikke startet ennå.', 'The plan has not started yet.') },
+          neste: neste
+            ? { tittel: neste.title, tid: fmtTid(neste.at), tid_iso: new Date(neste.at).toISOString(),
+                omMin: Math.round((neste.at.getTime() - naa) / 60000) }
+            : { melding: lag.L('Alle steg er passert — den skal være ferdig stekt!',
+                               'All steps have passed — it should be baked and done!') },
+          fremdrift: { stegPassert: passert.length, totaltSteg: steg.length,
+                       avhaketIAppen: Array.isArray(b.checkedSteps) ? b.checkedSteps.length : 0 },
+          andreAktive: alle.filter(x => x.id !== b.id).map(x => x.name),
+        };
+      },
+    },
   ];
 
   // Verktøyene deler S, så kjøringen må være sekvensiell — køen serialiserer
