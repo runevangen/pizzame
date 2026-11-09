@@ -9736,8 +9736,11 @@ function saveBakeLabel(){
 }
 
 function syncSaveBakeLabel(){
+  // v0.868: samme markup og ordlyd som planBottomActionsHTML bygger knappen
+  // med — før skrev denne «<i>💾</i>Oppdater» i en knapp med en annen layout,
+  // og neste mobGen satte uansett tilbake den statiske etiketten.
   const mobBtn=document.getElementById('mob-savebake-btn');
-  if(mobBtn) mobBtn.innerHTML = window._activeDeigId ? L('<i>💾</i>Oppdater','<i>💾</i>Update') : L('<i>💾</i>Lagre','<i>💾</i>Save');
+  if(mobBtn) mobBtn.innerHTML = `<span style="font-size:16px">💾</span>${window._activeDeigId?L('Oppdater deig','Update dough'):L('Lagre deig','Save dough')}`;
 }
 
 // Deig-statuslinje (Skisse A): samme mønster som Beta-fanens kort — viser
@@ -9785,7 +9788,13 @@ function planBottomActionsHTML(){
              produksjon er verre enn ingen knapp. */}
       ${btn("copyP(window._steps||[], this)",'📋',t('a_copy'))}
       ${btn("downloadIcs(window._steps||[])",'📅',t('a_cal'))}
-      ${btn("saveBake()",'💾',t('a_save'),'mob-savebake-btn')}
+      ${'' /* v0.868: etiketten følger tilstanden — med en deig åpen oppdaterer
+             knappen DEIGEN (oppsett/tider), og skal ikke kunne forveksles med
+             «Lagre notat» rett over (som bare lagrer notatteksten). Den gamle
+             statiske t('a_save')-etiketten («Lagre») overlevde dessuten ikke
+             regenerering: syncSaveBakeLabel satte «Oppdater», neste mobGen
+             satte den tilbake. Nå regnes den ut der knappen bygges. */}
+      ${btn("saveBake()",'💾', window._activeDeigId?L('Oppdater deig','Update dough'):L('Lagre deig','Save dough'),'mob-savebake-btn')}
     </div>
   </div>`;
 }
