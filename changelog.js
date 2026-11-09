@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.869",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Deiger-lista sier nå «Pågående» i stedet for «Aktive» (meldt inn fra kjøkkenet: etter «Lukk» på stegsiden så deigen fortsatt «åpen» ut under Mer). «Aktive» kolliderte med åpen/lukket på stegsiden — seksjonen handler om bakstens status: Pågående er deiger på benken eller i kjøleskapet, Ferdige er bakeloggen. «Lukk» legger bare bort redigeringen; «Ferdig» avslutter baksten."
+    ],
+    "changes_en": [
+      "The Doughs list now says \"In progress\" instead of \"Active\" (reported from the kitchen: after \"Close\" on the steps page, the dough still looked \"open\" under More). \"Active\" collided with open/closed on the steps page — the section is about the bake's status: In progress is dough on the counter or in the fridge, Finished is your bake log. \"Close\" merely puts the editing away; \"Finished\" completes the bake."
+    ]
+  },
+  {
     "v": "0.868",
     "d": "november 2026",
     "d_en": "November 2026",

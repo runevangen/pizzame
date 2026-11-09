@@ -9108,6 +9108,29 @@ const svSched=window._pizzatidSchedule;
     ok176 = all(r176.values())
     results.append(('plan_page_carries_the_dough_note', ok176, r176))
 
+    # v0.869: «Aktive» i Deiger-lista kolliderte med «åpen/lukket» på stegsiden
+    # (meldt inn: trykket Lukk, men deigen «står fortsatt åpen» under Mer).
+    # Seksjonene heter nå Pågående/Ferdige — status på BAKSTEN, ikke skjermen.
+    r177 = page.evaluate("""() => {
+      resetTestState();
+      setLayout('mob');
+      const host=document.getElementById('mob-bakster-content');
+      try{
+        window._bakesCache=[{id:'p1',name:'Pågårpizza',status:'active',favorite:false,
+          ownerId:currentUserId(),savedAt:'2026-08-16T09:00:00Z',
+          config:{type:'napoletana',method:'standard',cold:24,mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+          anchorMode:'end',anchorISO:'2026-08-16T17:00:00',checkedSteps:[],checkedIngredients:[]}];
+        host.innerHTML='<div id="mob-bakster-content-list"></div>';
+        paintBakeList('mob-bakster-content');
+        const html=host.innerHTML;
+        return { sierPaagaaende: html.includes('Pågående'),
+                 gammelOverskriftBorte: !/>\\s*Aktive\\s*</.test(html),
+                 ferdigeStaar: html.includes('Ferdige') };
+      } finally { window._bakesCache=[]; if(host) host.innerHTML=''; }
+    }""")
+    ok177 = all(r177.values())
+    results.append(('dough_list_sections_say_in_progress_not_active', ok177, r177))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
