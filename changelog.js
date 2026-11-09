@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.871",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Bilde og stjerner vises nå umiddelbart etter at du trykker Lagre i Ferdig-dialogen (meldt inn fra kjøkkenet: bildet «kom ikke opp» og stjernene sto grå til man gikk inn og ut av fanen). Årsaken var at lista ble hentet på nytt fra serveren rett etter lagringen, og lagerets listing kan henge noen sekunder etter — så den første opptegningen viste den gamle posten. Nå oppdateres appens egen kopi direkte og kortet males derfra, samme grep som notatlagringen alltid har brukt."
+    ],
+    "changes_en": [
+      "Photo and stars now show immediately after you tap Save in the Finished dialog (reported from the kitchen: the photo \"didn't show\" and the stars stayed grey until leaving and re-entering the tab). The cause: the list was refetched from the server right after saving, and the store's listing can lag a few seconds — so the first paint showed the old record. Now the app's own copy is updated directly and the card painted from it, the same move note-saving has always used."
+    ]
+  },
+  {
     "v": "0.870",
     "d": "november 2026",
     "d_en": "November 2026",

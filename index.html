@@ -10188,8 +10188,24 @@ async function confirmFinishBake(alreadyFinished, skip){
       body: JSON.stringify(body)
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
+    // v0.871: vis svaret med en gang fra lokal cache — blob-lagringens listing
+    // kan henge etter en PATCH, og refetchen rett etterpå viste GAMMEL post
+    // (meldt inn: bildet «kom ikke opp», stjernene sto grå, måtte inn og ut
+    // av fanen før det dukket opp). Samme grep som saveDeigNote: oppdater
+    // cachen lokalt og mal lista derfra, uten nett. MÅ skje før
+    // closeFinishBakeModal, som nuller _pendingRating/_pendingPhoto.
+    const lokal=(window._bakesCache||[]).find(x=>x.id===id);
+    if(lokal){
+      if(!alreadyFinished){ lokal.status='finished'; lokal.finishedAt=lokal.finishedAt||new Date().toISOString(); }
+      if(!skip){ lokal.rating=window._pendingRating||null; lokal.photo=window._pendingPhoto||null; }
+    }
     closeFinishBakeModal();
-    refreshBaksterPanels();
+    if(lokal){
+      paintBakeList('mob-bakster-content');
+      paintBakeList('deiger-modal-body');
+    } else {
+      refreshBaksterPanels(); // posten var ikke i cachen — hent på nytt
+    }
     refreshNotesPanels();
     refreshDeigerBanner();
     syncFavoriteButton();

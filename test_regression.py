@@ -9172,6 +9172,49 @@ const svSched=window._pizzatidSchedule;
     ok178 = all(r178.values())
     results.append(('open_dough_gets_a_home_with_its_note_in_the_list', ok178, r178))
 
+    # v0.871: Ferdig-dialogen skal vise svaret UMIDDELBART fra lokal cache —
+    # blob-listing kan henge etter PATCH, og refetchen rett etter lagring viste
+    # gammel post (meldt inn: bildet «kom ikke opp», stjernene sto grå, måtte
+    # inn og ut av fanen). Fryser: etter confirmFinishBake er cachen oppdatert
+    # (status/rating/photo) og kortet malt med stjerner og bilde — UTEN at noen
+    # GET har hentet lista på nytt (fetch-stubben under feiler på GET med vilje).
+    r179 = page.evaluate("""async () => {
+      resetTestState();
+      setLayout('mob');
+      const host=document.getElementById('mob-bakster-content');
+      const ekteFetch=window.fetch;
+      try{
+        window._bakesCache=[{id:'f1',name:'Bildepizza',status:'active',favorite:false,
+          ownerId:currentUserId(),savedAt:'2026-08-16T09:00:00Z',
+          config:{type:'napoletana',method:'kveld',kveldH:10,mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+          anchorMode:'end',anchorISO:'2026-08-16T17:00:00',checkedSteps:[],checkedIngredients:[]}];
+        host.innerHTML='<div id="mob-bakster-content-list"></div>';
+        // PATCH lykkes; GET feiler med vilje — malingen skal aldri trenge den.
+        window.fetch=async(url,opts)=>{
+          if(opts && opts.method==='PATCH') return {ok:true, json:async()=>({ok:true})};
+          return {ok:false, status:599, json:async()=>({})};
+        };
+        finishBakePrompt('f1'); // setter modulens _finishBakeId og åpner dialogen
+        window._pendingRating=4;
+        window._pendingPhoto='data:image/jpeg;base64,TESTBILDE';
+        await confirmFinishBake(false, false);
+        const b=window._bakesCache.find(x=>x.id==='f1');
+        const cacheOppdatert=!!b && b.status==='finished' && b.rating===4
+          && b.photo==='data:image/jpeg;base64,TESTBILDE' && !!b.finishedAt;
+        const html=host.innerHTML;
+        const kortViserStraks=html.includes('★★★★☆') && html.includes('data:image/jpeg;base64,TESTBILDE')
+          && html.includes('Bildepizza');
+        const ingenCacheVask=window._bakesCache.length===1;
+        return {cacheOppdatert, kortViserStraks, ingenCacheVask};
+      } finally {
+        window.fetch=ekteFetch;
+        window._bakesCache=[]; if(host) host.innerHTML='';
+        try{ closeFinishBakeModal(); }catch(e){}
+      }
+    }""")
+    ok179 = all(r179.values())
+    results.append(('finish_dialog_paints_photo_and_stars_immediately_from_cache', ok179, r179))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
