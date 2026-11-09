@@ -2,7 +2,19 @@
 
 Sist oppdatert: 18.08.2026 · v0.826 i prod. Batchen 18.08 tok hele «kan startes nå»-lista: METHODS-opprydding (v0.823 — navnebytte er nå én linje), kickstart til Langtidsdeig/Kveldsdeig med varmeregnskap (v0.824), F36 (v0.825 — ærlig dialog med vindusdom når steketiden flyttes etter oppstart) og F37 (v0.826 — «Gjorde du dette nå?» når et hak settes langt fra planlagt tid). 217 tester.
 **Venter på bakst/målinger:** F33 (protokoll klar), F24, F34 (treningsdata), F38-tilleggsmåling (fingertest + faktisk romtemp neste bakst), gjær-duelltesten (gammel mot fersk boks).
-**Måling 08–09.11.2026 (gjærtest, n=1):** poolish 500 g / 65 % / 39 t totalt (14 t rom-poolish + 20 t kalde emner + 4 t benk), 0,48 g tørrgjær = −58 % mot modellens dose — **vellykket bakst** (Runes ord: «gikk bra»). Tolkning: normaldosen har god margin i det MEST tilgivende scenariet (lang kald heving bremser alt, og steg 5-teksten sier selv at kulda tilgir). IKKE kalibrer ned fra ett datapunkt — neste test bør være samme −58 % på en RASK metode (hurtig/kveld), der marginen er minst. Først når begge sitter, er det grunnlag for å røre CALIBRATION/gjærkurvene.
+**Måling 08–09.11.2026 (gjærtest, n=1 — KONFUNDERT):** poolish 500 g / 65 % / 39 t
+(14 t rom-poolish + 20 t kalde emner). Planen sa 0,48 g (−58 %); Rune doserte ved
+uhell **0,6 g** (−47 % mot modellens ~1,14 g). Kjøkkenet var dessuten **varmere enn
+antatt 22 °C i poolish-perioden** (faktisk temp ikke målt). Resultat: deigen lå
+FORAN skjema — benktida måtte kuttes 4 t → 3 t — og baksten ble god.
+Tolkning: (a) retningen står — 0,6 g er fortsatt godt under normaldose og leverte;
+(b) «foran skjema» kan ikke fordeles mellom +25 % dose-avvik og varmere rom, så
+datapunktet kan IKKE brukes til kalibrering; (c) at Rune leste deigen og kuttet
+benktida er appens egen lære («deigen er fasit, klokka er pekepinn») i praksis.
+Neste test trenger: nøyaktig vekt (0,01 g-vekt eller utblandingstriks), FAKTISK
+romtemp logget (og satt i appens Romtemperatur-innstilling, så planen regner
+riktig), helst på rask metode. F38-tilleggsmålingens punkt om faktisk romtemp
+gjelder altså fortsatt — dette var påminnelsen.
 **Venter på Runes avgjørelse:** navnebytte Hurtigdeig → Sammedagsdeig (målt kostnad etter v0.833: én linje i METHODS + navnefasiten i test_enhet.mjs — null andre tester) · F26 · F12 · T-i18n2 (parkert bevisst).
 **Besluttet mønster, ikke bygget:** F38 (tiltak 1 — bakerekkefølge-teksten — er nesten gratis). **Store løft for senere:** F29 (`uses:{}` per steg), F32 (stegbilder, motivliste klar).
 **Fast månedsrutine (fra v0.827):** ved månedsskiftet ryddes forrige hele måned ut av endringsloggen — `python3 rydd_changelog.py "<måned år>"` flytter detaljpostene tapsfritt til `CHANGELOG-ARKIV.md` (selv-verifiserende), deretter skrives én redaksjonell samlepost inn der blokken sto. Siste måned står alltid i full detalj i appen.
