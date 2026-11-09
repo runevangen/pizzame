@@ -9091,9 +9091,15 @@ const svSched=window._pizzatidSchedule;
         const egenId=!felt || felt!==document.getElementById('mob-deig-note-input');
         const lagrerTilRiktigPar=document.getElementById('mob-plan-content').innerHTML
           .includes("saveDeigNote('mob-plan-note-input','mob-plan-note-status')");
+        // v0.868: med deig åpen skal plan-knappen si «Oppdater deig» — den
+        // oppdaterer DEIGEN og skal ikke kunne forveksles med «Lagre notat».
+        const knappSierOppdater=(document.getElementById('mob-savebake-btn')||{textContent:''})
+          .textContent.includes('Oppdater deig');
         closeActiveDeig();
         const borteUtenDeig=!document.getElementById('mob-plan-note-input');
-        return {visesMedNotat, egenId, lagrerTilRiktigPar, borteUtenDeig};
+        const knappSierLagre=(document.getElementById('mob-savebake-btn')||{textContent:''})
+          .textContent.includes('Lagre deig');
+        return {visesMedNotat, egenId, lagrerTilRiktigPar, knappSierOppdater, borteUtenDeig, knappSierLagre};
       } finally {
         try{ localStorage.removeItem('pizzaAktivDeig'); }catch(e){}
         window._bakesCache=[];

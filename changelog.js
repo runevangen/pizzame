@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.868",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "To lagre-knapper rett ved siden av hverandre var forvirrende (meldt inn fra kjøkkenet): «Lagre notat» lagrer bare notatteksten, mens plan-knappen lagrer selve deigen. Plan-knappen heter nå «Lagre deig» — og «Oppdater deig» når en lagret deig er åpen, så det er tydelig at den skriver over deigens oppsett og tider. Samtidig rettet: etiketten glemte at en deig var åpen hver gang siden regenererte, og falt tilbake til «Lagre»."
+    ],
+    "changes_en": [
+      "Two save buttons right next to each other were confusing (reported from the kitchen): \"Save note\" saves only the note text, while the plan button saves the dough itself. The plan button is now \"Save dough\" — and \"Update dough\" when a saved dough is open, making clear it overwrites the dough's setup and times. Also fixed: the label forgot a dough was open every time the page regenerated, falling back to \"Save\"."
+    ]
+  },
+  {
     "v": "0.867",
     "d": "november 2026",
     "d_en": "November 2026",
