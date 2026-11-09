@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.872",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Bildene i Deiger-lista sto avfarget til man åpnet en deig (meldt inn med skjermbilde: «alle bilder er grået ut»). Gråsløret som sier «planen er en plassholder til du velger tidspunkt» lå også over Mer-fanen — men bakeloggen din er ikke en plassholder. Nå er hele Mer-fanen unntatt sløret, som Smart-plan ble i v0.773.",
+      "Ferdige deiger vises nå som kompakte rader — navn, stjerner, miniatyrbilde og en pil. Trykk på raden åpner hele kortet med bilde i full bredde, notat og knapper; trykk igjen lukker. Deigen du holder på med står fortsatt fullt åpen i rammen sin øverst."
+    ],
+    "changes_en": [
+      "Photos in the Doughs list sat desaturated until you opened a dough (reported with a screenshot: \"all photos are greyed out\"). The grey veil that says \"the plan is a placeholder until you pick a time\" also covered the More tab — but your bake log is not a placeholder. The whole More tab is now exempt from the veil, as Smart-plan was in v0.773.",
+      "Finished doughs now show as compact rows — name, stars, a thumbnail and an arrow. Tapping the row opens the full card with full-width photo, note and buttons; tapping again collapses it. The dough you are working on still sits fully open in its frame at the top."
+    ]
+  },
+  {
     "v": "0.871",
     "d": "november 2026",
     "d_en": "November 2026",
