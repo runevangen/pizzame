@@ -6084,14 +6084,13 @@ async function renderNotesPanel(targetId){
     <div style="font-size:11px;color:#999;margin-top:6px">${L('Lagres sammen med deigen — synlig for alle som åpner den, uansett enhet.','Saved with the dough — visible to everyone who opens it, on any device.')}</div>`;
 }
 
-// v6.33: Notater bor nå i Deiger-fanen (øverst), for den aktive deigen. Vises
-// kun når en deig faktisk er aktiv; ellers holdes feltet tomt (lista står alene).
+// v6.33: Notater bodde øverst i Deiger-fanen. v0.870: notatet bor nå i
+// «Deigen du holder på med»-rammen i selve lista (hjemmeDeigHTML, skisse B) —
+// den gamle toppblokken er pensjonert, og verten tømmes alltid så kortet og
+// notatet aldri vises som to forskjellige ting igjen.
 function renderBaksterNotes(){
   const host=document.getElementById('mob-bakster-notes');
-  if(!host) return;
-  if(!window._activeDeigId){ host.innerHTML=''; host.style.padding='0'; return; }
-  host.style.padding='.7rem 1rem .2rem';
-  renderNotesPanel('mob-bakster-notes');
+  if(host){ host.innerHTML=''; host.style.padding='0'; }
 }
 async function saveDeigNote(inputId, statusId){
   const id = window._activeDeigId;
@@ -9649,6 +9648,32 @@ function applyDeigFilter(list){
   else out.sort((a,b)=>_bakeTs(b)-_bakeTs(a));
   return out;
 }
+// v0.870 (skisse B): deigen du holder på med får et eget hjem øverst i lista —
+// kortet og notatet i SAMME ramme, så de aldri kan leses som to forskjellige
+// ting (meldt inn: notatet svevde øverst mens kortet lå nede i lista).
+// Notatet bygges synkront fra _bakesCache (samme grep som planNotatHTML) og
+// lagrer via samme saveDeigNote; id-ene er avledet av verten, siden mobil-
+// panelet og PC-modalen kan finnes i DOM samtidig.
+function hjemmeDeigHTML(b, mob, targetId){
+  const inId=targetId+'-hjemme-note-input', stId=targetId+'-hjemme-note-status';
+  return `<div style="border:1.5px solid var(--forno-accent,#e8590c);border-radius:14px;padding:10px 10px 12px;margin-bottom:1rem">
+    <div style="display:flex;align-items:center;gap:6px;margin:0 2px 8px">
+      <span style="width:8px;height:8px;border-radius:50%;background:#e8590c;flex-shrink:0"></span>
+      <span style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-accent-text,#993C1D)">${L('Deigen du holder på med','The dough you are working on')}</span>
+      <button onclick="closeActiveDeig();refreshBaksterPanels();" style="margin-left:auto;font-size:11px;color:var(--forno-accent-text,#993C1D);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">${L('Lukk','Close')}</button>
+    </div>
+    ${bakeCardHTML(b,mob)}
+    <div style="margin-top:8px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-text-faint,#999);margin:0 0 5px">📝 ${L('Notat','Note')}${b.noteBy?` <span style="text-transform:none;letter-spacing:0;font-weight:500">· ${L('sist lagret av','last saved by')} ${escH(b.noteBy)}</span>`:''}</div>
+      <textarea id="${inId}" rows="3" placeholder="${L('Hvordan gikk det? Smak, heving, justeringer til neste gang...','How did it go? Taste, rise, adjustments for next time...')}" style="width:100%;border:1px solid var(--forno-border,#d0cdc8);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;background:var(--forno-bg-raised,#fff);color:var(--forno-text,#222)">${escH(b.note||'')}</textarea>
+      <div style="margin-top:6px;display:flex;gap:10px;align-items:center">
+        <button onclick="saveDeigNote('${inId}','${stId}')" style="padding:7px 12px;background:var(--forno-accent,#e8590c);color:#1a1512;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">💾 ${L('Lagre notat','Save note')}</button>
+        <span id="${stId}" style="font-size:12px;color:var(--forno-accent,#e8590c)"></span>
+      </div>
+    </div>
+  </div>`;
+}
+
 function paintBakeList(targetId){
   const listEl=document.getElementById(targetId+'-list');
   if(!listEl) return;
@@ -9656,12 +9681,20 @@ function paintBakeList(targetId){
   const bakes=window._bakesCache||[];
   const mineB=bakes.filter(b=>bakeIsMine(b));
   const sharedByOthers=bakes.filter(b=>!bakeIsMine(b));
-  const active=applyDeigFilter(mineB.filter(b=>b.status==='active'));
-  const finished=applyDeigFilter(mineB.filter(b=>b.status==='finished'));
+  // v0.870: den åpne deigen løftes ut av seksjonene og inn i egen ramme —
+  // uavhengig av filteret (det er deigen du HOLDER PÅ MED, ikke et søketreff).
+  const hjemme = window._activeDeigId ? mineB.find(b=>b.id===window._activeDeigId) : null;
+  const utenHjemme = hjemme ? (liste)=>liste.filter(b=>b.id!==hjemme.id) : (liste)=>liste;
+  const active=utenHjemme(applyDeigFilter(mineB.filter(b=>b.status==='active')));
+  const finished=utenHjemme(applyDeigFilter(mineB.filter(b=>b.status==='finished')));
   const sharedF=applyDeigFilter(sharedByOthers);
   const f=window._deigFilter||{}; const filtering=!!((f.q&&f.q.trim())||f.method);
-  let html = `<div class="lbl" style="margin-bottom:.4rem">${L('Pågående','In progress')}</div>`;
-  html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${filtering?L('Ingen pågående treff.','No matches in progress.'):L('Ingen pågående deiger. Sett opp en oppskrift og trykk "Lagre deig".','No doughs in progress. Set up a recipe and tap "Save dough".')}</p>`;
+  let html = hjemme ? hjemmeDeigHTML(hjemme, mob, targetId) : '';
+  const paagaaendeLbl = (hjemme && hjemme.status==='active') ? L('Andre pågående','Other in progress') : L('Pågående','In progress');
+  if(active.length || !hjemme){
+    html += `<div class="lbl" style="margin-bottom:.4rem">${paagaaendeLbl}</div>`;
+    html += active.length ? active.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0 .8rem">${filtering?L('Ingen pågående treff.','No matches in progress.'):L('Ingen pågående deiger. Sett opp en oppskrift og trykk "Lagre deig".','No doughs in progress. Set up a recipe and tap "Save dough".')}</p>`;
+  }
   html += `<div class="lbl" style="margin:.8rem 0 .4rem">${L('Ferdige','Finished')}</div>`;
   html += finished.length ? finished.map(b=>bakeCardHTML(b,mob)).join('') : `<p style="color:var(--dyn-faint);font-size:12px;padding:.2rem 0">${filtering?L('Ingen ferdige treff.','No finished matches.'):L('Ingen ferdige deiger ennå.','No finished doughs yet.')}</p>`;
   if(sharedF.length){

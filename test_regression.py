@@ -9131,6 +9131,47 @@ const svSched=window._pizzatidSchedule;
     ok177 = all(r177.values())
     results.append(('dough_list_sections_say_in_progress_not_active', ok177, r177))
 
+    # v0.870 (skisse B): den åpne deigen får et hjem øverst i Deiger-lista —
+    # kort og notat i SAMME ramme (meldt inn: notatet øverst og kortet nede i
+    # lista så ut som to forskjellige ting). Fryser kontrakten: rammen vises
+    # med kort + forhåndsutfylt notat, deigen står IKKE dobbelt i seksjonene,
+    # resten heter «Andre pågående», og etter Lukk er alt tilbake som før.
+    r178 = page.evaluate("""() => {
+      resetTestState();
+      setLayout('mob');
+      const felles={status:'active',favorite:false,ownerId:currentUserId(),
+        config:{type:'napoletana',method:'kveld',kveldH:10,mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+        anchorMode:'end',anchorISO:'2026-08-16T17:00:00',checkedSteps:[],checkedIngredients:[]};
+      const host=document.getElementById('mob-bakster-content');
+      try{
+        window._bakesCache=[
+          {...felles,id:'h1',name:'Rammepizza',savedAt:'2026-08-16T09:00:00Z',note:'Masse bobler!'},
+          {...felles,id:'h2',name:'Annenpizza',savedAt:'2026-08-15T09:00:00Z'},
+        ];
+        openBake('h1');
+        host.innerHTML='<div id="mob-bakster-content-list"></div>';
+        paintBakeList('mob-bakster-content');
+        const h1=host.innerHTML;
+        const ta=document.getElementById('mob-bakster-content-hjemme-note-input');
+        const rammeMedNotat=h1.includes('Deigen du holder på med') && !!ta && ta.value==='Masse bobler!';
+        const ikkeDobbelt=(h1.match(/Rammepizza/g)||[]).length===1;
+        const andreSeksjon=h1.includes('Andre pågående') && h1.includes('Annenpizza');
+        closeActiveDeig();
+        host.innerHTML='<div id="mob-bakster-content-list"></div>';
+        paintBakeList('mob-bakster-content');
+        const h2=host.innerHTML;
+        const rammeBorte=!h2.includes('Deigen du holder på med');
+        const vanligSeksjon=h2.includes('Pågående') && !h2.includes('Andre pågående')
+          && (h2.match(/Rammepizza/g)||[]).length===1;
+        return {rammeMedNotat, ikkeDobbelt, andreSeksjon, rammeBorte, vanligSeksjon};
+      } finally {
+        try{ localStorage.removeItem('pizzaAktivDeig'); }catch(e){}
+        window._bakesCache=[]; if(host) host.innerHTML='';
+      }
+    }""")
+    ok178 = all(r178.values())
+    results.append(('open_dough_gets_a_home_with_its_note_in_the_list', ok178, r178))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
