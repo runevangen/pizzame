@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.867",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Notatet bor nå der du baker: når en lagret deig er åpen, viser stegsiden på mobil deigens notat rett under stegene — skriv «litt mindre salt neste gang» i det øyeblikket du tenker det, uten å bytte fane. Samme notat som i Deiger-fanen, lagret på deigen og synlig på alle enheter."
+    ],
+    "changes_en": [
+      "The note now lives where you bake: with a saved dough open, the steps page on mobile shows the dough's note right below the steps — write \"a little less salt next time\" the moment you think it, without switching tabs. Same note as in the Doughs tab, saved on the dough and visible on every device."
+    ]
+  },
+  {
     "v": "0.866",
     "d": "november 2026",
     "d_en": "November 2026",

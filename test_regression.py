@@ -9071,6 +9071,37 @@ const svSched=window._pizzatidSchedule;
     ok175 = all(r175.values())
     results.append(('saved_dough_reopens_on_next_visit_until_done_or_closed', ok175, r175))
 
+    # v0.867: notatet bor der du baker (Runes innspill). Naar en lagret deig er
+    # aapen, viser mobilens stegside deigens notat (forhaandsutfylt fra cachen)
+    # med lagring via samme saveDeigNote som Deiger-fanen — og med EGNE
+    # element-id-er, siden Deiger-fanens felt ligger skjult i samme DOM.
+    # Uten aapen deig finnes feltet ikke.
+    r176 = page.evaluate("""() => {
+      resetTestState();
+      setLayout('mob');
+      const bake={id:'n1',name:'Notatpizza',status:'active',favorite:false,
+                  ownerId:currentUserId(),
+                  config:{type:'napoletana',method:'kveld',kveldH:10,mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+                  anchorMode:'end',anchorISO:'2026-08-16T17:00:00',
+                  checkedSteps:[],checkedIngredients:[],note:'Husk: litt mindre salt neste gang'};
+      try{
+        window._bakesCache=[bake]; openBake('n1');
+        const felt=document.getElementById('mob-plan-note-input');
+        const visesMedNotat=!!felt && felt.value==='Husk: litt mindre salt neste gang';
+        const egenId=!felt || felt!==document.getElementById('mob-deig-note-input');
+        const lagrerTilRiktigPar=document.getElementById('mob-plan-content').innerHTML
+          .includes("saveDeigNote('mob-plan-note-input','mob-plan-note-status')");
+        closeActiveDeig();
+        const borteUtenDeig=!document.getElementById('mob-plan-note-input');
+        return {visesMedNotat, egenId, lagrerTilRiktigPar, borteUtenDeig};
+      } finally {
+        try{ localStorage.removeItem('pizzaAktivDeig'); }catch(e){}
+        window._bakesCache=[];
+      }
+    }""")
+    ok176 = all(r176.values())
+    results.append(('plan_page_carries_the_dough_note', ok176, r176))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
