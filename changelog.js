@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.870",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Deigen du holder på med har fått et hjem i Deiger-lista (meldt inn fra kjøkkenet: notatet øverst og deig-kortet nede i lista så ut som to forskjellige ting). Den åpne deigen vises nå øverst i en egen ramme — kortet, notatet og Lukk-knappen samlet — og resten av lista heter «Andre pågående». Den gamle notatblokken over filtrene er pensjonert. Uten åpen deig ser lista ut som før."
+    ],
+    "changes_en": [
+      "The dough you are working on got a home in the Doughs list (reported from the kitchen: the note at the top and the dough card down in the list looked like two different things). The open dough now sits at the top in its own frame — card, note and Close button together — and the rest of the list is \"Other in progress\". The old note block above the filters is retired. With no open dough the list looks as before."
+    ]
+  },
+  {
     "v": "0.869",
     "d": "november 2026",
     "d_en": "November 2026",
