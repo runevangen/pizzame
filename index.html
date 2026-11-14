@@ -492,6 +492,12 @@ body.pre-interact .mob-content{filter:grayscale(85%);opacity:.7;transition:filte
    gjorde knappen oransje, og dette filteret la 85 % gråskala over den igjen.
    Meldt inn som «772 fortsatt grå» — knappen VAR oransje, bak slør. */
 body.pre-interact #mob-beta .mob-content{filter:none;opacity:1}
+/* v0.872: Mer-fanen er også unntatt. Sløret sier «planen er en plassholder til
+   du velger» — men Deiger-lista i Mer ER ikke planen: bakeloggens bilder sto
+   avfarget (85 % gråskala) til man tilfeldigvis åpnet en deig, og ble meldt inn
+   som «alle bilder er grået ut». Minner, innstillinger og mel har ingenting med
+   plassholder-planen å gjøre. */
+body.pre-interact #mob-tips .mob-content{filter:none;opacity:1}
 @keyframes fadeOutFlash{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .method-flash{animation:fadeOutFlash 2.5s forwards}
 .act-btn{display:flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none}
@@ -9513,7 +9519,7 @@ function bakeShareToggleHTML(b){
   const on=b.shared===true;
   return `<button onclick="event.stopPropagation();toggleShareBake('${b.id}',${on})" title="${on?L('Delt med alle — trykk for å gjøre privat igjen','Shared with everyone — tap to make private again'):L('Bare du ser denne — trykk for å dele med alle','Only you can see this — tap to share with everyone')}" style="margin-top:8px;width:100%;padding:7px;border:1px solid ${on?'var(--forno-accent,#e8590c)':'var(--dyn-border)'};border-radius:8px;background:${on?'var(--forno-accent-soft,#fbe4d4)':'transparent'};color:${on?'var(--forno-accent-text,#c2410c)':'var(--dyn-faint)'};font-size:11px;font-weight:600;cursor:pointer">${on?L('🌐 Delt med alle — gjør privat','🌐 Shared — make private'):L('🔒 Privat — del med alle','🔒 Private — share with everyone')}</button>`;
 }
-function bakeCardHTML(b, mob){
+function bakeCardHTML(b, mob, alltidAapen){
   const pad = mob ? '.6rem .7rem' : '.7rem .9rem';
   // Full kontroll: egen deig, eldre deig uten eier, eller innlogget admin.
   const mine = bakeIsMine(b) || !!window._adminPassword;
@@ -9543,35 +9549,53 @@ function bakeCardHTML(b, mob){
       ${shareToggle}
     </div>`;
   }
+  // v0.872: ferdige kort er kollapset som standard — navn, stjerner, miniatyr og
+  // pil på én rad; trykk på raden åpner hele kortet (bilde i full bredde, notat,
+  // knapper), trykk igjen lukker. Meldt inn: «ferdig pizza bør være et klikk
+  // unna, og kollapse hvis vi trykker på den» — lista med fullhøyde-kort ble
+  // fort to skjermer lang. Hjemme-rammen (deigen du holder på med) tvinger
+  // kortet åpent: der ER kortet poenget. Stjernene og miniatyren står i den
+  // kollapsede raden, så Ferdig-lagringen fortsatt viser svaret straks (v0.871).
   const finDt = b.finishedAt ? (()=>{try{return fDT(new Date(b.finishedAt));}catch(e){return '';}})() : '';
-  const ratingHtml = b.rating ? `<div style="margin-top:4px;font-size:13px;color:#EFAB27">${'★'.repeat(b.rating)}${'☆'.repeat(5-b.rating)}</div>` : '';
+  const aapen = !!alltidAapen || !!(window._openFerdige && window._openFerdige.has(b.id));
+  const stars = b.rating ? `<span style="font-size:12px;color:#EFAB27;white-space:nowrap">${'★'.repeat(b.rating)}${'☆'.repeat(5-b.rating)}</span>` : '';
+  const thumb = (!aapen && b.photo) ? `<img src="${b.photo}" style="width:38px;height:38px;object-fit:cover;border-radius:8px;flex-shrink:0">` : '';
   const photoHtml = b.photo ? `<img src="${b.photo}" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:6px">` : '';
-  // v0.820: toppraden kan brytes (flex-wrap) — tre knapper delte linje med
-  // teksten, og ved stor skrift/smal skjerm ble tekstkolonnen så smal at
-  // meta-linja sto med ETT ord per linje mens knappene lå oppå navnet
-  // (meldt inn med skjermbilde). Venstrekolonnen krever 180px basis; er
-  // det ikke plass til knappene ved siden av, faller de ned på egen linje
-  // under. Samme grep på det aktive kortet lenger opp.
-  return `<div style="border:1px solid ${b.favorite&&mine?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
-    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:6px 8px">
-      <div style="min-width:0;display:flex;gap:6px;align-items:flex-start;flex:1 1 180px">
-        ${starBtn}
-        <div style="flex:1;min-width:0">
-          <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text);overflow-wrap:anywhere">${escH(b.name)}${badge}</div>
-          <div style="font-size:11px;margin-top:2px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''} · ${L('Ferdig:','Finished:')} ${finDt}</div>
-          ${ratingHtml}
-          ${photoHtml}
-          ${b.note?`<div style="font-size:12px;color:var(--dyn-text);margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>${b.noteBy?`<div style="font-size:10px;color:var(--dyn-faint);margin-top:2px">— ${escH(b.noteBy)}</div>`:''}`:''}
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;margin-left:auto">
+  const toggle = alltidAapen ? '' : ` onclick="toggleFerdigKort('${b.id}')"`;
+  const pil = alltidAapen ? '' : `<span style="color:var(--dyn-faint);font-size:12px;flex-shrink:0;line-height:1">${aapen?'▾':'▸'}</span>`;
+  const kropp = !aapen ? '' : `
+    <div style="margin-top:4px">
+      <div style="font-size:11px" class="admin-umeta">${bakeMetaLine(b)}${b.savedBy?L(' · av ',' · by ')+escH(b.savedBy):''} · ${L('Ferdig:','Finished:')} ${finDt}</div>
+      ${photoHtml}
+      ${b.note?`<div style="font-size:12px;color:var(--dyn-text);margin-top:6px;white-space:pre-wrap;line-height:1.5">${escH(b.note)}</div>${b.noteBy?`<div style="font-size:10px;color:var(--dyn-faint);margin-top:2px">— ${escH(b.noteBy)}</div>`:''}`:''}
+      <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;flex-wrap:wrap">
         ${mine?`<button onclick="editRatingPrompt('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer" title="${b.rating||b.photo?L('Rediger vurdering','Edit rating'):L('Gi vurdering','Give a rating')}">✏️</button>`:''}
         <button onclick="openBake('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:var(--dyn-text);font-size:11px;cursor:pointer">${mine?L('Se','View'):L('Se / kopier','View / copy')}</button>
         ${mine?`<button onclick="deleteBakeConfirm('${b.id}')" style="padding:6px 10px;border:1px solid var(--dyn-border);border-radius:8px;background:var(--dyn-btn-bg);color:#993C1D;font-size:11px;cursor:pointer">${L('Slett','Delete')}</button>`:''}
       </div>
+      ${shareToggle}
+    </div>`;
+  return `<div style="border:1px solid ${b.favorite&&mine?'#EFAB27':'var(--dyn-border)'};border-radius:10px;padding:${pad};margin-bottom:8px;background:var(--dyn-surface)">
+    <div${toggle} style="display:flex;gap:8px;align-items:center${alltidAapen?'':';cursor:pointer'}">
+      ${starBtn}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:${mob?'13px':'14px'};font-weight:600;color:var(--dyn-text);overflow-wrap:anywhere">${escH(b.name)}${badge}</div>
+        <div style="font-size:11px;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap" class="admin-umeta">${stars}<span>${finDt}</span></div>
+      </div>
+      ${thumb}
+      ${pil}
     </div>
-    ${shareToggle}
+    ${kropp}
   </div>`;
+}
+// v0.872: hvilke ferdige kort som står åpne akkurat nå (kun denne økta —
+// neste besøk starter kollapset igjen, det er selve poenget med lista).
+window._openFerdige = window._openFerdige || new Set();
+function toggleFerdigKort(id){
+  if(window._openFerdige.has(id)) window._openFerdige.delete(id);
+  else window._openFerdige.add(id);
+  paintBakeList('mob-bakster-content');
+  paintBakeList('deiger-modal-body');
 }
 async function toggleShareBake(id, currentlyShared){
   try{
@@ -9662,7 +9686,7 @@ function hjemmeDeigHTML(b, mob, targetId){
       <span style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-accent-text,#993C1D)">${L('Deigen du holder på med','The dough you are working on')}</span>
       <button onclick="closeActiveDeig();refreshBaksterPanels();" style="margin-left:auto;font-size:11px;color:var(--forno-accent-text,#993C1D);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">${L('Lukk','Close')}</button>
     </div>
-    ${bakeCardHTML(b,mob)}
+    ${bakeCardHTML(b,mob,true)}
     <div style="margin-top:8px">
       <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--forno-text-faint,#999);margin:0 0 5px">📝 ${L('Notat','Note')}${b.noteBy?` <span style="text-transform:none;letter-spacing:0;font-weight:500">· ${L('sist lagret av','last saved by')} ${escH(b.noteBy)}</span>`:''}</div>
       <textarea id="${inId}" rows="3" placeholder="${L('Hvordan gikk det? Smak, heving, justeringer til neste gang...','How did it go? Taste, rise, adjustments for next time...')}" style="width:100%;border:1px solid var(--forno-border,#d0cdc8);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;background:var(--forno-bg-raised,#fff);color:var(--forno-text,#222)">${escH(b.note||'')}</textarea>
@@ -10188,8 +10212,24 @@ async function confirmFinishBake(alreadyFinished, skip){
       body: JSON.stringify(body)
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
+    // v0.871: vis svaret med en gang fra lokal cache — blob-lagringens listing
+    // kan henge etter en PATCH, og refetchen rett etterpå viste GAMMEL post
+    // (meldt inn: bildet «kom ikke opp», stjernene sto grå, måtte inn og ut
+    // av fanen før det dukket opp). Samme grep som saveDeigNote: oppdater
+    // cachen lokalt og mal lista derfra, uten nett. MÅ skje før
+    // closeFinishBakeModal, som nuller _pendingRating/_pendingPhoto.
+    const lokal=(window._bakesCache||[]).find(x=>x.id===id);
+    if(lokal){
+      if(!alreadyFinished){ lokal.status='finished'; lokal.finishedAt=lokal.finishedAt||new Date().toISOString(); }
+      if(!skip){ lokal.rating=window._pendingRating||null; lokal.photo=window._pendingPhoto||null; }
+    }
     closeFinishBakeModal();
-    refreshBaksterPanels();
+    if(lokal){
+      paintBakeList('mob-bakster-content');
+      paintBakeList('deiger-modal-body');
+    } else {
+      refreshBaksterPanels(); // posten var ikke i cachen — hent på nytt
+    }
     refreshNotesPanels();
     refreshDeigerBanner();
     syncFavoriteButton();

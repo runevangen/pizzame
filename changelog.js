@@ -3,6 +3,30 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.872",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Bildene i Deiger-lista sto avfarget til man åpnet en deig (meldt inn med skjermbilde: «alle bilder er grået ut»). Gråsløret som sier «planen er en plassholder til du velger tidspunkt» lå også over Mer-fanen — men bakeloggen din er ikke en plassholder. Nå er hele Mer-fanen unntatt sløret, som Smart-plan ble i v0.773.",
+      "Ferdige deiger vises nå som kompakte rader — navn, stjerner, miniatyrbilde og en pil. Trykk på raden åpner hele kortet med bilde i full bredde, notat og knapper; trykk igjen lukker. Deigen du holder på med står fortsatt fullt åpen i rammen sin øverst."
+    ],
+    "changes_en": [
+      "Photos in the Doughs list sat desaturated until you opened a dough (reported with a screenshot: \"all photos are greyed out\"). The grey veil that says \"the plan is a placeholder until you pick a time\" also covered the More tab — but your bake log is not a placeholder. The whole More tab is now exempt from the veil, as Smart-plan was in v0.773.",
+      "Finished doughs now show as compact rows — name, stars, a thumbnail and an arrow. Tapping the row opens the full card with full-width photo, note and buttons; tapping again collapses it. The dough you are working on still sits fully open in its frame at the top."
+    ]
+  },
+  {
+    "v": "0.871",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Bilde og stjerner vises nå umiddelbart etter at du trykker Lagre i Ferdig-dialogen (meldt inn fra kjøkkenet: bildet «kom ikke opp» og stjernene sto grå til man gikk inn og ut av fanen). Årsaken var at lista ble hentet på nytt fra serveren rett etter lagringen, og lagerets listing kan henge noen sekunder etter — så den første opptegningen viste den gamle posten. Nå oppdateres appens egen kopi direkte og kortet males derfra, samme grep som notatlagringen alltid har brukt."
+    ],
+    "changes_en": [
+      "Photo and stars now show immediately after you tap Save in the Finished dialog (reported from the kitchen: the photo \"didn't show\" and the stars stayed grey until leaving and re-entering the tab). The cause: the list was refetched from the server right after saving, and the store's listing can lag a few seconds — so the first paint showed the old record. Now the app's own copy is updated directly and the card painted from it, the same move note-saving has always used."
+    ]
+  },
+  {
     "v": "0.870",
     "d": "november 2026",
     "d_en": "November 2026",

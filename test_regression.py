@@ -1783,6 +1783,8 @@ def _atferd_2(page, results):
                    mk('legacy',null,false,'finished') ];
       window.fetchBakes=async()=>list;
       const q=bakeAuthQuery();
+      // v0.872: ferdige kort er kollapset — åpne legacy-kortet så knappene males.
+      window._openFerdige=new Set(['legacy']);
       const d=document.createElement('div'); d.id='t-priv-deiger'; document.body.appendChild(d);
       return renderBaksterPanel('t-priv-deiger').then(()=>{
         const html=d.innerHTML;
@@ -1799,6 +1801,7 @@ def _atferd_2(page, results):
           legacyManageable: /deleteBakeConfirm\\('legacy'\\)/.test(html),
         };
         d.remove();
+        window._openFerdige=new Set();
         window.fetchBakes=_origFetch;
         try{ if(_origUser===null) localStorage.removeItem('pizzaUser'); else localStorage.setItem('pizzaUser',_origUser); }catch(e){}
         return out;
@@ -9172,6 +9175,101 @@ const svSched=window._pizzatidSchedule;
     ok178 = all(r178.values())
     results.append(('open_dough_gets_a_home_with_its_note_in_the_list', ok178, r178))
 
+    # v0.871: Ferdig-dialogen skal vise svaret UMIDDELBART fra lokal cache —
+    # blob-listing kan henge etter PATCH, og refetchen rett etter lagring viste
+    # gammel post (meldt inn: bildet «kom ikke opp», stjernene sto grå, måtte
+    # inn og ut av fanen). Fryser: etter confirmFinishBake er cachen oppdatert
+    # (status/rating/photo) og kortet malt med stjerner og bilde — UTEN at noen
+    # GET har hentet lista på nytt (fetch-stubben under feiler på GET med vilje).
+    r179 = page.evaluate("""async () => {
+      resetTestState();
+      setLayout('mob');
+      const host=document.getElementById('mob-bakster-content');
+      const ekteFetch=window.fetch;
+      try{
+        window._bakesCache=[{id:'f1',name:'Bildepizza',status:'active',favorite:false,
+          ownerId:currentUserId(),savedAt:'2026-08-16T09:00:00Z',
+          config:{type:'napoletana',method:'kveld',kveldH:10,mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+          anchorMode:'end',anchorISO:'2026-08-16T17:00:00',checkedSteps:[],checkedIngredients:[]}];
+        host.innerHTML='<div id="mob-bakster-content-list"></div>';
+        // PATCH lykkes; GET feiler med vilje — malingen skal aldri trenge den.
+        window.fetch=async(url,opts)=>{
+          if(opts && opts.method==='PATCH') return {ok:true, json:async()=>({ok:true})};
+          return {ok:false, status:599, json:async()=>({})};
+        };
+        finishBakePrompt('f1'); // setter modulens _finishBakeId og åpner dialogen
+        window._pendingRating=4;
+        window._pendingPhoto='data:image/jpeg;base64,TESTBILDE';
+        await confirmFinishBake(false, false);
+        const b=window._bakesCache.find(x=>x.id==='f1');
+        const cacheOppdatert=!!b && b.status==='finished' && b.rating===4
+          && b.photo==='data:image/jpeg;base64,TESTBILDE' && !!b.finishedAt;
+        const html=host.innerHTML;
+        const kortViserStraks=html.includes('★★★★☆') && html.includes('data:image/jpeg;base64,TESTBILDE')
+          && html.includes('Bildepizza');
+        const ingenCacheVask=window._bakesCache.length===1;
+        return {cacheOppdatert, kortViserStraks, ingenCacheVask};
+      } finally {
+        window.fetch=ekteFetch;
+        window._bakesCache=[]; if(host) host.innerHTML='';
+        try{ closeFinishBakeModal(); }catch(e){}
+      }
+    }""")
+    ok179 = all(r179.values())
+    results.append(('finish_dialog_paints_photo_and_stars_immediately_from_cache', ok179, r179))
+
+    # v0.872: Ferdige kort er kollapset som standard — navn, stjerner, miniatyr,
+    # pil — og åpnes/lukkes med ett trykk (meldt inn: «ferdig pizza bør være et
+    # klikk unna, og kollapse hvis vi trykker på den»). Hjemme-rammen tvinger
+    # kortet åpent. Fryser også slør-unntaket for Mer-fanen: pre-interact-
+    # gråskalaen avfarget alle bildene i bakeloggen (meldt inn med skjermbilde),
+    # mens plan-fanene fortsatt SKAL ligge bak sløret.
+    r180 = page.evaluate("""() => {
+      resetTestState();
+      setLayout('mob');
+      const host=document.getElementById('mob-bakster-content');
+      const haddeSlor=document.body.classList.contains('pre-interact');
+      try{
+        window._openFerdige=new Set();
+        window._bakesCache=[{id:'k1',name:'Kollapspizza',status:'finished',favorite:false,
+          ownerId:currentUserId(),savedAt:'2026-08-16T09:00:00Z',finishedAt:'2026-08-16T19:00:00Z',
+          rating:4,photo:'data:image/jpeg;base64,MINIATYR',note:'HEMMELIGNOTAT',
+          config:{type:'napoletana',method:'kveld',kveldH:10,mel:500,hydro:65,temp:22,gjaer:'torr',kjokkenmaskin:'ankarsrum',oven:'pizza',meltype:'doppio_zero'},
+          anchorMode:'end',anchorISO:'2026-08-16T17:00:00',checkedSteps:[]}];
+        host.innerHTML='<div id="mob-bakster-content-list"></div>';
+        paintBakeList('mob-bakster-content');
+        let h=host.innerHTML;
+        const kollapset = h.includes('Kollapspizza') && h.includes('★★★★☆')
+          && h.includes('data:image/jpeg;base64,MINIATYR')
+          && !h.includes('HEMMELIGNOTAT') && !h.includes('deleteBakeConfirm');
+        toggleFerdigKort('k1');
+        h=host.innerHTML;
+        const aapnet = h.includes('HEMMELIGNOTAT') && h.includes('deleteBakeConfirm')
+          && h.includes('editRatingPrompt');
+        toggleFerdigKort('k1');
+        const lukket = !host.innerHTML.includes('HEMMELIGNOTAT');
+        // Hjemme-rammen: kortet står åpent uten noe trykk (knappene er der).
+        window._activeDeigId='k1';
+        paintBakeList('mob-bakster-content');
+        const hjemmeAapen = host.innerHTML.includes('Deigen du holder på med')
+          && host.innerHTML.includes('editRatingPrompt');
+        window._activeDeigId=null;
+        // Slør-unntaket: Mer-fanen i farger, plan-fanene fortsatt bak sløret.
+        document.body.classList.add('pre-interact');
+        const merIFarger = getComputedStyle(host).filter==='none';
+        const planEl=[...document.querySelectorAll('.mob-content')]
+          .find(el=>!el.closest('#mob-tips') && !el.closest('#mob-beta'));
+        const planBakSlor = !!planEl && getComputedStyle(planEl).filter.includes('grayscale');
+        return {kollapset, aapnet, lukket, hjemmeAapen, merIFarger, planBakSlor};
+      } finally {
+        if(!haddeSlor) document.body.classList.remove('pre-interact');
+        window._bakesCache=[]; window._openFerdige=new Set();
+        window._activeDeigId=null; if(host) host.innerHTML='';
+      }
+    }""")
+    ok180 = all(r180.values())
+    results.append(('finished_cards_collapse_to_one_tap_and_more_tab_is_uncovered', ok180, r180))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
@@ -9299,6 +9397,9 @@ const svSched=window._pizzatidSchedule;
     # (Alle rect-maal skjer i samme zoom — fs-large skalerer alt likt.)
     r178 = page.evaluate("""() => {
       resetTestState();
+      // v0.872: ferdig-kortet er kollapset som standard — geometrivakten
+      // gjelder det ÅPNE kortet, så åpne det før målingen.
+      window._openFerdige=new Set(['t1']);
       const prov=(bredde,status)=>{
         const bake={id:'t1',name:'Søndagspizza',status,favorite:false,
                     config:{type:'napoletana',method:'hurtig',hydro:62,cold:48},
@@ -9319,7 +9420,9 @@ const svSched=window._pizzatidSchedule;
         holder.remove();
         return {overlapp, metaAndel:Math.round(meta.width/kort.width*100), knapper:knapper.length};
       };
-      return { ferdig:prov(280,'finished'), aktiv:prov(280,'active') };
+      const ut={ ferdig:prov(280,'finished'), aktiv:prov(280,'active') };
+      window._openFerdige=new Set();
+      return ut;
     }""")
     ok178 = (
       r178['ferdig']['overlapp'] is False and r178['ferdig']['metaAndel'] >= 75 and
