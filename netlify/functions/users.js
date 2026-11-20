@@ -77,16 +77,24 @@ export default async (req, context) => {
       return json(200, { users: safe });
     }
 
-    // ===== ADMIN: sett ny PIN for en bruker =====
+    // ===== ADMIN: sett ny PIN eller førstegangsflagg for en bruker =====
     if (req.method === 'PATCH' && isAdminPath) {
       const id = idFromPath(url.pathname);
       const body = await req.json();
       if (!checkAdminPassword(body.password)) return json(401, { error: 'Feil passord' });
-      if (!/^\d{4}$/.test(String(body.newPin || ''))) return json(400, { error: 'PIN må være 4 siffer' });
       const key = await keyForUserId(store, id);
       if (!key) return json(404, { error: 'Fant ikke bruker' });
       const existing = await store.get(key, { type: 'json' });
       if (!existing) return json(404, { error: 'Fant ikke bruker' });
+      // v0.875: {foerstegang:true} flagger brukeren slik at NESTE app-åpning
+      // på brukerens enhet kjører hele førstegangsløpet på nytt (testverktøy).
+      // Rører verken PIN, datoer eller deiger — bare flagget settes.
+      if (body.foerstegang === true) {
+        existing.foerstegangFlagg = true;
+        await store.setJSON(key, existing);
+        return json(200, { ok: true, foerstegang: true });
+      }
+      if (!/^\d{4}$/.test(String(body.newPin || ''))) return json(400, { error: 'PIN må være 4 siffer' });
       existing.pinHash = hash(body.newPin);
       await store.setJSON(key, existing);
       return json(200, { ok: true });
@@ -140,8 +148,13 @@ export default async (req, context) => {
       if (!key) return json(404, { error: 'Fant ikke bruker' });
       const existing = await store.get(key, { type: 'json' });
       existing.lastLoginAt = new Date().toISOString();
+      // v0.875: førstegangsflagget leveres og forbrukes HER — /seen går jo ved
+      // hver app-åpning, så dette er nøyaktig øyeblikket «neste åpning» skjer.
+      // Éngangs: flagget slettes i samme skriv som stempelet.
+      const foerstegang = existing.foerstegangFlagg === true;
+      if (foerstegang) delete existing.foerstegangFlagg;
       await store.setJSON(key, existing);
-      return json(200, { ok: true });
+      return json(200, foerstegang ? { ok: true, foerstegang: true } : { ok: true });
     }
 
     // ===== Registrer ny bruker =====

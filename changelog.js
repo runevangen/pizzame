@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.875",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Testverktøy i admin: 🧪-knappen på en bruker flagger den som førstegangsbruker. Neste gang brukeren åpner appen kjøres hele førstegangsløpet på nytt — språkvalg, innlogging og velkomstkortet om pizzacoachen. Éngangs, og rører verken deiger eller datoer."
+    ],
+    "changes_en": [
+      "Admin test tool: the 🧪 button on a user flags them as a first-time user. The next time they open the app, the whole first-run flow plays again — language choice, login and the pizza coach welcome card. One-shot, and touches neither doughs nor dates."
+    ]
+  },
+  {
     "v": "0.874",
     "d": "november 2026",
     "d_en": "November 2026",
