@@ -9270,6 +9270,34 @@ const svSched=window._pizzatidSchedule;
     ok180 = all(r180.values())
     results.append(('finished_cards_collapse_to_one_tap_and_more_tab_is_uncovered', ok180, r180))
 
+    # v0.873: «Sist inne» stemples ved hver app-åpning (meldt inn: datoen i
+    # admin-oversikten justerte seg aldri). checkAuthOnLoad skal sende POST
+    # /api/users/seen med den lagrede id-en når brukeren alt er pålogget —
+    # og IKKE sende noe når ingen er pålogget.
+    r181 = page.evaluate("""() => {
+      resetTestState();
+      let _origUser=null; try{ _origUser=localStorage.getItem('pizzaUser'); }catch(e){}
+      const ekteFetch=window.fetch;
+      const kall=[];
+      try{
+        window.fetch=async(url,opts)=>{ kall.push({url:String(url), body:(opts&&opts.body)||''}); return {ok:true, json:async()=>({ok:true})}; };
+        localStorage.setItem('pizzaUser', JSON.stringify({id:'user-sist-inne',name:'Rune'}));
+        checkAuthOnLoad();
+        const ping=kall.find(k=>k.url.includes('/api/users/seen'));
+        const stempler = !!ping && ping.body.includes('user-sist-inne');
+        kall.length=0;
+        localStorage.removeItem('pizzaUser');
+        checkAuthOnLoad();
+        const stilleUtlogget = !kall.some(k=>k.url.includes('/api/users/seen'));
+        return {stempler, stilleUtlogget};
+      } finally {
+        window.fetch=ekteFetch;
+        try{ if(_origUser===null) localStorage.removeItem('pizzaUser'); else localStorage.setItem('pizzaUser',_origUser); }catch(e){}
+      }
+    }""")
+    ok181 = all(r181.values())
+    results.append(('app_open_stamps_last_seen_for_logged_in_user', ok181, r181))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
