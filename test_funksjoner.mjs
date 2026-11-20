@@ -137,6 +137,23 @@ function t(navn, sann, detalj) {
   r = await kall(users, 'POST', '/api/users/verify', { body: { name: 'rune', pin: '1234' } });
   t('users: riktig PIN logger inn', r.status === 200 && r.body.ok === true && r.body.id === runeId);
 
+  // v0.873: «Sist inne» stemples ved hver app-åpning via /seen — ikke bare av
+  // /verify (meldt inn: datoen i admin-oversikten justerte seg aldri, fordi
+  // appen husker brukeren i localStorage og aldri taster PIN igjen).
+  {
+    const gammel = await store.get('rune', { type: 'json' });
+    gammel.lastLoginAt = '2020-01-01T00:00:00.000Z';
+    await store.setJSON('rune', gammel);
+    r = await kall(users, 'POST', '/api/users/seen', { body: { id: runeId } });
+    const etter = await store.get('rune', { type: 'json' });
+    t('users: /seen stempler lastLoginAt på nytt', r.status === 200 && r.body.ok === true && new Date(etter.lastLoginAt).getFullYear() >= 2026);
+    t('users: /seen rører ikke PIN-hashen', etter.pinHash === gammel.pinHash);
+    r = await kall(users, 'POST', '/api/users/seen', { body: { id: 'finnes-ikke' } });
+    t('users: /seen med ukjent id gir 404', r.status === 404);
+    r = await kall(users, 'POST', '/api/users/seen', { body: {} });
+    t('users: /seen uten id gir 400', r.status === 400);
+  }
+
   // Admin-PIN-bytte går via id → nøkkel-oppslaget (keyForUserId) — det var en
   // reell bug at id ble brukt som nøkkel direkte, så akkurat den veien voktes.
   r = await kall(users, 'PATCH', `/api/users/admin/${runeId}`, { body: { password: 'feil', newPin: '4321' } });

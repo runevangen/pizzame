@@ -6263,6 +6263,14 @@ function checkAuthOnLoad(){
   if(saved && saved.id && saved.name){
     document.getElementById('auth-overlay').style.display = 'none';
     syncLoggedInAs();
+    // v0.873: «Sist inne» stemples ved hver app-åpning — ikke bare den ene
+    // gangen PIN-en tastes (meldt inn: datoen i admin-oversikten justerte seg
+    // aldri). Brann-og-glem: feiler kallet (offline PWA), betyr det bare at
+    // stempelet venter til neste åpning med nett.
+    try{
+      fetch('/api/users/seen', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id: saved.id}) }).catch(()=>{});
+    }catch(e){}
   }else{
     document.getElementById('auth-body').innerHTML = authNameScreenHTML();
   }

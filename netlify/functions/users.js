@@ -63,6 +63,7 @@ export default async (req, context) => {
   const pathParts = url.pathname.split('/').filter(Boolean);
   const isAdminPath = pathParts.includes('admin');
   const isVerifyPath = pathParts.includes('verify');
+  const isSeenPath = pathParts.includes('seen');
 
   try {
     // ===== ADMIN: liste alle brukere =====
@@ -124,6 +125,25 @@ export default async (req, context) => {
       return json(200, { ok: true, id: existing.id, name: existing.displayName });
     }
 
+    // ===== «Sist inne»-stempel ved app-åpning (v0.873) =====
+    // lastLoginAt ble bare satt av /verify — altså den ENE gangen man taster
+    // PIN. Etterpå husker appen brukeren via localStorage og spør aldri
+    // serveren, så «Sist inne» i admin-oversikten ble stående på PIN-dagen
+    // uansett daglig bruk. Appen stempler nå ved hver åpning. Kallet går på
+    // id (PIN-en finnes ikke i klienten etter innlogging); det eneste det kan
+    // endre er dette tidsstempelet — samme komfortnivå som PIN-låsen selv.
+    if (req.method === 'POST' && isSeenPath) {
+      const body = await req.json();
+      const id = String(body.id || '');
+      if (!id) return json(400, { error: 'Mangler id' });
+      const key = await keyForUserId(store, id);
+      if (!key) return json(404, { error: 'Fant ikke bruker' });
+      const existing = await store.get(key, { type: 'json' });
+      existing.lastLoginAt = new Date().toISOString();
+      await store.setJSON(key, existing);
+      return json(200, { ok: true });
+    }
+
     // ===== Registrer ny bruker =====
     if (req.method === 'POST') {
       const body = await req.json();
@@ -151,4 +171,4 @@ export default async (req, context) => {
   }
 };
 
-export const config = { path: ['/api/users', '/api/users/verify', '/api/users/admin', '/api/users/admin/:id'] };
+export const config = { path: ['/api/users', '/api/users/verify', '/api/users/seen', '/api/users/admin', '/api/users/admin/:id'] };

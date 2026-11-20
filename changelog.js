@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.873",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "«Sist inne» i admin-oversikten oppdaterer seg nå ved hver app-åpning (meldt inn: datoen justerte seg aldri). Tidligere ble den bare stemplet den ene gangen man tastet PIN — etterpå husker appen brukeren og spør aldri serveren igjen, så datoen ble stående på PIN-dagen uansett daglig bruk."
+    ],
+    "changes_en": [
+      "\"Last seen\" in the admin overview now updates on every app open (reported: the date never adjusted). Previously it was only stamped the one time you typed your PIN — after that the app remembers you and never asks the server again, so the date stayed on PIN day regardless of daily use."
+    ]
+  },
+  {
     "v": "0.872",
     "d": "november 2026",
     "d_en": "November 2026",
