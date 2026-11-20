@@ -1395,6 +1395,15 @@ function velgSpraakHilsen(l){
   try{ localStorage.setItem('pizzaSpraakHilstSett','1'); }catch(e){}
   if(l) setLang(l); // setLang lagrer pizzaLang og rerendrer selv stripa
   else renderSpraakHilsen();
+  // v0.877: språk → pizzacoach, også når stripa besvares INNE i appen (meldt
+  // inn: «trykte kryss for å stenge språkvalg, så kom ikke pizzacoach» — den
+  // kjeden fantes bare på påloggingsskjermen). Samme éngangslås som ellers:
+  // er kortet alt vist, gjør kallet ingenting. Kun for innloggede — ved
+  // pålogging står authComplete for visningen.
+  try{
+    const u=JSON.parse(localStorage.getItem('pizzaUser'));
+    if(u && u.id) maybeVisCoachIntro();
+  }catch(e){}
 }
 function _oz(gStr){ const g=parseFloat(String(gStr).replace(',','.')); const oz=g*0.035274; return (oz<1?oz.toFixed(2):oz.toFixed(1))+' oz'; }
 function fmtW(g){ return window._units==='imperial' ? _oz(g) : g+'g'; }        // vekt-visning (slider/label)
@@ -6360,11 +6369,13 @@ async function authComplete(id, name){
   // brukeren på steg 1, ikke der forrige bruker på samme enhet var.
   // syncFavoriteButton() henvises fortsatt av "Mine deiger"/"★ Min favoritt".
   window._wizEnteredOnce = false;
-  await syncFavoriteButton();
-  if(document.body.classList.contains('mob-mode')) wizEnterSettingsTab();
-  // v0.874: engangskortet om pizzacoachen — her og bare her, for akkurat nå
-  // har brukeren navnet+PIN-en coachen bruker friskt i minne.
+  // v0.877: coach-kortet FØR nettverkskallet og wizarden (meldt inn: kortet
+  // uteble i et førstegangsløp). Det sto sist i funksjonen — så én feil i
+  // favoritt-synken eller wizard-oppstarten var nok til å hoppe over det i
+  // stillhet. Modalen ligger uansett over wizarden, så rekkefølgen er trygg.
   try{ maybeVisCoachIntro(); }catch(e){}
+  try{ await syncFavoriteButton(); }catch(e){}
+  try{ if(document.body.classList.contains('mob-mode')) wizEnterSettingsTab(); }catch(e){}
 }
 function syncLoggedInAs(){
   let saved = null;

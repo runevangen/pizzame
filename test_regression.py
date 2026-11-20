@@ -9440,6 +9440,52 @@ const svSched=window._pizzatidSchedule;
     ok184 = all(r184.values())
     results.append(('language_choice_comes_first_in_the_first_run_flow', ok184, r184))
 
+    # v0.877: coach-kortet skal ALDRI utebli i stillhet (meldt inn: «trykte
+    # kryss for å stenge språkvalg, så kom ikke pizzacoach»). To fronter:
+    # (a) authComplete viser kortet FØR favoritt-synken og wizarden — en feil
+    # der skal ikke dra kortet med seg; (b) besvares språkstripa INNE i appen
+    # (innlogget), følger kortet rett etter — med samme éngangslås.
+    r185 = page.evaluate("""async () => {
+      resetTestState();
+      const ut={};
+      let oU=null,oC=null; try{ oU=localStorage.getItem('pizzaUser'); oC=localStorage.getItem('pizzaCoachIntroVist'); }catch(e){}
+      const ekteSync=window.syncFavoriteButton, ekteWiz=window.wizEnterSettingsTab, ekteFetch=window.fetch;
+      const m=document.getElementById('coach-modal');
+      try{
+        // (a) kortet overlever at ALT etterpå feiler
+        localStorage.removeItem('pizzaCoachIntroVist');
+        window.fetch=async()=>({ok:true, json:async()=>({ok:true})});
+        window.syncFavoriteButton=async()=>{ throw new Error('nede'); };
+        window.wizEnterSettingsTab=()=>{ throw new Error('wizard-krasj'); };
+        try{ await authComplete('uR','RobustRune'); }catch(e){} // et kast her er selve regresjonen
+        ut.kortTrossFeil = m.style.display==='flex';
+        closeCoachModal();
+        // (b) språkstripe besvart inne i appen → kortet følger (innlogget, ikke sett)
+        localStorage.setItem('pizzaUser', JSON.stringify({id:'uR',name:'RobustRune'}));
+        localStorage.removeItem('pizzaCoachIntroVist');
+        velgSpraakHilsen(null);
+        ut.kortEtterStripe = m.style.display==='flex';
+        closeCoachModal();
+        // éngangslåsen holder: andre gang skjer ingenting
+        velgSpraakHilsen(null);
+        ut.ikkeIgjen = m.style.display==='none';
+        // utlogget: stripa alene åpner ingenting (authComplete eier visningen)
+        localStorage.removeItem('pizzaUser');
+        localStorage.removeItem('pizzaCoachIntroVist');
+        velgSpraakHilsen(null);
+        ut.stilleUtlogget = m.style.display==='none';
+        return ut;
+      } finally {
+        window.syncFavoriteButton=ekteSync; window.wizEnterSettingsTab=ekteWiz; window.fetch=ekteFetch;
+        try{ closeCoachModal(); }catch(e){}
+        try{ localStorage.removeItem('pizzaSpraakHilstSett'); }catch(e){}
+        try{ if(oU===null) localStorage.removeItem('pizzaUser'); else localStorage.setItem('pizzaUser',oU); }catch(e){}
+        try{ if(oC===null) localStorage.removeItem('pizzaCoachIntroVist'); else localStorage.setItem('pizzaCoachIntroVist',oC); }catch(e){}
+      }
+    }""")
+    ok185 = all(r185.values())
+    results.append(('coach_card_survives_startup_failures_and_follows_language_strip', ok185, r185))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;

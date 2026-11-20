@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.877",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Pizzacoach-kortet kunne utebli i førstegangsløpet (meldt inn: «trykte kryss for å stenge språkvalg, så kom ikke pizzacoach»). To fikser: kortet vises nå UMIDDELBART etter innlogging — før nettverkskall og wizard-oppstart, som kunne feile og dra kortet med seg i fallet — og besvarer du språkstripa inne i appen, følger kortet rett etter der også. Samme éngangslås som før: er kortet alt vist, vises det ikke igjen."
+    ],
+    "changes_en": [
+      "The pizza coach card could fail to appear in the first-run flow (reported: \"closed the language choice, and the coach never came\"). Two fixes: the card now shows IMMEDIATELY after login — before network calls and wizard startup, which could fail and silently take the card down with them — and answering the language strip inside the app is now followed by the card there too. Same one-shot lock as before: once seen, never again."
+    ]
+  },
+  {
     "v": "0.876",
     "d": "november 2026",
     "d_en": "November 2026",
