@@ -893,6 +893,7 @@ body.pc-mode.theme-dark .badge.bw{background:var(--pc-sunken);color:var(--pc-mut
     <div style="text-align:center;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#b09a82;text-transform:uppercase">🍕 UltimatePizza</div>
     <div id="auth-tag1" style="text-align:center;font-size:19px;font-weight:800;color:var(--dyn-text);line-height:1.25;margin-top:.5rem">Si når du vil spise.</div>
     <div id="auth-tag2" style="text-align:center;font-size:13px;color:#8a7562;margin-top:2px;margin-bottom:1rem">Appen finner ut resten.</div>
+    <div id="auth-spraak"></div>
     <div id="auth-body"></div>
     <div style="text-align:center;margin-top:1rem">
       <span onclick="openAdminLogin()" style="font-size:11px;color:#aaa;cursor:pointer;text-decoration:underline">admin</span>
@@ -1341,17 +1342,48 @@ function skalViseSpraakHilsen(){
   }catch(e){ return false; } // utilgjengelig lagring: aldri mas ved hver oppstart
   return true;
 }
-function spraakHilsenHTML(){
+function spraakHilsenHTML(handler){
+  const h=handler||'velgSpraakHilsen';
+  // v0.876: HELE teksten står på det andre språket (meldt inn: blandingen av
+  // norsk og engelsk var forvirrende). Den som trenger stripa er den som ikke
+  // leser språket appen valgte — så til den norske visningen snakker vi
+  // engelsk, og til den engelske visningen norsk. Knappene står på sitt eget
+  // språk uansett.
   const no=window._lang==='no';
   const txt=no
-    ? `🌍 <b>Appen er på norsk.</b> You can use it in English — choose below. Du kan endre dette når som helst under <b>⋯ Mer → Språk</b>.`
-    : `🌍 <b>This app is in English.</b> Den finnes også på norsk — velg under. You can change this anytime under <b>⋯ More → Language</b>.`;
-  const knapp=(l,navn,valgt)=>`<div onclick="velgSpraakHilsen('${l}')" style="flex:1;padding:8px;border-radius:8px;text-align:center;cursor:pointer;font-size:12.5px;${valgt?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:700':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-muted);font-weight:600'}">${navn}${valgt?' ✓':''}</div>`;
+    ? `🌍 <b>This app is in Norwegian.</b> You can use it in English — choose below. You can change this anytime under <b>⋯ More → Language</b>.`
+    : `🌍 <b>Appen er på engelsk.</b> Den finnes også på norsk — velg under. Du kan endre dette når som helst under <b>⋯ Mer → Språk</b>.`;
+  const knapp=(l,navn,valgt)=>`<div onclick="${h}('${l}')" style="flex:1;padding:8px;border-radius:8px;text-align:center;cursor:pointer;font-size:12.5px;${valgt?'border:2px solid var(--forno-accent);background:var(--forno-accent-soft);color:var(--forno-accent-text);font-weight:700':'border:1px solid var(--forno-border);background:var(--forno-bg);color:var(--forno-text-muted);font-weight:600'}">${navn}${valgt?' ✓':''}</div>`;
   return `<div style="position:relative;margin:.7rem 1rem .2rem;padding:10px 12px 9px;border:1px solid var(--anb-kant,#5a7d4a);background:var(--anb-bg,#223020);border-radius:12px">
-    <span onclick="velgSpraakHilsen(null)" style="position:absolute;top:6px;right:10px;color:var(--forno-text-faint);font-size:13px;cursor:pointer;padding:2px 4px">✕</span>
+    <span onclick="${h}(null)" style="position:absolute;top:6px;right:10px;color:var(--forno-text-faint);font-size:13px;cursor:pointer;padding:2px 4px">✕</span>
     <div style="font-size:12.5px;line-height:1.45;color:var(--forno-text);padding-right:18px;margin-bottom:8px">${txt}</div>
     <div style="display:flex;gap:8px">${knapp('no','Norsk',no)}${knapp('en','English',!no)}</div>
   </div>`;
+}
+// v0.876: språket skal komme FØR alt annet i førstegangsløpet (meldt inn:
+// pizzacoach-kortet kom før språkvalget — en engelskspråklig som ikke skjønner
+// at appen finnes på engelsk, møter et norsk velkomstkort). Samme stripe, samme
+// flagg-logikk — men på selve påloggingsskjermen, synlig gjennom hele navn- og
+// PIN-løpet. Da er rekkefølgen: språk → innlogging → pizzacoach (på valgt språk).
+function renderAuthSpraak(){
+  const el=document.getElementById('auth-spraak');
+  if(el) el.innerHTML = skalViseSpraakHilsen() ? spraakHilsenHTML('velgSpraakAuth') : '';
+}
+function velgSpraakAuth(l){
+  velgSpraakHilsen(l); // setter flagg + språk, og rerendrer in-app-stripa
+  renderAuthSpraak();
+  if(!l) return; // bare lukket — teksten bak står uendret
+  // Rerendre skjermen bak på nytt språk, uten å miste det brukeren har tastet.
+  const body=document.getElementById('auth-body');
+  if(!body) return;
+  const nameEl=document.getElementById('auth-name');
+  if(nameEl){
+    const v=nameEl.value;
+    body.innerHTML=authNameScreenHTML();
+    const ny=document.getElementById('auth-name'); if(ny) ny.value=v;
+  }else if(window._authName){
+    body.innerHTML=authPinScreenHTML(window._authName, !!window._authIsNew);
+  }
 }
 function renderSpraakHilsen(){
   const vis=skalViseSpraakHilsen();
@@ -6270,6 +6302,7 @@ async function authSubmitName(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     window._authName = name;
+    window._authIsNew = !data.exists; // v0.876: så språkbytte kan rerendre PIN-steget riktig
     document.getElementById('auth-body').innerHTML = authPinScreenHTML(name, !data.exists);
     const pinEl = document.getElementById('auth-pin');
     if(pinEl) pinEl.focus();
@@ -6391,6 +6424,7 @@ function checkAuthOnLoad(){
     }catch(e){}
   }else{
     document.getElementById('auth-body').innerHTML = authNameScreenHTML();
+    try{ renderAuthSpraak(); }catch(e){} // v0.876: språkvalget FØRST i løpet
   }
 }
 
