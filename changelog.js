@@ -3,6 +3,19 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.876",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Språkvalget kommer nå FØRST i førstegangsløpet — som stripe øverst på påloggingsskjermen (meldt inn: pizzacoach-kortet kom før språkvalget, så en engelskspråklig kunne møte et norsk velkomstkort uten å vite at appen finnes på engelsk). Bytter du språk midt i innloggingen, rerendres skjermen uten at navnet du har tastet går tapt. Rekkefølgen er nå: språk → innlogging → pizzacoach, på valgt språk.",
+      "Språkstripa snakker nå HELT på det andre språket (meldt inn: den sto i en blanding av norsk og engelsk). Er appen på norsk, er hele tilbudet på engelsk — og omvendt. Den som trenger stripa, er jo den som ikke leser språket appen valgte."
+    ],
+    "changes_en": [
+      "Language choice now comes FIRST in the first-run flow — as a strip at the top of the login screen (reported: the pizza coach card appeared before the language choice, so an English speaker could meet a Norwegian welcome card without knowing the app exists in English). Switching language mid-login re-renders the screen without losing the name you typed. The order is now: language → login → pizza coach, in your chosen language.",
+      "The language strip now speaks ENTIRELY in the other language (reported: it was a mix of Norwegian and English). If the app is in Norwegian, the whole offer is in English — and vice versa. Whoever needs the strip is exactly the person who can't read the language the app picked."
+    ]
+  },
+  {
     "v": "0.875",
     "d": "november 2026",
     "d_en": "November 2026",

@@ -9396,6 +9396,50 @@ const svSched=window._pizzatidSchedule;
     ok183 = all(r183.values())
     results.append(('admin_first_time_flag_replays_first_run_without_touching_dough', ok183, r183))
 
+    # v0.876: språket kommer FØRST i førstegangsløpet (meldt inn: coach-kortet
+    # kom før språkvalget). Stripa vises øverst på påloggingsskjermen når
+    # språk ikke er valgt, bytte midt i løpet rerendrer skjermen uten å miste
+    # tastet navn, og PIN-steget rerendres riktig (ny bruker-varianten).
+    r184 = page.evaluate("""() => {
+      resetTestState();
+      const ut={};
+      let oL=null,oH=null,oU=null;
+      try{ oL=localStorage.getItem('pizzaLang'); oH=localStorage.getItem('pizzaSpraakHilstSett'); oU=localStorage.getItem('pizzaUser'); }catch(e){}
+      const oLangVar=window._lang;
+      try{
+        localStorage.removeItem('pizzaLang'); localStorage.removeItem('pizzaSpraakHilstSett'); localStorage.removeItem('pizzaUser');
+        window._lang='no';
+        checkAuthOnLoad();
+        const strip=document.getElementById('auth-spraak').innerHTML;
+        ut.stripeVises = strip.includes('velgSpraakAuth') && strip.includes('English');
+        ut.navnSkjermBak = !!document.getElementById('auth-name');
+        document.getElementById('auth-name').value='Bob';
+        velgSpraakAuth('en');
+        ut.engelskSkjerm = document.getElementById('auth-body').innerHTML.includes('What is your name?');
+        ut.navnBeholdt = document.getElementById('auth-name').value==='Bob';
+        ut.stripeBorte = document.getElementById('auth-spraak').innerHTML==='';
+        ut.valgLagret = (()=>{ try{ return localStorage.getItem('pizzaLang')==='en'; }catch(e){ return false; } })();
+        // PIN-steget: språkbytte der rerendrer med riktig ny/eksisterende-variant
+        window._authName='Bob'; window._authIsNew=true;
+        document.getElementById('auth-body').innerHTML=authPinScreenHTML('Bob', true);
+        try{ localStorage.removeItem('pizzaLang'); localStorage.removeItem('pizzaSpraakHilstSett'); }catch(e){}
+        velgSpraakAuth('no');
+        ut.pinRerendret = document.getElementById('auth-body').innerHTML.includes('Lag en 4-sifret PIN-kode');
+        return ut;
+      } finally {
+        try{
+          if(oL===null) localStorage.removeItem('pizzaLang'); else localStorage.setItem('pizzaLang',oL);
+          if(oH===null) localStorage.removeItem('pizzaSpraakHilstSett'); else localStorage.setItem('pizzaSpraakHilstSett',oH);
+          if(oU===null) localStorage.removeItem('pizzaUser'); else localStorage.setItem('pizzaUser',oU);
+        }catch(e){}
+        window._lang=oLangVar; window._authName=null; window._authIsNew=false;
+        const as=document.getElementById('auth-spraak'); if(as) as.innerHTML='';
+        try{ checkAuthOnLoad(); }catch(e){}
+      }
+    }""")
+    ok184 = all(r184.values())
+    results.append(('language_choice_comes_first_in_the_first_run_flow', ok184, r184))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
@@ -10485,16 +10529,18 @@ const svSched=window._pizzatidSchedule;
       const mobEl = () => document.getElementById('mob-spraak-hilsen');
       const pcEl  = () => document.getElementById('pc-spraak-hilsen');
       try {
-        // 1) Ny bruker (ingen spor) → stripa vises i BEGGE visninger, på
-        //    norsk (testmiljøet er nb-NO), med engelsk veiledning i teksten.
+        // 1) Ny bruker (ingen spor) → stripa vises i BEGGE visninger. v0.876:
+        //    appen er på norsk (nb-NO), så HELE stripeteksten står på engelsk
+        //    — den som trenger den, leser ikke norsk (blanding meldt inn).
         localStorage.removeItem('pizzaLang');
         localStorage.removeItem('pizzaSpraakHilstSett');
         window._lang='no';
         renderSpraakHilsen();
         const nyBrukerSerStripa = !!mobEl().innerHTML && !!pcEl().innerHTML;
-        const norskVariant = mobEl().innerHTML.includes('Appen er på norsk')
+        const norskVariant = mobEl().innerHTML.includes('This app is in Norwegian')
           && mobEl().innerHTML.includes('You can use it in English')
-          && mobEl().innerHTML.includes('English');
+          && !mobEl().innerHTML.includes('Appen er på norsk')
+          && !mobEl().innerHTML.includes('Du kan endre');
 
         // 2) Trykk på English-knappen: språket byttes, valget lagres, og
         //    stripa forsvinner fra begge visninger.
@@ -10508,13 +10554,15 @@ const svSched=window._pizzatidSchedule;
         renderSpraakHilsen();
         const valgtSpraakStopperStripa = mobEl().innerHTML==='' && !skalViseSpraakHilsen();
 
-        // 4) Engelsk-varianten: gjettet engelsk → teksten er engelsk, men
-        //    veien til norsk står PÅ norsk.
+        // 4) Engelsk-varianten: gjettet engelsk → HELE stripeteksten på norsk
+        //    (v0.876) — veien tilbake skal leses av den norskspråklige.
         localStorage.removeItem('pizzaLang');
         window._lang='en';
         renderSpraakHilsen();
-        const enVariant = mobEl().innerHTML.includes('This app is in English')
-          && mobEl().innerHTML.includes('Den finnes også på norsk');
+        const enVariant = mobEl().innerHTML.includes('Appen er på engelsk')
+          && mobEl().innerHTML.includes('Den finnes også på norsk')
+          && !mobEl().innerHTML.includes('This app is in English')
+          && !mobEl().innerHTML.includes('You can change');
 
         // 5) ✕ (lukk uten å velge): ingenting lagres som språk, men flagget
         //    settes og stripa er borte for godt.
