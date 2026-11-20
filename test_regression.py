@@ -9346,6 +9346,56 @@ const svSched=window._pizzatidSchedule;
     ok182 = all(r182.values())
     results.append(('pizza_coach_promo_card_once_after_login_and_always_in_more', ok182, r182))
 
+    # v0.875: admin kan flagge en bruker som «førstegang» (🧪-knapp per bruker).
+    # Klienten: svaret på /seen med foerstegang:true nullstiller førstegangs-
+    # merkene (pizzaUser, coach-kort, språk) og starter appen på nytt — men
+    # rører IKKE pizzaAktivDeig (deigen skal stå der etter ny innlogging).
+    r183 = page.evaluate("""async () => {
+      resetTestState();
+      const ut={};
+      let _origUser=null; try{ _origUser=localStorage.getItem('pizzaUser'); }catch(e){}
+      const ekteFetch=window.fetch, ekteOmstart=window.plasserOmstart;
+      try{
+        // Admin-kortet har 🧪-knappen
+        renderAdminModal([{id:'u9',name:'Testbruker',createdAt:'2026-01-01T10:00:00Z',lastLoginAt:'2026-01-02T10:00:00Z'}]);
+        ut.adminKnapp=document.getElementById('admin-modal-body').innerHTML.includes("adminFlaggFoerstegang('u9'");
+        // Nullstillingen tar de tre merkene — og lar deig-kvitteringen stå
+        localStorage.setItem('pizzaUser', JSON.stringify({id:'uX',name:'X'}));
+        localStorage.setItem('pizzaCoachIntroVist','1');
+        localStorage.setItem('pizzaLang','en');
+        localStorage.setItem('pizzaAktivDeig','deig-42');
+        foerstegangNullstill();
+        ut.merkerBorte = !localStorage.getItem('pizzaUser') && !localStorage.getItem('pizzaCoachIntroVist') && !localStorage.getItem('pizzaLang');
+        ut.deigStaar = localStorage.getItem('pizzaAktivDeig')==='deig-42';
+        // Hele kjeden: app-åpning → /seen svarer foerstegang → nullstill + omstart
+        let omstartet=false;
+        window.plasserOmstart=()=>{ omstartet=true; };
+        localStorage.setItem('pizzaUser', JSON.stringify({id:'uX',name:'X'}));
+        localStorage.setItem('pizzaCoachIntroVist','1');
+        window.fetch=async(url,opts)=>({ok:true, json:async()=>({ok:true, foerstegang:true})});
+        checkAuthOnLoad();
+        await new Promise(r=>setTimeout(r,0)); await new Promise(r=>setTimeout(r,0));
+        ut.kjedeNullstilte = !localStorage.getItem('pizzaUser') && !localStorage.getItem('pizzaCoachIntroVist');
+        ut.kjedeOmstartet = omstartet;
+        ut.deigStaarEtterKjede = localStorage.getItem('pizzaAktivDeig')==='deig-42';
+        // Uten flagg i svaret: ingenting skjer
+        omstartet=false;
+        localStorage.setItem('pizzaUser', JSON.stringify({id:'uX',name:'X'}));
+        window.fetch=async(url,opts)=>({ok:true, json:async()=>({ok:true})});
+        checkAuthOnLoad();
+        await new Promise(r=>setTimeout(r,0)); await new Promise(r=>setTimeout(r,0));
+        ut.stilleUtenFlagg = !!localStorage.getItem('pizzaUser') && !omstartet;
+        return ut;
+      } finally {
+        window.fetch=ekteFetch; window.plasserOmstart=ekteOmstart;
+        try{ localStorage.removeItem('pizzaAktivDeig'); localStorage.removeItem('pizzaCoachIntroVist'); localStorage.removeItem('pizzaLang'); }catch(e){}
+        try{ if(_origUser===null) localStorage.removeItem('pizzaUser'); else localStorage.setItem('pizzaUser',_origUser); }catch(e){}
+        const am=document.getElementById('admin-modal-body'); if(am) am.innerHTML='';
+      }
+    }""")
+    ok183 = all(r183.values())
+    results.append(('admin_first_time_flag_replays_first_run_without_touching_dough', ok183, r183))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;

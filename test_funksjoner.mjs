@@ -154,6 +154,27 @@ function t(navn, sann, detalj) {
     t('users: /seen uten id gir 400', r.status === 400);
   }
 
+  // v0.875: admin kan flagge en bruker som «førstegang» — flagget settes uten
+  // å røre PIN eller datoer, leveres av NESTE /seen-kall (app-åpning), og
+  // forbrukes i samme skriv (éngangs).
+  {
+    const foer = await store.get('rune', { type: 'json' });
+    foer.lastLoginAt = '2021-06-01T00:00:00.000Z';
+    await store.setJSON('rune', foer);
+    r = await kall(users, 'PATCH', `/api/users/admin/${runeId}`, { body: { password: 'feil', foerstegang: true } });
+    t('users: førstegangsflagg krever admin-passord', r.status === 401);
+    r = await kall(users, 'PATCH', `/api/users/admin/${runeId}`, { body: { password: 'test-admin-passord', foerstegang: true } });
+    const flagget = await store.get('rune', { type: 'json' });
+    t('users: flagging setter flagget uten å røre PIN og dato', r.status === 200 && flagget.foerstegangFlagg === true
+      && flagget.pinHash === foer.pinHash && flagget.lastLoginAt === '2021-06-01T00:00:00.000Z');
+    r = await kall(users, 'POST', '/api/users/seen', { body: { id: runeId } });
+    const etterSeen = await store.get('rune', { type: 'json' });
+    t('users: neste /seen leverer førstegang og forbruker flagget', r.status === 200 && r.body.foerstegang === true
+      && etterSeen.foerstegangFlagg === undefined);
+    r = await kall(users, 'POST', '/api/users/seen', { body: { id: runeId } });
+    t('users: /seen etterpå er stille (éngangs)', r.status === 200 && !('foerstegang' in r.body));
+  }
+
   // Admin-PIN-bytte går via id → nøkkel-oppslaget (keyForUserId) — det var en
   // reell bug at id ble brukt som nøkkel direkte, så akkurat den veien voktes.
   r = await kall(users, 'PATCH', `/api/users/admin/${runeId}`, { body: { password: 'feil', newPin: '4321' } });

@@ -6343,6 +6343,38 @@ function authLogout(){
   try{ localStorage.removeItem('pizzaUser'); }catch(e){}
   location.reload();
 }
+// ===== v0.875: FØRSTEGANGSFLAGG (testverktøy i admin) =====
+// Admin flagger en bruker → svaret på neste /seen-kall (hver app-åpning)
+// bærer foerstegang:true, og DENNE enheten nullstiller førstegangsmerkene og
+// starter appen på nytt: språkvalg på nytt, innlogging på nytt, velkomstkort
+// om pizzacoachen på nytt. Deiger røres IKKE (pizzaAktivDeig og alt på
+// serveren står urørt — etter ny innlogging er den åpne deigen tilbake), og
+// datostemplingen går nøyaktig som ellers.
+function foerstegangNullstill(){
+  try{ localStorage.removeItem('pizzaUser'); }catch(e){}
+  try{ localStorage.removeItem('pizzaCoachIntroVist'); }catch(e){}
+  try{ localStorage.removeItem('pizzaLang'); }catch(e){}
+}
+function plasserOmstart(){ try{ location.reload(); }catch(e){} }
+async function sjekkFoerstegangSvar(res){
+  try{
+    const d = await res.json();
+    if(d && d.foerstegang){ foerstegangNullstill(); plasserOmstart(); }
+  }catch(e){}
+}
+async function adminFlaggFoerstegang(id, name){
+  if(!confirm(`Flagge ${name} som førstegangsbruker?\n\nNeste gang ${name} åpner appen: logges ut på sin enhet, språkvalg og velkomstkortet om pizzacoachen nullstilles, og hele førstegangsløpet kjøres på nytt.\n\nDeiger og datoer røres ikke.`)) return;
+  try{
+    const res = await fetch('/api/users/admin/'+id, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: window._adminPassword, foerstegang: true})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    alert(`${name} er flagget — gjelder neste app-åpning på brukerens enhet.`);
+  }catch(e){
+    alert('Fikk ikke satt flagget — prøv igjen.');
+  }
+}
 function checkAuthOnLoad(){
   let saved = null;
   try{ saved = JSON.parse(localStorage.getItem('pizzaUser')); }catch(e){}
@@ -6355,7 +6387,7 @@ function checkAuthOnLoad(){
     // stempelet venter til neste åpning med nett.
     try{
       fetch('/api/users/seen', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({id: saved.id}) }).catch(()=>{});
+        body: JSON.stringify({id: saved.id}) }).then(sjekkFoerstegangSvar).catch(()=>{});
     }catch(e){}
   }else{
     document.getElementById('auth-body').innerHTML = authNameScreenHTML();
@@ -6395,6 +6427,7 @@ function renderAdminModal(users){
           <div class="admin-umeta">Registrert: ${created} · Sist inne: ${lastLogin}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="adminFlaggFoerstegang('${u.id}','${escAttr(u.name)}')" class="admin-btn" title="Kjør førstegangsløpet på nytt for denne brukeren">🧪</button>
           <button onclick="adminResetPin('${u.id}','${escAttr(u.name)}')" class="admin-btn">Ny PIN</button>
           <button onclick="adminDeleteUser('${u.id}','${escAttr(u.name)}')" class="admin-btn danger">Slett</button>
         </div>
