@@ -3,6 +3,17 @@
 // FØR hovedscriptet i index.html, slik at CHANGELOG er tilgjengelig når resten kjører.
 const CHANGELOG = [
   {
+    "v": "0.874",
+    "d": "november 2026",
+    "d_en": "November 2026",
+    "changes": [
+      "Pizzacoachen presenterer seg! Rett etter innlogging får du et engangskort om at appen kan snakke med Claude og ChatGPT — spør «hva rekker jeg til søndag 18?» fra sofaen og få appens egne tall. Kortet finnes alltid igjen under Mer → «🤖 Pizzacoach i Claude/ChatGPT», med kopier-adressen-knapp, oppkoblingssteg og full bruksanvisning."
+    ],
+    "changes_en": [
+      "The pizza coach introduces itself! Right after logging in you get a one-time card about the app talking to Claude and ChatGPT — ask \"what can I make by Sunday 6pm?\" from the sofa and get the app's own numbers. The card is always available under More → \"🤖 Pizza coach in Claude/ChatGPT\", with a copy-address button, connection steps and the full guide."
+    ]
+  },
+  {
     "v": "0.873",
     "d": "november 2026",
     "d_en": "November 2026",

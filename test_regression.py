@@ -9298,6 +9298,54 @@ const svSched=window._pizzatidSchedule;
     ok181 = all(r181.values())
     results.append(('app_open_stamps_last_seen_for_logged_in_user', ok181, r181))
 
+    # v0.874: pizzacoach-promoen (skisse A+C) — ETT kort vist to steder.
+    # A: engangskort etter innlogging (maybeVisCoachIntro, koblet i
+    # authComplete, lås i localStorage). C: fast rad i Mer + PC-menyen som
+    # åpner samme modal med kopier-adressen-knapp, oppsettssteg og guide.
+    # Tonevakt: kortet sier «pizzahjernen» og nevner ALDRI ordet «MCP» —
+    # teknikken hører hjemme i guiden, ikke i salgspraten.
+    r182 = page.evaluate("""() => {
+      resetTestState();
+      const ut={};
+      try{ localStorage.removeItem('pizzaCoachIntroVist'); }catch(e){}
+      const m=document.getElementById('coach-modal');
+      // C: radene finnes i Mer og PC-menyen
+      ut.merRad=!!document.getElementById('mer-coach');
+      ut.pcRad=!!document.getElementById('pc-menu-coach');
+      // C: modalen åpner med fullt innhold
+      window._lang='no'; openCoachModal();
+      const h=document.getElementById('coach-body').innerHTML;
+      ut.aapen=m&&m.style.display==='flex';
+      ut.chatEksempel=h.includes('Hva rekker jeg til søndag 18?');
+      ut.adresse=h.includes('ultimatepizza.netlify.app/api/mcp');
+      ut.kopierKnapp=h.includes('kopierCoachAdresse');
+      ut.guideLenke=h.includes('MCP.md');
+      ut.oppsettSynlig=document.getElementById('coach-setup').style.display==='block';
+      ut.toneUtenMcp=!h.replace(/MCP\\.md/g,'').includes('MCP') && h.includes('pizzahjernen');
+      closeCoachModal();
+      ut.lukket=m.style.display==='none';
+      // A: intro vises én gang — oppsettet skjult bak «Vis meg hvordan»
+      maybeVisCoachIntro();
+      ut.introAapen=m.style.display==='flex';
+      ut.introSkjulerOppsett=document.getElementById('coach-setup').style.display==='none';
+      ut.introKnapper=document.getElementById('coach-body').innerHTML.includes('Vis meg hvordan');
+      coachVisOppsett();
+      ut.visHvordanAapner=document.getElementById('coach-setup').style.display==='block';
+      closeCoachModal();
+      maybeVisCoachIntro();
+      ut.andreGangStille=m.style.display==='none';
+      // A er koblet der den skal: i authComplete
+      ut.koblet=String(authComplete).includes('maybeVisCoachIntro');
+      // engelsk variant
+      window._lang='en'; openCoachModal();
+      ut.engelsk=document.getElementById('coach-body').innerHTML.includes('The app can talk');
+      closeCoachModal(); window._lang='no';
+      try{ localStorage.removeItem('pizzaCoachIntroVist'); }catch(e){}
+      return ut;
+    }""")
+    ok182 = all(r182.values())
+    results.append(('pizza_coach_promo_card_once_after_login_and_always_in_more', ok182, r182))
+
     # v0.817: gjærens tilstand — aapnet toerrgjær mister styrke, og mengden
     # ganges opp (1/styrke) saa virkningen blir som fersk og hevetidene staar.
     # Bakgrunn: bakst 16.08 laa 20-30 % bak modellen tross varmt kjoekken;
